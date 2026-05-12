@@ -39,7 +39,6 @@ export const Pages: CollectionConfig<'pages'> = {
         slug: (data?.slug as string) || '',
         collection: 'pages',
         path: `/${(data?.slug as string) || 'preview'}`,
-        previewSecret: process.env.PREVIEW_SECRET || '',
       }
       const encodedParams = new URLSearchParams(params)
       return `/api/preview?${encodedParams.toString()}`
@@ -150,6 +149,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-pianos-browser',         // Pianos browser catalog
                 'marketing-artists-grid',           // Artists grid with search
                 'marketing-blog-grid',              // Blog grid with featured hero
+                'marketing-blog-latest',            // Latest Blog Articles
 
                 // Events blocks - Event-specific content
                 'events-university-hero',           // University Hero

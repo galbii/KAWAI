@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getJobBySlug, getAllJobSlugs } from '@/lib/payload/queries'
-import { ApplicationForm } from '@/components/careers'
+import { TallyEmbed } from '@/components/careers/TallyEmbed'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 
 export const revalidate = 3600
@@ -70,7 +70,7 @@ export default async function JobDetailPage(props: Props) {
             Apply Now
           </h2>
           <div className="h-px bg-kawai-neutral/60 mb-10" />
-          <ApplicationForm jobId={String(job.id)} jobTitle={job.title} />
+          <TallyEmbed />
         </div>
       </div>
     </main>

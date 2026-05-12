@@ -226,9 +226,13 @@ export default buildConfig({
           return baseURL
         }
 
+        if (collectionConfig?.slug === 'artists') {
+          return `${baseURL}/artists/${data.slug || 'preview'}`
+        }
+
         return baseURL
       },
-      collections: ['posts', 'pages', 'home-page'],
+      collections: ['posts', 'pages', 'home-page', 'artists'],
       breakpoints: [
         {
           label: 'Mobile',
@@ -461,10 +465,11 @@ export default buildConfig({
       }),
     }),
     searchPlugin({
-      collections: ['storefronts', 'products', 'pages', 'collections'],
+      collections: ['storefronts', 'products', 'pages', 'collections', 'artists'],
       defaultPriorities: {
         storefronts: 30,
         products: 20,
+        artists: 18,
         collections: 15,
         pages: 10,
       },
@@ -502,6 +507,43 @@ export default buildConfig({
             productType: originalDoc.type, // piano, accessory, software
             productCategory: originalDoc.category, // digital, grand, upright, hybrid (for pianos only)
             productSlug: originalDoc.slug,
+          }
+        }
+
+        // Artist: has 'name' but no 'model' (product) and no 'title' (page)
+        const isArtist = Boolean(
+          originalDoc.name &&
+          !originalDoc.model &&
+          originalDoc.title === undefined &&
+          (originalDoc.slug !== undefined) &&
+          ('instrument' in originalDoc || 'shortBio' in originalDoc || 'isShigeruArtist' in originalDoc)
+        )
+
+        if (isArtist) {
+          // Extract image URL safely — image may or may not be populated at this depth
+          let artistImageUrl: string = originalDoc.heroImageUrl || originalDoc.imageUrl || ''
+          const img = originalDoc.image
+          if (img && typeof img === 'object' && 'url' in img && img.url) {
+            artistImageUrl = img.url as string
+          }
+
+          // Flatten achievements into a searchable text string
+          const achievementText = (originalDoc.achievements ?? [])
+            .map((a: any) => a?.achievement || '')
+            .filter(Boolean)
+            .join(' | ')
+
+          return {
+            ...searchDoc,
+            title: originalDoc.name,
+            excerpt: originalDoc.shortBio?.substring(0, 200) || achievementText.substring(0, 200) || '',
+            category: 'artist',
+            tags: [],
+            artistSlug: originalDoc.slug,
+            artistImageUrl,
+            artistInstrument: originalDoc.instrument || '',
+            artistGenre: originalDoc.genre || '',
+            artistShortBio: originalDoc.shortBio || '',
           }
         }
 
@@ -647,6 +689,13 @@ export default buildConfig({
           // Denormalized collection fields for fast search results
           { name: 'collectionHandle', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Collection handle (denormalized from Collections collection)' } },
           { name: 'collectionTitle', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Collection title (denormalized from Collections collection)' } },
+          { name: 'collectionPianoCategories', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Piano categories (comma-separated: grand,digital,upright,hybrid,shigeru) — powers category-term search ("grand pianos" → all grand collections)' } },
+          // Denormalized artist fields for fast search results
+          { name: 'artistSlug', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Artist slug → /artists/{slug}' } },
+          { name: 'artistImageUrl', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Artist image URL (denormalized)' } },
+          { name: 'artistInstrument', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Artist instrument type (grand/upright/digital/hybrid/multiple)' } },
+          { name: 'artistGenre', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Artist genre (denormalized)' } },
+          { name: 'artistShortBio', type: 'text', admin: { position: 'sidebar', readOnly: true, description: 'Artist short bio (denormalized, max 200 chars)' } },
           // Denormalized storefront fields for fast search results
           { name: 'storefrontSlug', type: 'text', admin: { position: 'sidebar', readOnly: true } },
           { name: 'storefrontLocationName', type: 'text', admin: { position: 'sidebar', readOnly: true } },

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQueryStates, parseAsString } from 'nuqs'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -601,6 +602,7 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
   onClose: () => void
   comingSoon?: boolean
 }) {
+  const router = useRouter()
   const collection = collections.find((c) => c.handle === collectionHandle)
   const heightClass = collection?.bannerSize ? (BANNER_SIZE_HEIGHT[collection.bannerSize] ?? 'h-[250px]') : 'h-[250px]'
   const ctaHref = externalCtaUrl ?? href
@@ -617,8 +619,14 @@ function BannerOnlyView({ label, href, externalCtaUrl, collectionHandle, collect
       <motion.div
         initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="rounded-2xl overflow-hidden bg-[#0a0a0a] relative"
+        className="rounded-2xl overflow-hidden bg-[#0a0a0a] relative cursor-pointer"
         style={{ minHeight: '320px' }}
+        onClick={(e) => {
+          if (!(e.target as Element).closest('a')) {
+            onClose()
+            router.push(ctaHref)
+          }
+        }}
       >
         {/* Full-bleed background image */}
         {imgUrl && (

@@ -20,15 +20,6 @@ export async function GET(
   const path = searchParams.get('path')
   const collection = searchParams.get('collection') as CollectionSlug
   const slug = searchParams.get('slug')
-  const previewSecret = searchParams.get('previewSecret')
-
-  // Validate preview secret
-  if (previewSecret !== process.env.PREVIEW_SECRET) {
-    console.error('[Preview] Invalid preview secret')
-    return new Response('You are not allowed to preview this page', {
-      status: 403,
-    })
-  }
 
   if (!path || !collection || !slug) {
     console.error('[Preview] Missing required parameters:', { path, collection, slug })

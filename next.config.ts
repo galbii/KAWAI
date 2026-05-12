@@ -160,9 +160,16 @@ const nextConfig: NextConfig = {
         ],
       },
       // Frontend CSP — edit src/lib/csp.ts to add/remove third-party domains
+      // COEP unsafe-none is the spec default but must be explicit on frontend pages so that
+      // Firefox/Zen allows them to load inside the Payload admin live-preview iframe, which
+      // runs under COEP: credentialless. Without an explicit value, Firefox blocks the iframe
+      // with a "security configuration doesn't match" error even for same-origin embeds.
       {
         source: '/((?!admin).*)',
-        headers: [{ key: 'Content-Security-Policy', value: buildCspHeader(isDev) }],
+        headers: [
+          { key: 'Content-Security-Policy', value: buildCspHeader(isDev) },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
+        ],
       },
     ]
   },

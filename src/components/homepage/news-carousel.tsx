@@ -159,7 +159,32 @@ export function NewsCarousel({ data }: NewsCarouselProps) {
                 return <NAMMCarouselSlide prefersReducedMotion={prefersReducedMotion} />;
               }
 
-              // Render video background if videoUrl is present
+              // Render direct uploaded video background
+              if (currentItem.backgroundVideo) {
+                const videoMedia = currentItem.backgroundVideo
+                const videoUrl = typeof videoMedia === 'object' && videoMedia !== null && 'url' in videoMedia
+                  ? (videoMedia.url ?? '')
+                  : typeof videoMedia === 'string' ? videoMedia : ''
+                const mimeType = typeof videoMedia === 'object' && videoMedia !== null && 'mimeType' in videoMedia
+                  ? (videoMedia.mimeType ?? 'video/webm')
+                  : 'video/webm'
+                if (videoUrl) {
+                  return (
+                    <NewsVideoBackground
+                      title={currentItem.title}
+                      description={currentItem.description}
+                      videoUrl={videoUrl}
+                      videoSource="direct"
+                      videoMimeType={mimeType}
+                      category={currentItem.category}
+                      link={currentItem.link}
+                      prefersReducedMotion={prefersReducedMotion}
+                    />
+                  )
+                }
+              }
+
+              // Render YouTube video background if videoUrl is present
               if (currentItem.videoUrl) {
                 return (
                   <NewsVideoBackground

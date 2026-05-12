@@ -98,15 +98,16 @@ export interface NewsItem {
   title: string
   description: string
   image?: Media | string | null
+  backgroundVideo?: Media | string | null
   category: string
   link?: string | null
   ctaText?: string | null
 
   // Multi-media support
-  images?: (Media | string)[] | null // Multiple images for carousel display
-  videoUrl?: string | null // YouTube URL or direct MP4 URL
-  videoSource?: 'youtube' | 'direct' | null // Type of video embed
-  youtubeZoom?: number | null // Per-slide zoom level for YouTube backgrounds (1.0–2.5)
+  images?: (Media | string)[] | null
+  videoUrl?: string | null
+  videoSource?: 'youtube' | 'direct' | null
+  youtubeZoom?: number | null
 }
 
 export interface NewsCarouselSectionData {

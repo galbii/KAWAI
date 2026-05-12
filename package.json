@@ -20,6 +20,10 @@
     "migrate:categories:dry-run": "tsx scripts/migrate-posts-categories.ts --dry-run",
     "migrate:authors": "tsx scripts/migrate-posts-authors.ts",
     "migrate:authors:dry-run": "tsx scripts/migrate-posts-authors.ts --dry-run",
+    "migrate:artists:publish": "tsx scripts/migrate-artists-publish.ts",
+    "migrate:artists:publish:dry-run": "tsx scripts/migrate-artists-publish.ts --dry-run",
+    "migrate:artists:publish:v2": "tsx scripts/migrate-artists-publish-v2.ts",
+    "migrate:artists:publish:v2:dry-run": "tsx scripts/migrate-artists-publish-v2.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
     "test:s3": "tsx scripts/test-s3-connection.ts"

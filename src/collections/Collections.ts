@@ -324,6 +324,11 @@ export const Collections: CollectionConfig = {
             tags: collectionTags,
             collectionHandle: doc.handle,
             collectionTitle: doc.title,
+            // Comma-separated piano category values so the search API can match
+            // category-term queries ("grand pianos" → all collections tagged 'grand').
+            collectionPianoCategories: Array.isArray(doc.pianoCategories)
+              ? doc.pianoCategories.join(',')
+              : '',
           }
 
           if (operation === 'create') {

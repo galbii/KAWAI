@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { imageField } from '@/lib/payload/fields/media'
+import { imageField, videoField } from '@/lib/payload/fields/media'
 
 export const NewsCarousel: Block = {
   slug: 'marketing-news-carousel',
@@ -28,6 +28,13 @@ export const NewsCarousel: Block = {
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', required: true },
         imageField('image', { required: false }),
+        videoField('backgroundVideo', {
+          required: false,
+          admin: {
+            description: 'Self-hosted video file (webm/mp4) as slide background. Overrides image. Use instead of YouTube URL for uploaded video.',
+            condition: (_data: any, siblingData: any) => !siblingData?.videoUrl,
+          },
+        }),
         {
           name: 'category',
           type: 'select',

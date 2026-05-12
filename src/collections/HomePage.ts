@@ -809,6 +809,13 @@ export const HomePage: CollectionConfig = {
                     description: 'News item image'
                   }
                 }),
+                videoField('backgroundVideo', {
+                  required: false,
+                  admin: {
+                    description: 'Self-hosted video file (webm/mp4) as slide background. Overrides image. Use instead of YouTube URL for uploaded video.',
+                    condition: (_data: any, siblingData: any) => !siblingData?.videoUrl,
+                  }
+                }),
                 {
                   name: 'category',
                   type: 'select',

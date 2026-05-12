@@ -4,28 +4,39 @@ import type { Post } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { BlogLatestClient } from '@/components/blog/BlogLatestClient'
 
-const getPublishedPosts = unstable_cache(
-  async (): Promise<Post[]> => {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'posts',
-      where: { status: { equals: 'published' } },
-      limit: 200,
-      sort: '-publishedDate',
-      depth: 1,
-      overrideAccess: true,
-    })
-    return result.docs as Post[]
-  },
-  ['blog-latest-posts'],
-  { tags: ['posts'], revalidate: 300 },
-)
+function getFilteredPosts(filterByTags?: string[] | null): Promise<Post[]> {
+  const key =
+    filterByTags?.length
+      ? `blog-posts-tags-${[...filterByTags].sort().join(',')}`
+      : 'blog-posts-all'
+
+  return unstable_cache(
+    async (): Promise<Post[]> => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'posts',
+        where: {
+          status: { equals: 'published' },
+          ...(filterByTags?.length ? { tags: { in: filterByTags } } : {}),
+        },
+        limit: 200,
+        sort: '-publishedDate',
+        depth: 1,
+        overrideAccess: true,
+      })
+      return result.docs as Post[]
+    },
+    [key],
+    { tags: ['posts'], revalidate: 300 },
+  )()
+}
 
 export async function BlogLatestBlock({
   eyebrow,
   heading,
   postLimit,
   columns,
+  filterByTags,
   showCta,
   ctaLabel,
   ctaHref,
@@ -39,7 +50,7 @@ export async function BlogLatestBlock({
   let allPosts: Post[] = []
 
   try {
-    allPosts = await getPublishedPosts()
+    allPosts = await getFilteredPosts(filterByTags)
   } catch (error) {
     console.error('[BlogLatestBlock] Error fetching posts:', error)
   }

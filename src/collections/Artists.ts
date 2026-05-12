@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { imageField } from '@/lib/payload/fields/media'
-
-const adminOnly = ({ req: { user } }: { req: { user: unknown } }) => Boolean(user)
+import type { Artist } from '@/payload-types'
 
 export const Artists: CollectionConfig = {
   slug: 'artists',
@@ -13,10 +13,24 @@ export const Artists: CollectionConfig = {
     group: 'Content',
     useAsTitle: 'name',
     defaultColumns: ['name', 'featured', 'updatedAt'],
-    description: 'Manage KAWAI artists - musicians and performers who play KAWAI pianos',
+    description: 'Manage KAWAI artists — musicians and performers who play KAWAI pianos',
+    livePreview: {
+      url: ({ data }) => {
+        const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        return `${baseURL}/artists/${data.slug || 'preview'}`
+      },
+    },
+    preview: (data) => {
+      const params = {
+        slug: (data?.slug as string) || '',
+        collection: 'artists',
+        path: `/artists/${(data?.slug as string) || 'preview'}`,
+      }
+      return `/api/preview?${new URLSearchParams(params).toString()}`
+    },
   },
   access: {
-    read: () => true, // Public read access for frontend
+    read: () => true,
   },
   fields: [
     // Sidebar fields (appear on all tabs)
@@ -386,7 +400,7 @@ export const Artists: CollectionConfig = {
                     { label: 'Website', value: 'website' },
                     { label: 'Other', value: 'other' }
                   ],
-                  defaultValue: 'instagram',
+                  defaultValue: 'youtube',
                   admin: {
                     description: 'Social media platform or link type'
                   }
@@ -438,7 +452,7 @@ export const Artists: CollectionConfig = {
                 { label: 'Recommend Removal', value: 'recommend-removal' },
                 { label: 'Reach Out', value: 'reach-out' },
               ],
-              access: { read: adminOnly },
+              access: { read: ({ req: { user } }) => Boolean(user) },
               admin: {
                 description: 'Roster action for this artist — reviewed during audits'
               }
@@ -446,7 +460,7 @@ export const Artists: CollectionConfig = {
             {
               name: 'internalNotes',
               type: 'textarea',
-              access: { read: adminOnly },
+              access: { read: ({ req: { user } }) => Boolean(user) },
               admin: {
                 description: 'Internal notes (website status, instrument concerns, open questions, etc.) — never shown publicly'
               }
@@ -501,11 +515,19 @@ export const Artists: CollectionConfig = {
     }
   ],
 
+  versions: {
+    drafts: {
+      autosave: {
+        interval: 100,
+      },
+      schedulePublish: true,
+    },
+    maxPerDoc: 50,
+  },
+
   hooks: {
     beforeChange: [
       async ({ data, operation }) => {
-        console.log(`🎨 Artists beforeChange: operation=${operation}, name="${data.name}"`)
-
         // Auto-generate slug from name if not provided or empty
         if (data.name && (!data.slug || data.slug.trim() === '')) {
           const generatedSlug = data.name
@@ -517,83 +539,43 @@ export const Artists: CollectionConfig = {
             .replace(/^-+|-+$/g, '')
 
           data.slug = generatedSlug || 'artist'
-          console.log(`🔗 Generated slug from name "${data.name}" -> "${data.slug}"`)
         }
 
-        console.log(`🎨 Artists beforeChange END: returning data with slug="${data.slug}"`)
         return data
       }
     ],
     afterChange: [
-      async ({ doc, operation, context }) => {
-        // Prevent infinite loops - skip revalidation if triggered by another hook
-        if (context.skipRevalidation) {
-          console.log(`[Artists Hook] Skipping revalidation (context flag set)`)
-          return doc
+      ({ doc, previousDoc, req: { payload, context } }: { doc: Artist; previousDoc: Artist; req: any }) => {
+        if (!context.disableRevalidate) {
+          if (doc._status === 'published') {
+            const path = `/artists/${doc.slug}`
+            payload.logger.info(`Revalidating artist at path: ${path}`)
+            revalidatePath(path, 'page')
+            revalidateTag(`artist-${doc.slug}`)
+            revalidateTag('artists')
+          }
+          // If previously published and now unpublished, bust the old path too
+          if (previousDoc?._status === 'published' && doc._status !== 'published') {
+            const oldPath = `/artists/${previousDoc.slug}`
+            payload.logger.info(`Revalidating old artist path: ${oldPath}`)
+            revalidatePath(oldPath, 'page')
+            revalidateTag(`artist-${previousDoc.slug}`)
+            revalidateTag('artists')
+          }
         }
-
-        console.log(`[Artists Hook] afterChange triggered: operation=${operation}, slug="${doc.slug}", isActive=${doc.isActive}`)
-
-        // Only revalidate if artist is active
-        if (!doc.isActive) {
-          console.log(`[Artists Hook] Artist is inactive, skipping revalidation`)
-          return doc
-        }
-
-        try {
-          // Construct the revalidation URL
-          const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-          const revalidateUrl = `${baseURL}/api/revalidate`
-
-          console.log(`[Artists Hook] Triggering revalidation for slug="${doc.slug}" at ${revalidateUrl}`)
-
-          // Trigger on-demand revalidation in the background
-          // Don't await this - we don't want to block the CMS save operation
-          fetch(revalidateUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              secret: process.env.REVALIDATION_SECRET,
-              slug: doc.slug,
-              type: 'artist'
-            })
-          })
-            .then(async (response) => {
-              if (response.ok) {
-                const result = await response.json()
-                console.log(`[Artists Hook] Revalidation successful:`, result)
-              } else {
-                const errorText = await response.text()
-                console.error(`[Artists Hook] Revalidation failed:`, response.status, errorText)
-              }
-            })
-            .catch((error) => {
-              console.error(`[Artists Hook] Revalidation request error:`, error)
-            })
-
-          console.log(`[Artists Hook] Revalidation request sent (background)`)
-
-          // Also revalidate the main artists listing page
-          fetch(revalidateUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              secret: process.env.REVALIDATION_SECRET,
-              path: '/artists'
-            })
-          }).catch(err => console.error(`[Artists Hook] Failed to revalidate /artists:`, err))
-
-        } catch (error) {
-          // Log the error but don't throw - we don't want revalidation failures to block saves
-          console.error(`[Artists Hook] Error during revalidation:`, error)
-        }
-
         return doc
       }
-    ]
-  }
+    ],
+    afterDelete: [
+      ({ doc, req: { context } }: { doc: Artist; req: any }) => {
+        if (!context.disableRevalidate) {
+          revalidatePath(`/artists/${doc.slug}`, 'page')
+          revalidateTag(`artist-${doc.slug}`)
+          revalidateTag('artists')
+        }
+        return doc
+      }
+    ],
+  },
+
 }

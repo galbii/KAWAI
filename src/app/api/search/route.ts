@@ -34,6 +34,31 @@ export async function GET(request: NextRequest) {
       'locations': ['dealer', 'showroom', 'storefront', 'store', 'location'],
     }
 
+    // Piano category terms → collectionPianoCategories value.
+    // When matched, every collection tagged with that category is returned
+    // regardless of whether the collection title mentions the term.
+    const pianoCategoryMap: Record<string, string> = {
+      'grand': 'grand',
+      'grand piano': 'grand',
+      'grand pianos': 'grand',
+      'upright': 'upright',
+      'upright piano': 'upright',
+      'upright pianos': 'upright',
+      'digital': 'digital',
+      'digital piano': 'digital',
+      'digital pianos': 'digital',
+      'hybrid': 'hybrid',
+      'hybrid piano': 'hybrid',
+      'hybrid pianos': 'hybrid',
+      'novus': 'hybrid',
+      'aures': 'hybrid',
+      'anytime': 'hybrid',
+      'shigeru': 'shigeru',
+      'shigeru kawai': 'shigeru',
+      'sk series': 'shigeru',
+      'sk-series': 'shigeru',
+    }
+
     // Check if query matches any synonym and expand search terms
     const expandedTerms: string[] = [query] // Always include original query
     const queryLower = query.toLowerCase().trim()
@@ -42,6 +67,9 @@ export async function GET(request: NextRequest) {
     if (synonymMap[queryLower]) {
       expandedTerms.push(...synonymMap[queryLower])
     }
+
+    // Detect piano category terms — used below to match collectionPianoCategories
+    const matchedPianoCategory = pianoCategoryMap[queryLower] ?? null
 
     // Model number normalization: generate dash ↔ no-dash variants so that
     // "es60" and "es-60" (or "ca401" / "ca-401") return the same results.
@@ -61,18 +89,29 @@ export async function GET(request: NextRequest) {
     // - 'like' operator: matches documents where all words are present
     // - 'contains' operator: case-insensitive substring matching
     const whereClause: any = {
-      or: uniqueTerms.flatMap(term => [
-        { title: { like: term } },                          // Match all words in title
-        { title: { contains: term } },                      // Substring match in title
-        { excerpt: { contains: term } },                    // Substring match in excerpt
-        // Storefront-specific fields (not included in title/excerpt)
-        { storefrontLocationName: { contains: term } },     // Match location name
-        { storefrontCity: { contains: term } },             // Match city (e.g. "Chicago")
-        { storefrontAddress: { contains: term } },          // Match address
-        { storefrontSlug: { contains: term } },             // Match slug (e.g. "st-louis")
-        { collectionHandle: { contains: term } },            // Match collection handle (e.g. "ms-2c")
-        { collectionTitle: { contains: term } },             // Match collection title
-      ]),
+      or: [
+        ...uniqueTerms.flatMap(term => [
+          { title: { like: term } },                          // Match all words in title
+          { title: { contains: term } },                      // Substring match in title
+          { excerpt: { contains: term } },                    // Substring match in excerpt
+          // Storefront-specific fields (not included in title/excerpt)
+          { storefrontLocationName: { contains: term } },     // Match location name
+          { storefrontCity: { contains: term } },             // Match city (e.g. "Chicago")
+          { storefrontAddress: { contains: term } },          // Match address
+          { storefrontSlug: { contains: term } },             // Match slug (e.g. "st-louis")
+          { collectionHandle: { contains: term } },            // Match collection handle (e.g. "ms-2c")
+          { collectionTitle: { contains: term } },             // Match collection title
+          // Artist-specific fields
+          { artistShortBio: { contains: term } },             // Match artist bio
+          { artistGenre: { contains: term } },                // Match genre (e.g. "jazz")
+          { artistInstrument: { contains: term } },           // Match instrument type
+        ]),
+        // Piano category term: return every collection tagged with the matched category.
+        // "grand pianos" → all collections where collectionPianoCategories contains 'grand'.
+        ...(matchedPianoCategory
+          ? [{ collectionPianoCategories: { contains: matchedPianoCategory } }]
+          : []),
+      ],
     }
 
     const results = await payload.find({
@@ -120,6 +159,13 @@ export async function GET(request: NextRequest) {
         // Include denormalized collection fields
         collectionHandle: (doc as any).collectionHandle,
         collectionTitle: (doc as any).collectionTitle,
+        collectionPianoCategories: (doc as any).collectionPianoCategories,
+        // Include denormalized artist fields
+        artistSlug: (doc as any).artistSlug,
+        artistImageUrl: (doc as any).artistImageUrl,
+        artistInstrument: (doc as any).artistInstrument,
+        artistGenre: (doc as any).artistGenre,
+        artistShortBio: (doc as any).artistShortBio,
       }
     })
 

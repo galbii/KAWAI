@@ -31,11 +31,12 @@ export const Posts: CollectionConfig = {
         // Route through /api/preview so Next.js draft mode is enabled before the
         // iframe loads the post page. Without this, draft/unpublished posts return
         // 404 because the page query filters to status=published when not in draft mode.
+        // Note: previewSecret is intentionally omitted — this function runs client-side
+        // in the Payload admin, so private env vars are unavailable. Auth is the guard.
         const params = new URLSearchParams({
           slug,
           collection: 'posts',
           path: `/blog/${slug}`,
-          previewSecret: process.env.PREVIEW_SECRET || '',
         })
         return `${baseURL}/api/preview?${params.toString()}`
       },
@@ -45,7 +46,6 @@ export const Posts: CollectionConfig = {
         slug: (slug as string) || '',
         collection: (collection as string) || 'posts',
         path: `/blog/${(slug as string) || 'preview'}`,
-        previewSecret: process.env.PREVIEW_SECRET || '',
       }
       const encodedParams = new URLSearchParams(params)
       return `/api/preview?${encodedParams.toString()}`

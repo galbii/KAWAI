@@ -1,19 +1,18 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import {
   ChevronDownIcon,
-  ChevronUpIcon,
   ArrowDownTrayIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
 import type { Media, Product } from '@/payload-types'
 import { parseSpecificationJson, type ParsedSpecRow } from '@/lib/utils/parse-specification-json'
-import { Modal } from '@/components/ui/modal'
 import { trackFileDownload } from '@/lib/analytics/unified-tracking'
 
 const INITIAL_VISIBLE = 6
@@ -71,17 +70,6 @@ interface SpecCategory {
   defaultExpanded: boolean
 }
 
-interface SearchableRow {
-  id?: string
-  label: string
-  type?: string
-  value: string
-  unit?: string
-  note?: string
-  highlight?: boolean
-  subItems?: string[]
-}
-
 // ---------------------------------------------------------------------------
 // Data transforms
 // ---------------------------------------------------------------------------
@@ -118,66 +106,25 @@ function normaliseManualCategories(cats: ManualCategory[]): SpecCategory[] {
     }))
 }
 
-function specRowToSearchable(row: SpecRow): SearchableRow {
-  return {
-    ...(row.id ? { id: row.id } : {}),
-    label: row.label,
-    ...(row.type ? { type: row.type } : {}),
-    value: row.value,
-    ...(row.unit != null ? { unit: row.unit } : {}),
-    ...(row.note != null ? { note: row.note } : {}),
-    ...(row.highlight != null ? { highlight: row.highlight } : {}),
-  }
-}
-
-function parsedRowToSearchable(row: ParsedSpecRow): SearchableRow {
-  return {
-    label: row.label,
-    ...(row.type ? { type: row.type } : {}),
-    value: row.value,
-    ...(row.subItems ? { subItems: row.subItems } : {}),
-  }
-}
-
 // ---------------------------------------------------------------------------
-// Highlight — inline match highlighting with a paint-sweep animation
+// Highlight — marks query matches inline
 // ---------------------------------------------------------------------------
 
 function escapeRegex(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function Highlight({
-  text,
-  query,
-}: {
-  text: string | undefined | null
-  query: string
-}) {
+function Highlight({ text, query }: { text: string | undefined | null; query: string }) {
   if (!text) return null
   if (!query) return <>{text}</>
-
   const parts = text.split(new RegExp(`(${escapeRegex(query)})`, 'gi'))
-
   return (
     <>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <motion.span
-            key={`${i}-${part}`}
-            className="text-kawai-red rounded-sm px-[2px] relative"
-            style={{
-              backgroundImage:
-                'linear-gradient(rgba(225,25,34,0.12), rgba(225,25,34,0.12))',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'left center',
-            }}
-            initial={{ backgroundSize: '0% 100%' }}
-            animate={{ backgroundSize: '100% 100%' }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1], delay: i * 0.015 }}
-          >
+          <mark key={i} className="bg-kawai-red/15 text-kawai-red not-italic rounded-[2px] px-[1px]">
             {part}
-          </motion.span>
+          </mark>
         ) : (
           <span key={i}>{part}</span>
         ),
@@ -187,486 +134,194 @@ function Highlight({
 }
 
 // ---------------------------------------------------------------------------
-// Unified row renderer (modal only — uses Highlight)
+// Column headers (2-column)
 // ---------------------------------------------------------------------------
-
-function ModalSpecRow({ row, query }: { row: SearchableRow; query: string }) {
-  const valueLines = (row.value || '').split('\n').filter((l) => l.trim())
-  const hasSubItems = row.subItems && row.subItems.length > 0
-  const isMultiLine = valueLines.length > 1
-
-  return (
-    <div
-      className={`
-        spec-row group relative
-        grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8
-        py-4 border-b border-kawai-charcoal/10
-        hover:bg-kawai-red/5 transition-colors duration-200
-        ${row.highlight ? 'bg-kawai-red/10 border-kawai-red/30' : ''}
-      `}
-    >
-      {/* Specification */}
-      <div className="flex items-start gap-2">
-        <span className="text-xs text-kawai-red opacity-60 font-mono mt-1 select-none">›</span>
-        <span className="font-mono text-sm text-kawai-charcoal/90 font-medium tracking-tight leading-relaxed">
-          <Highlight text={row.label} query={query} />
-        </span>
-      </div>
-
-      {/* Type */}
-      <span className="font-mono text-sm text-kawai-charcoal/60 leading-relaxed">
-        {row.type ? <Highlight text={row.type} query={query} /> : '—'}
-      </span>
-
-      {/* Details */}
-      <div className="flex flex-col gap-1.5">
-        {hasSubItems ? (
-          <>
-            <span className="font-mono text-sm text-kawai-charcoal/80 leading-relaxed">
-              <Highlight text={row.value} query={query} />
-            </span>
-            <ul className="space-y-1">
-              {row.subItems!.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
-                  <span className="font-mono text-xs text-kawai-charcoal/60 leading-relaxed">
-                    <Highlight text={item} query={query} />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : isMultiLine ? (
-          <ul className="space-y-1">
-            {valueLines.map((line, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
-                <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-                  <Highlight text={line.trim()} query={query} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-              <Highlight text={row.value || '—'} query={query} />
-            </span>
-            {row.unit && (
-              <span className="font-mono text-xs text-kawai-charcoal/50 uppercase tracking-wider font-medium">
-                <Highlight text={row.unit} query={query} />
-              </span>
-            )}
-          </div>
-        )}
-        {row.note && (
-          <span className="text-xs text-kawai-charcoal/60 italic leading-relaxed">
-            <Highlight text={row.note} query={query} />
-          </span>
-        )}
-      </div>
-
-      {/* Hover accent — slides down from top */}
-      <motion.div
-        className="absolute left-0 top-0 w-0.5 bg-kawai-red origin-top"
-        initial={false}
-        variants={{
-          rest: { scaleY: 0, opacity: 0 },
-          hover: { scaleY: 1, opacity: 1 },
-        }}
-        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-        style={{ height: '100%' }}
-      />
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Searchable modal
-// ---------------------------------------------------------------------------
-
-const rowVariants = {
-  hidden: { opacity: 0, y: 5 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const, delay: i * 0.03 },
-  }),
-}
-
-function SpecsModal({
-  isOpen,
-  onClose,
-  title,
-  rows,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  rows: SearchableRow[]
-}) {
-  const [query, setQuery] = useState('')
-  const [focused, setFocused] = useState(false)
-  const [shakeKey, setShakeKey] = useState(0)
-  const prefersReduced = useReducedMotion()
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  // Reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setQuery('')
-      setFocused(false)
-    }
-  }, [isOpen])
-
-  const q = query.trim().toLowerCase()
-
-  const filtered = q
-    ? rows.filter(
-        (row) =>
-          row.label.toLowerCase().includes(q) ||
-          (row.type?.toLowerCase().includes(q) ?? false) ||
-          row.value.toLowerCase().includes(q) ||
-          (row.unit?.toLowerCase().includes(q) ?? false) ||
-          (row.note?.toLowerCase().includes(q) ?? false) ||
-          (row.subItems?.some((s) => s.toLowerCase().includes(q)) ?? false),
-      )
-    : rows
-
-  const isSearching = q.length > 0
-  const hasResults = filtered.length > 0
-
-  // Shake input when search yields nothing
-  useEffect(() => {
-    if (isSearching && !hasResults) {
-      setShakeKey((k) => k + 1)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSearching && !hasResults])
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full">
-      <motion.div
-        className="flex flex-col gap-3 max-h-[75vh] overflow-hidden"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      >
-
-        {/* ── Title + count ─────────────────────────────────────── */}
-        <div className="flex items-baseline justify-between gap-4 shrink-0 pr-8">
-          <h3 className="font-serif text-2xl font-bold text-kawai-charcoal">{title}</h3>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={`${filtered.length}-${isSearching}`}
-              className={`font-mono text-xs whitespace-nowrap tabular-nums ${
-                isSearching && !hasResults
-                  ? 'text-kawai-red/70'
-                  : isSearching
-                    ? 'text-kawai-red'
-                    : 'text-kawai-charcoal/35'
-              }`}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
-            >
-              {isSearching
-                ? hasResults
-                  ? `${filtered.length} / ${rows.length}`
-                  : '0 matches'
-                : `${rows.length} specifications`}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-
-        {/* ── Search input ──────────────────────────────────────── */}
-        <motion.div
-          key={shakeKey}
-          className="relative shrink-0"
-          animate={
-            prefersReduced
-              ? {}
-              : shakeKey > 0 && isSearching && !hasResults
-                ? { x: [0, -5, 5, -4, 4, -2, 2, 0] }
-                : { x: 0 }
-          }
-          transition={{ duration: 0.35, ease: 'easeInOut' }}
-        >
-          {/* Animated icon — dims to red on focus */}
-          <motion.div
-            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            animate={{ color: focused || isSearching ? '#E11922' : 'rgba(44,44,44,0.35)' }}
-            transition={{ duration: 0.2 }}
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
-          </motion.div>
-
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                if (query) setQuery('')
-                else onClose()
-              }
-            }}
-            placeholder="Search specifications…"
-            autoFocus
-            className="
-              w-full pl-9 pr-9 py-3
-              font-mono text-sm
-              bg-white
-              border border-kawai-neutral
-              focus:outline-none
-              text-kawai-charcoal placeholder:text-kawai-charcoal/25
-              transition-colors duration-200
-            "
-            style={{
-              borderColor: focused || isSearching
-                ? isSearching && !hasResults
-                  ? 'rgba(225,25,34,0.5)'
-                  : '#E11922'
-                : undefined,
-              boxShadow: focused
-                ? isSearching && !hasResults
-                  ? '0 0 0 3px rgba(225,25,34,0.08)'
-                  : '0 0 0 3px rgba(225,25,34,0.06)'
-                : undefined,
-            }}
-          />
-
-          {/* Animated underline bar */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 h-[2px] bg-kawai-red origin-center pointer-events-none"
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: focused || isSearching ? 1 : 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          />
-
-          {/* Clear button — spins in */}
-          <AnimatePresence>
-            {query && (
-              <motion.button
-                initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-                animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-                transition={{
-                  duration: 0.2,
-                  ease: [0.34, 1.56, 0.64, 1], // spring overshoot
-                }}
-                onClick={() => {
-                  setQuery('')
-                  inputRef.current?.focus()
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-kawai-charcoal/35 hover:text-kawai-red transition-colors duration-150"
-                aria-label="Clear search"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* ── Column headers ────────────────────────────────────── */}
-        <div className="grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8 pb-2 border-b-2 border-kawai-red shrink-0">
-          <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold pl-5">
-            Specification
-          </span>
-          <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-            Type
-          </span>
-          <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-            Details
-          </span>
-        </div>
-
-        {/* ── Rows ──────────────────────────────────────────────── */}
-        <div className="overflow-y-auto flex-1 min-h-0 -mr-2 pr-2">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {hasResults ? (
-              filtered.map((row, i) => (
-                <motion.div
-                  key={row.id || row.label}
-                  layout="position"
-                  custom={Math.min(i, 8)}
-                  variants={rowVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                >
-                  <ModalSpecRow row={row} query={query.trim()} />
-                </motion.div>
-              ))
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                className="flex flex-col items-center justify-center py-16 gap-4"
-              >
-                {/* Pulsing glass icon */}
-                <motion.div
-                  animate={
-                    prefersReduced
-                      ? {}
-                      : { scale: [1, 1.08, 1], opacity: [0.2, 0.35, 0.2] }
-                  }
-                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <MagnifyingGlassIcon className="w-9 h-9 text-kawai-charcoal/25" />
-                </motion.div>
-
-                <motion.div
-                  className="text-center space-y-2"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1, duration: 0.22 }}
-                >
-                  <p className="font-mono text-sm text-kawai-charcoal/45">
-                    No specifications match{' '}
-                    <span className="text-kawai-charcoal/70 font-medium">"{query}"</span>
-                  </p>
-                  <p className="font-mono text-xs text-kawai-charcoal/30">
-                    Try a different term — specification, type, or value
-                  </p>
-                </motion.div>
-
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  onClick={() => {
-                    setQuery('')
-                    inputRef.current?.focus()
-                  }}
-                  className="font-mono text-xs text-kawai-red hover:text-kawai-red/70 uppercase tracking-[0.15em] transition-colors duration-150 flex items-center gap-2"
-                >
-                  <XMarkIcon className="w-3 h-3" />
-                  Clear search
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* ── Keyboard hint ─────────────────────────────────────── */}
-        <AnimatePresence>
-          {isSearching && (
-            <motion.p
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ duration: 0.2 }}
-              className="font-mono text-[10px] text-kawai-charcoal/25 shrink-0 text-right"
-            >
-              esc to clear
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-      </motion.div>
-    </Modal>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Sub-components (inline preview — unchanged)
-// ---------------------------------------------------------------------------
-
-function ViewAllButton({ totalCount, onClick }: { totalCount: number; onClick: () => void }) {
-  return (
-    <div className="mt-4 pt-3 border-t border-kawai-charcoal/10">
-      <button
-        onClick={onClick}
-        className="flex items-center gap-2 font-mono text-xs text-kawai-red uppercase tracking-[0.15em] hover:text-kawai-red/70 transition-colors duration-150"
-      >
-        <span className="w-3 h-px bg-current" />
-        View full spec sheet — {totalCount} specifications
-        <svg
-          className="w-3 h-3"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
-  )
-}
 
 const SPECS_COL_HEADERS = (
-  <div className="grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8 pb-2 border-b-2 border-kawai-red mb-1 shrink-0">
-    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold pl-5">
+  <div className="grid grid-cols-[2fr_3fr] gap-6 md:gap-10 pb-2.5 border-b-2 border-kawai-red mb-1">
+    <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold">
       Specification
     </span>
-    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-      Type
-    </span>
-    <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
+    <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold">
       Details
     </span>
   </div>
 )
 
-function ProductRowsSection({ rows }: { rows: SpecRow[] }) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const needsModal = rows.length > INITIAL_VISIBLE
-  const visibleRows = needsModal ? rows.slice(0, INITIAL_VISIBLE) : rows
-  const searchableRows = rows.map(specRowToSearchable)
+// ---------------------------------------------------------------------------
+// ShowMoreButton
+// ---------------------------------------------------------------------------
 
+function ShowMoreButton({
+  expanded,
+  hiddenCount,
+  onToggle,
+}: {
+  expanded: boolean
+  hiddenCount: number
+  onToggle: () => void
+}) {
   return (
-    <div>
-      {SPECS_COL_HEADERS}
-      <div className="space-y-0">
-        {visibleRows.map((row, idx) => (
-          <SpecificationRow key={row.id || idx} spec={row} />
-        ))}
-      </div>
-      {needsModal && (
-        <ViewAllButton totalCount={rows.length} onClick={() => setModalOpen(true)} />
-      )}
-      <SpecsModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Technical Specifications"
-        rows={searchableRows}
-      />
+    <div className="mt-6 flex justify-center">
+      <button
+        onClick={onToggle}
+        className={cn(
+          'group flex items-center gap-2 px-5 py-2.5 rounded-full',
+          'border border-kawai-charcoal/12 hover:border-kawai-red/35',
+          'text-xs text-kawai-charcoal/50 hover:text-kawai-red',
+          'bg-white hover:bg-kawai-red/[0.025]',
+          'shadow-sm hover:shadow-md',
+          'transition-all duration-200',
+        )}
+      >
+        {expanded ? 'Show less' : `Show ${hiddenCount} more`}
+        <motion.span
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+          className="flex items-center"
+        >
+          <ChevronDownIcon className="w-3.5 h-3.5" />
+        </motion.span>
+      </button>
     </div>
   )
 }
 
-function SpecificationRow({ spec }: { spec: SpecRow }) {
+// ---------------------------------------------------------------------------
+// Sticky search bar
+// ---------------------------------------------------------------------------
+
+function SpecSearchBar({
+  query,
+  onChange,
+  resultCount,
+  totalCount,
+}: {
+  query: string
+  onChange: (q: string) => void
+  resultCount: number
+  totalCount: number
+}) {
+  const [focused, setFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const isSearching = query.length > 0
+  const noResults = isSearching && resultCount === 0
+
+  return (
+    <div
+      className={cn(
+        'relative flex items-center rounded-xl border transition-all duration-200',
+        focused || isSearching
+          ? noResults
+            ? 'border-kawai-red/40 shadow-[0_0_0_3px_rgba(225,25,34,0.07)]'
+            : 'border-kawai-red/50 shadow-[0_0_0_3px_rgba(225,25,34,0.06)]'
+          : 'border-kawai-charcoal/12 shadow-sm hover:border-kawai-charcoal/20',
+        'bg-white',
+      )}
+    >
+      {/* Search icon */}
+      <motion.div
+        className="absolute left-4 pointer-events-none"
+        animate={{ color: focused || isSearching ? '#E11922' : 'rgba(44,44,44,0.28)' }}
+        transition={{ duration: 0.2 }}
+      >
+        <MagnifyingGlassIcon className="w-4 h-4" />
+      </motion.div>
+
+      <input
+        ref={inputRef}
+        type="text"
+        value={query}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && query) onChange('')
+        }}
+        placeholder="Search specifications…"
+        className="w-full pl-11 pr-28 py-3.5 text-sm text-kawai-charcoal placeholder:text-kawai-charcoal/28 bg-transparent outline-none"
+      />
+
+      {/* Result count */}
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={`${resultCount}-${isSearching}`}
+          className={cn(
+            'absolute right-10 text-xs tabular-nums whitespace-nowrap',
+            noResults
+              ? 'text-kawai-red/55'
+              : isSearching
+                ? 'text-kawai-charcoal/38'
+                : 'text-kawai-charcoal/22',
+          )}
+          initial={{ opacity: 0, y: -3 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 3 }}
+          transition={{ duration: 0.14 }}
+        >
+          {isSearching
+            ? noResults
+              ? 'No results'
+              : `${resultCount} of ${totalCount}`
+            : `${totalCount} specs`}
+        </motion.span>
+      </AnimatePresence>
+
+      {/* Clear button */}
+      <AnimatePresence>
+        {query && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.6, rotate: -45 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.6, rotate: 45 }}
+            transition={{ duration: 0.16, ease: [0.34, 1.56, 0.64, 1] }}
+            onClick={() => {
+              onChange('')
+              inputRef.current?.focus()
+            }}
+            className="absolute right-3.5 p-1.5 rounded-full text-kawai-charcoal/28 hover:text-kawai-red hover:bg-kawai-red/5 transition-colors duration-150"
+            aria-label="Clear search"
+          >
+            <XMarkIcon className="w-3.5 h-3.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// SpecificationRow — self-contained animation with index-based stagger
+// ---------------------------------------------------------------------------
+
+function SpecificationRow({
+  spec,
+  query = '',
+  index = 0,
+}: {
+  spec: SpecRow
+  query?: string
+  index?: number
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className={`
-        spec-row group relative
-        grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8
-        py-4 border-b border-kawai-charcoal/10
-        hover:bg-kawai-red/5 transition-all duration-200
-        ${spec.highlight ? 'bg-kawai-red/10 border-kawai-red/30' : ''}
-      `}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+        delay: Math.min(index, 10) * 0.035,
+      }}
+      className={cn(
+        'spec-row group relative',
+        'grid grid-cols-[2fr_3fr] gap-6 md:gap-10',
+        'py-4 border-b border-kawai-charcoal/[0.07]',
+        'hover:bg-kawai-red/[0.025] transition-colors duration-150',
+        spec.highlight && 'bg-kawai-red/[0.04] border-l-2 border-l-kawai-red pl-3',
+      )}
     >
-      <div className="flex items-start gap-2">
-        <span className="text-xs text-kawai-red opacity-60 font-mono mt-1 select-none">›</span>
-        <span className="font-mono text-sm text-kawai-charcoal/90 font-medium tracking-tight leading-relaxed">
-          {spec.label}
-        </span>
-      </div>
-      <span className="font-mono text-sm text-kawai-charcoal/60 leading-relaxed">
-        {spec.type || '—'}
+      <span className="text-sm text-kawai-charcoal/62 leading-relaxed">
+        <Highlight text={spec.label} query={query} />
       </span>
       <div className="flex flex-col gap-1.5">
         {(() => {
@@ -675,10 +330,10 @@ function SpecificationRow({ spec }: { spec: SpecRow }) {
             return (
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-                  {spec.value || '—'}
+                  <Highlight text={spec.value || '—'} query={query} />
                 </span>
                 {spec.unit && (
-                  <span className="font-mono text-xs text-kawai-charcoal/50 uppercase tracking-wider font-medium">
+                  <span className="text-[11px] text-kawai-charcoal/38 uppercase tracking-wider">
                     {spec.unit}
                   </span>
                 )}
@@ -689,9 +344,9 @@ function SpecificationRow({ spec }: { spec: SpecRow }) {
             <ul className="space-y-1">
               {lines.map((line, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
+                  <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/28 flex-shrink-0" />
                   <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-                    {line.trim()}
+                    <Highlight text={line.trim()} query={query} />
                   </span>
                 </li>
               ))}
@@ -699,155 +354,115 @@ function SpecificationRow({ spec }: { spec: SpecRow }) {
           )
         })()}
         {spec.note && (
-          <span className="text-xs text-kawai-charcoal/60 italic leading-relaxed">{spec.note}</span>
+          <span className="text-xs text-kawai-charcoal/45 italic leading-relaxed">{spec.note}</span>
         )}
       </div>
-      <div className="absolute left-0 top-0 h-full w-0.5 bg-kawai-red opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+      <div className="absolute left-0 top-0 h-full w-[2px] bg-kawai-red opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
     </motion.div>
   )
 }
 
-function SpecificationCategory({ category }: { category: SpecCategory }) {
-  const [isExpanded, setIsExpanded] = useState(category.defaultExpanded !== false)
-  const [modalOpen, setModalOpen] = useState(false)
-  const specs = category.specifications
-  const needsModal = specs.length > INITIAL_VISIBLE
-  const visibleSpecs = needsModal ? specs.slice(0, INITIAL_VISIBLE) : specs
-  const searchableRows = specs.map(specRowToSearchable)
-
-  return (
-    <div className="spec-category mb-10">
-      <button
-        onClick={() => category.collapsible && setIsExpanded(!isExpanded)}
-        className={`
-          w-full flex items-center justify-between gap-4 mb-6 group
-          ${category.collapsible ? 'cursor-pointer' : 'cursor-default'}
-        `}
-        disabled={!category.collapsible}
-        aria-expanded={isExpanded}
-        aria-controls={`category-${category.categoryName.replace(/\s+/g, '-')}`}
-      >
-        <div className="flex items-center gap-3">
-          <h3 className="font-serif text-2xl md:text-3xl text-kawai-charcoal font-bold tracking-tight">
-            {category.categoryName}
-          </h3>
-          <div
-            className="hidden md:block w-8 h-0.5 bg-kawai-red/30 group-hover:w-12 transition-all duration-300"
-            aria-hidden="true"
-          />
-        </div>
-        {category.collapsible && (
-          <motion.div
-            animate={{ rotate: isExpanded ? 0 : -90 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-          >
-            {isExpanded ? (
-              <ChevronUpIcon className="w-5 h-5 text-kawai-charcoal/40 group-hover:text-kawai-red transition-colors" />
-            ) : (
-              <ChevronDownIcon className="w-5 h-5 text-kawai-charcoal/40 group-hover:text-kawai-red transition-colors" />
-            )}
-          </motion.div>
-        )}
-      </button>
-
-      <AnimatePresence initial={false}>
-        {isExpanded && (
-          <motion.div
-            id={`category-${category.categoryName.replace(/\s+/g, '-')}`}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8 pb-2 border-b-2 border-kawai-red mb-1">
-              <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold pl-5">
-                Specification
-              </span>
-              <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-                Type
-              </span>
-              <span className="font-mono text-xs text-kawai-red uppercase tracking-[0.15em] font-semibold">
-                Details
-              </span>
-            </div>
-            <div className="space-y-0">
-              {visibleSpecs.map((spec, idx) => (
-                <SpecificationRow key={spec.id || idx} spec={spec} />
-              ))}
-            </div>
-            {needsModal && (
-              <ViewAllButton totalCount={specs.length} onClick={() => setModalOpen(true)} />
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <SpecsModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={category.categoryName}
-        rows={searchableRows}
-      />
-    </div>
-  )
-}
-
 // ---------------------------------------------------------------------------
-// JSON spec section
+// JsonSpecRow — self-contained animation with index-based stagger
 // ---------------------------------------------------------------------------
 
-function JsonSpecRow({ row }: { row: ParsedSpecRow }) {
+function JsonSpecRow({
+  row,
+  query = '',
+  index = 0,
+}: {
+  row: ParsedSpecRow
+  query?: string
+  index?: number
+}) {
   return (
-    <div
-      className="
-        spec-row group relative
-        grid grid-cols-[2fr_1fr_3fr] gap-4 md:gap-8
-        py-4 border-b border-kawai-charcoal/10
-        hover:bg-kawai-red/5 transition-all duration-200
-      "
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
+        delay: Math.min(index, 10) * 0.035,
+      }}
+      className="spec-row group relative grid grid-cols-[2fr_3fr] gap-6 md:gap-10 py-4 border-b border-kawai-charcoal/[0.07] hover:bg-kawai-red/[0.025] transition-colors duration-150"
     >
-      <div className="flex items-start gap-2">
-        <span className="text-xs text-kawai-red opacity-60 font-mono mt-1 select-none">›</span>
-        <span className="font-mono text-sm text-kawai-charcoal/90 font-medium tracking-tight leading-relaxed">
-          {row.label}
-        </span>
-      </div>
-      <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
-        {row.type ?? '—'}
+      <span className="text-sm text-kawai-charcoal/62 leading-relaxed">
+        <Highlight text={row.label} query={query} />
       </span>
       <div className="flex flex-col gap-1.5">
-        <span className="font-mono text-sm text-kawai-charcoal/80 leading-relaxed">
-          {row.value}
+        <span className="font-mono text-sm text-kawai-charcoal font-semibold leading-relaxed">
+          <Highlight text={row.value} query={query} />
         </span>
         {row.subItems && row.subItems.length > 0 && (
           <ul className="space-y-1">
             {row.subItems.map((item, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="mt-2 w-1 h-1 rounded-full bg-kawai-charcoal/40 flex-shrink-0" />
-                <span className="font-mono text-xs text-kawai-charcoal/60 leading-relaxed">
-                  {item}
+                <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/28 flex-shrink-0" />
+                <span className="text-xs text-kawai-charcoal/50 leading-relaxed">
+                  <Highlight text={item} query={query} />
                 </span>
               </li>
             ))}
           </ul>
         )}
       </div>
-      <div className="absolute left-0 top-0 h-full w-0.5 bg-kawai-red opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+      <div className="absolute left-0 top-0 h-full w-[2px] bg-kawai-red opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
+    </motion.div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// ProductRowsSection
+// ---------------------------------------------------------------------------
+
+function ProductRowsSection({ rows, query }: { rows: SpecRow[]; query: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const isSearching = query.length > 0
+  const needsToggle = !isSearching && rows.length > INITIAL_VISIBLE
+  const hiddenCount = rows.length - INITIAL_VISIBLE
+  const visibleRows = needsToggle && !expanded ? rows.slice(0, INITIAL_VISIBLE) : rows
+
+  if (rows.length === 0 && isSearching) return null
+
+  return (
+    <div>
+      {SPECS_COL_HEADERS}
+      <div className="space-y-0">
+        {visibleRows.map((row, idx) => (
+          <SpecificationRow
+            key={row.id || `${row.label}-${idx}`}
+            spec={row}
+            query={query}
+            index={idx}
+          />
+        ))}
+      </div>
+      {needsToggle && (
+        <ShowMoreButton
+          expanded={expanded}
+          hiddenCount={hiddenCount}
+          onToggle={() => setExpanded(!expanded)}
+        />
+      )}
     </div>
   )
 }
 
-function JsonSpecsSection({ rows }: { rows: ParsedSpecRow[] }) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const needsModal = rows.length > INITIAL_VISIBLE
-  const visibleRows = needsModal ? rows.slice(0, INITIAL_VISIBLE) : rows
-  const searchableRows = rows.map(parsedRowToSearchable)
+// ---------------------------------------------------------------------------
+// JsonSpecsSection
+// ---------------------------------------------------------------------------
+
+function JsonSpecsSection({ rows, query }: { rows: ParsedSpecRow[]; query: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const isSearching = query.length > 0
+  const needsToggle = !isSearching && rows.length > INITIAL_VISIBLE
+  const hiddenCount = rows.length - INITIAL_VISIBLE
+  const visibleRows = needsToggle && !expanded ? rows.slice(0, INITIAL_VISIBLE) : rows
 
   if (rows.length === 0) {
-    return (
-      <div className="text-center py-12 opacity-50">
-        <p className="font-mono text-sm">No specification data available.</p>
+    return isSearching ? null : (
+      <div className="text-center py-12 text-kawai-charcoal/30">
+        <p className="text-sm">No specification data available.</p>
       </div>
     )
   }
@@ -857,19 +472,159 @@ function JsonSpecsSection({ rows }: { rows: ParsedSpecRow[] }) {
       {SPECS_COL_HEADERS}
       <div className="space-y-0">
         {visibleRows.map((row, idx) => (
-          <JsonSpecRow key={idx} row={row} />
+          <JsonSpecRow
+            key={`${row.label}-${idx}`}
+            row={row}
+            query={query}
+            index={idx}
+          />
         ))}
       </div>
-      {needsModal && (
-        <ViewAllButton totalCount={rows.length} onClick={() => setModalOpen(true)} />
+      {needsToggle && (
+        <ShowMoreButton
+          expanded={expanded}
+          hiddenCount={hiddenCount}
+          onToggle={() => setExpanded(!expanded)}
+        />
       )}
-      <SpecsModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Technical Specifications"
-        rows={searchableRows}
-      />
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// SpecificationCategory
+// ---------------------------------------------------------------------------
+
+function SpecificationCategory({ category, query }: { category: SpecCategory; query: string }) {
+  const [isExpanded, setIsExpanded] = useState(category.defaultExpanded !== false)
+  const [specsExpanded, setSpecsExpanded] = useState(false)
+  const specs = category.specifications
+  const isSearching = query.length > 0
+  const needsToggle = !isSearching && specs.length > INITIAL_VISIBLE
+  const hiddenCount = specs.length - INITIAL_VISIBLE
+  const visibleSpecs = needsToggle && !specsExpanded ? specs.slice(0, INITIAL_VISIBLE) : specs
+
+  // Auto-expand when searching
+  const effectiveExpanded = isSearching ? true : isExpanded
+
+  if (specs.length === 0 && isSearching) return null
+
+  return (
+    <div className="spec-category mb-8">
+      <button
+        onClick={() => !isSearching && category.collapsible && setIsExpanded(!isExpanded)}
+        className={cn(
+          'w-full flex items-center justify-between gap-4 mb-5 group',
+          category.collapsible && !isSearching ? 'cursor-pointer' : 'cursor-default',
+        )}
+        disabled={!category.collapsible || isSearching}
+        aria-expanded={effectiveExpanded}
+        aria-controls={`category-${category.categoryName.replace(/\s+/g, '-')}`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-0.5 h-5 bg-kawai-red flex-shrink-0" aria-hidden="true" />
+          <h3 className="font-serif text-xl md:text-2xl text-kawai-charcoal font-bold tracking-tight">
+            {category.categoryName}
+          </h3>
+          {isSearching && specs.length > 0 && (
+            <span className="text-xs text-kawai-charcoal/35 tabular-nums">
+              {specs.length} match{specs.length !== 1 ? 'es' : ''}
+            </span>
+          )}
+        </div>
+        {category.collapsible && !isSearching && (
+          <motion.div
+            animate={{ rotate: effectiveExpanded ? 180 : 0 }}
+            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <ChevronDownIcon className="w-5 h-5 text-kawai-charcoal/30 group-hover:text-kawai-red transition-colors" />
+          </motion.div>
+        )}
+      </button>
+
+      {/*
+        Opacity-only animation avoids the overflow-hidden + Framer Motion height:auto
+        clipping bug where newly added rows (from Show more) get cut off.
+      */}
+      <AnimatePresence initial={false}>
+        {effectiveExpanded && (
+          <motion.div
+            id={`category-${category.categoryName.replace(/\s+/g, '-')}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="grid grid-cols-[2fr_3fr] gap-6 md:gap-10 pb-2.5 border-b-2 border-kawai-red mb-1">
+              <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                Specification
+              </span>
+              <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                Details
+              </span>
+            </div>
+            <div className="space-y-0">
+              {visibleSpecs.map((spec, idx) => (
+                <SpecificationRow
+                  key={spec.id || `${spec.label}-${idx}`}
+                  spec={spec}
+                  query={query}
+                  index={idx}
+                />
+              ))}
+            </div>
+            {needsToggle && (
+              <ShowMoreButton
+                expanded={specsExpanded}
+                hiddenCount={hiddenCount}
+                onToggle={() => setSpecsExpanded(!specsExpanded)}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Download button
+// ---------------------------------------------------------------------------
+
+function DownloadButton({
+  text,
+  fileUrl,
+  productName,
+}: {
+  text: string
+  fileUrl: string
+  productName: string
+}) {
+  return (
+    <button
+      className={cn(
+        'group inline-flex items-center gap-2.5 px-6 py-3 mt-2',
+        'border border-kawai-charcoal/18 hover:border-kawai-red/50',
+        'text-sm text-kawai-charcoal/70 hover:text-kawai-red',
+        'bg-white hover:bg-kawai-red/[0.025]',
+        'shadow-sm hover:shadow-md',
+        'transition-all duration-200 rounded-lg',
+      )}
+      onClick={() => {
+        trackFileDownload({
+          blockType: 'product-technical-specs',
+          blockData: {},
+          fileName: text,
+          fileUrl,
+          additionalProps: { product_name: productName },
+        })
+        if (fileUrl) window.open(fileUrl, '_blank')
+      }}
+      aria-label="Download technical specifications"
+    >
+      <ArrowDownTrayIcon className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
+      {text}
+    </button>
   )
 }
 
@@ -888,6 +643,8 @@ export function ProductTechnicalSpecsRenderer({
   enableDownload,
   downloadButtonText,
 }: ProductTechnicalSpecsRendererProps) {
+  const [query, setQuery] = useState('')
+
   const productRows: SpecRow[] =
     (dataSource === 'product' || dataSource === 'hybrid') && product?.specifications
       ? transformProductSpecs(product.specifications)
@@ -903,7 +660,52 @@ export function ProductTechnicalSpecsRenderer({
       ? parseSpecificationJson(product.specificationJson as Record<string, unknown>)
       : []
 
-  const hasSpecs = productRows.length > 0 || manualCategories.length > 0 || jsonRows.length > 0
+  // Filter based on query
+  const q = query.trim().toLowerCase()
+
+  const filteredProductRows = q
+    ? productRows.filter(
+        (r) =>
+          r.label.toLowerCase().includes(q) ||
+          r.value.toLowerCase().includes(q) ||
+          (r.unit?.toLowerCase().includes(q) ?? false),
+      )
+    : productRows
+
+  const filteredJsonRows = q
+    ? jsonRows.filter(
+        (r) =>
+          r.label.toLowerCase().includes(q) ||
+          r.value.toLowerCase().includes(q) ||
+          (r.subItems?.some((s) => s.toLowerCase().includes(q)) ?? false),
+      )
+    : jsonRows
+
+  const filteredManualCategories = q
+    ? manualCategories
+        .map((cat) => ({
+          ...cat,
+          specifications: cat.specifications.filter(
+            (s) =>
+              s.label.toLowerCase().includes(q) ||
+              s.value.toLowerCase().includes(q) ||
+              (s.note?.toLowerCase().includes(q) ?? false),
+          ),
+        }))
+        .filter((cat) => cat.specifications.length > 0)
+    : manualCategories
+
+  const totalCount =
+    productRows.length +
+    jsonRows.length +
+    manualCategories.reduce((acc, c) => acc + c.specifications.length, 0)
+
+  const filteredCount =
+    filteredProductRows.length +
+    filteredJsonRows.length +
+    filteredManualCategories.reduce((acc, c) => acc + c.specifications.length, 0)
+
+  const hasSpecs = totalCount > 0
 
   const productBlueprintUrl =
     (dataSource === 'product' || dataSource === 'hybrid' || dataSource === 'json') &&
@@ -924,43 +726,100 @@ export function ProductTechnicalSpecsRenderer({
 
   const hasBlueprintToShow = productBlueprintUrl || cmsBlueprint
 
+  const downloadFileUrl = productBlueprintUrl || ''
+  const downloadText = downloadButtonText || 'Download Technical Specs'
+  const productName = product?.name ?? ''
+
+  // Sticky search bar — stays visible while scrolling through specs
+  const stickySearch = hasSpecs ? (
+    <div className="sticky top-[70px] xl:top-[118px] z-20 bg-white/95 backdrop-blur-sm -mx-4 md:-mx-8 px-4 md:px-8 py-3 mb-6 border-b border-kawai-charcoal/[0.06]">
+      <SpecSearchBar
+        query={query}
+        onChange={setQuery}
+        resultCount={filteredCount}
+        totalCount={totalCount}
+      />
+    </div>
+  ) : null
+
+  const specsContent = (
+    <div className="flex flex-col gap-8">
+      {filteredProductRows.length > 0 && dataSource !== 'json' && (
+        <ProductRowsSection rows={filteredProductRows} query={q} />
+      )}
+      {filteredJsonRows.length > 0 && dataSource === 'json' && (
+        <JsonSpecsSection rows={filteredJsonRows} query={q} />
+      )}
+      {filteredManualCategories.map((category, idx) => (
+        <SpecificationCategory key={idx} category={category} query={q} />
+      ))}
+
+      {/* No results state */}
+      {q && filteredCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-14 flex flex-col items-center gap-3"
+        >
+          <MagnifyingGlassIcon className="w-8 h-8 text-kawai-charcoal/18" />
+          <p className="text-sm text-kawai-charcoal/40">
+            No specifications match{' '}
+            <span className="text-kawai-charcoal/60 font-medium">"{query}"</span>
+          </p>
+          <button
+            onClick={() => setQuery('')}
+            className="text-xs text-kawai-red hover:text-kawai-red/70 transition-colors"
+          >
+            Clear search
+          </button>
+        </motion.div>
+      )}
+
+      {!hasSpecs && (
+        <div className="text-center py-12 text-kawai-charcoal/30">
+          <p className="text-sm">
+            No specifications available. Add a product with specifications or switch to Manual mode.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+
   return (
-    <section
-      className="technical-specs-block relative py-16 md:py-24 lg:py-32 overflow-hidden"
-      style={{ backgroundColor: '#F2F2F0', color: '#1a1a1a' }}
-    >
+    <section className="technical-specs-block relative py-16 md:py-24 lg:py-32 bg-white">
       {showRegistrationMarks && (
         <>
-          <div className="absolute top-8 left-8 w-8 h-8 border-l-2 border-t-2 border-kawai-red opacity-40" aria-hidden="true" />
-          <div className="absolute top-8 right-8 w-8 h-8 border-r-2 border-t-2 border-kawai-red opacity-40" aria-hidden="true" />
-          <div className="absolute bottom-8 left-8 w-8 h-8 border-l-2 border-b-2 border-kawai-red opacity-40" aria-hidden="true" />
-          <div className="absolute bottom-8 right-8 w-8 h-8 border-r-2 border-b-2 border-kawai-red opacity-40" aria-hidden="true" />
+          <div className="absolute top-8 left-8 w-8 h-8 border-l-2 border-t-2 border-kawai-red opacity-30" aria-hidden="true" />
+          <div className="absolute top-8 right-8 w-8 h-8 border-r-2 border-t-2 border-kawai-red opacity-30" aria-hidden="true" />
+          <div className="absolute bottom-8 left-8 w-8 h-8 border-l-2 border-b-2 border-kawai-red opacity-30" aria-hidden="true" />
+          <div className="absolute bottom-8 right-8 w-8 h-8 border-r-2 border-b-2 border-kawai-red opacity-30" aria-hidden="true" />
         </>
       )}
 
       <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
         {hasBlueprintToShow ? (
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 lg:items-start">
+            {/* Left: search + specs */}
             <div className="min-w-0 flex-1">
-              <div className="lg:hidden mb-8">
-                <div className="space-y-3">
-                  {header?.showModelNumber && product?.model && (
-                    <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
-                      Model: {product.model}
-                    </div>
-                  )}
-                  <h2 className="font-serif text-4xl md:text-5xl font-bold leading-tight">
-                    {header?.title || 'Technical Specifications'}
-                  </h2>
-                  {header?.subtitle && (
-                    <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
-                      {header.subtitle}
-                    </p>
-                  )}
-                </div>
+              {/* Mobile header */}
+              <div className="lg:hidden mb-8 space-y-3">
+                {header?.showModelNumber && product?.model && (
+                  <div className="text-xs text-kawai-red uppercase tracking-[0.22em] font-medium">
+                    Model: {product.model}
+                  </div>
+                )}
+                <h2 className="font-serif text-4xl md:text-5xl font-bold text-kawai-charcoal leading-tight">
+                  {header?.title || 'Technical Specifications'}
+                </h2>
+                {header?.subtitle && (
+                  <p className="text-base md:text-lg text-kawai-charcoal/55 font-light leading-relaxed max-w-2xl">
+                    {header.subtitle}
+                  </p>
+                )}
               </div>
+              {/* Mobile blueprint */}
               <div className="lg:hidden mb-10">
-                <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
+                <div className="relative overflow-hidden rounded-xl shadow-md w-full">
                   {productBlueprintUrl && (
                     <Image
                       src={productBlueprintUrl}
@@ -979,78 +838,41 @@ export function ProductTechnicalSpecsRenderer({
                   )}
                 </div>
                 {blueprintCaption && (
-                  <p className="mt-3 font-mono text-xs uppercase tracking-wider opacity-60 text-center">
+                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-charcoal/40 text-center">
                     {blueprintCaption}
                   </p>
                 )}
               </div>
-              {hasSpecs ? (
-                <>
-                  {dataSource === 'json' && jsonRows.length > 0 && (
-                    <JsonSpecsSection rows={jsonRows} />
-                  )}
-                  {productRows.length > 0 && dataSource !== 'json' && (
-                    <ProductRowsSection rows={productRows} />
-                  )}
-                  {manualCategories.map((category, idx) => (
-                    <SpecificationCategory key={idx} category={category} />
-                  ))}
-                </>
-              ) : (
-                <div className="text-center py-12 opacity-50">
-                  <p className="font-mono text-sm">
-                    No specifications available. Add a product with specifications or switch to Manual mode.
-                  </p>
-                </div>
-              )}
+              {stickySearch}
+              {specsContent}
             </div>
 
-            <div className="hidden lg:flex flex-col flex-none lg:sticky lg:top-0 lg:w-[480px] xl:w-[580px] gap-8">
-              <div className="space-y-3">
+            {/* Right: sticky header + blueprint */}
+            <div className="hidden lg:flex flex-col flex-none lg:sticky lg:top-8 lg:w-[440px] xl:w-[520px] gap-8">
+              <div className="space-y-4">
                 {header?.showModelNumber && product?.model && (
-                  <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                  <div className="text-xs text-kawai-red uppercase tracking-[0.22em] font-medium">
                     Model: {product.model}
                   </div>
                 )}
-                <h2 className="font-serif text-4xl xl:text-5xl font-bold leading-tight">
+                <h2 className="font-serif text-4xl xl:text-5xl font-bold text-kawai-charcoal leading-tight">
                   {header?.title || 'Technical Specifications'}
                 </h2>
                 {header?.subtitle && (
-                  <p className="text-lg opacity-70 font-light tracking-wide">{header.subtitle}</p>
+                  <p className="text-base text-kawai-charcoal/55 font-light leading-relaxed">
+                    {header.subtitle}
+                  </p>
                 )}
                 {enableDownload && (
-                  <button
-                    className="
-                      inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
-                      bg-kawai-red hover:bg-kawai-red/90
-                      text-white font-mono text-sm uppercase tracking-wider font-medium
-                      transition-all duration-200
-                      border-2 border-kawai-red hover:border-kawai-red/70
-                      shadow-lg hover:shadow-xl hover:scale-[1.02]
-                    "
-                    onClick={() => {
-                      const fileName = downloadButtonText || 'Technical Specs'
-                      const fileUrl = productBlueprintUrl || ''
-                      trackFileDownload({
-                        blockType: 'product-technical-specs',
-                        blockData: {},
-                        fileName,
-                        fileUrl,
-                        additionalProps: { product_name: product?.name ?? '' },
-                      })
-                      if (fileUrl) {
-                        window.open(fileUrl, '_blank')
-                      }
-                    }}
-                    aria-label="Download technical specifications"
-                  >
-                    <ArrowDownTrayIcon className="w-4 h-4" />
-                    {downloadButtonText || 'Download Technical Specs'}
-                  </button>
+                  <DownloadButton
+                    text={downloadText}
+                    fileUrl={downloadFileUrl}
+                    productName={productName}
+                  />
                 )}
               </div>
               <div>
-                <div className="relative overflow-hidden rounded-lg shadow-lg w-full">
+                <div className="relative overflow-hidden rounded-xl shadow-md w-full">
                   {productBlueprintUrl && (
                     <Image
                       src={productBlueprintUrl}
@@ -1069,7 +891,7 @@ export function ProductTechnicalSpecsRenderer({
                   )}
                 </div>
                 {blueprintCaption && (
-                  <p className="mt-3 font-mono text-xs uppercase tracking-wider opacity-60 text-center">
+                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-charcoal/40 text-center">
                     {blueprintCaption}
                   </p>
                 )}
@@ -1077,71 +899,31 @@ export function ProductTechnicalSpecsRenderer({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-8 lg:gap-12">
-            <div className="space-y-3">
+          <div className="flex flex-col gap-0">
+            <div className="space-y-4 mb-8">
               {header?.showModelNumber && product?.model && (
-                <div className="font-mono text-xs text-kawai-red uppercase tracking-[0.2em] font-semibold">
+                <div className="text-xs text-kawai-red uppercase tracking-[0.22em] font-medium">
                   Model: {product.model}
                 </div>
               )}
-              <h2 className="font-serif text-4xl md:text-5xl xl:text-6xl font-bold leading-tight">
+              <h2 className="font-serif text-4xl md:text-5xl xl:text-6xl font-bold text-kawai-charcoal leading-tight">
                 {header?.title || 'Technical Specifications'}
               </h2>
               {header?.subtitle && (
-                <p className="text-lg md:text-xl opacity-70 font-light tracking-wide max-w-2xl">
+                <p className="text-base md:text-lg text-kawai-charcoal/55 font-light leading-relaxed max-w-2xl">
                   {header.subtitle}
                 </p>
               )}
               {enableDownload && (
-                <button
-                  className="
-                    inline-flex items-center gap-2.5 px-6 py-3.5 mt-2
-                    bg-kawai-red hover:bg-kawai-red/90
-                    text-white font-mono text-sm uppercase tracking-wider font-medium
-                    transition-all duration-200
-                    border-2 border-kawai-red hover:border-kawai-red/70
-                    shadow-lg hover:shadow-xl hover:scale-[1.02]
-                  "
-                  onClick={() => {
-                    const fileName = downloadButtonText || 'Technical Specs'
-                    const fileUrl = productBlueprintUrl || ''
-                    trackFileDownload({
-                      blockType: 'product-technical-specs',
-                      blockData: {},
-                      fileName,
-                      fileUrl,
-                      additionalProps: { product_name: product?.name ?? '' },
-                    })
-                    if (fileUrl) {
-                      window.open(fileUrl, '_blank')
-                    }
-                  }}
-                  aria-label="Download technical specifications"
-                >
-                  <ArrowDownTrayIcon className="w-4 h-4" />
-                  {downloadButtonText || 'Download Technical Specs'}
-                </button>
+                <DownloadButton
+                  text={downloadText}
+                  fileUrl={downloadFileUrl}
+                  productName={productName}
+                />
               )}
             </div>
-            {hasSpecs ? (
-              <>
-                {dataSource === 'json' && jsonRows.length > 0 && (
-                  <JsonSpecsSection rows={jsonRows} />
-                )}
-                {productRows.length > 0 && dataSource !== 'json' && (
-                  <ProductRowsSection rows={productRows} />
-                )}
-                {manualCategories.map((category, idx) => (
-                  <SpecificationCategory key={idx} category={category} />
-                ))}
-              </>
-            ) : (
-              <div className="text-center py-12 opacity-50">
-                <p className="font-mono text-sm">
-                  No specifications available. Add a product with specifications or switch to Manual mode.
-                </p>
-              </div>
-            )}
+            {stickySearch}
+            {specsContent}
           </div>
         )}
       </div>

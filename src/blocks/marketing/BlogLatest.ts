@@ -74,6 +74,14 @@ export const BlogLatest: Block = {
       },
     },
     {
+      name: 'filterByTags',
+      type: 'text',
+      hasMany: true,
+      admin: {
+        description: 'Only show posts that have at least one of these tags. Leave empty to show all posts.',
+      },
+    },
+    {
       name: 'showSecondaryCta',
       type: 'checkbox',
       defaultValue: false,

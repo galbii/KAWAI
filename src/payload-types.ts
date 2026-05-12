@@ -5498,7 +5498,7 @@ export interface MarketingArtistCarouselBlock {
   blockType: 'marketing-artist-carousel';
 }
 /**
- * Manage KAWAI artists - musicians and performers who play KAWAI pianos
+ * Manage KAWAI artists — musicians and performers who play KAWAI pianos
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "artists".
@@ -5735,6 +5735,7 @@ export interface Artist {
   };
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6354,6 +6355,10 @@ export interface MarketingBlogLatestBlock {
    * Primary CTA link URL
    */
   ctaHref?: string | null;
+  /**
+   * Only show posts that have at least one of these tags. Leave empty to show all posts.
+   */
+  filterByTags?: string[] | null;
   /**
    * Show a secondary call-to-action button alongside the primary
    */
@@ -7897,6 +7902,7 @@ export interface Page {
     | MarketingPianosBrowserBlock
     | MarketingArtistsGridBlock
     | MarketingBlogGridBlock
+    | MarketingBlogLatestBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
     | ProductHeroCarouselBlock
@@ -10261,6 +10267,10 @@ export interface Search {
     | {
         relationTo: 'collections';
         value: string | Collection;
+      }
+    | {
+        relationTo: 'artists';
+        value: string | Artist;
       };
   /**
    * Short excerpt displayed in search results
@@ -10311,6 +10321,30 @@ export interface Search {
    * Collection title (denormalized from Collections collection)
    */
   collectionTitle?: string | null;
+  /**
+   * Piano categories (comma-separated: grand,digital,upright,hybrid,shigeru) — powers category-term search ("grand pianos" → all grand collections)
+   */
+  collectionPianoCategories?: string | null;
+  /**
+   * Artist slug → /artists/{slug}
+   */
+  artistSlug?: string | null;
+  /**
+   * Artist image URL (denormalized)
+   */
+  artistImageUrl?: string | null;
+  /**
+   * Artist instrument type (grand/upright/digital/hybrid/multiple)
+   */
+  artistInstrument?: string | null;
+  /**
+   * Artist genre (denormalized)
+   */
+  artistGenre?: string | null;
+  /**
+   * Artist short bio (denormalized, max 200 chars)
+   */
+  artistShortBio?: string | null;
   storefrontSlug?: string | null;
   storefrontLocationName?: string | null;
   storefrontLocationText?: string | null;
@@ -11535,6 +11569,7 @@ export interface ArtistsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -12277,6 +12312,12 @@ export interface SearchSelect<T extends boolean = true> {
   pageSlug?: T;
   collectionHandle?: T;
   collectionTitle?: T;
+  collectionPianoCategories?: T;
+  artistSlug?: T;
+  artistImageUrl?: T;
+  artistInstrument?: T;
+  artistGenre?: T;
+  artistShortBio?: T;
   storefrontSlug?: T;
   storefrontLocationName?: T;
   storefrontLocationText?: T;
@@ -12534,10 +12575,15 @@ export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    doc?: {
-      relationTo: 'pages';
-      value: string | Page;
-    } | null;
+    doc?:
+      | ({
+          relationTo: 'pages';
+          value: string | Page;
+        } | null)
+      | ({
+          relationTo: 'artists';
+          value: string | Artist;
+        } | null);
     global?: string | null;
     user?: (string | null) | User;
   };

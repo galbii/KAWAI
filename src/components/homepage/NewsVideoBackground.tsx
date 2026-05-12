@@ -19,6 +19,7 @@ export interface NewsVideoBackgroundProps {
   description: string
   videoUrl: string
   videoSource?: 'youtube' | 'direct' | null
+  videoMimeType?: string | null
   youtubeZoom?: number | null
   category: string
   link?: string | null | undefined
@@ -36,6 +37,7 @@ export function NewsVideoBackground({
   description,
   videoUrl,
   videoSource = 'youtube',
+  videoMimeType,
   youtubeZoom,
   category,
   link,
@@ -122,7 +124,7 @@ export function NewsVideoBackground({
               isVideoReady ? 'opacity-100' : 'opacity-0'
             )}
           >
-            <source src={embedUrl} type="video/mp4" />
+            <source src={embedUrl} type={videoMimeType ?? 'video/webm'} />
           </video>
         )}
       </div>
