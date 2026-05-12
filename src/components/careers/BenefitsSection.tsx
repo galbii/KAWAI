@@ -26,14 +26,34 @@ const BENEFITS = [
       </svg>
     ),
     title: 'Global Team',
-    desc: 'Work alongside colleagues across North America, Japan, and Europe — a truly international team.',
+    desc: "Work alongside colleagues in Rancho Dominguez, CA, with direct relationships across Kawai's manufacturing and distribution network in Japan, Europe, and beyond.",
+  },
+  {
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="1.5"/>
+        <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.5"/>
+      </svg>
+    ),
+    title: 'Industry Access',
+    desc: 'Work at the intersection of professional music, instrument manufacturing, and institutional education. Relationships with concert artists, conservatories, and universities are part of the job.',
   },
 ]
 
 export function BenefitsSection() {
   return (
-    <section className="bg-kawai-pearl py-28 md:py-36 px-8 md:px-16 lg:px-24 border-t border-kawai-neutral/50">
-      <div className="max-w-screen-xl mx-auto">
+    <section className="relative bg-kawai-pearl py-28 md:py-36 px-8 md:px-16 lg:px-24 border-t border-kawai-neutral/30 overflow-hidden">
+      {/* Radial gradient orb */}
+      <div
+        className="absolute pointer-events-none inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 55% 40% at 50% 0%, rgba(213,199,140,0.10) 0%, transparent 55%)',
+        }}
+      />
+
+      <div className="relative z-10 max-w-screen-xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
           <div>
@@ -43,20 +63,17 @@ export function BenefitsSection() {
             </h2>
           </div>
           <p className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] max-w-xs leading-relaxed md:text-right">
-            Benefits designed for people who care deeply about their craft.
+            A small team with a long institutional history. The people who join us tend to stay.
           </p>
         </div>
 
-        {/* Benefits grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-kawai-neutral/50">
+        {/* Glass benefit cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {BENEFITS.map((benefit) => (
             <div
               key={benefit.title}
-              className="group relative p-8 md:p-10 bg-kawai-pearl hover:bg-white transition-colors duration-200"
+              className="group relative p-8 md:p-10 bg-white/65 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl hover:shadow-brand-medium hover:bg-white/85 hover:-translate-y-0.5 transition-all duration-200"
             >
-              {/* Top accent line on hover */}
-              <div className="absolute top-0 left-8 right-8 h-px bg-kawai-red scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-
               {/* Icon */}
               <div className="text-kawai-red mb-5 opacity-80 group-hover:opacity-100 transition-opacity">
                 {benefit.icon}

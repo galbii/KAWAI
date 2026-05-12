@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
 
 const STATS = [
-  { num: '100', label: 'Years of Craft' },
+  { num: '1927', label: 'Est. Japan' },
   { num: '180+', label: 'Countries' },
   { num: '100K+', label: 'Instruments / Year' },
 ]
@@ -21,17 +21,23 @@ export function CareersHero() {
 
   return (
     <section className="relative w-full min-h-[100svh] bg-white flex flex-col overflow-hidden">
-      {/* Left red accent stripe */}
-      <div className="absolute top-0 left-0 bottom-0 w-[3px] bg-kawai-red z-20" />
+      {/* Radial gradient orbs */}
+      <div
+        className="absolute pointer-events-none inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 50% at 15% 60%, rgba(225,25,34,0.05) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 20%, rgba(213,199,140,0.10) 0%, transparent 60%)',
+        }}
+      />
 
       {/* Grain texture */}
       <div
-        className="absolute inset-0 opacity-[0.025] pointer-events-none"
+        className="absolute inset-0 opacity-[0.025] pointer-events-none z-0"
         style={{ backgroundImage: GRAIN_SVG }}
       />
 
       {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between pl-12 pr-8 md:pl-20 md:pr-16 lg:pl-28 lg:pr-24 pt-20">
+      <div className="relative z-10 flex items-center justify-between pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 pt-20">
         <p className="text-[10px] uppercase tracking-[0.22em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
           Careers at Kawai
         </p>
@@ -43,7 +49,7 @@ export function CareersHero() {
 
       {/* Main logo */}
       <div
-        className="flex-1 flex flex-col justify-center pl-12 pr-8 md:pl-20 md:pr-16 lg:pl-28 lg:pr-24 py-16 relative z-10"
+        className="flex-1 flex flex-col justify-center pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 py-16 relative z-10"
         style={{
           opacity: visible ? 1 : 0,
           transform: visible ? 'translateY(0)' : 'translateY(20px)',
@@ -53,7 +59,7 @@ export function CareersHero() {
         {/* Red rule */}
         <div className="w-14 h-px bg-kawai-red mb-12" />
 
-        {/* Logo — white fills become invisible on white bg, red KAWAI shows */}
+        {/* Logo */}
         <div className="w-full max-w-[560px] lg:max-w-[680px]">
           <Image
             src="/images/instrumental-to-life-logo.svg"
@@ -73,18 +79,19 @@ export function CareersHero() {
             transition: 'opacity 0.7s ease 0.25s',
           }}
         >
-          We make instruments that outlast their owners. We&apos;re looking for people
-          who think the same way.
+          We have been building instruments since 1927. We are looking for people
+          who build things that last.
         </p>
       </div>
 
       {/* Bottom row: stats + scroll */}
-      <div className="relative z-10 flex items-end justify-between pl-12 pr-8 md:pl-20 md:pr-16 lg:pl-28 lg:pr-24 pb-12 border-t border-kawai-neutral/50 pt-8">
-        {/* Stats */}
-        <div className="flex items-center gap-8 md:gap-12">
+      <div className="relative z-10 flex items-end justify-between pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 pb-12 border-t border-kawai-neutral/30 pt-8">
+        {/* Glass stat pills */}
+        <div className="flex items-center gap-3 md:gap-4 flex-wrap">
           {STATS.map((stat, i) => (
             <div
               key={stat.label}
+              className="bg-white/70 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-xl px-5 py-3"
               style={{
                 opacity: visible ? 1 : 0,
                 transition: `opacity 0.5s ease ${0.4 + i * 0.1}s`,

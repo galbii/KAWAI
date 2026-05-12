@@ -226,7 +226,9 @@
   border-kawai-gold,
   card-brand-news,
   overlay-brand-news,
-  font-kawai-script
+  font-kawai-script,
+  card-careers-glass,
+  panel-careers-drawer
 }");
 
 @import "../styles/brand-components.css";

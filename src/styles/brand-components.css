@@ -155,6 +155,26 @@
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@utility card-careers-glass {
+  background: color-mix(in srgb, white 72%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, white 80%, transparent);
+  box-shadow: var(--shadow-brand-subtle);
+  border-radius: 1rem;
+  transition: box-shadow 0.25s ease, background 0.25s ease;
+  &:hover {
+    background: color-mix(in srgb, white 88%, transparent);
+    box-shadow: var(--shadow-brand-medium);
+  }
+}
+
+@utility panel-careers-drawer {
+  background: color-mix(in srgb, white 85%, transparent);
+  backdrop-filter: blur(24px);
+  border-left: 1px solid color-mix(in srgb, white 70%, transparent);
+  box-shadow: -8px 0 40px rgb(30 27 22 / 0.10);
+}
+
 .logo-brand-container {
   @apply transition-all duration-300;
 }

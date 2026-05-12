@@ -16,7 +16,7 @@ export function ArtistProfileLayout({ sidebar, main, rightPanel }: ArtistProfile
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-      className="max-w-[1440px] mx-auto px-6 md:px-12 py-10 md:py-14"
+      className="max-w-[1440px] mx-auto lg:px-12 lg:py-14"
     >
       <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
         {sidebar}

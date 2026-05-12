@@ -14,6 +14,7 @@ import { ArtistSidebar } from '@/components/artists/ArtistSidebar'
 import { ArtistRightPanel } from '@/components/artists/ArtistRightPanel'
 import { ArtistProfileLayout } from '@/components/artists/ArtistProfileLayout'
 import { RecentWorkCarousel } from '@/components/artists/RecentWorkCarousel'
+import { ArtistGalleryCarousel } from '@/components/artists/ArtistGalleryCarousel'
 
 export const revalidate = 900
 
@@ -279,14 +280,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               region={artist.region ?? null}
               shortBio={artist.shortBio ?? null}
               isShigeruArtist={artist.isShigeruArtist ?? null}
+              socialLinks={artist.socialLinks as any}
             />
           }
           main={
-            <div className="space-y-8">
+            <div className="space-y-5 lg:space-y-8 px-4 py-5 lg:px-0 lg:py-0">
               {/* Bio */}
               {artist.bio && (
-                <div className="bg-white rounded-2xl border border-kawai-neutral/50 p-8 md:p-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-6">
+                <div className="bg-white rounded-2xl border border-kawai-neutral/50 p-5 md:p-8 lg:p-10">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-4 lg:mb-6">
                     Biography
                   </p>
                   <LexicalSerializer content={artist.bio as any} />
@@ -295,11 +297,11 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
               {/* Featured Video */}
               {artist.featuredVideo?.youtubeId && (
-                <div className="bg-white rounded-2xl border border-kawai-neutral/50 p-8 md:p-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-4">
+                <div className="bg-white rounded-2xl border border-kawai-neutral/50 p-5 md:p-8 lg:p-10">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-3 lg:mb-4">
                     Featured Performance
                   </p>
-                  <h2 className="text-2xl font-bold text-kawai-black mb-6">
+                  <h2 className="text-xl lg:text-2xl font-bold text-kawai-black mb-4 lg:mb-6">
                     {artist.featuredVideo.title || 'Watch Live'}
                   </h2>
                   <div className="aspect-video rounded-xl overflow-hidden shadow-brand-premium">
@@ -316,13 +318,13 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              {/* Mobile achievements (right panel is xl+, show inline below xl) */}
+              {/* Achievements (hidden on xl+ where right panel shows) */}
               {artist.achievements && artist.achievements.length > 0 && (
-                <div className="xl:hidden bg-kawai-pearl rounded-2xl p-8">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-5">
+                <div className="xl:hidden bg-kawai-pearl rounded-2xl p-5 md:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-kawai-red mb-4">
                     Notable Achievements
                   </p>
-                  <ul className="space-y-4">
+                  <ul className="space-y-3">
                     {artist.achievements.map((a, i) => (
                       <li key={a.id ?? i} className="flex items-start gap-3 text-sm text-kawai-charcoal">
                         <Trophy className="w-4 h-4 text-kawai-gold shrink-0 mt-0.5" />
@@ -333,16 +335,16 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              {/* Mobile quote (right panel is xl+) */}
+              {/* Quote (hidden on xl+ where right panel shows) */}
               {artist.quote?.text && (
-                <div className="xl:hidden bg-kawai-charcoal rounded-2xl p-8 relative overflow-hidden">
+                <div className="xl:hidden bg-kawai-charcoal rounded-2xl p-5 md:p-6 relative overflow-hidden">
                   <span
                     className="absolute -top-2 -left-1 text-kawai-red text-[80px] font-serif leading-none opacity-20 select-none"
                     aria-hidden="true"
                   >
                     &ldquo;
                   </span>
-                  <p className="relative italic text-white text-base leading-relaxed">
+                  <p className="relative italic text-white text-sm md:text-base leading-relaxed">
                     {artist.quote.text}
                   </p>
                 </div>
@@ -360,6 +362,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           }
         />
       </div>
+
+      {/* Photo Gallery */}
+      {artist.gallery && artist.gallery.length > 0 && (
+        <ArtistGalleryCarousel
+          gallery={artist.gallery as any}
+          artistName={artist.name}
+        />
+      )}
 
       {/* Recent Work Carousel */}
       {artist.recentWork && artist.recentWork.length > 0 && (

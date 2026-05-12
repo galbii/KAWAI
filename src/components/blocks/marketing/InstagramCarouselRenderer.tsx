@@ -150,47 +150,28 @@ export function InstagramCarouselRenderer({
       <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        {(heading || subheading || instagramHandle) && (
+        {(heading || subheading) && (
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-12 sm:mb-16 space-y-4"
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-10 sm:mb-14 space-y-3"
           >
             {instagramHandle && (
-              <div className="flex items-center justify-center gap-2">
-                <svg
-                  className="w-[14px] h-[14px] text-kawai-red"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                </svg>
-                <span className="text-[11px] font-medium tracking-[0.22em] uppercase opacity-50">
-                  {instagramHandle}
-                </span>
-              </div>
+              <p className="text-[11px] font-medium tracking-[0.2em] uppercase text-current/40">
+                @{instagramHandle}
+              </p>
             )}
-
             {heading && (
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-[family-name:var(--font-brand-luxury)] font-light tracking-tight leading-none">
+              <h2 className="text-3xl sm:text-4xl font-[family-name:var(--font-brand-luxury)] font-light leading-tight">
                 {heading}
               </h2>
             )}
-
             {subheading && (
-              <p className="text-sm sm:text-base text-current/55 max-w-xl mx-auto leading-relaxed tracking-wide">
+              <p className="text-sm text-current/50 max-w-lg leading-relaxed">
                 {subheading}
               </p>
             )}
-
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={isInView ? { scaleX: 1 } : {}}
-              transition={{ duration: 1.1, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="h-px w-16 mx-auto bg-kawai-red origin-center"
-            />
           </motion.div>
         )}
 
@@ -231,45 +212,28 @@ export function InstagramCarouselRenderer({
                     key={index}
                     style={{ width: cardWidth, flexShrink: 0 }}
                     animate={{
-                      opacity: isActive ? 1 : isSide ? 0.6 : isPeek ? 0.25 : 0.1,
-                      scale: isActive ? 1 : isSide ? 0.972 : 0.95,
+                      opacity: isActive ? 1 : isSide ? 0.5 : 0.15,
+                      scale: isActive ? 1 : isSide ? 0.975 : 0.95,
                     }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     onClick={() => !isActive && setActiveIndex(index)}
                     className={cn(
-                      'relative bg-white rounded-2xl overflow-hidden',
+                      'relative bg-black rounded-xl overflow-hidden',
                       isActive
-                        ? 'shadow-[0_8px_40px_rgba(0,0,0,0.12)] ring-1 ring-black/5'
-                        : 'shadow-[0_4px_20px_rgba(0,0,0,0.07)] cursor-pointer',
+                        ? 'shadow-[0_8px_40px_rgba(0,0,0,0.18)]'
+                        : 'cursor-pointer',
                     )}
                   >
-                    {/* Active top accent */}
-                    <motion.div
-                      className="absolute top-0 inset-x-0 h-[3px] bg-kawai-red z-10 origin-left"
-                      animate={{ scaleX: isActive ? 1 : 0 }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    />
-
-                    {/* Category badge — only on active */}
-                    {post.category && isActive && (
-                      <div className="absolute top-4 left-4 z-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-kawai-red text-white text-[10px] font-medium tracking-[0.14em] uppercase rounded-full shadow-md">
-                          <span className="w-1 h-1 bg-white/80 rounded-full" />
-                          {post.category}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Instagram iframe */}
-                    <div className="relative overflow-hidden" style={{ height: '700px' }}>
+                    {/* Instagram embed — header clipped, media fills card */}
+                    <div className="overflow-hidden" style={{ height: '540px' }}>
                       <iframe
-                        src={`${post.instagramUrl}embed/captioned/`}
+                        src={`${post.instagramUrl}embed/`}
                         width={cardWidth}
                         style={{
-                          height: '830px',
+                          height: '700px',
                           border: 'none',
                           display: 'block',
-                          marginTop: '-2px',
+                          marginTop: '-62px',
                         }}
                         frameBorder="0"
                         scrolling="no"
@@ -279,14 +243,29 @@ export function InstagramCarouselRenderer({
                       />
                     </div>
 
-                    {/* Caption */}
-                    {post.caption && (
-                      <div className="px-4 py-3 border-t border-black/[0.06]">
-                        <p className="text-xs text-kawai-charcoal/60 leading-relaxed line-clamp-2 tracking-wide">
-                          {post.caption}
-                        </p>
-                      </div>
-                    )}
+                    {/* Footer strip */}
+                    <div className="flex items-center gap-3 px-4 py-3 bg-white border-t border-black/[0.06]">
+                      <p className={cn(
+                        'text-[11px] leading-snug flex-1',
+                        post.caption
+                          ? 'text-kawai-charcoal/70 line-clamp-1'
+                          : 'text-kawai-charcoal/30 italic',
+                      )}>
+                        {post.caption ?? instagramHandle}
+                      </p>
+                      <a
+                        href={post.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        aria-label="View on Instagram"
+                        className="shrink-0 text-kawai-charcoal/30 hover:text-kawai-charcoal/70 transition-colors duration-150"
+                      >
+                        <svg className="w-[14px] h-[14px]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                        </svg>
+                      </a>
+                    </div>
                   </motion.div>
                 )
               })}
@@ -295,89 +274,54 @@ export function InstagramCarouselRenderer({
         </motion.div>
 
         {/* Controls row */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8 sm:mt-10 flex items-center justify-between gap-4"
-        >
-          {/* Progress strip */}
-          {showProgressIndicator && totalPosts > 1 && (
-            <div className="flex items-center gap-1.5 flex-1">
-              {validPosts.map((_, index) => (
+        {totalPosts > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            {/* Dot indicators */}
+            {showProgressIndicator && (
+              <div className="flex items-center gap-1.5">
+                {validPosts.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIndex(i)}
+                    aria-label={`Go to post ${i + 1}`}
+                    className={cn(
+                      'rounded-full transition-all duration-300 focus:outline-none',
+                      i === activeIndex
+                        ? 'w-4 h-1.5 bg-current/60'
+                        : 'w-1.5 h-1.5 bg-current/20 hover:bg-current/40',
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Arrows */}
+            {showNavigationArrows && (
+              <div className="flex items-center gap-1">
                 <button
-                  key={index}
-                  onClick={() => setActiveIndex(index)}
-                  className={cn(
-                    'h-[3px] rounded-full transition-all duration-500 focus:outline-none',
-                    index === activeIndex
-                      ? 'w-8 bg-kawai-red shadow-sm shadow-kawai-red/40'
-                      : 'w-3 bg-current/15 hover:bg-current/30',
-                  )}
-                  aria-label={`Go to post ${index + 1}`}
-                />
-              ))}
-              <span className="ml-3 text-[11px] text-current/35 tracking-[0.12em] font-light tabular-nums">
-                {activeIndex + 1} / {totalPosts}
-              </span>
-            </div>
-          )}
-
-          {/* Navigation arrows */}
-          {showNavigationArrows && totalPosts > 1 && (
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={goToPrevious}
-                disabled={!enableLoop && activeIndex === 0}
-                className={cn(
-                  'w-9 h-9 flex items-center justify-center rounded-full',
-                  'border border-current/20',
-                  'transition-all duration-300',
-                  'hover:border-kawai-red hover:text-kawai-red',
-                  'focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2',
-                  'disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:border-current/20 disabled:hover:text-current',
-                  'group',
-                )}
-                aria-label="Previous post"
-              >
-                <svg
-                  className="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-px"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+                  onClick={goToPrevious}
+                  disabled={!enableLoop && activeIndex === 0}
+                  aria-label="Previous post"
+                  className="w-8 h-8 flex items-center justify-center text-current/40 hover:text-current/80 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-150 focus:outline-none"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              <button
-                onClick={goToNext}
-                disabled={!enableLoop && activeIndex === maxIndex}
-                className={cn(
-                  'w-9 h-9 flex items-center justify-center rounded-full',
-                  'border border-current/20',
-                  'transition-all duration-300',
-                  'hover:border-kawai-red hover:text-kawai-red',
-                  'focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2',
-                  'disabled:opacity-25 disabled:cursor-not-allowed disabled:hover:border-current/20 disabled:hover:text-current',
-                  'group',
-                )}
-                aria-label="Next post"
-              >
-                <svg
-                  className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-px"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={goToNext}
+                  disabled={!enableLoop && activeIndex === maxIndex}
+                  aria-label="Next post"
+                  className="w-8 h-8 flex items-center justify-center text-current/40 hover:text-current/80 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-150 focus:outline-none"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </motion.div>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* CTA Button */}
         {ctaButton?.enabled && ctaButton.text && ctaButton.url && (

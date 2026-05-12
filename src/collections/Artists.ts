@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { revalidatePath, revalidateTag } from 'next/cache'
-import { imageField } from '@/lib/payload/fields/media'
+import { imageField, mediaArrayField } from '@/lib/payload/fields/media'
 import type { Artist } from '@/payload-types'
 
 export const Artists: CollectionConfig = {
@@ -329,6 +329,28 @@ export const Artists: CollectionConfig = {
               admin: {
                 description: 'Featured performance video (optional)'
               }
+            },
+            {
+              name: 'gallery',
+              type: 'array',
+              maxRows: 20,
+              labels: { singular: 'Photo', plural: 'Photos' },
+              admin: {
+                description: 'Photo gallery shown on the artist profile page (drag to reorder)',
+              },
+              fields: [
+                imageField('image', {
+                  required: false,
+                  admin: { description: 'Upload a photo from the media library' },
+                }),
+                {
+                  name: 'url',
+                  type: 'text',
+                  admin: {
+                    description: 'Or paste an external image URL (used as fallback if no upload)',
+                  },
+                },
+              ],
             },
             {
               name: 'achievements',

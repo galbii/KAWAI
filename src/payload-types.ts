@@ -5651,6 +5651,22 @@ export interface Artist {
     title?: string | null;
   };
   /**
+   * Photo gallery shown on the artist profile page (drag to reorder)
+   */
+  gallery?:
+    | {
+        /**
+         * Upload a photo from the media library
+         */
+        image?: (string | null) | Media;
+        /**
+         * Or paste an external image URL (used as fallback if no upload)
+         */
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Notable awards, performances, or career highlights
    */
   achievements?:
@@ -5960,6 +5976,10 @@ export interface MarketingNewsCarouselBlock {
         title: string;
         description: string;
         image?: (string | null) | Media;
+        /**
+         * Self-hosted video file (webm/mp4) as slide background. Overrides image. Use instead of YouTube URL for uploaded video.
+         */
+        backgroundVideo?: (string | null) | Media;
         category: 'news' | 'events' | 'promotions' | 'new-arrivals' | 'education';
         /**
          * Optional link for this news item
@@ -8349,6 +8369,10 @@ export interface HomePage {
      * News item image
      */
     image?: (string | null) | Media;
+    /**
+     * Self-hosted video file (webm/mp4) as slide background. Overrides image. Use instead of YouTube URL for uploaded video.
+     */
+    backgroundVideo?: (string | null) | Media;
     /**
      * News item category
      */
@@ -10947,6 +10971,7 @@ export interface HomePageSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         image?: T;
+        backgroundVideo?: T;
         category?: T;
         link?: T;
         ctaText?: T;
@@ -11539,6 +11564,13 @@ export interface ArtistsSelect<T extends boolean = true> {
     | {
         youtubeId?: T;
         title?: T;
+      };
+  gallery?:
+    | T
+    | {
+        image?: T;
+        url?: T;
+        id?: T;
       };
   achievements?:
     | T

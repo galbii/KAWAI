@@ -1,32 +1,28 @@
-import { cn } from '@/lib/utils'
-
-const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
-
 const PILLARS = [
   {
     num: '01',
     title: 'Craft',
-    desc: "Attention to detail is our culture — whether you're voicing a concert grand or shipping a line of code.",
+    desc: 'Kawai builds fewer than 300 Shigeru Kawai concert grands per year, each voiced by hand. That standard for detail carries into every part of how we work.',
   },
   {
     num: '02',
     title: 'Legacy',
-    desc: 'Nearly a century of expertise. Everything we build here adds to something that was already great.',
+    desc: 'Kawai has operated in North America since 1963. Our team averages more than 20 years of tenure. That continuity is not an accident.',
   },
   {
     num: '03',
     title: 'Reach',
-    desc: 'Our instruments are played in over 180 countries. Your work reaches musicians on every continent.',
+    desc: 'Our instruments are sold in over 180 countries through 212+ authorized dealers in North America alone. Working here means working at the center of a genuinely global distribution network.',
   },
   {
     num: '04',
     title: 'Innovation',
-    desc: 'Japanese precision meets modern technology. We bridge a century of tradition with the future of music.',
+    desc: "Kawai's North American team works closely with manufacturing in Japan and a production facility in North Carolina. The work here is connected to how the instrument is built, not just how it is sold.",
   },
 ]
 
 const STATS = [
-  { num: '100', label: 'Years of Craft' },
+  { num: '63+', label: 'Years in North America' },
   { num: '180+', label: 'Countries' },
   { num: '100K+', label: 'Instruments Yearly' },
   { num: '1927', label: 'Founded' },
@@ -35,12 +31,21 @@ const STATS = [
 export function LifeAtKawai() {
   return (
     <>
-      {/* ── Values + Culture (White) ─────────────────────────────── */}
+      {/* ── Values + Culture (Pearl + glass) ─────────────────────── */}
       <section
         id="life"
-        className="bg-white py-28 md:py-36 px-8 md:px-16 lg:px-24 overflow-hidden"
+        className="relative bg-kawai-pearl py-28 md:py-36 px-8 md:px-16 lg:px-24 overflow-hidden"
       >
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        {/* Radial gradient orb */}
+        <div
+          className="absolute pointer-events-none inset-0 z-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 50% 60% at 90% 10%, rgba(213,199,140,0.10) 0%, transparent 60%)',
+          }}
+        />
+
+        <div className="relative z-10 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           {/* Left: Intro copy */}
           <div className="lg:sticky lg:top-24">
             <div className="w-10 h-px bg-kawai-red mb-10" />
@@ -50,26 +55,23 @@ export function LifeAtKawai() {
               to work at Kawai.
             </h2>
             <p className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-sm mb-10">
-              We&apos;re a century-old company with the mindset of a craftsman&apos;s studio.
-              Every role — from engineering to customer experience — shapes how music
-              is made and heard around the world.
+              Kawai America Corporation has been based in Southern California since 1963.
+              We are a small, experienced team — and that is by design. Every role here
+              has real scope.
             </p>
             <p className="text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] text-sm leading-relaxed max-w-sm">
-              Our teams in North America work closely with craftspeople, engineers, and
-              musicians in Japan and across Europe. The result is a workplace where the
-              music industry&apos;s highest standards apply to everything we do.
+              Our work spans sales and distribution, artist relations, institutional programs,
+              technical support, and dealer partnerships. Colleagues here often stay for
+              decades. The people who join tend to find reasons to stay.
             </p>
           </div>
 
-          {/* Right: Pillars */}
-          <div>
-            {PILLARS.map((pillar, i) => (
+          {/* Right: Glass pillar cards */}
+          <div className="flex flex-col gap-3">
+            {PILLARS.map((pillar) => (
               <div
                 key={pillar.num}
-                className={cn(
-                  'flex gap-6 py-9',
-                  i < PILLARS.length - 1 && 'border-b border-kawai-neutral/60',
-                )}
+                className="bg-white/65 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl px-7 py-7 flex gap-6 hover:shadow-brand-medium hover:bg-white/80 transition-all duration-200"
               >
                 <span className="text-kawai-red text-[11px] font-mono font-medium leading-none mt-1 flex-shrink-0 w-6 font-[family-name:var(--font-brand-sans)]">
                   {pillar.num}
@@ -88,30 +90,16 @@ export function LifeAtKawai() {
         </div>
       </section>
 
-      {/* ── Culture Quote + Stats (Black) ────────────────────────── */}
-      <section className="relative bg-kawai-black overflow-hidden">
-        {/* Grain overlay */}
+      {/* ── Culture Quote + Stats (Pearl + glass) ────────────────── */}
+      <section className="relative bg-kawai-pearl overflow-hidden">
+        {/* Radial gradient orbs */}
         <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{ backgroundImage: GRAIN_SVG }}
+          className="absolute pointer-events-none inset-0 z-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 50% at 20% 70%, rgba(225,25,34,0.05) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 75% 20%, rgba(213,199,140,0.12) 0%, transparent 55%)',
+          }}
         />
-
-        {/* Red top border */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-kawai-red" />
-
-        {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-20 h-20 opacity-10 pointer-events-none">
-          <svg viewBox="0 0 100 100" className="text-white w-full h-full">
-            <line x1="0" y1="30" x2="30" y2="30" stroke="currentColor" strokeWidth="1" />
-            <line x1="30" y1="0" x2="30" y2="30" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
-        <div className="absolute bottom-0 right-0 w-20 h-20 opacity-10 rotate-180 pointer-events-none">
-          <svg viewBox="0 0 100 100" className="text-white w-full h-full">
-            <line x1="0" y1="30" x2="30" y2="30" stroke="currentColor" strokeWidth="1" />
-            <line x1="30" y1="0" x2="30" y2="30" stroke="currentColor" strokeWidth="1" />
-          </svg>
-        </div>
 
         <div className="relative z-10 px-8 md:px-16 lg:px-24 py-28 md:py-36 max-w-screen-xl mx-auto">
           {/* Red rule */}
@@ -120,34 +108,37 @@ export function LifeAtKawai() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-16 lg:gap-24 items-end">
             {/* Value proposition */}
             <div className="max-w-3xl">
-              <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-white leading-[1.2] mb-6">
+              <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[1.2] mb-6">
                 A century of craft.<br />
                 <span className="text-kawai-red">Built for the next century.</span>
               </h2>
-              <p className="text-white/50 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-lg">
-                Kawai has been shaping how the world experiences music since 1927. Join a team where your work contributes to instruments played by millions of musicians across 180+ countries.
+              <p className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-lg">
+                Kawai has been part of how people experience music since 1927 — in concert halls, universities, conservatories, and living rooms across 180 countries. Kawai America is where that presence is built and maintained in North America.
               </p>
             </div>
 
             {/* Attribution */}
             <div className="lg:pb-1">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-[family-name:var(--font-brand-sans)]">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
                 Kawai Musical Instruments
               </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-[family-name:var(--font-brand-sans)] mt-1">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] mt-1">
                 Est. 1927, Hamamatsu Japan
               </p>
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="mt-16 pt-12 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {/* Glass stat cards */}
+          <div className="mt-16 pt-12 border-t border-kawai-neutral/30 grid grid-cols-2 md:grid-cols-4 gap-4">
             {STATS.map((stat) => (
-              <div key={stat.label}>
-                <div className="text-[2rem] md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] text-white leading-none">
+              <div
+                key={stat.label}
+                className="bg-white/70 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl px-6 py-6 hover:shadow-brand-medium hover:bg-white/85 transition-all duration-200"
+              >
+                <div className="text-[2rem] md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none">
                   {stat.num}
                 </div>
-                <div className="text-[9px] uppercase tracking-[0.18em] text-white/35 font-[family-name:var(--font-brand-sans)] mt-2">
+                <div className="text-[9px] uppercase tracking-[0.18em] text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] mt-2">
                   {stat.label}
                 </div>
               </div>

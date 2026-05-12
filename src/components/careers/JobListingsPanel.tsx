@@ -14,7 +14,7 @@ export interface JobListingItem {
   location?: string | null
   type?: string | null
   postedAt?: string | null
-  descriptionSnippet?: string | null  // ← ADD THIS
+  descriptionSnippet?: string | null
 }
 
 interface Props {
@@ -66,9 +66,18 @@ export function JobListingsPanel({ jobs }: Props) {
   }, [jobs, activeDept, activeType])
 
   return (
-    <section id="openings" className="bg-white">
-      {/* Filter bar */}
-      <div className="px-8 md:px-16 lg:px-24 py-8 border-b border-kawai-neutral/60">
+    <section id="openings" className="relative bg-kawai-pearl overflow-hidden">
+      {/* Radial gradient orb */}
+      <div
+        className="absolute pointer-events-none inset-0 z-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 50% at 80% 80%, rgba(213,199,140,0.07) 0%, transparent 55%)',
+        }}
+      />
+
+      {/* Sticky glass filter bar */}
+      <div className="relative z-10 px-8 md:px-16 lg:px-24 py-6 border-b border-kawai-neutral/30 bg-white/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] mr-2">
             Department
@@ -78,10 +87,10 @@ export function JobListingsPanel({ jobs }: Props) {
               key={dept}
               onClick={() => setActiveDept(dept)}
               className={cn(
-                'px-4 py-2 text-sm border transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
+                'px-4 py-2 text-sm border rounded-full transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
                 activeDept === dept
                   ? 'bg-kawai-black border-kawai-black text-white'
-                  : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                  : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal hover:bg-white/80',
               )}
             >
               {dept}
@@ -95,10 +104,10 @@ export function JobListingsPanel({ jobs }: Props) {
                 key={type}
                 onClick={() => setActiveType(type)}
                 className={cn(
-                  'px-4 py-2 text-sm border transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
+                  'px-4 py-2 text-sm border rounded-full transition-all duration-150 font-[family-name:var(--font-brand-sans)]',
                   activeType === type
-                    ? 'border-kawai-red text-kawai-red'
-                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal',
+                    ? 'border-kawai-red text-kawai-red bg-kawai-red/5'
+                    : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal hover:bg-white/80',
                 )}
               >
                 {type === 'All'
@@ -110,7 +119,7 @@ export function JobListingsPanel({ jobs }: Props) {
       </div>
 
       {/* Section header */}
-      <div className="px-8 md:px-16 lg:px-24 pt-12 pb-4 flex items-baseline justify-between">
+      <div className="relative z-10 px-8 md:px-16 lg:px-24 pt-12 pb-4 flex items-baseline justify-between">
         <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-brand-luxury)] text-kawai-black">
           Open Positions
         </h2>
@@ -120,7 +129,7 @@ export function JobListingsPanel({ jobs }: Props) {
       </div>
 
       {/* Job list */}
-      <div className="px-8 md:px-16 lg:px-24 pb-20">
+      <div className="relative z-10 px-8 md:px-16 lg:px-24 pb-20">
         {filteredJobs.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-2xl font-[family-name:var(--font-brand-luxury)] text-kawai-charcoal/40 italic">
@@ -129,11 +138,11 @@ export function JobListingsPanel({ jobs }: Props) {
           </div>
         ) : (
           <motion.div variants={listVariants} initial="hidden" animate="visible">
-            <div className="h-px bg-kawai-neutral/60" />
+            <div className="h-px bg-kawai-neutral/40" />
             {filteredJobs.map((job, i) => (
               <motion.div key={job.id} variants={itemVariants} custom={i}>
                 <button onClick={() => setActiveJob(job)} className="w-full text-left group">
-                  <div className="flex items-center gap-6 py-6 border-b border-kawai-neutral/60 hover:bg-kawai-pearl/40 transition-colors duration-150 px-3 -mx-3 rounded">
+                  <div className="flex items-center gap-6 py-6 border-b border-kawai-neutral/40 hover:bg-white/70 hover:backdrop-blur-sm transition-all duration-150 px-3 -mx-3 rounded-xl">
                     {/* Index */}
                     <span className="text-sm font-mono text-kawai-red w-7 flex-shrink-0 font-[family-name:var(--font-brand-sans)]">
                       {String(i + 1).padStart(2, '0')}
@@ -162,13 +171,7 @@ export function JobListingsPanel({ jobs }: Props) {
                     </div>
                     {/* Arrow */}
                     <span className="text-kawai-charcoal/30 group-hover:text-kawai-black transition-colors duration-200 flex-shrink-0">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        aria-hidden="true"
-                      >
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                         <path
                           d="M4 10h12M10 4l6 6-6 6"
                           stroke="currentColor"
@@ -197,21 +200,21 @@ export function JobListingsPanel({ jobs }: Props) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[200] bg-black/30"
+              className="fixed inset-0 z-[200] bg-black/30 backdrop-blur-[2px]"
               onClick={() => setActiveJob(null)}
             />
 
-            {/* Right-side drawer panel */}
+            {/* Frosted glass drawer panel */}
             <motion.div
               key="drawer"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-[201] w-full max-w-md md:max-w-lg bg-kawai-pearl overflow-y-auto flex flex-col shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 z-[201] w-full max-w-md md:max-w-lg bg-white/85 backdrop-blur-xl overflow-y-auto flex flex-col shadow-2xl border-l border-white/60"
             >
               {/* Top bar */}
-              <div className="flex items-center justify-between px-8 py-6 border-b border-kawai-neutral/60 flex-shrink-0">
+              <div className="flex items-center justify-between px-8 py-6 border-b border-kawai-neutral/30 flex-shrink-0">
                 {activeJob.department && (
                   <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-red font-[family-name:var(--font-brand-sans)]">
                     {activeJob.department}
@@ -233,20 +236,20 @@ export function JobListingsPanel({ jobs }: Props) {
                   {activeJob.title}
                 </h3>
 
-                {/* Prominent metadata chips */}
+                {/* Metadata chips */}
                 <div className="flex flex-wrap gap-2 mb-8">
                   {activeJob.department && (
-                    <span className="inline-flex items-center px-3 py-1.5 bg-kawai-black text-white text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]">
+                    <span className="inline-flex items-center px-3 py-1.5 bg-kawai-black text-white text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
                       {activeJob.department}
                     </span>
                   )}
                   {activeJob.type && (
-                    <span className="inline-flex items-center px-3 py-1.5 border border-kawai-neutral text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]">
+                    <span className="inline-flex items-center px-3 py-1.5 border border-kawai-neutral/50 bg-white/50 text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
                       {activeJob.type.replace('-', ' ')}
                     </span>
                   )}
                   {activeJob.location && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-kawai-neutral text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-kawai-neutral/50 bg-white/50 text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
                       <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden="true">
                         <path d="M5 0C2.79 0 1 1.79 1 4c0 2.5 4 8 4 8s4-5.5 4-8c0-2.21-1.79-4-4-4Z" fill="currentColor" fillOpacity="0.5"/>
                         <circle cx="5" cy="4" r="1.5" fill="currentColor"/>
@@ -257,7 +260,7 @@ export function JobListingsPanel({ jobs }: Props) {
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-kawai-neutral/60 mb-8" />
+                <div className="h-px bg-kawai-neutral/30 mb-8" />
 
                 {/* Description snippet */}
                 {activeJob.descriptionSnippet ? (
@@ -278,11 +281,11 @@ export function JobListingsPanel({ jobs }: Props) {
                 )}
               </div>
 
-              {/* CTA Footer — sticky at bottom */}
-              <div className="flex-shrink-0 px-8 py-6 border-t border-kawai-neutral/60 bg-kawai-pearl">
+              {/* CTA Footer */}
+              <div className="flex-shrink-0 px-8 py-6 border-t border-kawai-neutral/25 bg-white/70 backdrop-blur-sm">
                 <Link
                   href={`/careers/${activeJob.slug}#apply`}
-                  className="block w-full py-4 text-center bg-kawai-red text-white text-sm font-medium tracking-[0.06em] uppercase font-[family-name:var(--font-brand-sans)] hover:bg-kawai-black transition-colors duration-200"
+                  className="block w-full py-4 text-center bg-kawai-red text-white text-sm font-medium tracking-[0.06em] uppercase font-[family-name:var(--font-brand-sans)] rounded-xl hover:bg-kawai-black transition-colors duration-200"
                 >
                   Apply Now
                 </Link>
