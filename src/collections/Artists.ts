@@ -28,6 +28,9 @@ export const Artists: CollectionConfig = {
       }
       return `/api/preview?${new URLSearchParams(params).toString()}`
     },
+    components: {
+      beforeList: ['/components/admin/ArtistsButton#SeedArtistsButton'],
+    },
   },
   access: {
     read: () => true,

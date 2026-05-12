@@ -119,6 +119,7 @@ import { supportGroupsSeedPlugin } from './plugins/support-groups-seed'
 import { faqsSeedPlugin } from './plugins/faqs-seed'
 import { musicSchoolSeedPlugin } from './plugins/music-school-seed'
 import { dealersSeedPlugin } from './plugins/dealers-seed'
+import { artistsSeedPlugin } from './plugins/artists-seed'
 // import { categoriesSeedPlugin } from './plugins/categories-seed' // Disabled - needs type regeneration
 // import DealerLocationsSeedPlugin from './plugins/dealer-locations-seed' // Temporarily disabled
 
@@ -409,6 +410,7 @@ export default buildConfig({
     faqsSeedPlugin(),
     musicSchoolSeedPlugin(),
     dealersSeedPlugin(),
+    artistsSeedPlugin(),
     // categoriesSeedPlugin(), // Disabled - needs type regeneration
     // DealerLocationsSeedPlugin, // Temporarily disabled due to TypeScript errors
     // storage-adapter-placeholder

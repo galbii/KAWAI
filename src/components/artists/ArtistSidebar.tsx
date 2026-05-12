@@ -56,7 +56,7 @@ export function ArtistSidebar({
       {/* ── MOBILE HERO (hidden on lg+) ─────────────────────────── */}
       <div className="lg:hidden">
         {/* Back link */}
-        <div className="px-4 pt-5 pb-3">
+        <div className="px-4 pt-8 pb-3">
           <Link
             href="/artists"
             className="inline-flex items-center gap-1.5 text-kawai-charcoal/50 hover:text-kawai-black transition-colors text-xs font-medium group"
