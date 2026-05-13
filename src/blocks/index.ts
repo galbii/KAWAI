@@ -53,10 +53,16 @@ export { UniversityHero } from './events/UniversityHero'
 export { EventOverview } from './events/EventOverview'
 
 // University blocks (university event microsites)
-export { UniversityEventDetails } from './university/UniversityEventDetails'
-export { UniversityFaq } from './university/UniversityFaq'
-export { UniversitySocialProof } from './university/UniversitySocialProof'
+export { UniversityAbout } from './university/UniversityAbout'
+export { UniversityBooking } from './university/UniversityBooking'
 export { UniversityCountdown } from './university/UniversityCountdown'
+export { UniversityEventDetails } from './university/UniversityEventDetails'
+export { UniversityEventHero } from './university/UniversityEventHero'
+export { UniversityFaq } from './university/UniversityFaq'
+export { UniversityLocation } from './university/UniversityLocation'
+export { UniversityPianoShowcase } from './university/UniversityPianoShowcase'
+export { UniversitySocialProof } from './university/UniversitySocialProof'
+export { UniversityValueProps } from './university/UniversityValueProps'
 
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'

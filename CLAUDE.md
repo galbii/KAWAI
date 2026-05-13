@@ -103,7 +103,6 @@ The canonical implementation lives in `src/lib/payload/queries.ts` as `getPayloa
 
 Wrap Payload queries in `unstable_cache` to cache across requests and enable tag-based on-demand revalidation.
 
-**Per-call pattern** (key depends on argument — call immediately):
 ```typescript
 function getDealerBySlug(slug: string) {
   return unstable_cache(
@@ -112,15 +111,6 @@ function getDealerBySlug(slug: string) {
     { tags: [`storefront-${slug}`, 'storefronts'], revalidate: 3600 }
   )()
 }
-```
-
-**Module-level pattern** (no dynamic args — assign once, call like a function):
-```typescript
-const getHomePageData = unstable_cache(
-  async () => { /* payload.find(...) */ },
-  ['home-page-data'],
-  { tags: ['home-page'], revalidate: 3600 }
-)
 ```
 
 **Type annotation gotcha**: Inline `Promise<{ ... } | null>` inside `unstable_cache` throws a parse error — extract to a named type alias before the function.
@@ -151,9 +141,7 @@ Tag keys must be **globally unique** — collisions cause unrelated caches to in
 | Products / storefronts with nested docs | `2` | Justified only when referenced docs themselves have relationships |
 | Storefronts (complex nested data) | `3` | Explicitly justified in `queries.ts` |
 
-**⚠️ The depth: 2 trap for block-heavy pages** — `depth: 2` fires TWO rounds of MongoDB queries. Round 1 populates all direct relationships (e.g. block image → Media). Round 2 then inspects each populated document for *its* relationships. Since Media documents have no relationships, round 2 fires N queries that all return nothing — pure overhead. On a homepage with 15 blocks × 3 images each, this is 45 wasted roundtrips adding ~1.5–3 seconds per cache miss. Always use `depth: 1` for `home-page` and `pianos-page` collections.
-
-**Never use `depth: 3` or higher without justification** — each level multiplies MongoDB lookups recursively.
+**Never use `depth: 3` or higher without justification** — each level multiplies MongoDB lookups recursively. Always use `depth: 1` for `home-page` and `pianos-page` (see depth:2 gotcha below).
 
 ### 5. Always `select` on Bulk Queries
 
@@ -191,70 +179,23 @@ export async function generateStaticParams() {
 }
 ```
 
-### 7. CRITICAL: `force-dynamic` Cancels `revalidate`
+### 7. Import Map
 
-```typescript
-// ❌ WRONG — force-dynamic disables all caching, revalidate is ignored
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600  // This does nothing
+Run `bun run payload generate:importmap` after adding or moving admin components (`autoGenerate: false` in `payload.config.ts`).
 
-// ✅ CORRECT — use one or the other
-export const revalidate = 3600  // ISR (preferred for most pages)
-// OR
-export const dynamic = 'force-dynamic'  // Only for truly real-time pages (e.g. /admin)
-```
+### 8. Layout Architecture — Never Call `headers()` in `(frontend)/layout.tsx`
 
-### 8. Import Map
+Calling `headers()` (or `cookies()`) in `src/app/(frontend)/layout.tsx` forces the entire frontend route tree into dynamic rendering — Cloudflare returns `BYPASS` for every page. Use `usePathname()` in a client shell component instead (see `NammAwareShell`). Wrap data-fetching layout components in `<Suspense fallback={null}>`.
 
-The admin import map (`autoGenerate: false` in `payload.config.ts`) must be regenerated manually after adding or moving admin components:
+### 9. Cloudflare Edge Caching
 
-```bash
-bun run payload generate:importmap
-```
-
-### 9. Layout Architecture — Never Call `headers()` in `(frontend)/layout.tsx`
-
-Calling `headers()` (or `cookies()`) anywhere in `src/app/(frontend)/layout.tsx` forces the **entire frontend route tree** into dynamic rendering — Cloudflare returns `BYPASS` instead of `HIT` for every page.
-
-**Rule**: `(frontend)/layout.tsx` must never import or call `headers()` or `cookies()`.
-
-**Pattern for path-based layout decisions**: Use `usePathname()` in a client shell component, not `headers()` in the server layout. Example: `NammAwareShell` (`src/components/layout/NammAwareShell.tsx`) uses `usePathname()` to suppress the header/footer on NAMM pages.
-
-Wrap all data-fetching layout components in `<Suspense fallback={null}>` so the static shell streams immediately while dynamic parts load. See `src/app/(frontend)/layout.tsx` for the current structure.
-
-### 10. Cloudflare Edge Caching Architecture
-
-**BYPASS instead of HIT**: Next.js RSC adds `Vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch` — Cloudflare refuses to cache when `Vary` contains non-standard headers.
-
-**Fix (dashboard, not code)**: Cloudflare → Caching → Cache Rules → set cache eligible + add `RSC`, `Next-Router-State-Tree`, `Next-Router-Prefetch`, `Next-Router-Segment-Prefetch` to the Cache Key.
-
-**PPR (Partial Prerendering) — NOT available in stable Next.js**
-
-PPR (`experimental.ppr: 'incremental'`) requires the Next.js canary channel, not stable 15.x. Do NOT add it to `next.config.ts` on the stable release — it throws a hard build error.
-
-When PPR becomes stable, add `export const experimental_ppr = true` to individual page files after enabling `ppr: 'incremental'` in `next.config.ts`. The Suspense boundaries added in this session are already the correct prerequisite structure.
-
-### 11. Resource Hints
-
-Resource hints are declared in `src/app/layout.tsx` inside `<head>`. Use `preconnect` for domains needed on first paint (GTM, fonts, YouTube) and `dns-prefetch` for domains loaded later or conditionally (Meta, DoubleClick, PostHog). `preconnect` costs a real TCP+TLS handshake — only use it when the domain is virtually always needed.
+**BYPASS instead of HIT**: Next.js RSC adds `Vary: RSC, Next-Router-State-Tree, ...` — Cloudflare refuses to cache these. Fix in dashboard (not code): Cloudflare → Caching → Cache Rules → add those headers to the Cache Key.
 
 ---
 
 ## TypeScript Best Practices
 
-### Strict Settings
-
-```json
-{
-  "strict": true,
-  "exactOptionalPropertyTypes": true,
-  "noUncheckedIndexedAccess": true
-}
-```
-
-- Array access always returns `T | undefined`
-- All nullable types must be explicitly handled
-- No implicit `any`
+`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess` are all enabled. Array access returns `T | undefined` — always use `?.` or `?? default`.
 
 ### Null Safety Patterns
 
@@ -297,33 +238,9 @@ await payload.find({ collection: 'products' })
 
 ### 2. Transaction Safety in Hooks
 
-```typescript
-// ❌ Missing req — runs in a separate transaction
-async ({ doc, req }) => {
-  await req.payload.update({ collection: 'productlines', id: doc.productline, data: { lastUpdated: new Date() } })
-}
+Always pass `req` to nested Payload operations inside hooks — without it, the operation runs in a separate transaction. Use `context.skipHook: true` to prevent infinite hook loops.
 
-// ✅ Pass req to maintain atomicity
-async ({ doc, req }) => {
-  await req.payload.update({ collection: 'productlines', id: doc.productline, data: { lastUpdated: new Date() }, req })
-}
-```
-
-### 3. Prevent Infinite Hook Loops
-
-```typescript
-// ✅ Use context flag to guard self-triggering updates
-async ({ doc, req, context }) => {
-  if (context.skipHook) return doc
-  await req.payload.update({
-    collection: 'products', id: doc.id,
-    data: { updatedAt: new Date() },
-    context: { skipHook: true }, req,
-  })
-}
-```
-
-### 4. Access Control Functions
+### 3. Access Control Functions
 
 Located in `src/lib/payload/access/index.ts`:
 
@@ -365,25 +282,7 @@ All security lives in three files. Touch only the relevant one:
 
 ### Content Security Policy — `src/lib/csp.ts`
 
-The CSP is a structured TypeScript object — one array per directive. **Adding a new third-party service = add its domain to the right array.**
-
-```typescript
-// src/lib/csp.ts
-'script-src': [
-  "'self'",
-  "'unsafe-inline'",
-  'https://www.googletagmanager.com',
-  'https://new-analytics-tool.com',  // ← add here
-],
-'frame-src': [
-  'https://calendly.com',
-  'https://new-embed.com',           // ← add here
-],
-```
-
-`'unsafe-eval'` is added to `script-src` automatically in dev only (Turbopack needs it for source maps). Never add it for production.
-
-**Admin CSP**: The Payload admin panel (`/admin/*`) gets a separate relaxed policy (`ADMIN_CSP` constant). Don't tighten it — the admin UI requires `unsafe-inline` and `unsafe-eval` to function.
+Structured TypeScript object — one array per directive. Add a new third-party domain to the right array. `'unsafe-eval'` is added to `script-src` automatically in dev only. The admin panel (`/admin/*`) uses a separate `ADMIN_CSP` constant — don't tighten it.
 
 ### Payload-level hardening — `src/payload.config.ts`
 
@@ -461,11 +360,7 @@ const revalidateMyPage = async ({ doc }: { doc: MyType }) => {
 }
 ```
 
-**Hook rules:**
-1. Always pass `req` to nested Payload operations (transaction atomicity)
-2. Guard with `context.skipHook` flag to prevent infinite loops
-3. Fire-and-forget — never `await` the fetch, never throw
-4. Always return `doc`
+Rules: pass `req` to nested operations, guard with `context.skipHook`, fire-and-forget (never `await` the fetch), always return `doc`.
 
 ---
 
@@ -512,12 +407,6 @@ This pattern is already applied in `KawaiLogo` — follow it for any new compone
 
 ---
 
-### Server vs Client Components
-
-All components are Server Components by default. Add `'use client'` only for `useState`/`useEffect`/`useRef`, browser APIs (localStorage, geolocation), or third-party widgets (Calendly, Google Maps).
-
----
-
 ## Media System (Cloudflare R2)
 
 ### Usage
@@ -546,25 +435,9 @@ return <Image {...imageProps} alt={piano.name} />
 
 ### `queries.ts` vs `client.ts` — Critical Distinction
 
-**`src/lib/payload/queries.ts`** — Local API (direct MongoDB, server-only)
-- Uses `getPayloadClient()` → `getPayload({ config })` → Mongoose
-- Zero HTTP overhead — use this for ALL server components, RSC, and Server Actions
-- The `getPayloadClient` export is the canonical way to access Payload
+**`src/lib/payload/queries.ts`** — Local API (direct MongoDB, server-only). Use `getPayloadClient()` for all server components, RSC, and Server Actions.
 
-**`src/lib/payload/client.ts`** — HTTP REST client (fetch-based, works client+server)
-- Uses `fetch()` to call Payload's REST API via HTTP
-- Use this ONLY in Client Components that can't import `server-only` modules
-- ❌ Never call `client.ts` functions from Server Components — it's a self-fetch loop
-
-```typescript
-// ✅ Server Component, Server Action, API route
-import { getPayloadClient } from '@/lib/payload/queries'
-const payload = await getPayloadClient()
-const { docs } = await payload.find({ collection: 'products', ... })
-
-// ✅ Client Component needing CMS data (rare — prefer passing data as props)
-import { getProductBySlug } from '@/lib/payload/client'
-```
+**`src/lib/payload/client.ts`** — HTTP REST client (fetch-based). Use ONLY in Client Components. Never call from Server Components — it creates a self-fetch loop.
 
 ---
 
@@ -628,10 +501,6 @@ Proxied via `/ingest/*` rewrites in `next.config.js` to bypass ad blockers. Requ
 - **Google Analytics**: `NEXT_PUBLIC_GA_ID`
 - **Meta Pixel**: `NEXT_PUBLIC_META_PIXEL_ID` — initialized via `<Script strategy="afterInteractive">` in `src/components/MetaPixel.tsx`. Do NOT add a `useEffect` that also calls `fbq('init')` — that causes duplicate pixel warnings.
 
-### Google Maps
-
-Dealer locator at `/find-a-dealer`. Uses `@vis.gl/react-google-maps` + `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`. Dealer coordinates stored in `Dealers` collection.
-
 ---
 
 ## Styling System
@@ -661,143 +530,21 @@ Defined in `globals.css` under `@theme`. Auto-generates `bg-*`, `text-*`, `borde
 | `kawai-neutral` | `#DBDBDB` | Borders, dividers |
 | `kawai-gold` | `#d5c78c` | Shigeru Kawai premium accent |
 
-Each has a full 50–900 scale (`kawai-red-500`, `kawai-black-900`, etc.). Campaign-specific tokens use the `es60-` prefix.
+Each has a full 50–900 scale (`kawai-red-500`, etc.). Campaign-specific tokens use the `es60-` prefix. New colors go in `globals.css` under `@theme` — auto-generates `bg-*`, `text-*`, `border-*` utilities.
 
-**Usage:**
-```html
-<div class="bg-kawai-pearl text-kawai-black border border-kawai-neutral">
-  <button class="bg-kawai-red text-white hover:bg-kawai-red-700">Buy Now</button>
-</div>
-```
+### Styling Patterns
 
-**Adding a new color:**
-```css
-/* globals.css — inside @theme */
---color-kawai-navy: #1B2A4A;
-```
-This auto-generates `bg-kawai-navy`, `text-kawai-navy`, `border-kawai-navy`. If used only in dynamic class strings, also add it to the `@source inline()` safelist.
+Use `cn()` from `@/lib/utils` (clsx + twMerge) for conditional classes. Use CVA (`class-variance-authority`) for variant props — brand variant names: `primary`, `secondary`, `ghost`. Complex multi-property brand components go in `src/styles/brand-components.css` as `@utility` classes.
 
-### Typography
+### Critical: `@source inline()` Safelist
 
-5 Google Fonts are loaded in `src/app/layout.tsx` as Next.js font variables:
+Dynamic class names (e.g. `bg-${color}`) won't be generated in production — add them to the `@source inline()` safelist in `globals.css`.
 
-| CSS Variable | Font | Use Case |
-|---|---|---|
-| `--font-inter` → `--font-brand-sans` | Inter | Body text, UI, navigation |
-| `--font-crimson` → `--font-brand-serif` / `--font-brand-luxury` | Crimson Text | Editorial headings, product copy |
-| `--font-playfair` | Playfair Display | Legacy/sparse use |
-| `--font-cormorant` → `--font-family-cormorant` | Cormorant Garamond | Artist carousel, Japanese aesthetic sections |
-| `--font-noto` → `--font-family-noto` | Noto Sans | Supplementary sans-serif |
+### Critical: CSS File Isolation — Tailwind v4
 
-**Only Inter is preloaded** (the others have `preload: false` to avoid font preload spam). All five still load — preload only controls eagerness.
+Every CSS file using `@apply` or `@layer` needs its own `@import "tailwindcss"` at the top. PostCSS compiles files independently — they cannot inherit Tailwind from another file.
 
-**Usage in Tailwind:**
-```html
-<h1 class="font-[family-name:var(--font-brand-luxury)]">Concert Grand</h1>
-<p class="font-[family-name:var(--font-brand-sans)]">Natural sound technology...</p>
-```
-
-Custom utility classes from `brand-components.css` (e.g. `kawai-heading`, `heading-brand-hero`) apply fonts automatically.
-
-### Component Styling Approach
-
-#### 1. Generated utilities (preferred — 80% of styling)
-
-Use Tailwind utilities generated from `@theme` tokens directly:
-```html
-<div class="bg-kawai-pearl text-kawai-black shadow-brand-medium rounded-lg p-6">
-```
-
-#### 2. `cn()` for conditional/merged classes
-
-```typescript
-import { cn } from '@/lib/utils'  // clsx + tailwind-merge
-
-<div className={cn(
-  "base-class px-4 py-2",
-  isActive && "bg-kawai-red text-white",
-  className  // Always accept and merge external className prop
-)} />
-```
-
-#### 3. CVA for component variants
-
-Use `class-variance-authority` for type-safe variant props. Brand variant names: `primary` (kawai-red), `secondary` (bordered), `ghost` (text-only). See `src/components/ui/` for existing CVA implementations.
-
-#### 4. `@utility` for complex brand components
-
-For multi-property components with pseudo-class logic that would be unwieldy as inline utilities, define them in `src/styles/brand-components.css` using the `@utility` directive, then add the class name to the `@source inline()` safelist in `globals.css`.
-
-### Shadow Scale
-
-| Token | Usage |
-|-------|-------|
-| `shadow-brand-subtle` | Cards at rest, inputs |
-| `shadow-brand-medium` | Cards on hover, modals |
-| `shadow-brand-premium` | Feature hero cards, elevated UI |
-| `shadow-brand-red-glow` | Primary CTA buttons |
-
-### Custom Spacing (Brand Ma Scale)
-
-Japanese Ma spacing philosophy — used for brand-aligned white space:
-
-```html
-<section class="py-brand-4xl">        <!-- 96px vertical padding -->
-  <div class="mb-brand-xl gap-brand-lg">  <!-- 32px margin, 24px gap -->
-```
-
-Scale: `brand-xs` (4px) → `brand-sm` (8px) → `brand-md` (16px) → `brand-lg` (24px) → `brand-xl` (32px) → `brand-2xl` (48px) → `brand-3xl` (64px) → `brand-4xl` (96px)
-
-### Animation Tokens
-
-```css
-/* Custom easing curves */
---ease-piano: cubic-bezier(0.4, 0, 0.2, 1)     /* Standard — most UI transitions */
---ease-elegant: cubic-bezier(0.25, 0.46, 0.45, 0.94)  /* Softer — content reveals */
-```
-
-Use in Tailwind: `transition-[transform] duration-300 ease-[var(--ease-piano)]`
-
-Motion animations use Framer Motion (`motion.div`) for complex sequences — see `src/components/ui/animations/`.
-
-### Custom Breakpoint
-
-```css
---breakpoint-3xl: 120rem  /* 1920px — for very large display layouts */
-```
-
-Usage: `3xl:grid-cols-4`
-
-### `@source inline()` Safelist
-
-Tailwind v4 only generates utilities that it can statically scan in source files. Dynamic class names (built at runtime, e.g. `bg-${color}`) won't be generated unless added to the safelist in `globals.css`:
-
-```css
-@source inline("{bg-kawai-red, text-kawai-black, card-brand-intimate, ...}");
-```
-
-**Always add new dynamic class names here** — otherwise they'll work in dev (JIT scanning) but disappear in production builds.
-
-### CSS File Isolation — Tailwind v4
-
-**Critical**: Tailwind v4 compiles each CSS file independently via PostCSS. A CSS file that uses `@apply`, `@layer`, or `@theme` directives MUST contain its own `@import "tailwindcss"` at the top. It cannot inherit Tailwind from another file's import.
-
-```css
-/* ✅ Every CSS file that uses @apply must have this */
-@import "tailwindcss";
-
-@layer base {
-  .my-component {
-    @apply shadow-lg text-kawai-black;  /* Works — Tailwind is imported */
-  }
-}
-```
-
-Campaign-specific CSS files (e.g. university `globals.css`) must each have their own `@import "tailwindcss"`. Do not try to "share" the import from `src/app/globals.css`.
-
-### Accessibility
-
-`prefers-reduced-motion` is handled globally in `globals.css` — all animation/transition durations are overridden to `0.01ms`. No per-component motion guards needed.
+`prefers-reduced-motion` is handled globally in `globals.css` — no per-component guards needed.
 
 ---
 
@@ -844,7 +591,7 @@ The site serves two domains from a single Next.js codebase. Middleware detects t
 **Middleware** (`src/middleware.ts`):
 ```typescript
 const host = request.headers.get('host') ?? ''
-const site = host.startsWith('cad.') ? 'cad' : 'us'
+const site = host.startsWith('ca.') ? 'cad' : 'us'
 requestHeaders.set('x-site', site)
 ```
 
@@ -854,8 +601,22 @@ import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-
 ```
 - `getSite()` — async, server-only, returns `'us' | 'cad'`
 - `getSiteName(site)` — `'Kawai America'` or `'Kawai Canada'`
-- `getSiteUrl(site)` — `'https://www.kawaius.com'` or `'https://cad.kawaius.com'`
+- `getSiteUrl(site)` — `'https://www.kawaius.com'` or `'https://ca.kawaius.com'`
 - `getSiteAlternates(path)` — hreflang object for `alternates.languages` in metadata
+
+### CA Shopify: Pricing & Checkout Only
+
+There are **two separate Shopify stores**: US (`kawaius.myshopify.com`) and CA (`kawai-canada.myshopify.com`).
+
+**Architectural rule**: All product content (descriptions, images, product structure, metafields) lives in US Shopify / Payload CMS. The CA Shopify store is used **exclusively for CAD pricing display and CA checkout**. No content is replicated to CA Shopify.
+
+When on `ca.kawaius.com`, `BlockRenderer` calls `getProductByModel(model, 'cad')` which:
+1. Uses the US Admin API to resolve `custom.model` → product handle (US has "use as identifier" set on the metafield)
+2. Uses the CA Admin API to fetch the product by that handle, returning CA pricing
+
+Cart functions (`src/lib/shopify/cart.ts`) auto-detect the site from `window.location.hostname` and route to the correct Shopify Storefront API — no prop threading required. localStorage cart keys are namespaced (`kawai_shopify_cart_id` for US, `kawai_shopify_cart_id_ca` for CA) so carts never bleed across stores.
+
+**Why two-step CA product lookup?** Shopify's `productByIdentifier(customId: ...)` requires the metafield definition to have a "use as identifier" flag set in Shopify Admin. The CA store was created without this flag. Instead of `productByIdentifier` on CA, we use `productByHandle` — which has no such requirement — with the handle resolved first via the US store.
 
 ### Patterns
 
@@ -870,44 +631,49 @@ if (site === 'cad') { /* Canada-specific logic */ }
 const site = headersList.get('x-site') ?? 'us'
 ```
 
-**Client Components** — cannot use `getSite()`. Create a thin server wrapper that reads `getSite()` and passes `isCanada` as a prop. See `src/components/blocks/ProductHeroBlockWrapper.tsx` as the pattern.
+**Client Components** — cannot use `getSite()`. Create a thin server wrapper that reads `getSite()` and passes `site` as a prop. See `src/components/blocks/ProductHeroBlockWrapper.tsx` as the pattern.
+
+```typescript
+// Server wrapper pattern (ProductHeroBlockWrapper.tsx)
+export async function ProductHeroBlockWrapper(props: Props) {
+  const site = await getSite()  // 'us' | 'cad'
+  return <ProductHeroBlock {...props} site={site} />
+}
+
+// Client component receives site prop
+function ProductHeroBlock({ site = 'us', ...props }) {
+  // Use site === 'cad' for Canada-specific conditional logic
+}
+```
+
+**Cart functions are site-aware automatically** — all exported functions detect site from `window.location.hostname` internally. No prop threading needed.
 
 ### What's already implemented
 
-| Feature | File | What changes on CAD |
-|---------|------|---------------------|
+| Feature | File | What changes on CA domain |
+|---------|------|--------------------------|
 | Page title suffix | `src/app/layout.tsx` | "Kawai Canada" instead of "Kawai America" |
 | hreflang + canonical | All `generateMetadata` in `(frontend)/` | `en-CA` / `en-US` alternates |
 | Sitemap | `src/app/sitemap.ts` | Domain-aware base URL + alternates |
 | Robots.txt | `src/app/robots.ts` | Points to correct domain's sitemap |
-| Product Hero | `src/components/blocks/ProductHeroBlockWrapper.tsx` | Hides price, Buy Now, Add to Cart; shows Find a Dealer |
+| Product Hero | `src/components/blocks/ProductHeroBlockWrapper.tsx` | Shows CA price from CA Shopify + CA checkout cart |
 | Header branding | `src/components/layout/header-dynamic.tsx` | Shows "Canada Music" in logo |
+| Cart routing | `src/lib/shopify/cart.ts` | All cart operations use CA Storefront API |
+| Cart storage | `src/lib/shopify/cart-storage.ts` | localStorage keyed `_ca` suffix, separate from US cart |
 
 ### Adding new Canada-specific behavior
 
 For server components, it's one check:
 ```typescript
 const site = await getSite()
-const isCanada = site === 'cad'
+if (site === 'cad') { /* Canada-specific */ }
 ```
 
-For client components, follow the `ProductHeroBlockWrapper` pattern — server wrapper passes `isCanada` prop down.
+For client components, follow the `ProductHeroBlockWrapper` pattern — server wrapper passes `site` prop down. Use `site === 'cad'` rather than an `isCanada` boolean.
 
 ### Adding hreflang to a new page
 
-Every new page in `(frontend)/` needs `generateMetadata` with `getSiteAlternates`. Without this, the new page breaks `en-CA`/`en-US` alternates:
-
-```typescript
-import { getSite, getSiteAlternates } from '@/lib/site-context'
-
-export async function generateMetadata() {
-  const site = await getSite()
-  return {
-    title: 'Page Title',
-    alternates: getSiteAlternates('/your-path'),  // generates en-US + en-CA hreflang
-  }
-}
-```
+Every new page in `(frontend)/` needs `generateMetadata` with `getSiteAlternates('/your-path')`. Without this, the new page breaks `en-CA`/`en-US` alternates. See any existing page for the pattern.
 
 ---
 
@@ -938,6 +704,9 @@ export async function generateMetadata() {
 | **`depth: 2` on block-heavy singletons** | On `home-page` / `pianos-page` with 15+ blocks × 3 images: depth:2 fires 45–90 wasted MongoDB roundtrips (round 2 inspects Media docs that have no relationships). Use `depth: 1`. |
 | **YouTube iframe cycling** | Auto-rotating carousels using `AnimatePresence` + `setInterval` remount the YouTube player every rotation. Pause the interval when the current slide has a `videoId` to prevent full player destruction/recreation. |
 | **Tailwind v4 CSS file isolation** | Each CSS file using `@apply` or `@layer` must have its own `@import "tailwindcss"`. Files cannot inherit Tailwind from another file — PostCSS compiles them independently. Missing import = build error "Cannot apply unknown utility class". |
+| **CA `productByIdentifier` limitation** | Shopify's `productByIdentifier(customId: ...)` requires the metafield definition to have "use as identifier" enabled in Shopify Admin. The CA store was created without this. CA product lookup uses a two-step approach: US Admin API resolves model→handle, CA Admin API fetches by handle via `productByHandle`. |
+| **CA cart auto-detection** | Cart functions in `cart.ts` and `cart-storage.ts` detect site from `window.location.hostname` internally — no `site` prop threading to callers. US cart key: `kawai_shopify_cart_id`. CA cart key: `kawai_shopify_cart_id_ca`. |
+| **CA `site` prop, not `isCanada`** | Client components use `site?: 'us' \| 'cad'` prop (not a boolean `isCanada`). Server wrappers read `getSite()` and pass it down. The `'cad'` value is the discriminant — compare with `site === 'cad'`. |
 
 ---
 

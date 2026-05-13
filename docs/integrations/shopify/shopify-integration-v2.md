@@ -3255,6 +3255,120 @@ interface Cart {
 
 ---
 
+## Multi-Store Setup (US + CA)
+
+KAWAI runs two separate Shopify stores from a single Next.js codebase: one for the US (`kawaius.myshopify.com`) and one for Canada (`kawai-canada.myshopify.com`). They share the same codebase but use different API credentials based on the domain.
+
+### Purpose
+
+**US store** — product catalog, content, customer CRM, all US orders.
+
+**CA store** — **pricing display and checkout only**. All product content (descriptions, images, metafields, product structure) lives in the US store. The CA store is only consulted for CAD pricing and to create CA checkout carts. There is no content sync between stores.
+
+### Environment Variables
+
+```bash
+# US store (primary)
+SHOPIFY_STORE_DOMAIN=kawaius.myshopify.com
+SHOPIFY_APP_API_KEY=...
+SHOPIFY_APP_CLIENT_SECRET=...
+NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN=...
+NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN=kawaius.myshopify.com
+
+# CA store (pricing + checkout only)
+SHOPIFY_CA_STORE_DOMAIN=kawai-canada.myshopify.com
+SHOPIFY_CA_APP_API_KEY=...
+SHOPIFY_CA_APP_CLIENT_SECRET=...
+NEXT_PUBLIC_SHOPIFY_CA_STOREFRONT_ACCESS_TOKEN=...
+NEXT_PUBLIC_SHOPIFY_CA_STORE_DOMAIN=kawai-canada.myshopify.com
+```
+
+### API Clients
+
+Four clients are exported from `src/lib/shopify/`:
+
+| Client | File | Auth | Used for |
+|--------|------|------|---------|
+| `shopifyClient` | `client.ts` | Storefront public token | US cart, product storefront queries |
+| `shopifyClientCA` | `client.ts` | CA storefront public token | CA cart, CA storefront queries |
+| `shopifyAdminClient` | `admin-client.ts` | US OAuth (auto-refresh) | US product lookup, customer CRM |
+| `shopifyAdminClientCA` | `admin-client.ts` | CA OAuth (auto-refresh) | CA product lookup by handle |
+
+CA admin auth is handled by `src/lib/shopify/auth-ca.ts` — a separate token cache using `SHOPIFY_CA_*` credentials, identical in structure to the US OAuth flow.
+
+### CA Product Lookup: Two-Step Pattern
+
+Shopify's `productByIdentifier(customId: ...)` requires the metafield definition to have a "use as identifier" flag set in Shopify Admin. The CA store was created without this flag, so `productByIdentifier` throws a GraphQL error on CA.
+
+**Solution** — fetch by handle instead, using a two-step lookup:
+
+```typescript
+if (isCA) {
+  // Step 1: resolve model → handle using US Admin API
+  // US store has "use as identifier" set on custom.model
+  const usProduct = await fetchShopifyProductByModel(normalizedModel)
+
+  if (usProduct?.handle) {
+    // Step 2: fetch CA product by handle using CA Admin API
+    // productByHandle has no "use as identifier" requirement
+    adminProduct = await fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
+  }
+} else {
+  adminProduct = await fetchShopifyProductByModel(normalizedModel)
+}
+```
+
+`fetchShopifyProductByModel` uses `PRODUCT_BY_METAFIELD_QUERY` (`productByIdentifier`).
+`fetchShopifyProduct` uses `PRODUCT_BY_HANDLE_QUERY` (`productByHandle` — no identifier flag needed).
+
+Both are in `src/lib/shopify/fetch-product.ts`. The two-step logic lives in `src/lib/shopify/products.ts` inside `getProductByModel`.
+
+### Cart Site Detection
+
+Cart functions in `src/lib/shopify/cart.ts` detect the active store from `window.location.hostname` at call time — no `site` prop threading to callers:
+
+```typescript
+function getCartClient() {
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('ca.')) {
+    return shopifyClientCA
+  }
+  return shopifyClient
+}
+```
+
+All exported cart functions (`createCart`, `addToCart`, `updateCartLine`, `removeFromCart`, `getCart`, `applyDiscountCode`, `updateCartAttributes`, `clearDiscountCodes`) call `getCartClient()` internally. `AddToCartButton` and all cart components need no changes when switching stores.
+
+### Cart Storage Namespacing
+
+`src/lib/shopify/cart-storage.ts` namespaces localStorage keys per store so US and CA carts never collide:
+
+| Domain | Cart ID key | Expiration key |
+|--------|-------------|----------------|
+| US (`kawaius.com`) | `kawai_shopify_cart_id` | `kawai_shopify_cart_expiration` |
+| CA (`ca.kawaius.com`) | `kawai_shopify_cart_id_ca` | `kawai_shopify_cart_expiration_ca` |
+
+The suffix is derived from `window.location.hostname.startsWith('ca.')` at call time, same pattern as cart client detection.
+
+### Site Prop in Client Components
+
+Server components read `getSite()` (server-only) and pass `site: 'us' | 'cad'` down to client components that need to branch on store. Use `site === 'cad'` as the discriminant — never pass a boolean `isCanada`.
+
+```typescript
+// Server wrapper
+export async function ProductHeroBlockWrapper(props: Props) {
+  const site = await getSite()
+  return <ProductHeroBlock {...props} site={site} />
+}
+
+// Client component
+function ProductHeroBlock({ site = 'us', shopifyProduct, ... }) {
+  const canAddToCart = !!shopifyProduct && !!selectedVariant && selectedVariant.available
+  // Cart functions auto-detect store from hostname — no site prop needed in cart calls
+}
+```
+
+---
+
 **Document Version:** 2.0
-**Last Updated:** January 2026
+**Last Updated:** May 2026
 **Integration Version:** 2025-01 (Admin API), 2024-01 (Storefront API)

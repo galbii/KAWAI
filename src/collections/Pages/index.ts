@@ -155,6 +155,18 @@ export const Pages: CollectionConfig<'pages'> = {
                 'events-university-hero',           // University Hero
                 'events-event-overview',            // Event Overview
 
+                // University blocks - University event microsites
+                'university-about',                 // About the Event
+                'university-booking',               // Booking / Registration
+                'university-countdown',             // Countdown Timer
+                'university-event-details',         // Event Details
+                'university-event-hero',            // University Event Hero
+                'university-faq',                   // FAQ
+                'university-location',              // Location / Venue
+                'university-piano-showcase',        // Piano Showcase
+                'university-social-proof',          // Social Proof / Testimonials
+                'university-value-props',           // Value Propositions
+
                 // Product blocks
                 'product-hero-carousel',            // Product Hero Carousel
                 'product-piano-pages',              // Piano Pages Browser (category-scoped)
