@@ -3333,10 +3333,6 @@ export interface ProductFeatureSlidesBlock {
          */
         overlayOpacity?: number | null;
         /**
-         * Where the title/description appears on the slide
-         */
-        contentPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center' | 'center-left' | 'center-right') | null;
-        /**
          * Optional call-to-action link for this slide
          */
         cta?: {

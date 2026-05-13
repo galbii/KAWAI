@@ -53,27 +53,42 @@ const EMPTY: ShigeruModelShopifyData = {
   specBeams: null,
 }
 
-// Looks up the first customMedia image for a given model from Payload CMS.
-// Returns null if no customMedia image is set — caller falls back to Shopify.
-async function getCustomMediaUrl(payload: Awaited<ReturnType<typeof getPayloadClient>>, model: string): Promise<string | null> {
+// Looks up image URL for a given model from Payload CMS.
+// Priority: customMedia[0].image → synced imageUrl field.
+// Returns null if neither is set — caller falls back to Shopify API.
+async function getPayloadImageUrl(payload: Awaited<ReturnType<typeof getPayloadClient>>, model: string): Promise<string | null> {
   try {
     const result = await payload.find({
       collection: 'products',
       where: { model: { equals: model } },
-      select: { customMedia: true },
+      select: { customMedia: true, imageUrl: true, variations: true },
       depth: 1,
       limit: 1,
     })
     const doc = result.docs[0]
-    if (!doc?.customMedia?.length) return null
-    const firstImage = doc.customMedia.find(
-      (item) => !item.mediaType || item.mediaType === 'media',
-    )
-    if (!firstImage?.image) return null
-    const img = firstImage.image as Media | string
-    return typeof img === 'object' && img !== null && 'url' in img
-      ? (img.url ?? null)
-      : null
+
+    // 1. Custom media override
+    if (doc?.customMedia?.length) {
+      const firstImage = doc.customMedia.find(
+        (item) => !item.mediaType || item.mediaType === 'media',
+      )
+      if (firstImage?.image) {
+        const img = firstImage.image as Media | string
+        const url = typeof img === 'object' && img !== null && 'url' in img
+          ? (img.url ?? null)
+          : null
+        if (url) return url
+      }
+    }
+
+    // 2. Shopify-synced top-level imageUrl
+    if (doc?.imageUrl) return doc.imageUrl
+
+    // 3. First variant imageUrl as last resort
+    const firstVariantImage = doc?.variations?.find((v: any) => v.imageUrl)?.imageUrl ?? null
+    if (firstVariantImage) return firstVariantImage
+
+    return null
   } catch {
     return null
   }
@@ -89,13 +104,13 @@ export const getShigeruPageData = unstable_cache(
       SK_MODELS.map(async (model) => {
         const key = model.toLowerCase().replace(/-/g, '') // 'SK-EX' → 'skex'
         try {
-          const [shopifyProduct, customMediaUrl] = await Promise.all([
+          const [shopifyProduct, payloadImageUrl] = await Promise.all([
             fetchShopifyProductByModel(model),
-            getCustomMediaUrl(payload, model),
+            getPayloadImageUrl(payload, model),
           ])
           const shopifyImageUrl =
             shopifyProduct?.featuredImage?.url ?? shopifyProduct?.images?.[0]?.url ?? null
-          const imageUrl = customMediaUrl ?? shopifyImageUrl
+          const imageUrl = payloadImageUrl ?? shopifyImageUrl
           const finishes =
             shopifyProduct?.variants
               .filter((v) => v.title !== 'Default Title')

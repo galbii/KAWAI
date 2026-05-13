@@ -405,9 +405,6 @@ export async function HeaderDynamic() {
     // Check if we're on the concert-artist page
     const isConcertArtistPage = pathname === '/concert-artist' || pathname === '/concert-artist/'
 
-    // Check if we're on a university event page
-    const isUniversityPage = pathname.includes('/university')
-
     // Check if we're on the find-a-dealer page (hide search on this page)
     const isFindADealerPage = pathname.startsWith('/find-a-dealer')
 
@@ -440,7 +437,6 @@ export async function HeaderDynamic() {
         locationData={locationData}
         isSignaturePage={isSignaturePage}
         hidePianoLinks={isConcertArtistPage}
-        isUniversityPage={isUniversityPage}
         isFindADealerPage={isFindADealerPage}
         newsItems={newsItems}
         latestPosts={latestPosts}
@@ -465,9 +461,8 @@ export async function HeaderDynamic() {
                             fallbackPathname.endsWith('/signature2') || fallbackPathname.endsWith('/signature2/') ||
                             fallbackPathname.endsWith('/gl-10-signature') || fallbackPathname.endsWith('/gl-10-signature/')
     const isConcertArtistPage = fallbackPathname === '/concert-artist' || fallbackPathname === '/concert-artist/'
-    const isUniversityPage = fallbackPathname.includes('/university')
     const isFindADealerPage = fallbackPathname.startsWith('/find-a-dealer')
 
-    return <Header navigation={[]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isUniversityPage={isUniversityPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
+    return <Header navigation={[]} isSignaturePage={isSignaturePage} hidePianoLinks={isConcertArtistPage} isFindADealerPage={isFindADealerPage} newsItems={[]} />
   }
 }

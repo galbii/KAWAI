@@ -1,51 +1,109 @@
 import { UniversityClientWrapper } from './university-client-wrapper';
-import { getStorefrontBySlugDirect } from '@/lib/payload/queries';
+import { getStorefrontBySlugDirect, getPayloadClient } from '@/lib/payload/queries';
 import { notFound } from 'next/navigation';
+import { unstable_cache } from 'next/cache';
+import { draftMode } from 'next/headers';
+import type { Metadata } from 'next';
+import type { Page } from '@/payload-types';
+import { RenderBlocks } from '@/components/RenderBlocks';
+import { Hero as PageHero } from '@/components/Hero';
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 
-// Force dynamic rendering - this page needs the slug param which is only available at request time
-// University pages are unique per storefront and require database validation
 export const dynamic = 'force-dynamic';
-
-// Allow dynamic rendering for unknown slugs
-// This enables the page to work with any storefront slug from the CMS
 export const dynamicParams = true;
 
-// Optional: Pre-generate known storefront university pages at build time
-// Note: This function will not throw errors - it returns empty array on failure
 export async function generateStaticParams() {
-  try {
-    // We don't have a direct method to fetch all storefronts,
-    // so we'll skip static generation and rely on dynamic rendering
-    // This is appropriate for a CMS-driven site where storefronts may change frequently
-    return [];
-  } catch (error) {
-    console.error('Error generating static params for university pages:', error);
-    return [];
-  }
+  return [];
 }
 
-export default async function UniversityPage({ params }: { params: Promise<{ storeslug: string }> }) {
-  // Await params as required by Next.js 15
+type Params = { params: Promise<{ storeslug: string }> }
+
+function getCmsPage(slugPath: string, isDraftMode: boolean): Promise<Page | null> {
+  if (isDraftMode) {
+    return (async () => {
+      const payload = await getPayloadClient()
+      return payload
+        .find({
+          collection: 'pages',
+          where: { slug: { equals: slugPath } },
+          limit: 1,
+          depth: 1,
+          draft: true,
+          overrideAccess: true,
+        })
+        .then(({ docs }) => (docs[0] as Page) ?? null)
+    })()
+  }
+
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      return payload
+        .find({
+          collection: 'pages',
+          where: { slug: { equals: slugPath }, _status: { equals: 'published' } },
+          limit: 1,
+          depth: 1,
+        })
+        .then(({ docs }) => (docs[0] as Page) ?? null)
+    },
+    [`page-${slugPath}`],
+    { tags: [`page-${slugPath}`, 'pages'], revalidate: 3600 },
+  )()
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { storeslug } = await params;
+  const slugPath = `store/${storeslug}/university`;
+  const page = await getCmsPage(slugPath, false);
+  if (!page?.seo) return {};
+
+  const { seo } = page;
+  const metaTitle = seo.metaTitle || `${page.title} | Kawai Pianos`;
+  const metaDescription = seo.metaDescription || '';
+  const ogTitle = seo.openGraphTitle || metaTitle;
+  const ogDescription = seo.openGraphDescription || metaDescription;
+  const ogImage = seo.openGraphImage;
+  const ogImageUrl =
+    ogImage && typeof ogImage === 'object' && 'url' in ogImage && ogImage.url
+      ? ogImage.url
+      : undefined;
+
+  return {
+    title: { absolute: metaTitle },
+    description: metaDescription,
+    ...(seo.keywords ? { keywords: seo.keywords } : {}),
+    openGraph: {
+      title: ogTitle,
+      description: ogDescription,
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl }] } : {}),
+    },
+  };
+}
+
+export default async function UniversityPage({ params }: Params) {
   const { storeslug } = await params;
 
-  // Validate that the storefront exists and is active using direct database access
-  // This works during build time unlike API fetch
-  let storefrontExists = false;
+  const storefront = await getStorefrontBySlugDirect(storeslug).catch(() => null);
+  if (!storefront) notFound();
 
-  try {
-    const storefront = await getStorefrontBySlugDirect(storeslug);
-    storefrontExists = storefront !== null;
-  } catch (error) {
-    console.error(`Error checking storefront ${storeslug}:`, error);
-    // If there's an error fetching, assume it doesn't exist
-    storefrontExists = false;
+  const { isEnabled: isDraftMode } = await draftMode();
+  const slugPath = `store/${storeslug}/university`;
+  const cmsPage = await getCmsPage(slugPath, isDraftMode);
+
+  if (cmsPage) {
+    return (
+      <>
+        <AdminBarDoc
+          collection="pages"
+          id={String(cmsPage.id)}
+          collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+        />
+        {cmsPage.hero && <PageHero hero={cmsPage.hero} />}
+        {cmsPage.layout?.length ? <RenderBlocks blocks={cmsPage.layout} /> : null}
+      </>
+    );
   }
 
-  if (!storefrontExists) {
-    console.log(`Storefront ${storeslug} not found or inactive, showing 404`);
-    notFound();
-  }
-
-  // Header is rendered by the parent (frontend)/layout.tsx
   return <UniversityClientWrapper />;
 }

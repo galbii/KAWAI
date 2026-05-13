@@ -39,7 +39,6 @@ interface FeatureSlide {
   youtubeUrl?:      string | null
   video?:           Media | string | null
   overlayOpacity?:  number | null
-  contentPosition?: 'bottom-left' | 'bottom-right' | 'bottom-center' | 'center-left' | 'center-right' | null
   cta?: {
     text?:         string | null
     link?:         string | null
@@ -78,11 +77,8 @@ function parseYouTubeUrl(url: string): string {
 }
 
 const POS: Record<string, string> = {
-  'center-left':   'top-1/2 -translate-y-1/2 left-8 md:left-20 max-w-lg',
-  'center-right':  'top-1/2 -translate-y-1/2 right-8 md:right-20 max-w-lg',
-  'bottom-left':   'bottom-16 left-8 md:left-20 max-w-lg',
-  'bottom-right':  'bottom-16 right-8 md:right-20 max-w-lg',
-  'bottom-center': 'bottom-16 left-1/2 -translate-x-1/2 max-w-2xl text-center',
+  'center-left':  'top-1/2 -translate-y-1/2 left-16 md:left-24 lg:left-32 w-[min(82vw,920px)]',
+  'center-right': 'top-1/2 -translate-y-1/2 right-16 md:right-24 lg:right-32 w-[min(82vw,920px)]',
 }
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
@@ -115,9 +111,8 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
   const n = Math.min(features!.length, 10)
   const safeFeatures = features!.slice(0, n).map(f => ({
-    contentPosition: 'center-left' as const,
-    overlayOpacity:  40,
-    mediaType:       'image' as const,
+    overlayOpacity: 40,
+    mediaType:      'image' as const,
     ...f,
   } satisfies FeatureSlide))
   const isDark = theme !== 'light'
@@ -276,10 +271,9 @@ function Inner(props: ProductFeatureSlidesBlock) {
   }, [n, goTo])
 
   const current      = safeFeatures[activeIndex]
-  const pos          = current?.contentPosition ?? 'center-left'
-  const posClass     = POS[pos] ?? (POS['center-left'] as string)
-  const isRight      = pos === 'center-right' || pos === 'bottom-right'
-  const isCenter     = pos === 'bottom-center'
+  const pos          = activeIndex % 2 === 0 ? 'center-left' : 'center-right'
+  const posClass     = POS[pos] as string
+  const isRight      = pos === 'center-right'
   const textColor    = isDark ? 'text-white'    : 'text-zinc-900'
   const mutedColor   = isDark ? 'text-white/80' : 'text-zinc-600'
   const counterMuted = isDark ? 'text-white/45' : 'text-zinc-400'
@@ -294,17 +288,17 @@ function Inner(props: ProductFeatureSlidesBlock) {
 
       {/* ── Optional section header — normal page flow, above the cards ── */}
       {sectionHeader?.heading && (
-        <div className="px-8 md:px-16 py-20 max-w-4xl">
+        <div className="px-8 md:px-20 py-20 max-w-3xl">
           {sectionHeader.eyebrow && (
-            <p className="text-[10px] tracking-[0.36em] uppercase font-mono text-[#e21d30] mb-4">
+            <p className="text-[8px] tracking-[0.55em] uppercase font-mono text-[#e21d30] mb-5">
               {sectionHeader.eyebrow}
             </p>
           )}
-          <h2 className="font-serif text-4xl md:text-5xl leading-tight text-zinc-900 mb-3">
+          <h2 className="font-serif text-4xl md:text-5xl leading-[1.08] font-light tracking-[0.01em] text-zinc-900 mb-5">
             {sectionHeader.heading}
           </h2>
           {sectionHeader.subheading && (
-            <p className="text-lg text-zinc-500 leading-relaxed max-w-2xl">
+            <p className="text-[13px] text-zinc-500 leading-[1.85] tracking-[0.02em] font-light max-w-[44ch]">
               {sectionHeader.subheading}
             </p>
           )}
@@ -359,12 +353,10 @@ function Inner(props: ProductFeatureSlidesBlock) {
                   `linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.08) 52%, transparent 72%)`,
                   // Top edge — subtle, keeps counter readable
                   `linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, transparent 16%)`,
-                  // Side vignette — pulls eye toward content panel
-                  (pos === 'center-left' || pos === 'bottom-left')
+                  // Side vignette — alternates with slide position
+                  i % 2 === 0
                     ? `linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
-                    : (pos === 'center-right' || pos === 'bottom-right')
-                      ? `linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
-                      : `linear-gradient(to top, rgba(0,0,0,0.28) 0%, transparent 42%)`,
+                    : `linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`,
                 ].join(', '),
               }}
             />
@@ -388,77 +380,88 @@ function Inner(props: ProductFeatureSlidesBlock) {
         */}
         <div
           key={activeIndex}
-          className={`absolute ${posClass} ${textColor}`}
+          className={`absolute ${posClass} ${textColor} ${isRight ? 'text-right' : ''}`}
           style={{ zIndex: n + 2 }}
         >
+
+          {/* Tag — uppercase mono label + full-width editorial rule */}
           {current?.tag && (
             <div
-              className={`flex items-center gap-3 mb-5 ${isRight ? 'justify-end flex-row-reverse' : isCenter ? 'justify-center' : ''}`}
-              style={{ animation: `kw-in 0.65s ${EASE} 0.1s both` }}
+              style={{ animation: `kw-in 0.65s ${EASE} 0.08s both` }}
+              className="mb-5"
             >
-              <span className="block w-7 h-px bg-[#e21d30] flex-shrink-0" />
               <span
-                className="text-[9px] tracking-[0.38em] uppercase font-mono text-[#e21d30]"
-                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+                className="text-[8px] tracking-[0.55em] uppercase font-mono text-[#e21d30]"
+                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}
               >
                 {current.tag}
               </span>
+              {/* Thin rule — editorial separator */}
+              <div
+                className="mt-2.5 h-px bg-current opacity-20"
+                style={{ animation: `kw-in 0.5s ${EASE} 0.28s both` }}
+              />
             </div>
           )}
 
+          {/* Title — fluid viewport sizing keeps it to 1 line on most screens */}
           {current?.title && (
             <h3
-              className="font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.07] font-black mb-4"
+              className="font-serif leading-[1.03] font-light tracking-[-0.01em] mb-8"
               style={{
+                fontSize: 'clamp(2.25rem, 3.8vw, 5.25rem)',
                 textShadow: TEXT_SHADOW,
-                animation: `kw-in 0.85s ${EASE} 0.22s both`,
+                animation: `kw-in 0.9s ${EASE} 0.2s both`,
               }}
             >
               {current.title}
             </h3>
           )}
 
+          {/* Subtitle — treated as a fine-print label, not body text */}
           {current?.subtitle && (
             <p
-              className={`text-base md:text-lg font-semibold tracking-wide mb-3 ${mutedColor}`}
+              className={`text-[10px] tracking-[0.3em] uppercase font-light mb-4 max-w-xs ${isRight ? 'ml-auto' : ''} ${mutedColor}`}
               style={{
                 textShadow: TEXT_SHADOW,
-                animation: `kw-in 0.8s ${EASE} 0.38s both`,
+                animation: `kw-in 0.75s ${EASE} 0.36s both`,
               }}
             >
               {current.subtitle}
             </p>
           )}
 
+          {/* Description — narrow column, anchored to the same side as the panel */}
           {current?.description && (
             <p
-              className={`text-sm md:text-[15px] leading-relaxed max-w-sm font-medium ${mutedColor}`}
+              className={`text-[13px] leading-[1.85] tracking-[0.02em] font-light max-w-xs ${isRight ? 'ml-auto' : ''} ${mutedColor}`}
               style={{
                 textShadow: TEXT_SHADOW,
-                animation: `kw-in 0.8s ${EASE} 0.5s both`,
+                animation: `kw-in 0.8s ${EASE} 0.48s both`,
               }}
             >
               {current.description}
             </p>
           )}
 
+          {/* CTA */}
           {current?.cta?.text && (
-            <div style={{ animation: `kw-in 0.7s ${EASE} 0.62s both` }} className="mt-9">
+            <div style={{ animation: `kw-in 0.7s ${EASE} 0.62s both` }} className="mt-10">
               <Link
                 href={current.cta.link ?? '#'}
                 target={current.cta.openInNewTab ? '_blank' : '_self'}
                 rel={current.cta.openInNewTab ? 'noopener noreferrer' : undefined}
                 className={[
-                  'group inline-flex items-center gap-4 px-7 py-3',
-                  'border text-[9px] tracking-[0.36em] uppercase font-mono font-semibold',
+                  'group inline-flex items-center gap-5 px-0 py-2',
+                  'border-b text-[8px] tracking-[0.46em] uppercase font-mono',
                   'transition-all duration-500',
                   isDark
-                    ? 'border-white/40 text-white hover:bg-[#e21d30] hover:border-[#e21d30]'
-                    : 'border-zinc-800/30 text-zinc-900 hover:bg-[#e21d30] hover:border-[#e21d30] hover:text-white',
+                    ? 'border-white/25 text-white/80 hover:text-white hover:border-white/60'
+                    : 'border-zinc-800/25 text-zinc-700 hover:text-zinc-900 hover:border-zinc-800/60',
                 ].join(' ')}
               >
                 {current.cta.text}
-                <span className="transition-transform duration-500 group-hover:translate-x-1.5">→</span>
+                <span className="transition-transform duration-500 group-hover:translate-x-2 text-[#e21d30]">→</span>
               </Link>
             </div>
           )}

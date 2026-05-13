@@ -425,7 +425,6 @@ interface HeaderProps {
   locationData?: DealerLocationData | null
   isSignaturePage?: boolean
   hidePianoLinks?: boolean
-  isUniversityPage?: boolean
   isFindADealerPage?: boolean
   hideLogo?: boolean
   newsItems?: NewsItem[]
@@ -453,7 +452,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isUniversityPage = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, storeLocations, autoMinimize = true }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, storeLocations, autoMinimize = true }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
@@ -918,7 +917,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
             </div>
 
             {/* Home Icon + SearchBar - Center (Desktop Only) */}
-            {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+            {!isSignaturePage && !hidePianoLinks && (
               <div className="hidden md:flex items-center flex-1 max-w-2xl mx-8 gap-3">
                 {/* Home Icon */}
                 <ContextAwareLink
@@ -940,7 +939,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
             {/* Right Side - Cart + CTA/Dealer Link + Mobile Menu */}
             <div className="flex items-center gap-2">
               {/* Find a Dealer - Desktop (non-storefront pages) */}
-              {!isSignaturePage && !isUniversityPage && !currentLocationData && (
+              {!isSignaturePage && !currentLocationData && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -958,7 +957,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Visit Showroom CTA - Desktop (dealer location pages, not on music school pages) */}
-              {currentLocationData && currentLocationData.slug && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
+              {currentLocationData && currentLocationData.slug && !isSignaturePage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -977,7 +976,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Kawai Music School dropdown - Desktop (dealer location pages, only if school exists, not on music school pages) */}
-              {currentLocationData?.hasMusicSchool && !isSignaturePage && !isUniversityPage && !isMusicSchoolPage && (
+              {currentLocationData?.hasMusicSchool && !isSignaturePage && !isMusicSchoolPage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -1048,7 +1047,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Cart Icon */}
-              {!isSignaturePage && !isUniversityPage && (
+              {!isSignaturePage && (
                 <motion.div
                   className="hidden xl:flex items-center"
                   initial={{ opacity: 0, x: 20 }}
@@ -1060,14 +1059,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
               )}
 
               {/* Cart Icon - Mobile */}
-              {!isSignaturePage && !isUniversityPage && (
+              {!isSignaturePage && (
                 <div className="xl:hidden flex items-center">
                   <CartIcon onOpen={() => setIsCartOpen(true)} />
                 </div>
               )}
 
               {/* Mobile Menu Button */}
-              {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+              {!isSignaturePage && !hidePianoLinks && (
                 <motion.button
                   ref={menuButtonRef}
                   className="xl:hidden p-2 rounded-md transition-colors hover:bg-kawai-pearl focus:outline-none focus:ring-2 focus:ring-kawai-red focus:ring-offset-2"
@@ -1109,12 +1108,12 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
 
       {/* Red line — mobile only (desktop gets it from the bottom nav) */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+      {!isSignaturePage && !hidePianoLinks && (
         <div className="xl:hidden w-full h-[6px] bg-[#A01829]" />
       )}
 
       {/* Bottom Row - Main Navigation (Full Width) - Auto-hides, reveals on hover */}
-      {!isSignaturePage && !hidePianoLinks && !isUniversityPage && !isSearchOpen && (
+      {!isSignaturePage && !hidePianoLinks && !isSearchOpen && (
         <div
           className="hidden xl:block w-full"
           onMouseEnter={handleBottomNavMouseEnter}
@@ -1264,7 +1263,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
       {/* Mobile Menu — portaled to document.body so it always sits above the portaled search bar */}
       {isMounted && createPortal(
         <AnimatePresence>
-          {isMenuOpen && !isSignaturePage && !hidePianoLinks && !isUniversityPage && (
+          {isMenuOpen && !isSignaturePage && !hidePianoLinks && (
             <>
               <motion.div
                 className="fixed inset-0 z-[9500] bg-black/20 xl:hidden"

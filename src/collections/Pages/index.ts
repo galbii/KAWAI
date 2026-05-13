@@ -187,6 +187,9 @@ export const Pages: CollectionConfig<'pages'> = {
                 initCollapsed: true,
                 description:
                   'Build your page using specialized layout blocks for dynamic pages.',
+                components: {
+                  Field: '/components/admin/TabbedBlocksField#TabbedBlocksField',
+                },
               },
             },
           ],

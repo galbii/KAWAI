@@ -144,23 +144,6 @@ export const ProductFeatureSlides: Block = {
           },
         },
 
-        // Content panel position
-        {
-          name: 'contentPosition',
-          type: 'select',
-          defaultValue: 'bottom-left',
-          options: [
-            { label: 'Bottom Left', value: 'bottom-left' },
-            { label: 'Bottom Right', value: 'bottom-right' },
-            { label: 'Bottom Center', value: 'bottom-center' },
-            { label: 'Center Left', value: 'center-left' },
-            { label: 'Center Right', value: 'center-right' },
-          ],
-          admin: {
-            description: 'Where the title/description appears on the slide',
-          },
-        },
-
         // Optional CTA
         {
           name: 'cta',

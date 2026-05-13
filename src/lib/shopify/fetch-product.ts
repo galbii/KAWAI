@@ -761,24 +761,100 @@ const PRODUCT_BY_METAFIELD_QUERY = `
   }
 `
 
+// Fallback: Admin API tag search used when productByIdentifier fails because the
+// metafield definition doesn't have "use as identifier" enabled in Shopify Admin.
+const PRODUCT_BY_TAG_ADMIN_QUERY = `
+  query GetProductByTag($query: String!) {
+    products(first: 1, query: $query) {
+      edges {
+        node {
+          ...ProductTagFields
+        }
+      }
+    }
+  }
+
+  fragment ProductTagFields on Product {
+    id
+    title
+    handle
+    description
+    descriptionHtml
+    vendor
+    productType
+    tags
+    status
+    createdAt
+    updatedAt
+    publishedAt
+
+    priceRangeV2 {
+      minVariantPrice { amount currencyCode }
+      maxVariantPrice { amount currencyCode }
+    }
+
+    compareAtPriceRange {
+      minVariantCompareAtPrice { amount currencyCode }
+      maxVariantCompareAtPrice { amount currencyCode }
+    }
+
+    featuredImage { url altText width height }
+
+    images(first: 20) {
+      edges { node { url altText width height } }
+    }
+
+    variants(first: 100) {
+      edges {
+        node {
+          id title price compareAtPrice sku barcode availableForSale inventoryQuantity
+          inventoryItem { tracked }
+          image { url altText width height }
+          selectedOptions { name value }
+        }
+      }
+    }
+
+    metafield_model: metafield(namespace: "custom", key: "model") { key value type }
+    metafield_blueprint: metafield(namespace: "custom", key: "blueprint") {
+      key value type
+      reference { ... on MediaImage { id image { url altText width height } } }
+    }
+    metafield_specifications: metafield(namespace: "custom", key: "specifications") {
+      key value type
+      references(first: 50) {
+        edges { node { ... on Metaobject { id type fields { key value } } } }
+      }
+    }
+    metafield_highlights: metafield(namespace: "custom", key: "highlights") {
+      key value type
+      references(first: 20) {
+        edges { node { ... on Metaobject { id type fields { key value } } } }
+      }
+    }
+    metafield_specification_json: metafield(namespace: "custom", key: "specification_json") { key value type }
+    metafield_action: metafield(namespace: "custom", key: "action") { key value type }
+    metafield_tone: metafield(namespace: "custom", key: "tone") { key value type }
+    metafield_features: metafield(namespace: "custom", key: "features") { key value type }
+    metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+      reference { ... on GenericFile { url } }
+    }
+
+    seo { title description }
+    category { id name fullName }
+    collections(first: 10) {
+      edges { node { id title handle image { url } } }
+    }
+  }
+`
+
 /**
  * Fetch product from Shopify by model identifier using custom metafield
  *
- * This uses the Admin API's productByIdentifier query with customId to find
- * products by their custom.model metafield value. This is more structured
- * than tag-based search and separates product identification from tagging.
+ * Primary: productByIdentifier with customId (requires "use as identifier" on metafield).
+ * Fallback: Admin API products query filtered by tag when primary fails.
  *
  * @param model - Product model identifier (e.g., "CA99", "GX-7")
- * @returns Product data or null if not found
- * @throws Error if API request fails
- *
- * @example
- * ```typescript
- * const product = await fetchShopifyProductByModel('CA99')
- * if (product) {
- *   console.log(product.title, product.price.display)
- * }
- * ```
  */
 export async function fetchShopifyProductByModel(
   model: string,
@@ -815,6 +891,42 @@ export async function fetchShopifyProductByModel(
     return transformed
 
   } catch (error) {
+    // productByIdentifier requires "use as identifier" on the metafield definition.
+    // Fall back to tag-based Admin API search when that flag isn't set.
+    const isIdentifierError =
+      error instanceof Error &&
+      error.message.includes('Metafield definition of type')
+
+    if (isIdentifierError) {
+      console.warn(
+        `[Shopify Fetch] productByIdentifier not available for "${normalizedModel}", falling back to tag search`
+      )
+      try {
+        const tagData = await adminClient.query<{
+          products: { edges: Array<{ node: any }> }
+        }>(PRODUCT_BY_TAG_ADMIN_QUERY, {
+          query: `tag:${normalizedModel}`,
+        }, {
+          revalidate: 3600,
+        })
+
+        const tagProduct = tagData.products.edges[0]?.node ?? null
+        if (!tagProduct) {
+          console.warn(`[Shopify Fetch] No product found via tag "${normalizedModel}"`)
+          return null
+        }
+
+        const transformed = transformShopifyProduct(tagProduct)
+        console.log(
+          `[Shopify Fetch] Successfully fetched "${transformed.title}" via tag fallback (model: ${normalizedModel})`
+        )
+        return transformed
+      } catch (fallbackError) {
+        console.error(`[Shopify Fetch] Tag fallback also failed for "${normalizedModel}":`, fallbackError)
+        return null
+      }
+    }
+
     console.error(`[Shopify Fetch] Error fetching by metafield:`, error)
     throw error
   }
