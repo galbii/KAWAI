@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/constant-contact/lists
- * Create a new contact list
+ * Create a new contact list — admin only
  *
  * Body: { name: string, description?: string }
  */
@@ -96,6 +96,15 @@ export async function POST(request: NextRequest) {
   try {
     // Get Payload instance
     const payload = await getPayload({ config })
+
+    // Require authenticated admin
+    const { user } = await payload.auth({ headers: request.headers })
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+    if ((user as { role?: string }).role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Forbidden — admin only' }, { status: 403 })
+    }
 
     // Parse request body
     const body = await request.json()

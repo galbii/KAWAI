@@ -112,10 +112,16 @@ export interface Config {
     'marketing-newsletter-popup': MarketingNewsletterPopupBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
-    'university-event-details': UniversityEventDetailsBlock;
-    'university-faq': UniversityFaqBlock;
-    'university-social-proof': UniversitySocialProofBlock;
+    'university-about': UniversityAboutBlock;
+    'university-booking': UniversityBookingBlock;
     'university-countdown': UniversityCountdownBlock;
+    'university-event-details': UniversityEventDetailsBlock;
+    'university-event-hero': UniversityEventHeroBlock;
+    'university-faq': UniversityFaqBlock;
+    'university-location': UniversityLocationBlock;
+    'university-piano-showcase': UniversityPianoShowcaseBlock;
+    'university-social-proof': UniversitySocialProofBlock;
+    'university-value-props': UniversityValuePropsBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-description': ProductDescriptionBlock;
@@ -6949,6 +6955,154 @@ export interface EventsEventOverviewBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityAboutBlock".
+ */
+export interface UniversityAboutBlock {
+  /**
+   * Primary section heading (e.g. "Houston's Premier Piano Sale Event")
+   */
+  sectionHeading?: string | null;
+  /**
+   * Part of the heading to highlight in Kawai Red (must appear verbatim in the heading)
+   */
+  headingHighlight?: string | null;
+  /**
+   * Logo displayed above the section heading (optional)
+   */
+  partnerLogo?: (string | null) | Media;
+  /**
+   * Scrolling marquee / category label bar text (e.g. "HOUSTON PIANO SALES | BABY GRANDS | ...")
+   */
+  categoryLabel?: string | null;
+  /**
+   * Add up to 6 description paragraphs (each rendered as a separate <p>)
+   */
+  descriptionParagraphs?:
+    | {
+        /**
+         * Paragraph text
+         */
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Add up to 6 gallery images. The first image renders large (hero position).
+   */
+  gallery?:
+    | {
+        /**
+         * Gallery image
+         */
+        image: string | Media;
+        /**
+         * Optional alt text / caption for this image
+         */
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Upload a PDF partnership letter or event document
+   */
+  partnershipDocument?: (string | null) | Media;
+  /**
+   * Show a "View Partnership Letter" button linking to this document
+   */
+  showDocumentButton?: boolean | null;
+  /**
+   * Label for the document download/view button
+   */
+  documentButtonLabel?: string | null;
+  /**
+   * Section background colour
+   */
+  backgroundColor?: ('white' | 'pearl' | 'black') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-about';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityBookingBlock".
+ */
+export interface UniversityBookingBlock {
+  /**
+   * Section heading (e.g., "Book Your Appointment")
+   */
+  heading?: string | null;
+  /**
+   * Short subheading below the main heading
+   */
+  subheading?: string | null;
+  /**
+   * Longer description shown on the left column (desktop). Supports plain text.
+   */
+  description?: string | null;
+  /**
+   * Small text above the contact form fields (e.g., "Enter your details to continue")
+   */
+  formIntroText?: string | null;
+  /**
+   * Privacy / anti-spam notice shown below the form submit button
+   */
+  privacyNotice?: string | null;
+  /**
+   * Full Calendly event URL (e.g., https://calendly.com/your-org/event-name)
+   */
+  calendlyUrl: string;
+  /**
+   * Short reassurance phrases (e.g., "Secure booking", "No spam ever")
+   */
+  trustBadges?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Background color for the entire booking section
+   */
+  backgroundColor?: ('light' | 'white' | 'dark' | 'red') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-booking';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityCountdownBlock".
+ */
+export interface UniversityCountdownBlock {
+  /**
+   * Date/time the countdown counts down to — component hides once this passes
+   */
+  targetDate: string;
+  /**
+   * Short label shown above the countdown (e.g., "Piano Sale Ends")
+   */
+  eventLabel?: string | null;
+  /**
+   * CTA button label
+   */
+  ctaButtonText?: string | null;
+  /**
+   * Section ID to scroll to when the button is clicked (include the #)
+   */
+  ctaScrollTarget?: string | null;
+  /**
+   * Fixed position of the floating timer
+   */
+  position?: ('bottom-right' | 'bottom-left' | 'bottom-center') | null;
+  /**
+   * Show timer after user has scrolled this % of the page (0–100)
+   */
+  showAfterScrollPercent?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-countdown';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "UniversityEventDetailsBlock".
  */
 export interface UniversityEventDetailsBlock {
@@ -7007,6 +7161,125 @@ export interface UniversityEventDetailsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityEventHeroBlock".
+ */
+export interface UniversityEventHeroBlock {
+  /**
+   * Left partner logo (e.g. Kawai) — transparent PNG recommended
+   */
+  leftLogo: string | Media;
+  /**
+   * Right partner logo (e.g. University) — leave empty for single-logo mode
+   */
+  rightLogo?: (string | null) | Media;
+  /**
+   * Logo height (applies to both logos)
+   */
+  logoSize?: ('small' | 'medium' | 'large' | 'xlarge') | null;
+  /**
+   * Separator character between logos (dual-logo mode only)
+   */
+  separatorStyle?: ('x' | 'times' | 'plus' | 'ampersand') | null;
+  /**
+   * Small uppercase text above the logos (e.g. "Texas Southern University is proud to present")
+   */
+  eyebrow?: string | null;
+  /**
+   * Main headline text (optional — logos are the primary visual when omitted)
+   */
+  headline?: string | null;
+  /**
+   * Supporting text below logos/headline — event dates, description, value prop
+   */
+  subheadline?: string | null;
+  /**
+   * Optional italic note below the CTA buttons (e.g. "Your purchase supports the Music Department")
+   */
+  supportingMessage?: string | null;
+  /**
+   * Primary call-to-action button (e.g. Book Appointment)
+   */
+  primaryCta?: {
+    /**
+     * Button label (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button URL
+     */
+    link?: string | null;
+    /**
+     * Button visual style
+     */
+    style?: ('primary' | 'outline' | 'frosted') | null;
+    /**
+     * Open in new tab
+     */
+    openInNewTab?: boolean | null;
+    /**
+     * Scroll to element with this ID on click instead of navigating (overrides link)
+     */
+    scrollToId?: string | null;
+  };
+  /**
+   * Secondary call-to-action button (e.g. View Piano Collection)
+   */
+  secondaryCta?: {
+    /**
+     * Button label (leave empty to hide)
+     */
+    text?: string | null;
+    /**
+     * Button URL
+     */
+    link?: string | null;
+    /**
+     * Button visual style
+     */
+    style?: ('primary' | 'outline' | 'frosted') | null;
+    /**
+     * Open in new tab
+     */
+    openInNewTab?: boolean | null;
+    /**
+     * Scroll to element with this ID on click instead of navigating (overrides link)
+     */
+    scrollToId?: string | null;
+  };
+  /**
+   * Direct MP4/WebM video URL for looping background (takes priority over image). Use a CDN-hosted path like /videos/hero.mp4.
+   */
+  backgroundVideoUrl?: string | null;
+  /**
+   * Start playback at this time in seconds (e.g. 13 = jump to 0:13)
+   */
+  videoStartTime?: number | null;
+  /**
+   * Fallback background image — used when no video URL is set (recommended: 1920x1080px landscape)
+   */
+  backgroundImage?: (string | null) | Media;
+  /**
+   * Overlay colour for text readability
+   */
+  overlayColor?: ('dark' | 'light' | 'red' | 'none') | null;
+  /**
+   * Overlay opacity (0 = transparent, 1 = solid)
+   */
+  overlayOpacity?: number | null;
+  /**
+   * Hero section height
+   */
+  height?: ('compact' | 'medium' | 'large' | 'viewport') | null;
+  /**
+   * Primary text colour for all hero content
+   */
+  textColor?: ('white' | 'black' | 'charcoal') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-event-hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "UniversityFaqBlock".
  */
 export interface UniversityFaqBlock {
@@ -7035,6 +7308,180 @@ export interface UniversityFaqBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'university-faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityLocationBlock".
+ */
+export interface UniversityLocationBlock {
+  /**
+   * Section heading (e.g., "Find Us")
+   */
+  heading?: string | null;
+  /**
+   * Name of the venue or building
+   */
+  venueName?: string | null;
+  /**
+   * Street address
+   */
+  addressLine1?: string | null;
+  /**
+   * Suite, floor, building (optional)
+   */
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  /**
+   * Contact phone number
+   */
+  phone?: string | null;
+  /**
+   * Contact email address (optional)
+   */
+  email?: string | null;
+  /**
+   * Google Maps embed URL — get it from Google Maps → Share → Embed a map → copy the src value (starts with https://www.google.com/maps/embed?...)
+   */
+  googleMapsEmbedUrl?: string | null;
+  /**
+   * Each row represents a day or range of days
+   */
+  hours?:
+    | {
+        /**
+         * Day or day range
+         */
+        dayLabel: string;
+        /**
+         * Hours for this day/range
+         */
+        hoursText: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Show an inline Constant Contact form in the right panel
+   */
+  showContactForm?: boolean | null;
+  /**
+   * Constant Contact form UUID (data-form-id value from the ctct-inline-form div)
+   */
+  constantContactFormId?: string | null;
+  /**
+   * Heading above the Constant Contact form
+   */
+  contactFormHeading?: string | null;
+  /**
+   * Short description below the form heading
+   */
+  contactFormDescription?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-location';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityPianoShowcaseBlock".
+ */
+export interface UniversityPianoShowcaseBlock {
+  /**
+   * Small eyebrow label above the heading (e.g. "FEATURED MODELS")
+   */
+  sectionLabel?: string | null;
+  /**
+   * Main section heading
+   */
+  heading: string;
+  /**
+   * Subtitle line below the heading
+   */
+  subheading?: string | null;
+  /**
+   * Featured piano models — displayed alternating image left/right
+   */
+  pianos?:
+    | {
+        /**
+         * Display name (e.g. "Kawai ES-120")
+         */
+        name: string;
+        /**
+         * Model number / SKU (e.g. "ES-120")
+         */
+        modelNumber?: string | null;
+        /**
+         * Category label (e.g. "Digital Piano", "Grand Piano")
+         */
+        category?: string | null;
+        /**
+         * Badge overlay text (e.g. "Most Popular", "Best Value")
+         */
+        badgeText?: string | null;
+        /**
+         * Piano description paragraph (2–4 sentences)
+         */
+        description?: string | null;
+        /**
+         * Piano product image (recommended: 800×600px, transparent or white background)
+         */
+        image: string | Media;
+        /**
+         * Original MSRP price (USD, no formatting)
+         */
+        originalPrice?: number | null;
+        /**
+         * University sale price (USD, no formatting)
+         */
+        salePrice?: number | null;
+        /**
+         * Savings label (e.g. "Save $150" or "Save 14%")
+         */
+        savingsText?: string | null;
+        /**
+         * Feature bullet points (3–5 recommended)
+         */
+        keyFeatures?:
+          | {
+              feature: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Button text (leave empty to hide)
+         */
+        ctaText?: string | null;
+        /**
+         * Button destination URL
+         */
+        ctaLink?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Heading above the bottom CTA (e.g. "Schedule Your Personal Appointment")
+   */
+  sectionCtaHeading?: string | null;
+  /**
+   * Supporting text beneath the CTA heading
+   */
+  sectionCtaSubtext?: string | null;
+  /**
+   * CTA button text (leave empty to hide)
+   */
+  sectionCtaButtonText?: string | null;
+  /**
+   * CTA button destination URL
+   */
+  sectionCtaButtonLink?: string | null;
+  /**
+   * Small note beneath the button (e.g. event dates, fine print)
+   */
+  sectionCtaNote?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-piano-showcase';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -7097,36 +7544,82 @@ export interface UniversitySocialProofBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "UniversityCountdownBlock".
+ * via the `definition` "UniversityValuePropsBlock".
  */
-export interface UniversityCountdownBlock {
+export interface UniversityValuePropsBlock {
   /**
-   * Date/time the countdown counts down to — component hides once this passes
+   * Section heading (e.g. "Special University Pricing")
    */
-  targetDate: string;
+  heading: string;
   /**
-   * Short label shown above the countdown (e.g., "Piano Sale Ends")
+   * Optional subheading below the main heading
    */
-  eventLabel?: string | null;
+  subheading?: string | null;
   /**
-   * CTA button label
+   * Full-bleed background image (recommended: 1920×1080px or higher, dark scene works best)
    */
-  ctaButtonText?: string | null;
+  backgroundImage?: (string | null) | Media;
   /**
-   * Section ID to scroll to when the button is clicked (include the #)
+   * Overlay color for text legibility
    */
-  ctaScrollTarget?: string | null;
+  overlayColor?: ('dark' | 'red' | 'navy' | 'none') | null;
   /**
-   * Fixed position of the floating timer
+   * Overlay opacity (0 = none, 1 = fully opaque)
    */
-  position?: ('bottom-right' | 'bottom-left' | 'bottom-center') | null;
+  overlayOpacity?: number | null;
   /**
-   * Show timer after user has scrolled this % of the page (0–100)
+   * Add up to 3 value propositions (3-column layout)
    */
-  showAfterScrollPercent?: number | null;
+  propositions?:
+    | {
+        /**
+         * Icon displayed above the title
+         */
+        icon:
+          | 'shield'
+          | 'star'
+          | 'truck'
+          | 'piano'
+          | 'clock'
+          | 'check'
+          | 'heart'
+          | 'award'
+          | 'graduation-cap'
+          | 'phone';
+        /**
+         * Proposition title
+         */
+        title: string;
+        /**
+         * Brief description (1–3 sentences)
+         */
+        description?: string | null;
+        /**
+         * Button / link text (leave empty to hide)
+         */
+        ctaText?: string | null;
+        /**
+         * Destination URL
+         */
+        ctaLink?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Small badge text above the CTA (e.g. "Limited appointment slots")
+   */
+  sectionCtaBadgeText?: string | null;
+  /**
+   * CTA button text (leave empty to hide)
+   */
+  sectionCtaText?: string | null;
+  /**
+   * CTA destination URL
+   */
+  sectionCtaLink?: string | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'university-countdown';
+  blockType: 'university-value-props';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -8110,6 +8603,16 @@ export interface Page {
     | MarketingBlogLatestBlock
     | EventsUniversityHeroBlock
     | EventsEventOverviewBlock
+    | UniversityAboutBlock
+    | UniversityBookingBlock
+    | UniversityCountdownBlock
+    | UniversityEventDetailsBlock
+    | UniversityEventHeroBlock
+    | UniversityFaqBlock
+    | UniversityLocationBlock
+    | UniversityPianoShowcaseBlock
+    | UniversitySocialProofBlock
+    | UniversityValuePropsBlock
     | ProductHeroCarouselBlock
     | ProductPianoPagesBlock
     | LayoutBrandIntroBlock

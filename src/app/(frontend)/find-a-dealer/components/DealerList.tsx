@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import type { DealerWithDistance } from '../types'
 import { DealerCard } from './DealerCard'
 import { MapPin } from 'lucide-react'
@@ -8,9 +9,21 @@ interface Props {
   dealers: DealerWithDistance[]
   selectedDealer: string | null
   onDealerSelect: (dealerId: string | null) => void
+  searchLabel?: string | undefined
 }
 
-export function DealerList({ dealers, selectedDealer, onDealerSelect }: Props) {
+export function DealerList({ dealers, selectedDealer, onDealerSelect, searchLabel }: Props) {
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  // When a map marker is clicked, scroll the matching card into view
+  useEffect(() => {
+    if (!selectedDealer) return
+    const el = cardRefs.current.get(selectedDealer)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [selectedDealer])
+
   if (dealers.length === 0) {
     return (
       <div className="flex items-center justify-center h-full p-8">
@@ -36,6 +49,9 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect }: Props) {
         <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-kawai-charcoal/50">
           {dealers.length} {dealers.length === 1 ? 'Dealer' : 'Dealers'}
         </p>
+        {searchLabel && (
+          <p className="text-[11px] text-kawai-charcoal/40 mt-0.5 truncate">Near {searchLabel}</p>
+        )}
       </div>
 
       {/* Scrollable list */}
@@ -43,8 +59,12 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect }: Props) {
         {dealers.map((dealer, index) => (
           <div
             key={dealer.id}
+            ref={el => {
+              if (el) cardRefs.current.set(dealer.id as string, el)
+              else cardRefs.current.delete(dealer.id as string)
+            }}
             className="dealer-card-animate"
-            style={{ animationDelay: `${60 * index}ms` }}
+            style={{ animationDelay: `${Math.min(index * 30, 300)}ms` }}
           >
             <DealerCard
               dealer={dealer}

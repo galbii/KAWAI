@@ -37,13 +37,15 @@ interface Props {
   onSearch: (results: DealerWithDistance[], location?: { lat: number; lng: number }) => void
   onLocationSearch: (location: { lat: number; lng: number }, address: string) => void
   onDealerSelect?: (dealerId: string) => void
+  /** Called when the user explicitly clears the search — lets the parent reset location state. */
+  onClear?: () => void
   /** 'floating' = frosted glass, dropdown above (default). 'inline' = minimal underline, dropdown below. */
   variant?: 'floating' | 'inline'
   /** Auto-focus the input on mount (used when expanding from FAB). */
   autoFocus?: boolean
 }
 
-export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect, variant = 'floating', autoFocus }: Props) {
+export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect, onClear, variant = 'floating', autoFocus }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [locationPredictions, setLocationPredictions] = useState<NominatimResult[]>([])
   const [dealerResults, setDealerResults] = useState<SearchResult[]>([])
@@ -342,7 +344,8 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
     setShowDropdown(false)
     setCurrentLocation(null)
     onSearch(dealers)
-  }, [dealers, onSearch])
+    onClear?.()
+  }, [dealers, onSearch, onClear])
 
   // Clean up debounce on unmount
   useEffect(() => {

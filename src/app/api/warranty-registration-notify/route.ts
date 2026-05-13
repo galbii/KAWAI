@@ -11,6 +11,13 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request: Request) {
   console.log('[warranty-notify] POST received')
 
+  // Require shared secret to prevent inbox spam
+  const auth = request.headers.get('authorization') ?? ''
+  const secret = process.env.REVALIDATION_SECRET
+  if (!secret || auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { formId } = body as { formId?: string }

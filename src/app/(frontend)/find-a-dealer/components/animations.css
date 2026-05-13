@@ -41,11 +41,11 @@
   animation: slideDownFadeIn 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Dealer Card Stagger Animation - MOBILE ONLY */
+/* Dealer Card Stagger Animation */
 @keyframes cardSlideUpFadeIn {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -53,22 +53,19 @@
   }
 }
 
-/* Desktop: No animation - instant, professional */
+/* Desktop: subtle stagger (re-enabled) */
 @media (min-width: 1024px) {
   .dealer-card-animate {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
+    animation: cardSlideUpFadeIn 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
   }
 }
 
-/* Mobile: Delightful stagger animation */
+/* Mobile: slightly more expressive stagger */
 @media (max-width: 1023px) {
   .dealer-card-animate {
     animation: cardSlideUpFadeIn 400ms cubic-bezier(0.4, 0.0, 0.2, 1) both;
   }
 
-  /* Stagger delay for each card (applied via inline style) */
   .dealer-card-animate[style*="animation-delay"] {
     animation-delay: var(--animation-delay);
   }
@@ -164,6 +161,27 @@
   animation: fadeIn 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
+/* Empty State Icon Float */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.empty-state-float {
+  animation: floatUp 3s ease-in-out infinite;
+}
+
+/* Results Refresh — quick fade signal when filter changes */
+@keyframes fadeRefresh {
+  0%   { opacity: 1; }
+  40%  { opacity: 0.35; }
+  100% { opacity: 1; }
+}
+
+.results-refresh {
+  animation: fadeRefresh 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Loading Skeleton Shimmer */
 @keyframes shimmer {
   0% {
@@ -191,7 +209,8 @@
   .dealer-card-animate,
   .autocomplete-dropdown,
   .filter-panel-slide,
-  .fade-in {
+  .fade-in,
+  .results-refresh {
     animation: none;
     opacity: 1;
     transform: none;
@@ -199,7 +218,8 @@
 
   .marker-pulse,
   .selected-marker-pulse,
-  .skeleton-shimmer {
+  .skeleton-shimmer,
+  .empty-state-float {
     animation: none;
   }
 

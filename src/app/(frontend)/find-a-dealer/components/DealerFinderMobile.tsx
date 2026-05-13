@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
 import { DealerMapLibre } from './DealerMapLibre'
@@ -109,10 +109,10 @@ export function DealerFinderMobile({ dealers }: Props) {
 
   const handleDealerSelect = useCallback((dealerId: string | null) => {
     setSelectedDealer(dealerId)
-    if (dealerId && viewMode === 'list') {
+    if (dealerId) {
       setDealerSheetOpen(true)
     }
-  }, [viewMode])
+  }, [])
 
   const handleFilterChange = useCallback((dealerTypes: string[], radius: number) => {
     setSelectedDealerTypes(dealerTypes)
@@ -345,88 +345,100 @@ export function DealerFinderMobile({ dealers }: Props) {
         onFilterChange={handleFilterChange}
       />
 
-      {/* Selected Dealer Bottom Sheet */}
-      {dealerSheetOpen && selectedDealerData && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/30 z-50 animate-in fade-in duration-200"
-            onClick={() => setDealerSheetOpen(false)}
-          />
-          <div className="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-kawai-neutral px-6 py-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-kawai-charcoal">
-                {selectedDealerData.dealerName}
-              </h3>
-              <button
-                onClick={() => setDealerSheetOpen(false)}
-                className="p-2 hover:bg-kawai-pearl rounded-full transition-colors active:scale-95"
-              >
-                <X className="w-5 h-5 text-kawai-charcoal/50" strokeWidth={2} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {selectedDealerData.address && (
-                <div>
-                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
-                    Address
-                  </h4>
-                  <address className="text-sm text-kawai-charcoal/75 not-italic leading-relaxed">
-                    {selectedDealerData.address.street}<br />
-                    {selectedDealerData.address.city}, {selectedDealerData.address.state} {selectedDealerData.address.zipCode}
-                  </address>
-                </div>
-              )}
-
-              <div>
-                <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-3">
-                  Contact
-                </h4>
-                <div className="space-y-3">
-                  {selectedDealerData.contactInfo?.phone && (
-                    <a
-                      href={`tel:${selectedDealerData.contactInfo.phone}`}
-                      className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-kawai-red text-white rounded-xl font-medium text-sm active:scale-95 transition-transform"
-                    >
-                      <span>Call {selectedDealerData.contactInfo.phone}</span>
-                    </a>
-                  )}
-                  {selectedDealerData.address && (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                        `${selectedDealerData.address.street}, ${selectedDealerData.address.city}, ${selectedDealerData.address.state} ${selectedDealerData.address.zipCode}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-kawai-charcoal text-white rounded-xl font-medium text-sm active:scale-95 transition-transform"
-                    >
-                      <span>Get Directions</span>
-                    </a>
-                  )}
-                  <Link
-                    href={`/find-a-dealer/${selectedDealerData.slug}`}
-                    className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-white border border-kawai-neutral text-kawai-charcoal rounded-xl font-medium text-sm active:scale-95 transition-transform hover:bg-kawai-pearl"
-                  >
-                    <span>View Dealer Details</span>
-                    <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                  </Link>
-                </div>
+      {/* Selected Dealer Bottom Sheet — spring entrance/exit */}
+      <AnimatePresence>
+        {dealerSheetOpen && selectedDealerData && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/30 z-50"
+              onClick={() => setDealerSheetOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 32, stiffness: 320 }}
+              className="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-white border-b border-kawai-neutral px-6 py-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-kawai-charcoal">
+                  {selectedDealerData.dealerName}
+                </h3>
+                <button
+                  onClick={() => setDealerSheetOpen(false)}
+                  className="p-2 hover:bg-kawai-pearl rounded-full transition-colors active:scale-95"
+                >
+                  <X className="w-5 h-5 text-kawai-charcoal/50" strokeWidth={2} />
+                </button>
               </div>
 
-              {selectedDealerData.description && (
+              <div className="p-6 space-y-6">
+                {selectedDealerData.address && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
+                      Address
+                    </h4>
+                    <address className="text-sm text-kawai-charcoal/75 not-italic leading-relaxed">
+                      {selectedDealerData.address.street}<br />
+                      {selectedDealerData.address.city}, {selectedDealerData.address.state} {selectedDealerData.address.zipCode}
+                    </address>
+                  </div>
+                )}
+
                 <div>
-                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
-                    About
+                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-3">
+                    Contact
                   </h4>
-                  <p className="text-sm text-kawai-charcoal/75 leading-relaxed">
-                    {selectedDealerData.description}
-                  </p>
+                  <div className="space-y-3">
+                    {selectedDealerData.contactInfo?.phone && (
+                      <a
+                        href={`tel:${selectedDealerData.contactInfo.phone}`}
+                        className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-kawai-red text-white rounded-xl font-medium text-sm active:scale-95 transition-transform"
+                      >
+                        <span>Call {selectedDealerData.contactInfo.phone}</span>
+                      </a>
+                    )}
+                    {selectedDealerData.address && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                          `${selectedDealerData.address.street}, ${selectedDealerData.address.city}, ${selectedDealerData.address.state} ${selectedDealerData.address.zipCode}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-kawai-charcoal text-white rounded-xl font-medium text-sm active:scale-95 transition-transform"
+                      >
+                        <span>Get Directions</span>
+                      </a>
+                    )}
+                    <Link
+                      href={`/find-a-dealer/${selectedDealerData.slug}`}
+                      className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-white border border-kawai-neutral text-kawai-charcoal rounded-xl font-medium text-sm active:scale-95 transition-transform hover:bg-kawai-pearl"
+                    >
+                      <span>View Dealer Details</span>
+                      <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                    </Link>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+
+                {selectedDealerData.description && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
+                      About
+                    </h4>
+                    <p className="text-sm text-kawai-charcoal/75 leading-relaxed">
+                      {selectedDealerData.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -196,6 +196,13 @@ export default function ShigeruHeader() {
     ? [...leftNav, ...rightNav].find((i) => i.label === openDropdown && i.children)
     : null
 
+  function handleHeaderClick(e: React.MouseEvent<HTMLElement>) {
+    const target = e.target as HTMLElement
+    if (!target.closest('a') && !target.closest('button')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
   function isActive(item: NavItem): boolean {
     if (item.href === '/shigeru') return pathname === '/shigeru'
     if (item.href) return pathname.startsWith(item.href)
@@ -206,6 +213,7 @@ export default function ShigeruHeader() {
     <>
       {/* ── Header ── */}
       <header
+        onClick={handleHeaderClick}
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
         style={{
           background: transparent ? 'transparent' : 'rgba(16,14,10,0.97)',
@@ -216,15 +224,17 @@ export default function ShigeruHeader() {
       >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[68px] px-8 md:px-14 max-w-screen-2xl mx-auto">
 
-          {/* Left nav */}
-          <NavBar
-            items={leftNav}
-            pathname={pathname}
-            openDropdown={openDropdown}
-            onDropdownEnter={handleDropdownEnter}
-            onDropdownLeave={handleDropdownLeave}
-            side="left"
-          />
+          {/* Left nav — wrapper div keeps this column in grid flow on mobile */}
+          <div>
+            <NavBar
+              items={leftNav}
+              pathname={pathname}
+              openDropdown={openDropdown}
+              onDropdownEnter={handleDropdownEnter}
+              onDropdownLeave={handleDropdownLeave}
+              side="left"
+            />
+          </div>
 
           {/* Center logo with Kawai parent-brand hover dropdown */}
           <div
@@ -359,7 +369,7 @@ export default function ShigeruHeader() {
             transition={{ duration: 0.22, ease }}
           >
             {/* Top bar */}
-            <div className="flex items-center justify-between px-6 h-[68px] border-b border-white/[0.06] shrink-0">
+            <div className="relative flex items-center justify-center h-[68px] border-b border-white/[0.06] shrink-0">
               <Link href="/shigeru" onClick={() => setMobileOpen(false)}>
                 <Image
                   src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
@@ -372,7 +382,7 @@ export default function ShigeruHeader() {
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center w-9 h-9 text-white/40 hover:text-white/80 transition-colors"
+                className="absolute right-6 flex items-center justify-center w-9 h-9 text-white/40 hover:text-white/80 transition-colors"
                 aria-label="Close menu"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -383,36 +393,6 @@ export default function ShigeruHeader() {
 
             {/* Nav items */}
             <nav className="flex flex-col px-8 pt-12 gap-8 overflow-y-auto" aria-label="Mobile navigation">
-              {/* Kawai parent brand link at top of mobile menu */}
-              <motion.div
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.02, duration: 0.26, ease }}
-              >
-                <Link
-                  href="/"
-                  className="inline-flex items-center gap-3"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <Image
-                    src="/images/Kawai (Red).png"
-                    alt="Kawai America"
-                    width={80}
-                    height={24}
-                    className="object-contain"
-                    style={{ height: '18px', width: 'auto' }}
-                  />
-                  <span
-                    className="text-white/20 text-[9px] tracking-[0.35em] uppercase"
-                    style={f}
-                  >
-                    ← Kawai America
-                  </span>
-                </Link>
-              </motion.div>
-
-              <span className="block h-px bg-white/[0.06]" aria-hidden />
-
               {mobileNavItems.map((item, i) => {
                 if ('children' in item && item.children) {
                   return (
@@ -469,8 +449,38 @@ export default function ShigeruHeader() {
               })}
             </nav>
 
-            {/* Bottom CTA */}
-            <div className="mt-auto px-8 pb-12 pt-8 shrink-0">
+            {/* Bottom section */}
+            <div className="mt-auto px-8 pb-12 pt-8 shrink-0 flex flex-col gap-8">
+              <span className="block h-px bg-white/[0.06]" aria-hidden />
+
+              {/* Kawai America link */}
+              <motion.div
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.02, duration: 0.26, ease }}
+              >
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-3"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Image
+                    src="/images/Kawai (Red).png"
+                    alt="Kawai America"
+                    width={80}
+                    height={24}
+                    className="object-contain"
+                    style={{ height: '18px', width: 'auto' }}
+                  />
+                  <span
+                    className="text-white/20 text-[9px] tracking-[0.35em] uppercase"
+                    style={f}
+                  >
+                    ← Kawai America
+                  </span>
+                </Link>
+              </motion.div>
+
               <Link
                 href="/shigeru/contact"
                 style={{ ...f, borderRadius: '999px' }}
