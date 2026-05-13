@@ -52,6 +52,12 @@ export { NewsletterPopup } from './marketing/NewsletterPopup'
 export { UniversityHero } from './events/UniversityHero'
 export { EventOverview } from './events/EventOverview'
 
+// University blocks (university event microsites)
+export { UniversityEventDetails } from './university/UniversityEventDetails'
+export { UniversityFaq } from './university/UniversityFaq'
+export { UniversitySocialProof } from './university/UniversitySocialProof'
+export { UniversityCountdown } from './university/UniversityCountdown'
+
 // Product blocks (product pages)
 export { ProductShowcase } from './product/ProductShowcase'
 export { ProductHero } from './product/ProductHero'

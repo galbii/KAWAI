@@ -672,7 +672,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     // Close menus only on intentional scrolling (120px+ movement) to prevent
     // trackpad jitter and accidental closes when moving mouse toward a mega menu.
     if (Math.abs(movement) > 120) {
-      if (activeMenu === 'products' || activeMenu === 'resources' || activeMenu === 'news') {
+      if (activeMenu === 'products' || activeMenu === 'resources' || activeMenu === 'news' || activeMenu === 'shigeru') {
         setActiveMenu(null)
       }
     }
@@ -1223,6 +1223,60 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     >
                       Resources
                     </button>
+                  </div>
+
+                  {/* Shigeru Kawai — premium link with image hover card */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => {
+                      if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
+                      setActiveMenu('shigeru')
+                    }}
+                    onMouseLeave={() => {
+                      menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 400)
+                    }}
+                  >
+                    <Link
+                      href="/shigeru"
+                      onClick={() => setActiveMenu(null)}
+                      className="flex items-center px-2 py-1 rounded-md hover:bg-kawai-gold/[0.06] transition-all duration-200"
+                      aria-label="Shigeru Kawai"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru-Kawai-scaled-2966385513.webp"
+                        alt="Shigeru Kawai"
+                        className="h-8 w-auto object-contain"
+                      />
+                    </Link>
+
+                    <AnimatePresence>
+                      {activeMenu === 'shigeru' && (
+                        <motion.div
+                          className="absolute right-0 top-full mt-2 w-64 bg-white border border-kawai-neutral/50 shadow-brand-medium rounded-xl overflow-hidden z-50"
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.15 }}
+                          onMouseEnter={() => {
+                            if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
+                            setActiveMenu('shigeru')
+                          }}
+                          onMouseLeave={() => {
+                            menuTimeoutRef.current = setTimeout(() => setActiveMenu(null), 400)
+                          }}
+                        >
+                          <Link href="/shigeru" onClick={() => setActiveMenu(null)} className="block h-36 overflow-hidden bg-white">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru-Kawai-scaled-2966385513.webp"
+                              alt="Shigeru Kawai"
+                              className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                            />
+                          </Link>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                 </div>

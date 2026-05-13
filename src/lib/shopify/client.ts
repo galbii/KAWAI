@@ -149,8 +149,14 @@ export class ShopifyClient {
   private endpoint: string
 
   constructor(config?: Partial<ShopifyConfig>) {
-    const defaultConfig = getShopifyConfig()
-    this.config = { ...defaultConfig, ...config }
+    // Only call getShopifyConfig() when no explicit domain is provided.
+    // This allows CA/secondary store clients to be instantiated at module load
+    // without requiring the US env vars (and vice-versa).
+    const defaultConfig =
+      config?.storeDomain && config?.storefrontAccessToken
+        ? { apiVersion: DEFAULT_API_VERSION, ...config }
+        : getShopifyConfig()
+    this.config = { ...defaultConfig, ...config } as ShopifyConfig
 
     // Build Storefront API endpoint
     this.endpoint = `https://${this.config.storeDomain}/api/${this.config.apiVersion}/graphql.json`
@@ -353,3 +359,24 @@ export async function queryShopify<TData = unknown, TVariables = Record<string, 
 export function createShopifyClient(config?: Partial<ShopifyConfig>): ShopifyClient {
   return new ShopifyClient(config)
 }
+
+// ============================================================================
+// Canada Store Storefront Client
+// ============================================================================
+
+/**
+ * Shopify Storefront API client for the Canada store (ca.kawaius.com).
+ * Uses NEXT_PUBLIC_SHOPIFY_CA_* env vars — safe to use in client components.
+ * Throws at query time (not module load) if CA env vars are not configured.
+ */
+export const shopifyClientCA = new ShopifyClient({
+  storeDomain:
+    process.env.NEXT_PUBLIC_SHOPIFY_CA_STORE_DOMAIN ||
+    process.env.SHOPIFY_CA_STORE_DOMAIN ||
+    '',
+  storefrontAccessToken:
+    process.env.NEXT_PUBLIC_SHOPIFY_CA_STOREFRONT_ACCESS_TOKEN ||
+    process.env.SHOPIFY_CA_STOREFRONT_ACCESS_TOKEN ||
+    '',
+  apiVersion: DEFAULT_API_VERSION,
+})

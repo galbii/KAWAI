@@ -2,10 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import type { Artist, Media, Product } from '@/payload-types'
+import type { Artist, Media } from '@/payload-types'
 
 // ---------------------------------------------------------------------------
 // Helpers & constants
@@ -25,21 +25,6 @@ const INSTRUMENT_LABELS: Record<string, string> = {
   digital: 'Digital Piano',
   hybrid: 'Hybrid Piano',
   multiple: 'Multiple Instruments',
-}
-
-const PLATFORM_LABELS: Record<string, string> = {
-  website: 'Website',
-  instagram: 'Instagram',
-  youtube: 'YouTube',
-  spotify: 'Spotify',
-  'apple-music': 'Apple Music',
-  soundcloud: 'SoundCloud',
-  facebook: 'Facebook',
-  twitter: 'Twitter',
-  tiktok: 'TikTok',
-  linkedin: 'LinkedIn',
-  bandcamp: 'Bandcamp',
-  other: 'Link',
 }
 
 const PAGE_SIZE = 9
@@ -63,12 +48,11 @@ interface ArtistsGridProps {
 
 interface GridCellProps {
   artist: Artist
-  onSelect: (artist: Artist) => void
   /** Used to stagger within each PAGE_SIZE batch */
   index: number
 }
 
-function GridCell({ artist, onSelect, index }: GridCellProps) {
+function GridCell({ artist, index }: GridCellProps) {
   const imageUrl = getArtistImage(artist)
   // Stagger resets per batch so load-more feels fresh, not delayed
   const staggerDelay = (index % PAGE_SIZE) * 0.055
@@ -80,10 +64,9 @@ function GridCell({ artist, onSelect, index }: GridCellProps) {
       viewport={{ once: true, margin: '-48px' }}
       transition={{ duration: 0.55, delay: staggerDelay, ease }}
     >
-      <button
-        type="button"
-        onClick={() => onSelect(artist)}
-        className="group relative aspect-[3/4] w-full overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-kawai-black"
+      <Link
+        href={`/artists/${artist.slug}`}
+        className="group relative aspect-[3/4] w-full overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-kawai-black block"
         aria-label={`View profile: ${artist.name}`}
       >
         {/* Portrait image — subtle zoom on hover */}
@@ -134,225 +117,8 @@ function GridCell({ artist, onSelect, index }: GridCellProps) {
           {/* Short red tick mark — hidden when full-width line takes over */}
           <span className="block mt-1.5 h-px w-8 bg-kawai-red/60 transition-opacity duration-300 group-hover:opacity-0" />
         </div>
-      </button>
+      </Link>
     </motion.div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Profile Drawer
-// ---------------------------------------------------------------------------
-
-interface ProfileDrawerProps {
-  artist: Artist | null
-  onClose: () => void
-}
-
-function ProfileDrawer({ artist, onClose }: ProfileDrawerProps) {
-  // Close on Escape
-  useEffect(() => {
-    if (!artist) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [artist, onClose])
-
-  // Lock body scroll while open
-  useEffect(() => {
-    if (artist) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [artist])
-
-  const imageUrl = artist ? getArtistImage(artist) : ''
-
-  return (
-    <AnimatePresence>
-      {artist && (
-        <>
-          {/* Scrim */}
-          <motion.div
-            key="scrim"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[9010] bg-black/50 backdrop-blur-[2px]"
-            onClick={onClose}
-            aria-hidden="true"
-          />
-
-          {/* Panel */}
-          <motion.div
-            key="panel"
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-            className={cn(
-              'fixed left-0 top-0 z-[9020] flex flex-col',
-              'w-full sm:w-[420px]',
-              'h-[100dvh] bg-white',
-              'shadow-2xl',
-            )}
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Artist profile: ${artist.name}`}
-          >
-            {/* ── Top: portrait image (fixed, not scrollable) ── */}
-            <div className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden bg-kawai-black">
-              <Image
-                src={imageUrl}
-                alt={artist.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 420px"
-                priority
-              />
-
-              {/* Close button */}
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close artist profile"
-                className={cn(
-                  'absolute top-3 right-3 z-10',
-                  'w-9 h-9 flex items-center justify-center',
-                  'bg-kawai-pearl rounded-full',
-                  'text-kawai-charcoal text-lg leading-none font-light',
-                  'hover:bg-kawai-neutral transition-colors duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
-                )}
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* ── Middle: scrollable content ── */}
-            <div className="flex-1 overflow-y-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.15, ease }}
-                className="px-6 pt-6 pb-4 space-y-4"
-              >
-                {/* Artist name */}
-                <h2
-                  className={cn(
-                    'text-4xl font-light leading-tight text-kawai-charcoal',
-                    'font-[family-name:var(--font-brand-serif)]',
-                  )}
-                >
-                  {artist.name}
-                </h2>
-
-                {/* Instrument */}
-                {artist.instrument && INSTRUMENT_LABELS[artist.instrument] && (
-                  <p className="text-xs font-medium tracking-wide text-kawai-charcoal/50 uppercase">
-                    {INSTRUMENT_LABELS[artist.instrument]}
-                  </p>
-                )}
-
-                {/* KAWAI Model */}
-                {artist.kawaiModel && typeof artist.kawaiModel !== 'string' && (
-                  <p className="text-xs font-medium tracking-wide text-kawai-charcoal/50 uppercase">
-                    <span className="text-kawai-red">KAWAI</span>{' '}
-                    {(artist.kawaiModel as Product).name ?? (artist.kawaiModel as Product).model}
-                  </p>
-                )}
-
-                {/* Short bio */}
-                {artist.shortBio && (
-                  <p
-                    className={cn(
-                      'text-sm leading-relaxed text-kawai-charcoal/70',
-                      'font-[family-name:var(--font-brand-sans)]',
-                    )}
-                  >
-                    {artist.shortBio}
-                  </p>
-                )}
-
-                {/* Social links */}
-                {artist.socialLinks && artist.socialLinks.length > 0 && (
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {artist.socialLinks.map((link, idx) => (
-                      <a
-                        key={link.id ?? idx}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          'text-xs px-3 py-1 rounded-full',
-                          'bg-kawai-pearl text-kawai-charcoal',
-                          'border border-kawai-neutral',
-                          'hover:border-kawai-red hover:text-kawai-red',
-                          'transition-colors duration-200',
-                        )}
-                      >
-                        {link.label ?? PLATFORM_LABELS[link.platform] ?? link.platform}
-                      </a>
-                    ))}
-                  </div>
-                )}
-
-                {/* Achievements */}
-                {artist.achievements && artist.achievements.length > 0 && (
-                  <ul className="space-y-1.5 pt-1">
-                    {artist.achievements.map((item, idx) => (
-                      <li
-                        key={item.id ?? idx}
-                        className="flex items-start gap-2 text-xs text-kawai-charcoal/70"
-                      >
-                        <span className="text-kawai-red mt-0.5 leading-none select-none flex-shrink-0">
-                          &mdash;
-                        </span>
-                        <span>{item.achievement}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </motion.div>
-            </div>
-
-            {/* ── Bottom: sticky CTA ── */}
-            <div className="flex-shrink-0 border-t border-kawai-neutral bg-white px-6 py-4">
-              <Link
-                href={`/artists/${artist.slug}`}
-                className={cn(
-                  'flex items-center justify-center gap-2',
-                  'w-full py-4',
-                  'bg-kawai-red text-white',
-                  'text-sm font-semibold tracking-[0.1em] uppercase',
-                  'hover:bg-kawai-red/90 transition-colors duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2',
-                )}
-                onClick={onClose}
-              >
-                View Full Profile
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
   )
 }
 
@@ -363,7 +129,6 @@ function ProfileDrawer({ artist, onClose }: ProfileDrawerProps) {
 type SortMode = 'recent' | 'alpha'
 
 export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true }: ArtistsGridProps) {
-  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [sortMode, setSortMode] = useState<SortMode>('recent')
@@ -373,14 +138,6 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
   const isFirstRender = useRef(true)
   // Ref to the grid section so we can scroll back to its top when filters change
   const sectionRef = useRef<HTMLElement>(null)
-
-  const handleSelect = useCallback((artist: Artist) => {
-    setSelectedArtist(artist)
-  }, [])
-
-  const handleClose = useCallback(() => {
-    setSelectedArtist(null)
-  }, [])
 
   const filteredArtists = artists
     .filter((a) => {
@@ -429,8 +186,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
   if (artists.length === 0) return null
 
   return (
-    <>
-      <section ref={sectionRef} className="bg-kawai-black w-full">
+    <section ref={sectionRef} className="bg-kawai-black w-full">
 
         {/*
           Sticky header — latches beneath the main nav.
@@ -610,7 +366,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
               aria-label="Artists gallery"
             >
               {visibleArtists.map((artist, index) => (
-                <GridCell key={artist.id} artist={artist} onSelect={handleSelect} index={index} />
+                <GridCell key={artist.id} artist={artist} index={index} />
               ))}
             </div>
 
@@ -702,10 +458,6 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
             </button>
           </motion.div>
         )}
-      </section>
-
-      {/* Left-side profile drawer */}
-      <ProfileDrawer artist={selectedArtist} onClose={handleClose} />
-    </>
+    </section>
   )
 }

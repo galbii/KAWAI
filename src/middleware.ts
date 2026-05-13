@@ -65,6 +65,11 @@ export async function middleware(request: NextRequest) {
   const site = host.startsWith('ca.') ? 'cad' : 'us'
   requestHeaders.set('x-site', site)
 
+  // Shigeru Kawai pages are US-only — redirect CA visitors to the US domain
+  if (site === 'cad' && pathname.startsWith('/shigeru')) {
+    return NextResponse.redirect(`https://kawaius.com${pathname}`, { status: 302 })
+  }
+
   // Check CMS-managed redirects
   // Normalize pathname by stripping trailing slash (except root "/") so that
   // /old-page/ matches a stored redirect of /old-page

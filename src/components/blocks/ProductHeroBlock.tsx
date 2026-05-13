@@ -19,7 +19,7 @@ import { trackAddToCart, trackBeginCheckout, trackBlockImpression, trackCTAClick
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
-  isCanada?: boolean
+  site?: 'us' | 'cad'
   layout?: {
     imagePosition?: 'left' | 'right' | null
     backgroundColor?: 'pearl' | 'white' | 'black' | null
@@ -57,7 +57,7 @@ interface ProductHeroBlockProps {
 }
 
 export function ProductHeroBlock({
-  isCanada = false,
+  site = 'us',
   layout = {},
   secondaryCta = {},
   floatingCart = {}, // NEW: Floating cart configuration
@@ -373,7 +373,7 @@ export function ProductHeroBlock({
   // Uses Shopify's standard availableForSale signal (selectedVariant.available).
   // CRITICAL: This condition is used by BOTH the hero button AND the floating button
   // to ensure consistent behavior across the page.
-  const canAddToCart = !isCanada && !!shopifyProduct && !!selectedVariant && selectedVariant.available
+  const canAddToCart = !!shopifyProduct && !!selectedVariant && selectedVariant.available
 
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
@@ -399,6 +399,8 @@ export function ProductHeroBlock({
   // Get display price for variations section
   const getVariationsDisplayPrice = () => {
     if (!shopifyProduct) return null
+    console.log('[PriceDebug] shopifyProduct variants:', shopifyProduct.variants.map(v => ({ title: v.title, price: v.price, available: v.available })))
+    console.log('[PriceDebug] hasVariations:', hasVariations, 'allVariations:', allVariations.map(v => v.name), 'selectedVariation:', selectedVariation)
 
     // If product has variations, handle variation-based pricing
     if (hasVariations) {
@@ -747,7 +749,7 @@ export function ProductHeroBlock({
             )}
 
             {/* Dynamic Price Display - Show when Shopify product data is available */}
-            {!isCanada && variationsDisplayPrice && shopifyProduct && (
+            {variationsDisplayPrice && shopifyProduct && (
               <div className={cn("flex items-baseline gap-3", textColorClass)}>
                 <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
                 {variationsDisplayPrice.type === 'single' ? (

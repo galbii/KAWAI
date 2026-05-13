@@ -112,6 +112,10 @@ export interface Config {
     'marketing-newsletter-popup': MarketingNewsletterPopupBlock;
     'events-university-hero': EventsUniversityHeroBlock;
     'events-event-overview': EventsEventOverviewBlock;
+    'university-event-details': UniversityEventDetailsBlock;
+    'university-faq': UniversityFaqBlock;
+    'university-social-proof': UniversitySocialProofBlock;
+    'university-countdown': UniversityCountdownBlock;
     'product-showcase': ProductShowcaseBlock;
     'product-hero': ProductHeroBlock;
     'product-description': ProductDescriptionBlock;
@@ -6942,6 +6946,187 @@ export interface EventsEventOverviewBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'events-event-overview';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityEventDetailsBlock".
+ */
+export interface UniversityEventDetailsBlock {
+  /**
+   * Main heading for this section (e.g., "Event Details")
+   */
+  sectionHeading?: string | null;
+  /**
+   * Event venue or location name
+   */
+  locationName?: string | null;
+  /**
+   * Event start date
+   */
+  eventStartDate: string;
+  /**
+   * Event end date
+   */
+  eventEndDate: string;
+  /**
+   * Link to a countdown block elsewhere on this page (informational only)
+   */
+  showCountdownLink?: boolean | null;
+  /**
+   * Up to 6 offer cards
+   */
+  offers?:
+    | {
+        /**
+         * Icon to display for this offer
+         */
+        icon: 'gift' | 'percent' | 'truck' | 'shield' | 'award' | 'star';
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Event schedule rows
+   */
+  schedule?:
+    | {
+        dayLabel: string;
+        dateLabel: string;
+        hours: string;
+        /**
+         * Highlight this row (e.g., opening day)
+         */
+        highlight?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-event-details';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityFaqBlock".
+ */
+export interface UniversityFaqBlock {
+  /**
+   * Main heading for the FAQ section
+   */
+  sectionHeading?: string | null;
+  /**
+   * Subheading / short description below the heading
+   */
+  subheading?: string | null;
+  /**
+   * Add up to 20 FAQ items
+   */
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Background color for the FAQ section
+   */
+  background?: ('light' | 'white' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversitySocialProofBlock".
+ */
+export interface UniversitySocialProofBlock {
+  /**
+   * Main heading (e.g., "What Our Community Says")
+   */
+  sectionHeading?: string | null;
+  /**
+   * Subheading or tagline below the heading
+   */
+  subheading?: string | null;
+  /**
+   * Key metrics (e.g., "500+ Happy Customers")
+   */
+  stats?:
+    | {
+        /**
+         * The big number or value
+         */
+        number: string;
+        /**
+         * Descriptive label below the number
+         */
+        label: string;
+        /**
+         * Optional smaller text below the label (e.g., "4.9/5 satisfaction")
+         */
+        sublabel?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Customer testimonial cards
+   */
+  testimonials?:
+    | {
+        quote: string;
+        authorName: string;
+        /**
+         * Role, location, or affiliation
+         */
+        authorTitle?: string | null;
+        /**
+         * Star rating 1–5
+         */
+        rating?: number | null;
+        /**
+         * Optional author avatar (square, min 80×80px)
+         */
+        authorImage?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-social-proof';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "UniversityCountdownBlock".
+ */
+export interface UniversityCountdownBlock {
+  /**
+   * Date/time the countdown counts down to — component hides once this passes
+   */
+  targetDate: string;
+  /**
+   * Short label shown above the countdown (e.g., "Piano Sale Ends")
+   */
+  eventLabel?: string | null;
+  /**
+   * CTA button label
+   */
+  ctaButtonText?: string | null;
+  /**
+   * Section ID to scroll to when the button is clicked (include the #)
+   */
+  ctaScrollTarget?: string | null;
+  /**
+   * Fixed position of the floating timer
+   */
+  position?: ('bottom-right' | 'bottom-left' | 'bottom-center') | null;
+  /**
+   * Show timer after user has scrolled this % of the page (0–100)
+   */
+  showAfterScrollPercent?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'university-countdown';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

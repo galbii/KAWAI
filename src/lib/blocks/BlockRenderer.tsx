@@ -97,8 +97,10 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
 
       if (product.model) {
         try {
-          console.log(`[BlockRenderer] Fetching Shopify product for model: "${product.model}"`)
-          shopifyProduct = await getProductByModelCached(product.model)
+          const site = await getSite()
+          console.log(`[BlockRenderer:DEBUG] site=${site} model="${product.model}" CA_DOMAIN=${process.env.SHOPIFY_CA_STORE_DOMAIN || 'MISSING'} US_DOMAIN=${process.env.SHOPIFY_STORE_DOMAIN || 'MISSING'}`)
+          console.log(`[BlockRenderer] Fetching Shopify product for model: "${product.model}" (site: ${site})`)
+          shopifyProduct = await getProductByModelCached(product.model, site)
 
           if (shopifyProduct) {
             console.log(`[BlockRenderer] Shopify product loaded: "${shopifyProduct.title}" with ${shopifyProduct.variants.length} variant(s)`)

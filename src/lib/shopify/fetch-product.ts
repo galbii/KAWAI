@@ -7,7 +7,7 @@
  * @module fetch-product
  */
 
-import { shopifyAdminClient } from './admin-client'
+import { shopifyAdminClient, type ShopifyAdminClient } from './admin-client'
 
 /**
  * Shopify product data structure (simplified)
@@ -126,7 +126,8 @@ export interface ShopifyProductData {
  * @throws Error if API request fails
  */
 export async function fetchShopifyProduct(
-  idOrHandle: string
+  idOrHandle: string,
+  adminClient: ShopifyAdminClient = shopifyAdminClient
 ): Promise<ShopifyProductData | null> {
 
   // Determine if input is a GID or handle
@@ -143,7 +144,7 @@ export async function fetchShopifyProduct(
       : { handle: identifier }
 
     // Use admin client (handles auth, retries, errors automatically)
-    const data = await shopifyAdminClient.query<{
+    const data = await adminClient.query<{
       product?: any
       productByHandle?: any
     }>(query, variables)
@@ -548,13 +549,11 @@ const PRODUCT_BY_HANDLE_QUERY = `
  * @see https://shopify.dev/docs/apps/build/custom-data/metafields/query-by-metafield-value
  */
 const PRODUCT_BY_METAFIELD_QUERY = `
-  query GetProductByMetafield($query: String!) {
-    products(first: 1, query: $query) {
-      edges {
-        node {
-          ...ProductFields
-        }
-      }
+  query GetProductByCustomId($namespace: String!, $key: String!, $value: String!) {
+    productByIdentifier(identifier: {
+      customId: { namespace: $namespace, key: $key, value: $value }
+    }) {
+      ...ProductFields
     }
   }
 
@@ -782,7 +781,8 @@ const PRODUCT_BY_METAFIELD_QUERY = `
  * ```
  */
 export async function fetchShopifyProductByModel(
-  model: string
+  model: string,
+  adminClient: ShopifyAdminClient = shopifyAdminClient
 ): Promise<ShopifyProductData | null> {
 
   const normalizedModel = model.toUpperCase().trim()
@@ -790,40 +790,26 @@ export async function fetchShopifyProductByModel(
   console.log(`[Shopify Fetch] Fetching product by model metafield: "${normalizedModel}"`)
 
   try {
-    // Build metafield query string: metafields.custom.model:"VALUE"
-    const metafieldQuery = `metafields.custom.model:"${normalizedModel}"`
-
-    // Query using products with metafield filtering
-    const data = await shopifyAdminClient.query<{
-      products: {
-        edges: Array<{
-          node: any
-        }>
-      }
+    const data = await adminClient.query<{
+      productByIdentifier: any | null
     }>(PRODUCT_BY_METAFIELD_QUERY, {
-      query: metafieldQuery
+      namespace: 'custom',
+      key: 'model',
+      value: normalizedModel,
     }, {
-      revalidate: 3600, // Cache product reads for 1h — matches product page ISR
+      revalidate: 3600,
     })
 
-    // Extract first product from edges
-    const product = data.products.edges[0]?.node
+    const product = data.productByIdentifier
 
     if (!product) {
       console.warn(`[Shopify Fetch] No product found with model metafield "${normalizedModel}"`)
       return null
     }
 
-    // Validate that the metafield matches (sanity check)
-    if (product.metafield?.value !== normalizedModel) {
-      console.warn(
-        `[Shopify Fetch] Metafield mismatch: expected "${normalizedModel}", got "${product.metafield?.value}"`
-      )
-    }
-
     const transformed = transformShopifyProduct(product)
     console.log(
-      `[Shopify Fetch] Successfully fetched "${transformed.title}" via metafield (model: ${normalizedModel})`
+      `[Shopify Fetch] Successfully fetched "${transformed.title}" via productByIdentifier (model: ${normalizedModel})`
     )
 
     return transformed

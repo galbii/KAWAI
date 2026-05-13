@@ -23,15 +23,15 @@
 // Configuration
 // ============================================================================
 
-/**
- * LocalStorage key for cart ID
- */
-const CART_ID_KEY = 'kawai_shopify_cart_id'
+function getSiteSuffix(): string {
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('ca.')) {
+    return '_ca'
+  }
+  return ''
+}
 
-/**
- * LocalStorage key for cart expiration timestamp
- */
-const CART_EXPIRATION_KEY = 'kawai_shopify_cart_expiration'
+function CART_ID_KEY() { return `kawai_shopify_cart_id${getSiteSuffix()}` }
+function CART_EXPIRATION_KEY() { return `kawai_shopify_cart_expiration${getSiteSuffix()}` }
 
 /**
  * Cart expiration time (7 days in milliseconds)
@@ -103,8 +103,8 @@ export function saveCartId(cartId: string, expiresInMs: number = CART_EXPIRATION
     const expirationTime = Date.now() + expiresInMs
 
     // Save cart ID and expiration
-    localStorage.setItem(CART_ID_KEY, cleanCartId)
-    localStorage.setItem(CART_EXPIRATION_KEY, expirationTime.toString())
+    localStorage.setItem(CART_ID_KEY(), cleanCartId)
+    localStorage.setItem(CART_EXPIRATION_KEY(), expirationTime.toString())
 
     console.log('[Cart Storage] Cart ID saved:', cleanCartId)
   } catch (error) {
@@ -136,8 +136,8 @@ export function getCartId(): string | null {
   }
 
   try {
-    const cartId = localStorage.getItem(CART_ID_KEY)
-    const expirationStr = localStorage.getItem(CART_EXPIRATION_KEY)
+    const cartId = localStorage.getItem(CART_ID_KEY())
+    const expirationStr = localStorage.getItem(CART_EXPIRATION_KEY())
 
     // No cart ID found
     if (!cartId) {
@@ -182,8 +182,8 @@ export function clearCartId(): void {
   }
 
   try {
-    localStorage.removeItem(CART_ID_KEY)
-    localStorage.removeItem(CART_EXPIRATION_KEY)
+    localStorage.removeItem(CART_ID_KEY())
+    localStorage.removeItem(CART_EXPIRATION_KEY())
     console.log('[Cart Storage] Cart cleared from storage')
   } catch (error) {
     console.error('[Cart Storage] Failed to clear cart ID:', error)
@@ -229,7 +229,7 @@ export function getCartExpirationTime(): number | null {
   }
 
   try {
-    const expirationStr = localStorage.getItem(CART_EXPIRATION_KEY)
+    const expirationStr = localStorage.getItem(CART_EXPIRATION_KEY())
 
     if (!expirationStr) {
       return null
@@ -274,10 +274,7 @@ export function refreshCartExpiration(expiresInMs: number = CART_EXPIRATION_MS):
 // Cart Metadata Storage (Optional)
 // ============================================================================
 
-/**
- * LocalStorage key for cart metadata
- */
-const CART_METADATA_KEY = 'kawai_shopify_cart_metadata'
+function CART_METADATA_KEY() { return `kawai_shopify_cart_metadata${getSiteSuffix()}` }
 
 /**
  * Cart metadata interface
@@ -314,7 +311,7 @@ export function saveCartMetadata(metadata: CartMetadata): void {
   }
 
   try {
-    localStorage.setItem(CART_METADATA_KEY, JSON.stringify(metadata))
+    localStorage.setItem(CART_METADATA_KEY(), JSON.stringify(metadata))
   } catch (error) {
     console.error('[Cart Storage] Failed to save cart metadata:', error)
   }
@@ -341,7 +338,7 @@ export function getCartMetadata(): CartMetadata | null {
   }
 
   try {
-    const metadataStr = localStorage.getItem(CART_METADATA_KEY)
+    const metadataStr = localStorage.getItem(CART_METADATA_KEY())
     if (!metadataStr) {
       return null
     }
@@ -362,7 +359,7 @@ export function clearCartMetadata(): void {
   }
 
   try {
-    localStorage.removeItem(CART_METADATA_KEY)
+    localStorage.removeItem(CART_METADATA_KEY())
   } catch (error) {
     console.error('[Cart Storage] Failed to clear cart metadata:', error)
   }

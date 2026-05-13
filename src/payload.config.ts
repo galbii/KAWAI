@@ -88,6 +88,11 @@ import {
   // Events blocks
   UniversityHero,
   EventOverview,
+  // University blocks
+  UniversityEventDetails,
+  UniversityFaq,
+  UniversitySocialProof,
+  UniversityCountdown,
   // Product blocks
   ProductShowcase,
   ProductHero,
@@ -353,6 +358,12 @@ export default buildConfig({
     // Events blocks
     UniversityHero,
     EventOverview,
+
+    // University blocks (university event microsites)
+    UniversityEventDetails,
+    UniversityFaq,
+    UniversitySocialProof,
+    UniversityCountdown,
 
     // Product blocks (for product pages)
     ProductShowcase,

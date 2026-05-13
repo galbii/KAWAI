@@ -2,7 +2,7 @@ import { getSite } from '@/lib/site-context'
 import { ProductHeroBlock } from './ProductHeroBlock'
 import type { ComponentProps } from 'react'
 
-type Props = Omit<ComponentProps<typeof ProductHeroBlock>, 'isCanada'>
+type Props = Omit<ComponentProps<typeof ProductHeroBlock>, 'site'>
 
 /**
  * Server wrapper for ProductHeroBlock.
@@ -11,5 +11,5 @@ type Props = Omit<ComponentProps<typeof ProductHeroBlock>, 'isCanada'>
  */
 export async function ProductHeroBlockWrapper(props: Props) {
   const site = await getSite()
-  return <ProductHeroBlock {...props} isCanada={site === 'cad'} />
+  return <ProductHeroBlock {...props} site={site} />
 }

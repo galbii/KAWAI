@@ -41,9 +41,12 @@
 export {
   ShopifyClient,
   shopifyClient,
+  shopifyClientCA,
   queryShopify,
   createShopifyClient,
 } from './client'
+
+export { shopifyAdminClientCA } from './admin-client'
 
 // ============================================================================
 // Type Exports

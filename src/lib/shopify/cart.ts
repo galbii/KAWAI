@@ -22,7 +22,14 @@
  * ```
  */
 
-import { shopifyClient } from './client'
+import { shopifyClient, shopifyClientCA } from './client'
+
+function getCartClient() {
+  if (typeof window !== 'undefined' && window.location.hostname.startsWith('ca.')) {
+    return shopifyClientCA
+  }
+  return shopifyClient
+}
 import {
   CART_CREATE_MUTATION,
   CART_LINES_ADD_MUTATION,
@@ -192,7 +199,7 @@ export async function createCart(
     input.attributes = attributes
   }
 
-  const data = await shopifyClient.query<CartCreateResponse, CartCreateVariables>(
+  const data = await getCartClient().query<CartCreateResponse, CartCreateVariables>(
     CART_CREATE_MUTATION,
     { input },
     { cache: 'no-store', revalidate: false, ...options }
@@ -237,7 +244,7 @@ export async function addToCart(
     ? (cartId as ShopifyGID)
     : (`gid://shopify/Cart/${cartId}` as ShopifyGID)
 
-  const data = await shopifyClient.query<CartLinesAddResponse, CartLinesAddVariables>(
+  const data = await getCartClient().query<CartLinesAddResponse, CartLinesAddVariables>(
     CART_LINES_ADD_MUTATION,
     { cartId: formattedCartId, lines },
     { cache: 'no-store', revalidate: false, ...options }
@@ -292,7 +299,7 @@ export async function updateCartLine(
     },
   ]
 
-  const data = await shopifyClient.query<CartLinesUpdateResponse, CartLinesUpdateVariables>(
+  const data = await getCartClient().query<CartLinesUpdateResponse, CartLinesUpdateVariables>(
     CART_LINES_UPDATE_MUTATION,
     { cartId: formattedCartId, lines },
     { cache: 'no-store', revalidate: false, ...options }
@@ -339,7 +346,7 @@ export async function updateCartLines(
     quantity: line.quantity,
   }))
 
-  const data = await shopifyClient.query<CartLinesUpdateResponse, CartLinesUpdateVariables>(
+  const data = await getCartClient().query<CartLinesUpdateResponse, CartLinesUpdateVariables>(
     CART_LINES_UPDATE_MUTATION,
     { cartId: formattedCartId, lines: formattedLines },
     { cache: 'no-store', revalidate: false, ...options }
@@ -380,7 +387,7 @@ export async function removeFromCart(
     id.startsWith('gid://') ? (id as ShopifyGID) : (`gid://shopify/CartLine/${id}` as ShopifyGID)
   )
 
-  const data = await shopifyClient.query<CartLinesRemoveResponse, CartLinesRemoveVariables>(
+  const data = await getCartClient().query<CartLinesRemoveResponse, CartLinesRemoveVariables>(
     CART_LINES_REMOVE_MUTATION,
     { cartId: formattedCartId, lineIds: formattedLineIds },
     { cache: 'no-store', revalidate: false, ...options }
@@ -424,7 +431,7 @@ export async function getCart(
     : (`gid://shopify/Cart/${cartId}` as ShopifyGID)
 
   try {
-    const data = await shopifyClient.query<CartQueryResponse, CartQueryVariables>(
+    const data = await getCartClient().query<CartQueryResponse, CartQueryVariables>(
       GET_CART_QUERY,
       { id: formattedCartId },
       { cache: 'no-store', revalidate: false, ...options }
@@ -499,7 +506,7 @@ export async function applyDiscountCode(
   const existingCodes = currentCart?.discountCodes || []
   const discountCodes = [...existingCodes, discountCode]
 
-  const data = await shopifyClient.query<
+  const data = await getCartClient().query<
     CartDiscountCodesUpdateResponse,
     CartDiscountCodesUpdateVariables
   >(
@@ -543,7 +550,7 @@ export async function removeDiscountCode(
   const currentCart = await getCart(cartId, options)
   const discountCodes = (currentCart?.discountCodes || []).filter(code => code !== discountCode)
 
-  const data = await shopifyClient.query<
+  const data = await getCartClient().query<
     CartDiscountCodesUpdateResponse,
     CartDiscountCodesUpdateVariables
   >(
@@ -594,7 +601,7 @@ export async function updateCartAttributes(
     attributes: Array<{ key: string; value: string }>
   }
 
-  const data = await shopifyClient.query<CartAttributesUpdateResponse, CartAttributesUpdateVariables>(
+  const data = await getCartClient().query<CartAttributesUpdateResponse, CartAttributesUpdateVariables>(
     CART_ATTRIBUTES_UPDATE_MUTATION,
     { cartId: formattedCartId, attributes },
     { cache: 'no-store', revalidate: false, ...options }
@@ -629,7 +636,7 @@ export async function clearDiscountCodes(
     ? (cartId as ShopifyGID)
     : (`gid://shopify/Cart/${cartId}` as ShopifyGID)
 
-  const data = await shopifyClient.query<
+  const data = await getCartClient().query<
     CartDiscountCodesUpdateResponse,
     CartDiscountCodesUpdateVariables
   >(

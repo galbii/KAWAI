@@ -25,6 +25,7 @@ import type {
   ShopifyError,
 } from './types'
 import { getAdminAccessToken } from './auth'
+import { getAdminAccessTokenCA } from './auth-ca'
 
 // ============================================================================
 // Configuration
@@ -146,13 +147,16 @@ function createShopifyError(
 export class ShopifyAdminClient {
   private config: ShopifyAdminConfig
   private endpoint: string
+  private tokenGetter: () => Promise<string>
 
-  constructor(config?: Partial<ShopifyAdminConfig>) {
+  constructor(config?: Partial<ShopifyAdminConfig>, tokenGetter?: () => Promise<string>) {
     const defaultConfig = getShopifyAdminConfig()
     this.config = { ...defaultConfig, ...config }
 
     // Build Admin API endpoint
     this.endpoint = `https://${this.config.storeDomain}/admin/api/${this.config.apiVersion}/graphql.json`
+
+    this.tokenGetter = tokenGetter ?? getAdminAccessToken
   }
 
   /**
@@ -198,6 +202,7 @@ export class ShopifyAdminClient {
     options: ShopifyRequestOptions = {}
   ): Promise<TData> {
     // Validate configuration before executing (lazy validation)
+    console.log(`[AdminClient:DEBUG] storeDomain="${this.config.storeDomain || 'EMPTY'}" endpoint="${this.endpoint}"`)
     if (!this.config.storeDomain) {
       throw new Error(
         'Shopify Admin API is not configured. Please set SHOPIFY_STORE_DOMAIN environment variable.'
@@ -218,7 +223,7 @@ export class ShopifyAdminClient {
     while (attempt <= retries) {
       try {
         // Get fresh access token (will use cached if still valid)
-        const accessToken = await getAdminAccessToken()
+        const accessToken = await this.tokenGetter()
 
         // Create abort controller for timeout
         const controller = new AbortController()
@@ -355,7 +360,7 @@ export class ShopifyAdminClient {
    * Create a new client with custom configuration
    */
   withConfig(config: Partial<ShopifyAdminConfig>): ShopifyAdminClient {
-    return new ShopifyAdminClient({ ...this.config, ...config })
+    return new ShopifyAdminClient({ ...this.config, ...config }, this.tokenGetter)
   }
 }
 
@@ -439,6 +444,31 @@ export async function mutateShopifyAdmin<TData = unknown, TVariables = Record<st
  * })
  * ```
  */
-export function createShopifyAdminClient(config?: Partial<ShopifyAdminConfig>): ShopifyAdminClient {
-  return new ShopifyAdminClient(config)
+export function createShopifyAdminClient(
+  config?: Partial<ShopifyAdminConfig>,
+  tokenGetter?: () => Promise<string>
+): ShopifyAdminClient {
+  return new ShopifyAdminClient(config, tokenGetter)
 }
+
+// ============================================================================
+// Canada Store Admin Client
+// ============================================================================
+
+function getShopifyAdminConfigCA(): ShopifyAdminConfig {
+  return {
+    storeDomain: process.env.SHOPIFY_CA_STORE_DOMAIN || '',
+    adminAccessToken: '', // Fetched via OAuth from auth-ca.ts
+    apiVersion: process.env.SHOPIFY_API_VERSION || DEFAULT_ADMIN_API_VERSION,
+  }
+}
+
+/**
+ * Shopify Admin API client for the Canada store (ca.kawaius.com).
+ * Uses SHOPIFY_CA_* env vars and a separate OAuth token cache.
+ * Server-side only — never expose to the client.
+ */
+export const shopifyAdminClientCA = new ShopifyAdminClient(
+  getShopifyAdminConfigCA(),
+  getAdminAccessTokenCA
+)
