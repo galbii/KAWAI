@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { createClientFeature, toolbarAddDropdownGroupWithItems } from '@payloadcms/richtext-lexical/client'
 import { $createUploadNode } from '@payloadcms/richtext-lexical/client'
 import { createCommand, COMMAND_PRIORITY_EDITOR, type LexicalCommand } from '@payloadcms/richtext-lexical/lexical'
 import { useLexicalComposerContext } from '@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext'
 import { $insertNodeToNearestRoot } from '@payloadcms/richtext-lexical/lexical/utils'
-import { useMediaManager } from '@/components/admin/media-manager/MediaManagerProvider'
+import { useMediaManagerSafe } from '@/components/admin/media-manager/MediaManagerProvider'
 import type { MediaItem } from '@/components/admin/media-manager/types'
 
 // Command to signal the plugin to open the media manager modal
@@ -19,11 +19,13 @@ const INSERT_MEDIA_MANAGER_IMAGE_COMMAND: LexicalCommand<MediaItem> =
 
 /**
  * Plugin that bridges the Lexical editor with the MediaManager context.
- * Runs as a React component so it can use hooks (useMediaManager).
+ * Runs as a React component so it can use hooks (useMediaManagerSafe).
+ * If MediaManagerProvider is not in the tree, all commands are no-ops.
  */
 function MediaManagerPlugin() {
   const [editor] = useLexicalComposerContext()
-  const { openModal } = useMediaManager()
+  const mediaManager = useMediaManagerSafe()
+  const openModal = mediaManager?.openModal
 
   // Handle image insertion command
   useEffect(() => {
@@ -51,6 +53,7 @@ function MediaManagerPlugin() {
     return editor.registerCommand(
       OPEN_MEDIA_MANAGER_COMMAND,
       () => {
+        if (!openModal) return false
         openModal({
           mode: 'select',
           filterMimeType: 'image/',

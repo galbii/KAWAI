@@ -421,7 +421,7 @@ export function ShigeruProductShowcase({ productData }: Props) {
                   <div className="flex items-center justify-between gap-6">
                     <Link
                       href={`/shigeru/models/${model.slug}`}
-                      className="inline-flex items-center gap-3 border-2 border-kawai-gold/50 hover:border-kawai-gold text-kawai-gold hover:bg-kawai-gold/[0.08] px-10 py-4 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-kawai-gold group/cta"
+                      className="inline-flex items-center gap-3 bg-kawai-black hover:bg-kawai-charcoal text-white px-10 py-4 transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-kawai-black group/cta"
                       style={{
                         fontFamily: 'var(--font-oswald)',
                         fontSize: '0.85rem',

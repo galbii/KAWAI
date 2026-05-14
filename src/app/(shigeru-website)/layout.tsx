@@ -261,10 +261,11 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
 
       <ShigeruHeader />
 
-      <main className="flex-1">{children}</main>
+      <div className="sk-site">
+        <main className="flex-1">{children}</main>
 
-      {/* Shigeru Kawai footer */}
-      <footer className="bg-[#0a0a0a] border-t border-white/[0.04]">
+        {/* Shigeru Kawai footer */}
+        <footer className="bg-[#0a0a0a] border-t border-white/[0.04]">
         {/* Logo */}
         <div className="flex justify-center pt-12 pb-8">
           <Link href="/shigeru" aria-label="Shigeru Kawai — Home">
@@ -303,6 +304,7 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
           </span>
         </div>
       </footer>
+      </div>
     </>
   )
 }

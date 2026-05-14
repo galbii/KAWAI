@@ -88,7 +88,7 @@ interface ExtendedContextValue extends MediaManagerContextValue {
 const MediaManagerContext = createContext<ExtendedContextValue | null>(null)
 
 /**
- * Hook to access media manager context
+ * Hook to access media manager context. Throws if used outside the provider.
  */
 export function useMediaManager(): ExtendedContextValue {
   const context = useContext(MediaManagerContext)
@@ -96,6 +96,15 @@ export function useMediaManager(): ExtendedContextValue {
     throw new Error('useMediaManager must be used within MediaManagerProvider')
   }
   return context
+}
+
+/**
+ * Safe variant — returns null instead of throwing when used outside the provider.
+ * Use this in Lexical plugins that may render in contexts where the provider
+ * is not guaranteed (e.g. deeply nested editor instances).
+ */
+export function useMediaManagerSafe(): ExtendedContextValue | null {
+  return useContext(MediaManagerContext)
 }
 
 interface MediaManagerProviderProps {
@@ -901,10 +910,15 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
 
   // Modal controls
   const openModal = useCallback((options?: import('./types').MediaManagerModalOptions) => {
-    console.log('[MediaManagerProvider] openModal called with options:', options)
     setState(prev => {
-      console.log('[MediaManagerProvider] Setting isOpen to true, previous state:', prev.isOpen)
-      return { ...prev, isOpen: true, modalOptions: options || null }
+      // If caller passes filterMimeType (e.g. 'image/'), auto-apply it so the grid
+      // shows only matching files without requiring the user to click a filter pill.
+      let fileTypeFilter = prev.fileTypeFilter
+      if (options?.filterMimeType) {
+        // 'image/' → 'image', 'video/' → 'video', etc.
+        fileTypeFilter = options.filterMimeType.replace('/', '') || null
+      }
+      return { ...prev, isOpen: true, modalOptions: options || null, fileTypeFilter }
     })
   }, [])
 
@@ -918,6 +932,7 @@ export function MediaManagerProvider({ children }: MediaManagerProviderProps) {
       editingMedia: null,
       pendingFiles: [],
       modalOptions: null,
+      fileTypeFilter: null,
     }))
   }, [])
 

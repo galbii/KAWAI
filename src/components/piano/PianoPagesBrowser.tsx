@@ -20,7 +20,7 @@ export interface CatalogProduct {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
-  priceCAD?: { msrp?: number | null } | null
+  priceCAD?: { price?: number | null; msrp?: number | null } | null
   salePrice?: number | null
   compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -28,6 +28,8 @@ export interface CatalogProduct {
     name: string
     price: number | null
     compareAtPrice: number | null
+    priceCAD: number | null
+    compareAtPriceCAD: number | null
     imageUrl: string | null
     available: boolean
   }> | null
@@ -590,8 +592,8 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
 
     // Always float items with a price above items without one
     items.sort((a, b) => {
-      const aMsrp = site === 'cad' ? (a.priceCAD?.msrp ?? a.price?.msrp) : a.price?.msrp
-      const bMsrp = site === 'cad' ? (b.priceCAD?.msrp ?? b.price?.msrp) : b.price?.msrp
+      const aMsrp = site === 'cad' ? (a.priceCAD?.price ?? a.priceCAD?.msrp ?? a.price?.msrp) : a.price?.msrp
+      const bMsrp = site === 'cad' ? (b.priceCAD?.price ?? b.priceCAD?.msrp ?? b.price?.msrp) : b.price?.msrp
       const aHas = (aMsrp != null || a.salePrice != null) ? 0 : 1
       const bHas = (bMsrp != null || b.salePrice != null) ? 0 : 1
       return aHas - bHas
@@ -1016,9 +1018,12 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
 
   // Resolve price for the correct site
   const currency = site === 'cad' ? 'CAD' : (product.price?.currency ?? 'USD')
-  const msrpForSite = site === 'cad' ? (product.priceCAD?.msrp ?? product.price?.msrp) : product.price?.msrp
-  const effectivePrice = activeVariant?.price ?? msrpForSite ?? null
-  const effectiveCompareAt = activeVariant?.compareAtPrice ?? null
+  const effectivePrice = site === 'cad'
+    ? (activeVariant?.priceCAD ?? product.priceCAD?.price ?? product.priceCAD?.msrp ?? product.price?.msrp ?? null)
+    : (activeVariant?.price ?? product.price?.msrp ?? null)
+  const effectiveCompareAt = site === 'cad'
+    ? (activeVariant?.compareAtPriceCAD ?? product.priceCAD?.msrp ?? null)
+    : (activeVariant?.compareAtPrice ?? null)
   const hasPrice = effectivePrice != null
   const isOnSale = hasPrice && effectiveCompareAt != null && effectiveCompareAt > (effectivePrice ?? 0)
 

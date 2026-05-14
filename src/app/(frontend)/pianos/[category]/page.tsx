@@ -346,7 +346,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
         id={String(collection.id)}
         collectionLabels={{ singular: 'Collection', plural: 'Collections' }}
       />
-      <CollectionPageContent collection={collection} products={products} />
+      <CollectionPageContent collection={collection} products={products} site={site} />
     </>
   )
 }

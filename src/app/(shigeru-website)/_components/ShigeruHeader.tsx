@@ -13,7 +13,7 @@ type NavItem =
 
 const leftNav: NavItem[] = [
   { label: 'Home', href: '/shigeru' },
-  { label: 'Concert Grands', href: '/shigeru/models' },
+  { label: 'Grand Pianos', href: '/shigeru/models' },
   { label: 'Artists', href: '/shigeru/artists' },
 ]
 
@@ -32,7 +32,7 @@ const rightNav: NavItem[] = [
 
 const mobileNavItems: NavItem[] = [
   { label: 'Home', href: '/shigeru' },
-  { label: 'Concert Grands', href: '/shigeru/models' },
+  { label: 'Grand Pianos', href: '/shigeru/models' },
   { label: 'Authorized Dealers', href: '/shigeru/dealers' },
   {
     label: 'Resources',

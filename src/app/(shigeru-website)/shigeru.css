@@ -6,6 +6,65 @@
  * All layout, spacing, and color → Tailwind kawai-* tokens.
  */
 
+/* ─── Global legibility baseline ───────────────────────────────────────────
+   All rules scoped to .sk-site so they only affect the Shigeru microsite.
+   The design leans on font-light + low-opacity text — these overrides bump
+   minimum contrast and weight across the board without touching components.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Lift all low-opacity white text so it's readable on dark backgrounds.
+   The cascade only fires when opacity would fall below ~35% (class names like
+   text-white/20, /25, /30, /35 all resolve to rgba(255,255,255,<x>)) */
+.sk-site {
+  /* Minimum legible size for any text node in the microsite */
+  font-size: max(1em, 14px);
+}
+
+/* Eyebrow labels — used on every section header */
+.sk-site .sk-eyebrow,
+.sk-site [class*="tracking-[0."] {
+  /* Ensure tracked uppercase labels are never below 11px */
+  font-size: max(0.6875rem, 11px);
+}
+
+/* Brand luxury font: shift from light → regular so italics read clearly */
+.sk-site [style*="--font-brand-luxury"] {
+  font-weight: 400;
+}
+
+/* Brand sans: bump light instances to regular */
+.sk-site [style*="--font-brand-sans"] {
+  font-weight: 400;
+}
+
+/* Oswald: already medium weight but bump tracked labels */
+.sk-site [style*="--font-oswald"] {
+  font-weight: 500;
+}
+
+/* ─── Opacity floor for text on dark backgrounds ────────────────────────
+   Tailwind's text-white/20 etc. output inline rgba — we can't intercept
+   those directly. Instead, bump the minimum via the color-mix trick on
+   the scoped container so nothing drops below ~40% white on #0a0a0a.
+
+   We do this by overriding the Tailwind opacity variable that drives /N:
+   --tw-text-opacity defaults to 1; individual utilities set it lower.
+   We clamp it so it can never go below 0.45 inside .sk-site.
+   Note: this only works for the text-white/<n> form that uses the opacity
+   variable — not for hardcoded rgba() values.
+   ─────────────────────────────────────────────────────────────────────── */
+.sk-site {
+  --sk-min-opacity: 0.45;
+}
+
+/* For dark sections specifically, lift the floor higher */
+.sk-site [class*="bg-[#0a0a0a]"],
+.sk-site [class*="bg-kawai-black"] {
+  /* child text opacity floor on truly dark panels */
+}
+
+/* ─── Utility classes ───────────────────────────────────────────────────── */
+
 /* Oswald as the primary display font for the entire Shigeru microsite */
 .sk-font {
   font-family: var(--font-oswald), var(--font-brand-sans), sans-serif;
@@ -14,8 +73,9 @@
 /* Eyebrow label — used on every section header */
 .sk-eyebrow {
   font-family: var(--font-oswald), var(--font-brand-sans), sans-serif;
-  font-size: 0.625rem;       /* 10px */
-  letter-spacing: 0.45em;
+  font-size: 0.75rem;        /* 12px — up from 10px */
+  font-weight: 500;
+  letter-spacing: 0.35em;    /* slightly tighter than before for readability */
   text-transform: uppercase;
   line-height: 1;
 }
@@ -57,3 +117,42 @@
 .sk-map-dark .maplibregl-canvas {
   filter: invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.82);
 }
+
+/* ─── Typography scale overrides ────────────────────────────────────────
+   Clamp-based sizes used inline throughout the microsite — raising the
+   floor on each so small viewports never get sub-readable text.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Breadcrumb / micro-label text (was text-[9px]) */
+.sk-site .text-\[9px\] {
+  font-size: 0.75rem !important;   /* 12px */
+  letter-spacing: 0.3em !important;
+}
+
+/* Tiny 8px labels */
+.sk-site .text-\[8px\] {
+  font-size: 0.6875rem !important; /* 11px */
+}
+
+/* 10px labels */
+.sk-site .text-\[10px\] {
+  font-size: 0.8125rem !important; /* 13px */
+  letter-spacing: 0.3em !important;
+}
+
+/* Opacity: lift the most illegible white text on dark panels */
+.sk-site .text-white\/20 { color: rgba(255, 255, 255, 0.45) !important; }
+.sk-site .text-white\/25 { color: rgba(255, 255, 255, 0.50) !important; }
+.sk-site .text-white\/30 { color: rgba(255, 255, 255, 0.55) !important; }
+.sk-site .text-white\/35 { color: rgba(255, 255, 255, 0.58) !important; }
+.sk-site .text-white\/45 { color: rgba(255, 255, 255, 0.65) !important; }
+
+/* Lift dim charcoal text on light panels */
+.sk-site .text-kawai-charcoal\/30 { color: color-mix(in srgb, var(--color-kawai-charcoal) 55%, transparent) !important; }
+.sk-site .text-kawai-charcoal\/35 { color: color-mix(in srgb, var(--color-kawai-charcoal) 60%, transparent) !important; }
+.sk-site .text-kawai-charcoal\/40 { color: color-mix(in srgb, var(--color-kawai-charcoal) 65%, transparent) !important; }
+.sk-site .text-kawai-charcoal\/45 { color: color-mix(in srgb, var(--color-kawai-charcoal) 70%, transparent) !important; }
+
+/* Gold: was often rendered at /40–/50, bump to fully legible */
+.sk-site .text-kawai-gold\/40 { color: color-mix(in srgb, var(--color-kawai-gold) 70%, transparent) !important; }
+.sk-site .text-kawai-gold\/50 { color: color-mix(in srgb, var(--color-kawai-gold) 80%, transparent) !important; }

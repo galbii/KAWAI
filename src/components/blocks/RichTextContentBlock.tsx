@@ -33,11 +33,6 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
           height={height}
           className="rounded-lg w-full h-auto"
         />
-        {alt && (
-          <figcaption className="mt-2 text-center text-sm text-kawai-charcoal/70 italic">
-            {alt}
-          </figcaption>
-        )}
       </figure>
     )
   },

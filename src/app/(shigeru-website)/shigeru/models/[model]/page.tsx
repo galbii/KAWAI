@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { SHIGERU_MODELS } from '../../_data/models'
 import { getShigeruPageData } from '../../_data/shopify'
+import { TechnicalSpecSheet } from '../_components/TechnicalSpecSheet'
 
 export async function generateStaticParams() {
   return SHIGERU_MODELS.map((m) => ({ model: m.slug }))
@@ -54,39 +55,6 @@ export default async function ModelPage({
     category: 'Grand Piano',
   }
 
-  const specs = [
-    {
-      label: 'Length',
-      value: shopify?.specLength ?? model.feet,
-      sub: shopify?.specLengthSub ?? model.cm,
-    },
-    {
-      label: 'Width',
-      value: shopify?.specWidth ?? model.width,
-      sub: shopify?.specWidthSub ?? model.widthCm,
-    },
-    {
-      label: 'Weight',
-      value: shopify?.specWeight ?? model.weight,
-      sub: shopify?.specWeightSub ?? model.weightKg,
-    },
-    {
-      label: 'Beams',
-      value: shopify?.specBeams ?? model.beams.toString(),
-      sub: model.beams === 5 ? 'Concert specification' : 'Premium specification',
-    },
-    {
-      label: finishes.length === 1 ? 'Finish' : 'Finishes',
-      value: finishes[0] ?? '',
-      sub: finishes.length > 1 ? finishes.slice(1).join(' · ') : undefined,
-    },
-    {
-      label: 'Warranty',
-      value: '10 Years',
-      sub: 'Fully transferrable',
-    },
-  ]
-
   return (
     <>
       <script
@@ -96,226 +64,117 @@ export default async function ModelPage({
 
       <div className="bg-[#0a0a0a]">
 
-        {/* ── HERO ────────────────────────────────────────────────── */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 overflow-hidden">
-          {/* Atmospheric glow — richer for the concert grand */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                model.slug === 'sk-ex'
-                  ? 'radial-gradient(ellipse 90% 70% at 50% 40%, rgba(213,199,140,0.10) 0%, transparent 65%)'
-                  : 'radial-gradient(ellipse 75% 60% at 50% 40%, rgba(213,199,140,0.06) 0%, transparent 70%)',
-            }}
-          />
+        {/* ── HERO — split panel ──────────────────────────────────── */}
+        <section className="relative min-h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
 
-          <div className="relative z-10 flex flex-col items-center text-center w-full max-w-5xl mx-auto">
-            {/* Breadcrumb */}
-            <nav
-              className="flex items-center gap-2.5 text-white/20 text-[9px] tracking-[0.3em] uppercase mb-16"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-              aria-label="Breadcrumb"
-            >
-              <Link
-                href="/shigeru"
-                className="hover:text-white/50 transition-colors duration-200"
-              >
-                Shigeru Kawai
-              </Link>
-              <span aria-hidden="true">·</span>
-              <Link
-                href="/shigeru/models"
-                className="hover:text-white/50 transition-colors duration-200"
-              >
-                Grand Pianos
-              </Link>
-              <span aria-hidden="true">·</span>
-              <span className="text-kawai-gold/60">{model.name}</span>
-            </nav>
+          {/* ── LEFT: pearl panel ────────────────────────────────── */}
+          <div className="relative bg-kawai-pearl flex flex-col justify-center px-8 pt-28 pb-12 lg:pl-16 lg:pr-4 lg:pt-32 lg:pb-16">
 
-            {/* Model name — commanding, full-width treatment */}
-            <h1
-              className="text-white font-light italic leading-[0.85] tracking-tight mb-0 select-none"
+            {/* Subtle gold glow on light bg */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
               style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(5rem, 20vw, 16rem)',
+                background: 'radial-gradient(ellipse 80% 60% at 20% 60%, rgba(213,199,140,0.12) 0%, transparent 70%)',
               }}
-            >
-              {model.name}
-            </h1>
+            />
 
-            {/* Gold rule between name and type */}
-            <div className="flex items-center justify-center gap-6 mt-10 mb-8">
-              <span className="block h-px w-16 bg-kawai-gold opacity-30" />
-              <p
-                className="text-kawai-gold text-[9px] tracking-[0.5em] uppercase"
+            <div className="relative z-10">
+              {/* Breadcrumb */}
+              <nav
+                className="flex items-center gap-2 text-kawai-charcoal/50 text-xs tracking-[0.25em] uppercase mb-6"
+                style={{ fontFamily: 'var(--font-oswald)' }}
+                aria-label="Breadcrumb"
+              >
+                <Link href="/shigeru" className="hover:text-kawai-black transition-colors duration-200">
+                  Shigeru Kawai
+                </Link>
+                <span aria-hidden="true" className="text-kawai-charcoal/30">·</span>
+                <Link href="/shigeru/models" className="hover:text-kawai-black transition-colors duration-200">
+                  Grand Pianos
+                </Link>
+                <span aria-hidden="true" className="text-kawai-charcoal/30">·</span>
+                <span className="text-kawai-gold">{model.name}</span>
+              </nav>
+
+              {/* Model name */}
+              <h1
+                className="text-kawai-black font-bold uppercase leading-[0.88] tracking-tight select-none mb-4"
                 style={{
-                  fontFamily: 'var(--font-brand-sans)',
-                  fontVariant: 'small-caps',
+                  fontFamily: 'var(--font-oswald)',
+                  fontSize: 'clamp(4.5rem, 10vw, 9rem)',
                 }}
               >
-                {model.type}
+                {model.name}
+              </h1>
+
+              {/* Type badge */}
+              <div className="flex items-center gap-4 mb-4">
+                <span className="block h-px w-10 bg-kawai-gold" />
+                <p
+                  className="text-kawai-gold text-xs tracking-[0.4em] uppercase font-medium"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
+                >
+                  {model.type}
+                </p>
+              </div>
+
+              {/* Dimensions */}
+              <p
+                className="text-kawai-charcoal/60 text-sm tracking-[0.2em] mb-6"
+                style={{ fontFamily: 'var(--font-oswald)' }}
+              >
+                {model.feet}&ensp;·&ensp;{model.cm}
               </p>
-              <span className="block h-px w-16 bg-kawai-gold opacity-30" />
+
+              {/* Tagline */}
+              <p
+                className="text-kawai-charcoal/70 font-light italic leading-relaxed max-w-sm"
+                style={{
+                  fontFamily: 'var(--font-brand-luxury)',
+                  fontSize: 'clamp(1rem, 1.6vw, 1.25rem)',
+                }}
+              >
+                {model.tagline}
+              </p>
+
+              {/* SK-EX rarity callout */}
+              {model.slug === 'sk-ex' && (
+                <p
+                  className="text-kawai-gold text-xs tracking-[0.35em] uppercase mt-5 font-medium"
+                  style={{ fontFamily: 'var(--font-oswald)' }}
+                >
+                  Fewer than 20 handcrafted each year
+                </p>
+              )}
             </div>
 
-            {/* Dimensions — whisper-quiet beneath the type */}
-            <p
-              className="text-white/20 text-xs tracking-[0.25em] mb-10"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              {model.feet}&ensp;·&ensp;{model.cm}
-            </p>
-
-            {/* Tagline */}
-            <p
-              className="text-white/45 font-light italic leading-relaxed max-w-xl mx-auto"
-              style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.1rem, 2vw, 1.5rem)',
-              }}
-            >
-              {model.tagline}
-            </p>
-
-            {/* SK-EX rarity callout */}
-            {model.slug === 'sk-ex' && (
-              <p
-                className="text-kawai-gold/50 text-[9px] tracking-[0.4em] uppercase mt-8"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                Fewer than 20 handcrafted each year
-              </p>
-            )}
           </div>
 
-          {/* Scroll nudge */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-            <span className="block w-px h-14 bg-gradient-to-b from-white/15 to-transparent" />
-          </div>
-        </section>
-
-        {/* ── PIANO IMAGE ─────────────────────────────────────────── */}
-        {imageUrl && (
-          <section className="bg-[#0a0a0a] px-6 pb-20 flex justify-center">
-            <div className="relative w-full max-w-4xl" style={{ aspectRatio: '4/3' }}>
+          {/* ── RIGHT: pearl panel + piano image ────────────────── */}
+          <div className="relative bg-kawai-pearl min-h-[60vw] lg:min-h-0">
+            {imageUrl ? (
               <Image
                 src={imageUrl}
                 alt={`Shigeru Kawai ${model.name}`}
                 fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 896px"
+                className="object-contain object-left-bottom lg:object-left"
+                style={{ mixBlendMode: 'multiply' }}
+                sizes="(max-width: 1024px) 100vw, 55vw"
                 priority
               />
-            </div>
-          </section>
-        )}
-
-        {/* ── SPECIFICATIONS ──────────────────────────────────────── */}
-        <section className="bg-kawai-pearl px-6 py-28">
-          <div className="max-w-5xl mx-auto">
-            <p
-              className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase text-center mb-6"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              Specifications
-            </p>
-            <h2
-              className="text-kawai-black font-light italic text-center mb-16 leading-tight"
-              style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
-              }}
-            >
-              {model.name} at a Glance
-            </h2>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-kawai-black/[0.07]">
-              {specs.map((spec) => (
-                <div
-                  key={spec.label}
-                  className="bg-kawai-pearl px-8 py-10 flex flex-col"
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                <span
+                  className="text-white font-bold uppercase"
+                  style={{ fontFamily: 'var(--font-oswald)', fontSize: 'clamp(3rem, 8vw, 7rem)' }}
                 >
-                  <p
-                    className="text-kawai-gold text-[8px] tracking-[0.4em] uppercase mb-4"
-                    style={{
-                      fontFamily: 'var(--font-brand-sans)',
-                      fontVariant: 'small-caps',
-                    }}
-                  >
-                    {spec.label}
-                  </p>
-                  <p
-                    className="text-kawai-black font-light leading-none mb-2"
-                    style={{
-                      fontFamily: 'var(--font-brand-luxury)',
-                      fontSize: 'clamp(1.4rem, 2.5vw, 2rem)',
-                      fontStyle: 'italic',
-                    }}
-                  >
-                    {spec.value}
-                  </p>
-                  {spec.sub && (
-                    <p
-                      className="text-kawai-charcoal/40 text-xs leading-snug mt-1"
-                      style={{ fontFamily: 'var(--font-brand-sans)' }}
-                    >
-                      {spec.sub}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+                  {model.name}
+                </span>
+              </div>
+            )}
           </div>
-        </section>
 
-        {/* ── SELLING POINTS ──────────────────────────────────────── */}
-        <section className="bg-[#0a0a0a] px-6 py-28">
-          <div className="max-w-4xl mx-auto">
-            <p
-              className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              Why the {model.name}
-            </p>
-            <h2
-              className="text-white font-light italic text-center mb-20 leading-tight"
-              style={{
-                fontFamily: 'var(--font-brand-luxury)',
-                fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
-              }}
-            >
-              What Sets It Apart
-            </h2>
-
-            <ol className="space-y-0">
-              {model.sellingPoints.map((point, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-8 border-b border-white/[0.05] py-8 last:border-b-0 group"
-                >
-                  {/* Large italic number in gold */}
-                  <span
-                    className="flex-shrink-0 text-kawai-gold font-light italic leading-none opacity-40 group-hover:opacity-70 transition-opacity duration-300 w-12 text-right"
-                    style={{
-                      fontFamily: 'var(--font-brand-luxury)',
-                      fontSize: 'clamp(2.5rem, 4vw, 3.5rem)',
-                    }}
-                    aria-hidden="true"
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <p
-                    className="text-white/65 text-base leading-relaxed pt-2 group-hover:text-white/85 transition-colors duration-300"
-                    style={{ fontFamily: 'var(--font-brand-sans)' }}
-                  >
-                    {point}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </div>
         </section>
 
         {/* ── ARTIST QUOTE ────────────────────────────────────────── */}
@@ -347,6 +206,56 @@ export default async function ModelPage({
             <span className="block h-px w-10 bg-kawai-gold opacity-40 mx-auto mt-16" />
           </div>
         </section>
+
+        {/* ── SELLING POINTS ──────────────────────────────────────── */}
+        <section className="bg-[#0a0a0a] px-6 py-28">
+          <div className="max-w-4xl mx-auto">
+            <p
+              className="text-kawai-gold text-[10px] tracking-[0.45em] uppercase text-center mb-6"
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              Why the {model.name}
+            </p>
+            <h2
+              className="text-white font-light italic text-center mb-20 leading-tight"
+              style={{
+                fontFamily: 'var(--font-brand-luxury)',
+                fontSize: 'clamp(1.6rem, 3vw, 2.4rem)',
+              }}
+            >
+              What Sets It Apart
+            </h2>
+
+            <ol className="space-y-0">
+              {model.sellingPoints.map((point, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-8 border-b border-white/[0.05] py-8 last:border-b-0 group"
+                >
+                  <span
+                    className="flex-shrink-0 text-kawai-gold font-light italic leading-none opacity-40 group-hover:opacity-70 transition-opacity duration-300 w-12 text-right"
+                    style={{
+                      fontFamily: 'var(--font-brand-luxury)',
+                      fontSize: 'clamp(2.5rem, 4vw, 3.5rem)',
+                    }}
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <p
+                    className="text-white/65 text-base leading-relaxed pt-2 group-hover:text-white/85 transition-colors duration-300"
+                    style={{ fontFamily: 'var(--font-brand-sans)' }}
+                  >
+                    {point}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* ── SPECIFICATIONS ──────────────────────────────────────── */}
+        <TechnicalSpecSheet model={model} />
 
         {/* ── NAVIGATION: PREV / NEXT ──────────────────────────────── */}
         <section className="bg-[#0a0a0a] px-6 py-20">

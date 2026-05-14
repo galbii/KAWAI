@@ -15,6 +15,7 @@ interface CollectionProductRowProps {
   index: number
   isEven: boolean
   collectionHandle: string
+  site?: 'us' | 'cad'
 }
 
 function formatPrice(price?: number | null, currency = 'USD'): string | null {
@@ -96,6 +97,7 @@ export function CollectionProductRow({
   index,
   isEven,
   collectionHandle,
+  site = 'us',
 }: CollectionProductRowProps) {
   const imageOnLeft = isEven
   const indexLabel = String(index + 1).padStart(2, '0')
@@ -124,17 +126,26 @@ export function CollectionProductRow({
 
   const priceDisplay: PriceDisplay = (() => {
     if (selectedVariation) {
-      const p = selectedVariation.price
-      const cap = selectedVariation.compareAtPrice
+      // CA: use stored priceCAD/compareAtPriceCAD if available, else fall back to live-enriched price
+      const p = site === 'cad'
+        ? (selectedVariation.priceCAD ?? selectedVariation.price)
+        : selectedVariation.price
+      const cap = site === 'cad'
+        ? (selectedVariation.compareAtPriceCAD ?? selectedVariation.compareAtPrice)
+        : selectedVariation.compareAtPrice
       const onSale = typeof cap === 'number' && typeof p === 'number' && cap > p
       return { type: 'single', price: p, compareAtPrice: cap, onSale }
     }
-    const pricedVars = product.variations.filter((v) => typeof v.price === 'number')
+    const priceKey = site === 'cad' ? 'priceCAD' : 'price'
+    const pricedVars = product.variations.filter((v) => typeof v[priceKey] === 'number')
     if (pricedVars.length > 1) {
-      const prices = pricedVars.map((v) => v.price as number)
+      const prices = pricedVars.map((v) => v[priceKey] as number)
       return { type: 'range', minPrice: Math.min(...prices), maxPrice: Math.max(...prices) }
     }
-    return { type: 'fallback', price: product.price?.msrp ?? null }
+    const fallback = site === 'cad'
+      ? (product.priceCAD?.price ?? product.priceCAD?.msrp ?? null)
+      : (product.price?.msrp ?? null)
+    return { type: 'fallback', price: fallback }
   })()
 
   const imageVariants = makeImageVariants(!imageOnLeft)
@@ -147,7 +158,7 @@ export function CollectionProductRow({
       variantId: selectedVariation?.shopifyVariantId ?? '',
       variantName: selectedVariation?.name ?? null,
       price: selectedVariation?.price ?? null,
-      currency: 'USD',
+      currency: product.currency ?? (site === 'cad' ? 'CAD' : 'USD'),
       productId: product.slug,
       productCategory: product.type ?? null,
       additionalProps: { button_type: buttonType, collection_handle: collectionHandle },

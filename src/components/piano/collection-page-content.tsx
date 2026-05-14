@@ -12,6 +12,8 @@ export interface CollectionVariation {
   shopifyVariantId: string | null
   price: number | null
   compareAtPrice: number | null
+  priceCAD: number | null
+  compareAtPriceCAD: number | null
   available: boolean
   imageUrl: string | null
 }
@@ -30,9 +32,10 @@ export interface CollectionProduct {
   type?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
-  priceCAD?: { msrp?: number | null } | null
+  priceCAD?: { price?: number | null; msrp?: number | null } | null
   currency?: string | null
   salePrice?: number | null
+  compareAtPrice?: number | null
   description?: string | null
   variations: CollectionVariation[]
   customMedia?: CollectionMediaItem[] | null
@@ -41,6 +44,7 @@ export interface CollectionProduct {
 interface CollectionPageContentProps {
   collection: any
   products: CollectionProduct[]
+  site?: 'us' | 'cad'
 }
 
 function PianoSilhouette() {
@@ -150,7 +154,7 @@ function CollectionBentoGrid({ products }: { products: CollectionProduct[] }) {
   )
 }
 
-export function CollectionPageContent({ collection, products }: CollectionPageContentProps) {
+export function CollectionPageContent({ collection, products, site = 'us' }: CollectionPageContentProps) {
   const hasProducts = products.length > 0
 
   // Use the pianoCategories field from the Collections collection (first value if multiple)
@@ -340,6 +344,7 @@ export function CollectionPageContent({ collection, products }: CollectionPageCo
                 index={index}
                 isEven={index % 2 === 0}
                 collectionHandle={collection?.handle ?? ''}
+                site={site}
               />
 
               {/* Divider between rows */}
