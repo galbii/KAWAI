@@ -278,7 +278,6 @@ type ModelPriceProps = {
 }
 
 function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, isCanada, size }: ModelPriceProps) {
-  if (isCanada) return null
   const isMobile = size === 'mobile'
   return (
     <div className={isMobile ? 'flex-shrink-0 text-right' : 'text-right'}>
@@ -321,7 +320,7 @@ function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, 
       )}
       {!isMobile && (
         <p className="text-kawai-charcoal/25 text-[11px] mt-2 leading-none italic" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-          Rebate applied at checkout
+          {isCanada ? 'Rebate applied at participating dealers' : 'Rebate applied at checkout'}
         </p>
       )}
     </div>

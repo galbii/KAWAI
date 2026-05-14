@@ -25,7 +25,7 @@ function formatPrice(price?: number | null, currency = 'USD'): string | null {
     currency,
     maximumFractionDigits: 0,
   }).format(price)
-  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  if (currency === 'CAD') return formatted.replace('CA$', 'CAD')
   return formatted
 }
 

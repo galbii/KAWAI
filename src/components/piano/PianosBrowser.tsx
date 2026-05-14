@@ -58,7 +58,7 @@ function formatCurrency(amount: number, currency = 'USD'): string {
     currency,
     maximumFractionDigits: 0,
   }).format(amount)
-  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  if (currency === 'CAD') return formatted.replace('CA$', 'CAD')
   return formatted
 }
 

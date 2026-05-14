@@ -57,8 +57,8 @@ export function formatPrice(price: number, currency = 'USD'): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price)
-  // Intl formats CAD as "CA$44,495" — normalize to "$44,495 CAD"
-  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  // Intl formats CAD as "CA$44,495" — normalize to "CAD44,495"
+  if (currency === 'CAD') return formatted.replace('CA$', 'CAD')
   return formatted
 }
 

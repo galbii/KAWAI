@@ -399,8 +399,6 @@ export function ProductHeroBlock({
   // Get display price for variations section
   const getVariationsDisplayPrice = () => {
     if (!shopifyProduct) return null
-    console.log('[PriceDebug] shopifyProduct variants:', shopifyProduct.variants.map(v => ({ title: v.title, price: v.price, available: v.available })))
-    console.log('[PriceDebug] hasVariations:', hasVariations, 'allVariations:', allVariations.map(v => v.name), 'selectedVariation:', selectedVariation)
 
     // If product has variations, handle variation-based pricing
     if (hasVariations) {
@@ -417,22 +415,28 @@ export function ProductHeroBlock({
         }
       }
 
-      // No variation selected or only one variation - show range
-      const prices = allVariations
+      // No variation selected (or selected variation has no Shopify title match) — show range/single
+      // Keep full price objects so sale info is not lost
+      const variationPrices = allVariations
         .map(v => getVariationPrice(v.name || ''))
-        .filter((p): p is NonNullable<typeof p> => p !== null)
-        .map(p => p.price)
+        .filter((p): p is NonNullable<ReturnType<typeof getVariationPrice>> => p !== null)
 
-      if (prices.length === 0) return null
+      if (variationPrices.length === 0) return null
 
-      const minPrice = Math.min(...prices)
-      const maxPrice = Math.max(...prices)
+      const priceValues = variationPrices.map(p => p.price)
+      const minPrice = Math.min(...priceValues)
+      const maxPrice = Math.max(...priceValues)
 
-      // If only one unique price or one variation, show single price
+      // Single unique price or single variation — surface sale info if present
       if (minPrice === maxPrice || allVariations.length === 1) {
+        // Prefer a variant that is on sale; otherwise use the first matched
+        const saleVariant = variationPrices.find(p => p.onSale)
+        const representative = saleVariant ?? variationPrices[0]!
         return {
           type: 'single' as const,
-          price: minPrice
+          price: representative.price,
+          compareAtPrice: representative.compareAtPrice ?? undefined,
+          onSale: representative.onSale,
         }
       }
 

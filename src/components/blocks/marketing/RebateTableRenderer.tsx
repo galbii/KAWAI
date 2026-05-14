@@ -101,7 +101,7 @@ export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
 
           if (isObj && productPage.model) {
             try {
-              const shopifyProduct = await getProductByModelCached(productPage.model)
+              const shopifyProduct = await getProductByModelCached(productPage.model, site)
               if (shopifyProduct) {
                 const firstAvailable = shopifyProduct.variants.find((v) => v.available)
                 const variant = firstAvailable ?? shopifyProduct.variants[0]
@@ -137,7 +137,7 @@ export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
             ...(isObj && productPage.imageUrl ? { productImageUrl: productPage.imageUrl } : {}),
             ...(liveCompareAtPrice != null ? { productCompareAtPrice: liveCompareAtPrice } : isObj && productPage.price?.msrp != null ? { productMsrp: productPage.price.msrp } : {}),
             ...(liveShopifyPrice != null ? { productShopifyPrice: liveShopifyPrice } : {}),
-            ...(isObj && productPage.price?.currency ? { productCurrency: productPage.price.currency } : {}),
+            productCurrency: isCanada ? 'CAD' : (isObj && productPage.price?.currency ? productPage.price.currency : 'USD'),
             ...(variantId ? { productVariantId: variantId } : {}),
             ...(isObj ? { productAvailable: available, productBackorder: productPage.backorder ?? false } : {}),
           }
