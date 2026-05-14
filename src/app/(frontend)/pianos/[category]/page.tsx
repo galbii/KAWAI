@@ -187,6 +187,7 @@ function getCMSCategoryPage(slug: string): Promise<Page | null> {
 
 export default async function CategoryPage({ params }: CategoryPageParams) {
   const { category } = await params
+  const site = await getSite()
 
   // Check for a CMS page overriding this category route (slug: "pianos/digital" etc.)
   const cmsPage = await getCMSCategoryPage(category)
@@ -333,7 +334,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
   // ── Collection Pages ────────────────────────────────────────────────────────
   const [collection, products] = await Promise.all([
     getCollectionByHandle(category),
-    getProductsByCollectionHandle(category),
+    getProductsByCollectionHandle(category, site),
   ])
 
   if (!collection) notFound()

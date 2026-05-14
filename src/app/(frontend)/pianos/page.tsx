@@ -142,7 +142,7 @@ export default async function PianosPage() {
         products={products}
         collectionsForBrowser={collectionsForBrowser}
         pageHeading={pianosPageData ?? undefined}
-        isCanada={site === 'cad'}
+        site={site}
       />
     </>
   )

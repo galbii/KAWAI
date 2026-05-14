@@ -140,7 +140,7 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
           <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
             {displayCompare !== null && (
               <span className="bg-kawai-black/60 backdrop-blur-sm text-white/60 text-[10px] px-2 py-0.5 line-through">
-                {formatPrice(displayCompare)}
+                {formatPrice(displayCompare, product.price?.currency ?? 'USD')}
               </span>
             )}
             <span
@@ -150,7 +150,7 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
                   : 'bg-kawai-black/70 text-white'
               }`}
             >
-              {formatPrice(displayPrice)}
+              {formatPrice(displayPrice, product.price?.currency ?? 'USD')}
             </span>
           </div>
         )}
@@ -353,7 +353,7 @@ export async function RelatedProductsRenderer({
   product,
   isCanada = false,
 }: RelatedProductsRendererProps) {
-  const effectiveShowPrice = isCanada ? false : (showPrice ?? true)
+  const effectiveShowPrice = showPrice ?? true
   if (!product) return null
 
   const limit = Math.min(Math.max(maxProducts ?? 4, 2), 8)

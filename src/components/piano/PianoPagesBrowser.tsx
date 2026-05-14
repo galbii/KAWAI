@@ -20,6 +20,7 @@ export interface CatalogProduct {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  priceCAD?: { msrp?: number | null } | null
   salePrice?: number | null
   compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -37,7 +38,7 @@ interface Props {
   collections?: CollectionForBrowser[]
   heading?: string | null
   category?: 'digital' | 'grand' | 'upright' | 'hybrid' | null
-  isCanada?: boolean
+  site?: 'us' | 'cad'
 }
 
 const SORT_OPTIONS = [
@@ -48,11 +49,13 @@ const SORT_OPTIONS = [
 ] as const
 
 function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+  const formatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,
   }).format(amount)
+  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  return formatted
 }
 
 function formatPrice(price?: CatalogProduct['price']): string {
@@ -484,16 +487,14 @@ function MobileFilterSheet({
 
 /* ── Main Component ────────────────────────────────────────────── */
 
-export default function PianoPagesBrowser({ products, collections, heading, category, isCanada = false }: Props) {
+export default function PianoPagesBrowser({ products, collections, heading, category, site = 'us' }: Props) {
   const [search, setSearch] = useState('')
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const sortOptions = isCanada
-    ? SORT_OPTIONS.filter((o) => o.value !== 'price-asc' && o.value !== 'price-desc')
-    : [...SORT_OPTIONS]
+  const sortOptions = [...SORT_OPTIONS]
 
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
@@ -586,6 +587,15 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         items.sort((a, b) => (b.price?.msrp ?? 0) - (a.price?.msrp ?? 0))
         break
     }
+
+    // Always float items with a price above items without one
+    items.sort((a, b) => {
+      const aMsrp = site === 'cad' ? (a.priceCAD?.msrp ?? a.price?.msrp) : a.price?.msrp
+      const bMsrp = site === 'cad' ? (b.priceCAD?.msrp ?? b.price?.msrp) : b.price?.msrp
+      const aHas = (aMsrp != null || a.salePrice != null) ? 0 : 1
+      const bHas = (bMsrp != null || b.salePrice != null) ? 0 : 1
+      return aHas - bHas
+    })
 
     return items
   }, [products, search, activeCollection, sort])
@@ -919,7 +929,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               {filtered.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} isCanada={isCanada} />
+                <ProductCard key={product.id} product={product} index={index} site={site} />
               ))}
             </motion.div>
           ) : (
@@ -996,7 +1006,7 @@ function normalizeCategory(product: CatalogProduct): string {
   return 'Other'
 }
 
-function ProductCard({ product, index, isCanada = false }: { product: CatalogProduct; index: number; isCanada?: boolean }) {
+function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct; index: number; site?: 'us' | 'cad' }) {
   const [activeVariantIdx, setActiveVariantIdx] = useState(0)
   const category = normalizeCategory(product)
 
@@ -1004,12 +1014,16 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
   const hasVariants = variants.length >= 2
   const activeVariant = hasVariants ? (variants[activeVariantIdx] ?? null) : null
 
-  // Resolved display values based on active variant
-  const displayImageUrl = activeVariant?.imageUrl ?? product.imageUrl
-  const effectivePrice = activeVariant?.price ?? product.price?.msrp ?? null
+  // Resolve price for the correct site
+  const currency = site === 'cad' ? 'CAD' : (product.price?.currency ?? 'USD')
+  const msrpForSite = site === 'cad' ? (product.priceCAD?.msrp ?? product.price?.msrp) : product.price?.msrp
+  const effectivePrice = activeVariant?.price ?? msrpForSite ?? null
   const effectiveCompareAt = activeVariant?.compareAtPrice ?? null
   const hasPrice = effectivePrice != null
   const isOnSale = hasPrice && effectiveCompareAt != null && effectiveCompareAt > (effectivePrice ?? 0)
+
+  // Resolved display values based on active variant
+  const displayImageUrl = activeVariant?.imageUrl ?? product.imageUrl
 
   const visibleVariants = variants.slice(0, 5)
   const extraCount = variants.length > 5 ? variants.length - 5 : 0
@@ -1176,28 +1190,28 @@ function ProductCard({ product, index, isCanada = false }: { product: CatalogPro
 
           <div className="flex items-end justify-between">
             <div className="flex flex-col gap-1">
-              {!isCanada && (isOnSale ? (
+              {isOnSale ? (
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
                     <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
-                      {formatCurrency(effectiveCompareAt ?? 0, product.price?.currency ?? 'USD')}
+                      {formatCurrency(effectiveCompareAt ?? 0, currency)}
                     </span>
                   </div>
                   <p className="text-xl font-bold text-kawai-red font-[family-name:var(--font-brand-sans)]">
-                    {formatCurrency(effectivePrice ?? 0, product.price?.currency ?? 'USD')}
+                    {formatCurrency(effectivePrice ?? 0, currency)}
                   </p>
                 </>
               ) : hasPrice ? (
                 <>
                   <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
                   <p className="text-xl font-bold text-kawai-black font-[family-name:var(--font-brand-sans)]">
-                    {formatCurrency(effectivePrice ?? 0, product.price?.currency ?? 'USD')}
+                    {formatCurrency(effectivePrice ?? 0, currency)}
                   </p>
                 </>
               ) : (
                 <p className="text-xs italic text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">Contact for Price</p>
-              ))}
+              )}
             </div>
 
             <span

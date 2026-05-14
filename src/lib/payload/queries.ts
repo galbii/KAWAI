@@ -5,6 +5,7 @@ import type { Payload, Where } from 'payload'
 import config from '@/payload.config'
 import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
+import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import type {
   Product,
   PianosPage,
@@ -676,6 +677,7 @@ type CatalogProduct = {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  priceCAD?: { msrp?: number | null } | null
   salePrice?: number | null
   compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -715,6 +717,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
         category: true,
         imageUrl: true,
         price: true,
+        priceCAD: true,
         shopifyCollections: true,
         visibility: true,
         variations: true,
@@ -735,6 +738,9 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
       imageUrl: doc.imageUrl ?? null,
       price: doc.price
         ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+        : null,
+      priceCAD: (doc as any).priceCAD?.msrp != null
+        ? { msrp: (doc as any).priceCAD.msrp as number }
         : null,
       ...(() => {
         const vars = doc.variations
@@ -1158,6 +1164,8 @@ type CollectionProduct = {
   type?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  priceCAD?: { msrp?: number | null } | null
+  currency?: string | null
   salePrice?: number | null
   compareAtPrice?: number | null
   description?: string | null
@@ -1176,15 +1184,15 @@ type CollectionProduct = {
   }> | null
 }
 
-export function getProductsByCollectionHandle(handle: string): Promise<CollectionProduct[]> {
+export function getProductsByCollectionHandle(handle: string, site: 'us' | 'cad' = 'us'): Promise<CollectionProduct[]> {
   return unstable_cache(
-    async (): Promise<CollectionProduct[]> => _getProductsByCollectionHandle(handle),
-    [`collection-products-${handle}`],
+    async (): Promise<CollectionProduct[]> => _getProductsByCollectionHandle(handle, site),
+    [`collection-products-${handle}-${site}`],
     { tags: ['products', 'collections', `collection-${handle}`], revalidate: 300 },
   )()
 }
 
-async function _getProductsByCollectionHandle(handle: string): Promise<CollectionProduct[]> {
+async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad' = 'us'): Promise<CollectionProduct[]> {
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({
@@ -1201,6 +1209,7 @@ async function _getProductsByCollectionHandle(handle: string): Promise<Collectio
         type: true,
         imageUrl: true,
         price: true,
+        priceCAD: true,
         description: true,
         visibility: true,
         variations: true,
@@ -1219,7 +1228,8 @@ async function _getProductsByCollectionHandle(handle: string): Promise<Collectio
         const shopifyHandle = (doc as any).shopify?.handle as string | null | undefined
         if (!shopifyHandle) return
         try {
-          const shopifyProduct = await fetchShopifyProduct(shopifyHandle)
+          const adminClient = site === 'cad' ? shopifyAdminClientCA : undefined
+          const shopifyProduct = await fetchShopifyProduct(shopifyHandle, adminClient)
           if (!shopifyProduct) return
           const variantMap = new Map<string, { price: number; compareAtPrice: number | null }>()
           for (const variant of shopifyProduct.variants) {
@@ -1273,6 +1283,10 @@ async function _getProductsByCollectionHandle(handle: string): Promise<Collectio
         price: doc.price
           ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
           : null,
+        priceCAD: (doc as any).priceCAD?.msrp != null
+          ? { msrp: (doc as any).priceCAD.msrp as number }
+          : null,
+        currency: site === 'cad' ? 'CAD' : 'USD',
         salePrice: minSaleVar?.price ?? null,
         compareAtPrice: minSaleVar?.compareAtPrice ?? null,
         description: doc.description ?? null,
@@ -1871,6 +1885,7 @@ export function getCatalogProductsByCategory(
     category?: string | null
     imageUrl?: string | null
     price?: { msrp?: number | null; currency?: string | null } | null
+    priceCAD?: { msrp?: number | null } | null
     salePrice?: number | null
     compareAtPrice?: number | null
     shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -1922,6 +1937,7 @@ export function getCatalogProductsByCategory(
           category: true,
           imageUrl: true,
           price: true,
+          priceCAD: true,
           shopifyCollections: true,
           visibility: true,
           variations: true,
@@ -1941,6 +1957,9 @@ export function getCatalogProductsByCategory(
         imageUrl: doc.imageUrl ?? null,
         price: doc.price
           ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
+          : null,
+        priceCAD: (doc as any).priceCAD?.msrp != null
+          ? { msrp: (doc as any).priceCAD.msrp as number }
           : null,
         ...(() => {
           const vars = doc.variations

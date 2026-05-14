@@ -149,12 +149,20 @@ const nextConfig: NextConfig = {
         ],
       },
       // Relaxed CSP for the Payload admin UI (requires unsafe-inline + unsafe-eval).
-      // COEP credentialless + COOP same-origin-allow-popups enable SharedArrayBuffer,
-      // which is required by @ffmpeg/ffmpeg v0.12 (used for browser-side video compression).
       {
         source: '/admin(.*)',
         headers: [
           { key: 'Content-Security-Policy', value: ADMIN_CSP },
+        ],
+      },
+      // COEP credentialless + COOP same-origin-allow-popups enable SharedArrayBuffer,
+      // required by @ffmpeg/ffmpeg v0.12 (browser-side video compression in the media manager).
+      // Scoped to /admin/collections/media only — applying these to all admin routes breaks
+      // live-preview in Firefox/Zen: the parent COEP: credentialless makes Firefox refuse to
+      // load the preview iframe even when the frontend page has COEP: unsafe-none.
+      {
+        source: '/admin/collections/media(.*)',
+        headers: [
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
         ],

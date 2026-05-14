@@ -121,15 +121,13 @@ function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardP
         )}
 
         {/* Price overlay — bottom-right of image */}
-        {!isCanada && displayPrice !== null && (
+        {displayPrice !== null && (
           <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
-            {/* Compare-at / original price (struck through) */}
             {displayCompare !== null && (
               <span className="bg-kawai-black/60 backdrop-blur-sm text-white/60 text-[10px] px-2 py-0.5 line-through">
-                {formatPrice(displayCompare)}
+                {formatPrice(displayCompare, accessory.price?.currency ?? 'USD')}
               </span>
             )}
-            {/* Current price */}
             <span
               className={`backdrop-blur-sm text-[12px] font-medium px-2.5 py-1 ${
                 isOnSale
@@ -137,7 +135,7 @@ function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardP
                   : 'bg-kawai-black/70 text-white'
               }`}
             >
-              {formatPrice(displayPrice)}
+              {formatPrice(displayPrice, accessory.price?.currency ?? 'USD')}
             </span>
           </div>
         )}

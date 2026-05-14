@@ -30,6 +30,8 @@ export interface CollectionProduct {
   type?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
+  priceCAD?: { msrp?: number | null } | null
+  currency?: string | null
   salePrice?: number | null
   description?: string | null
   variations: CollectionVariation[]

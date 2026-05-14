@@ -336,6 +336,22 @@ export const Products: CollectionConfig = {
                 description: 'Product pricing information'
               }
             },
+            {
+              name: 'priceCAD',
+              type: 'group',
+              fields: [
+                {
+                  name: 'msrp',
+                  type: 'number',
+                  admin: {
+                    description: 'Canadian MSRP — shown on ca.kawaius.com',
+                  }
+                },
+              ],
+              admin: {
+                description: 'Canadian pricing (ca.kawaius.com)',
+              }
+            },
 
             // Custom Media — editor-curated media appended to galleries
             {

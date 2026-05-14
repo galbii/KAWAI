@@ -748,34 +748,65 @@ export function ProductHeroBlock({
               </div>
             )}
 
-            {/* Dynamic Price Display - Show when Shopify product data is available */}
-            {variationsDisplayPrice && shopifyProduct && (
-              <div className={cn("flex items-baseline gap-3", textColorClass)}>
-                <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
-                {variationsDisplayPrice.type === 'single' ? (
-                  variationsDisplayPrice.onSale ? (
-                    <>
-                      {/* compareAtPrice (MSRP) crossed out */}
-                      <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
-                        {formatPrice(variationsDisplayPrice.compareAtPrice!)}
+            {/* Dynamic Price Display */}
+            {(() => {
+              const currency = site === 'cad' ? 'CAD' : (shopifyProduct?.price.currency ?? 'USD')
+
+              // CA: show compareAtPrice (MSRP) only — no sale treatment, no current price
+              if (site === 'cad') {
+                // Prefer compareAtPrice from Shopify variant, fall back to priceCAD from Payload
+                const cadMsrp = (() => {
+                  if (shopifyProduct) {
+                    const variant = selectedVariation >= 0 && allVariations[selectedVariation]
+                      ? shopifyProduct.variants.find(v =>
+                          v.title.toLowerCase().includes(allVariations[selectedVariation]!.name?.toLowerCase() ?? '')
+                        )
+                      : shopifyProduct.variants[0]
+                    if (variant?.compareAtPrice) return variant.compareAtPrice
+                    if (variant?.price && variant.price > 0) return variant.price
+                  }
+                  return (product as any)?.priceCAD?.msrp ?? (product as any)?.price?.msrp ?? null
+                })()
+
+                if (!cadMsrp) return null
+                return (
+                  <div className={cn("flex items-baseline gap-3", textColorClass)}>
+                    <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
+                    <span className="text-3xl font-bold transition-all duration-300">
+                      {formatPrice(cadMsrp, currency)}
+                    </span>
+                  </div>
+                )
+              }
+
+              // US: existing logic
+              if (!variationsDisplayPrice || !shopifyProduct) return null
+              return (
+                <div className={cn("flex items-baseline gap-3", textColorClass)}>
+                  <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
+                  {variationsDisplayPrice.type === 'single' ? (
+                    variationsDisplayPrice.onSale ? (
+                      <>
+                        <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
+                          {formatPrice(variationsDisplayPrice.compareAtPrice!, currency)}
+                        </span>
+                        <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
+                          {formatPrice(variationsDisplayPrice.price, currency)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-bold transition-all duration-300">
+                        {formatPrice(variationsDisplayPrice.price, currency)}
                       </span>
-                      {/* Sale price - to the right, prominent */}
-                      <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        {formatPrice(variationsDisplayPrice.price)}
-                      </span>
-                    </>
+                    )
                   ) : (
                     <span className="text-3xl font-bold transition-all duration-300">
-                      {formatPrice(variationsDisplayPrice.price)}
+                      {formatPrice(variationsDisplayPrice.minPrice, currency)} - {formatPrice(variationsDisplayPrice.maxPrice, currency)}
                     </span>
-                  )
-                ) : (
-                  <span className="text-3xl font-bold transition-all duration-300">
-                    {formatPrice(variationsDisplayPrice.minPrice)} - {formatPrice(variationsDisplayPrice.maxPrice)}
-                  </span>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )
+            })()}
 
             {/* Compact Variation Selection */}
             {showVariations && hasVariations && (

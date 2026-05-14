@@ -17,13 +17,15 @@ interface CollectionProductRowProps {
   collectionHandle: string
 }
 
-function formatPrice(price?: number | null): string | null {
+function formatPrice(price?: number | null, currency = 'USD'): string | null {
   if (!price) return null
-  return new Intl.NumberFormat('en-US', {
+  const formatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
     maximumFractionDigits: 0,
   }).format(price)
+  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  return formatted
 }
 
 // ── Animation primitives ──────────────────────────────────────────────────────
@@ -347,15 +349,15 @@ export function CollectionProductRow({
           {priceDisplay.onSale && priceDisplay.compareAtPrice ? (
             <div className="flex items-baseline gap-4">
               <span className="text-4xl font-semibold text-kawai-charcoal/35 line-through" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                {formatPrice(priceDisplay.compareAtPrice)}
+                {formatPrice(priceDisplay.compareAtPrice, product.currency ?? 'USD')}
               </span>
               <span className="text-4xl font-semibold text-kawai-red" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                {formatPrice(priceDisplay.price)}
+                {formatPrice(priceDisplay.price, product.currency ?? 'USD')}
               </span>
             </div>
           ) : (
             <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-              {formatPrice(priceDisplay.price)}
+              {formatPrice(priceDisplay.price, product.currency ?? 'USD')}
             </p>
           )}
         </div>
@@ -366,9 +368,9 @@ export function CollectionProductRow({
             Starting From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-            {formatPrice(priceDisplay.minPrice)}
+            {formatPrice(priceDisplay.minPrice, product.currency ?? 'USD')}
             {priceDisplay.minPrice !== priceDisplay.maxPrice && (
-              <span className="text-kawai-charcoal/35">{' '}– {formatPrice(priceDisplay.maxPrice)}</span>
+              <span className="text-kawai-charcoal/35">{' '}– {formatPrice(priceDisplay.maxPrice, product.currency ?? 'USD')}</span>
             )}
           </p>
         </div>
@@ -379,7 +381,7 @@ export function CollectionProductRow({
             MSRP From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-            {formatPrice(priceDisplay.price)}
+            {formatPrice(priceDisplay.price, product.currency ?? 'USD')}
           </p>
         </div>
       )}

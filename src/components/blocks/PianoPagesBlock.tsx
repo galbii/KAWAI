@@ -60,7 +60,7 @@ export default async function PianoPagesBlock({
           </h1>
         </div>
       )}
-      <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} isCanada={site === 'cad'} />
+      <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} site={site} />
     </section>
   )
 }

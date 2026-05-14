@@ -2061,6 +2061,15 @@ export interface Product {
     currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
   };
   /**
+   * Canadian pricing (ca.kawaius.com)
+   */
+  priceCAD?: {
+    /**
+     * Canadian MSRP — shown on ca.kawaius.com
+     */
+    msrp?: number | null;
+  };
+  /**
    * Editor-curated images and YouTube videos. Images are appended to the hero gallery; YouTube videos + images appear in the product description carousel (YouTube first, then images, then Shopify media).
    */
   customMedia?:
@@ -3332,6 +3341,10 @@ export interface ProductFeatureSlidesBlock {
          * Overlay darkness (0–80). Increase for better text contrast.
          */
         overlayOpacity?: number | null;
+        /**
+         * Override which side the copy appears on. Leave as Default to alternate automatically.
+         */
+        contentSide?: ('default' | 'left' | 'right') | null;
         /**
          * Optional call-to-action link for this slide
          */
@@ -12369,6 +12382,11 @@ export interface ProductsSelect<T extends boolean = true> {
     | {
         msrp?: T;
         currency?: T;
+      };
+  priceCAD?:
+    | T
+    | {
+        msrp?: T;
       };
   customMedia?:
     | T

@@ -144,6 +144,21 @@ export const ProductFeatureSlides: Block = {
           },
         },
 
+        // Copy side override
+        {
+          name: 'contentSide',
+          type: 'select',
+          defaultValue: 'default',
+          options: [
+            { label: 'Default (alternates left / right)', value: 'default' },
+            { label: 'Left',  value: 'left' },
+            { label: 'Right', value: 'right' },
+          ],
+          admin: {
+            description: 'Override which side the copy appears on. Leave as Default to alternate automatically.',
+          },
+        },
+
         // Optional CTA
         {
           name: 'cta',

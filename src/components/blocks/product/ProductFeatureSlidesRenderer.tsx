@@ -39,6 +39,7 @@ interface FeatureSlide {
   youtubeUrl?:      string | null
   video?:           Media | string | null
   overlayOpacity?:  number | null
+  contentSide?:     'default' | 'left' | 'right' | null
   cta?: {
     text?:         string | null
     link?:         string | null
@@ -271,7 +272,12 @@ function Inner(props: ProductFeatureSlidesBlock) {
   }, [n, goTo])
 
   const current      = safeFeatures[activeIndex]
-  const pos          = activeIndex % 2 === 0 ? 'center-left' : 'center-right'
+  const pos          = (() => {
+    const side = current?.contentSide
+    if (side === 'left')  return 'center-left'
+    if (side === 'right') return 'center-right'
+    return activeIndex % 2 === 0 ? 'center-left' : 'center-right'
+  })()
   const posClass     = POS[pos] as string
   const isRight      = pos === 'center-right'
   const textColor    = isDark ? 'text-white'    : 'text-zinc-900'
@@ -353,10 +359,14 @@ function Inner(props: ProductFeatureSlidesBlock) {
                   `linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.08) 52%, transparent 72%)`,
                   // Top edge — subtle, keeps counter readable
                   `linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, transparent 16%)`,
-                  // Side vignette — alternates with slide position
-                  i % 2 === 0
-                    ? `linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
-                    : `linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`,
+                  // Side vignette — respects contentSide override, else alternates
+                  (() => {
+                    const side = safeFeatures[i]?.contentSide
+                    const isSlideRight = side === 'right' || (!side || side === 'default') && i % 2 !== 0
+                    return isSlideRight
+                      ? `linear-gradient(to left,  rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
+                      : `linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.12) 48%, transparent 70%)`
+                  })(),
                 ].join(', '),
               }}
             />
@@ -431,10 +441,10 @@ function Inner(props: ProductFeatureSlidesBlock) {
             </p>
           )}
 
-          {/* Description — narrow column, anchored to the same side as the panel */}
+          {/* Description — anchored to the same side as the panel */}
           {current?.description && (
             <p
-              className={`text-[13px] leading-[1.85] tracking-[0.02em] font-light max-w-xs ${isRight ? 'ml-auto' : ''} ${mutedColor}`}
+              className={`text-base md:text-lg leading-[1.8] tracking-[0.015em] font-light max-w-md ${isRight ? 'ml-auto' : ''} ${mutedColor}`}
               style={{
                 textShadow: TEXT_SHADOW,
                 animation: `kw-in 0.8s ${EASE} 0.48s both`,

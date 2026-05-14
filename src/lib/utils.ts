@@ -50,13 +50,16 @@ export function deepMerge<T extends Record<string, unknown>>(target: T, source: 
   return output
 }
 
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatPrice(price: number, currency = 'USD'): string {
+  const formatted = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price)
+  // Intl formats CAD as "CA$44,495" — normalize to "$44,495 CAD"
+  if (currency === 'CAD') return formatted.replace('CA$', '$') + ' CAD'
+  return formatted
 }
 
 export function formatDate(date: Date | string): string {
