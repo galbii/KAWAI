@@ -26,6 +26,7 @@
 
 import { fetchShopifyProduct, fetchShopifyProductByModel } from './fetch-product'
 import type { ShopifyProductData } from './fetch-product'
+import { shopifyAdminClientCA } from './admin-client'
 import type { Product } from '@/payload-types'
 
 /**
@@ -53,7 +54,7 @@ export interface ShopifyGroup {
 export type ShopifyDataUpdate = Partial<
   Pick<
     Product,
-    'name' | 'description' | 'price' | 'imageUrl' | 'model' | 'variations' | 'type' | 'category' | 'shopifyCollections'
+    'name' | 'description' | 'price' | 'priceCAD' | 'imageUrl' | 'model' | 'variations' | 'type' | 'category' | 'shopifyCollections'
   > & {
     shopify?: Partial<ShopifyGroup>
     specificationJson?: Record<string, unknown> | null
@@ -63,6 +64,67 @@ export type ShopifyDataUpdate = Partial<
     features?: string[]
   }
 >
+
+/**
+ * CA variant price entry keyed by normalised variant title (lowercase, trimmed).
+ */
+export type CAVariantPrice = { price: number | null; compareAtPrice: number | null }
+
+/**
+ * Result of a CA pricing fetch — product-level aggregates + per-variant map.
+ */
+export type CAPricingResult = {
+  /** Product-level CA current price (min across variants). */
+  price: number | null
+  /** Product-level CA MSRP / compareAtPrice (min across variants). */
+  msrp: number | null
+  /** Per-variant prices keyed by lowercase-trimmed variant title. */
+  byVariantTitle: Map<string, CAVariantPrice>
+}
+
+/**
+ * Fetch CA pricing for a product by its Shopify handle.
+ *
+ * Uses the CA Admin API client. Returns null (non-fatal) if the CA store is
+ * unreachable or the product doesn't exist there. Never throws.
+ */
+export async function fetchCAPricing(handle: string): Promise<CAPricingResult | null> {
+  let caData: Awaited<ReturnType<typeof fetchShopifyProduct>>
+  try {
+    caData = await fetchShopifyProduct(handle, shopifyAdminClientCA)
+  } catch (err) {
+    console.warn(`[Shopify Sync] CA price fetch failed for "${handle}" — skipping CA pricing:`, err)
+    return null
+  }
+
+  if (!caData) {
+    console.warn(`[Shopify Sync] CA product not found for handle "${handle}" — no CA pricing available`)
+    return null
+  }
+
+  const byVariantTitle = new Map<string, CAVariantPrice>()
+  for (const variant of caData.variants) {
+    byVariantTitle.set(variant.title.toLowerCase().trim(), {
+      price: parseFloat(variant.price) || null,
+      compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+    })
+  }
+
+  const allPrices = Array.from(byVariantTitle.values())
+  const minOf = (vals: (number | null)[]): number | null => {
+    const finite = vals.filter((v): v is number => v !== null && isFinite(v))
+    return finite.length > 0 ? Math.min(...finite) : null
+  }
+
+  const result: CAPricingResult = {
+    price: minOf(allPrices.map((v) => v.price)),
+    msrp: minOf(allPrices.map((v) => v.compareAtPrice)),
+    byVariantTitle,
+  }
+
+  console.log(`[Shopify Sync] CA pricing fetched for "${caData.title}" (${byVariantTitle.size} variants)`)
+  return result
+}
 
 /**
  * Check if a product should sync with Shopify
@@ -325,6 +387,11 @@ export async function syncShopifyDataToProduct(
     // Successfully fetched - map to Payload format
     console.log(`[Shopify Sync] Successfully fetched: ${shopifyData.title}`)
 
+    // Fetch CA pricing in parallel while preparing US mapping — non-fatal
+    const caPricingPromise = shopifyData.handle
+      ? fetchCAPricing(shopifyData.handle)
+      : Promise.resolve(null)
+
     // Extract model from metafields
     const extractedModel = extractModelFromMetafields(shopifyData)
 
@@ -344,23 +411,30 @@ export async function syncShopifyDataToProduct(
       shouldCreateVariations,
     })
 
+    const caPricing = await caPricingPromise
+
     // Map Shopify variants to Payload variations array (only if truly multi-variant)
     const variations = shouldCreateVariations
-      ? shopifyData.variants.map((variant) => ({
-          name: variant.title,
-          shopifyVariantId: variant.id,
-          price: parseFloat(variant.price) || null,
-          compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
-          sku: variant.sku || null,
-          barcode: variant.barcode || null,
-          available: variant.available,
-          inventoryQuantity: variant.inventoryQuantity || 0,
-          imageUrl: variant.image?.url || null,
-          options: variant.options.map((opt) => ({
-            name: opt.name,
-            value: opt.value,
-          })),
-        }))
+      ? shopifyData.variants.map((variant) => {
+          const caVariant = caPricing?.byVariantTitle.get(variant.title.toLowerCase().trim()) ?? null
+          return {
+            name: variant.title,
+            shopifyVariantId: variant.id,
+            price: parseFloat(variant.price) || null,
+            compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+            priceCAD: caVariant?.price ?? null,
+            compareAtPriceCAD: caVariant?.compareAtPrice ?? null,
+            sku: variant.sku || null,
+            barcode: variant.barcode || null,
+            available: variant.available,
+            inventoryQuantity: variant.inventoryQuantity || 0,
+            imageUrl: variant.image?.url || null,
+            options: variant.options.map((opt) => ({
+              name: opt.name,
+              value: opt.value,
+            })),
+          }
+        })
       : null
 
     // Map Shopify collections to Payload format
@@ -389,6 +463,13 @@ export async function syncShopifyDataToProduct(
         msrp: parseFloat(shopifyData.price.min) || null,
         currency: (shopifyData.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || null,
       },
+      // CA pricing — only written when CA data was successfully fetched; left unchanged otherwise
+      ...(caPricing && {
+        priceCAD: {
+          price: caPricing.price,
+          msrp: caPricing.msrp,
+        },
+      }),
       variations, // Already null if no true variations exist
       specificationJson: shopifyData.metafields?.specificationJson ?? null,
       ownersManualUrl: shopifyData.metafields?.ownersManual ?? null,

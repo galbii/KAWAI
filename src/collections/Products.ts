@@ -1,6 +1,6 @@
 import type { CollectionConfig, CollectionAfterChangeHook, Endpoint } from 'payload'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
-import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType } from '@/lib/shopify/sync-to-payload'
+import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType, fetchCAPricing } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
 import { imageField, shopifyMediaField } from '@/lib/payload/fields'
@@ -34,25 +34,6 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
   const hasMultipleVariants = shopifyProduct.variants.length > 1
   const shouldCreateVariations = hasMultipleVariants || (shopifyProduct.variants.length === 1 && !isDefaultTitle)
 
-  // Map variants to Payload variations format (only if truly multi-variant)
-  const variations = shouldCreateVariations
-    ? shopifyProduct.variants.map((variant) => ({
-        name: variant.title,
-        shopifyVariantId: variant.id,
-        price: parseFloat(variant.price) || null,
-        compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
-        sku: variant.sku || null,
-        barcode: variant.barcode || null,
-        available: variant.available,
-        inventoryQuantity: variant.inventoryQuantity || 0,
-        imageUrl: variant.image?.url || null,
-        options: variant.options.map((opt) => ({
-          name: opt.name,
-          value: opt.value,
-        })),
-      }))
-    : null
-
   // Map Shopify status to Payload status
   const statusMap: Record<string, 'draft' | 'active' | 'discontinued'> = {
     ACTIVE: 'active',
@@ -67,26 +48,56 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     handle: collection.handle,
   })) || []
 
-  // Fetch all media from Shopify Admin API
-  let shopifyMedia: any[] = []
-  let primaryImageUrl = shopifyProduct.featuredImage?.url || null
+  // Fetch media and CA pricing in parallel — both non-fatal
+  const [mediaResult, caPricing] = await Promise.all([
+    getProductMedia(shopifyProduct.id as `gid://shopify/${string}/${string}`)
+      .then((media) => {
+        const items = transformMediaToPayload(media)
+        console.log(`[Sync] Fetched ${items.length} media items for ${shopifyProduct.title}`)
+        return items
+      })
+      .catch((error) => {
+        console.error('[Sync] Failed to fetch product media:', error)
+        return [] as any[]
+      }),
+    shopifyProduct.handle
+      ? fetchCAPricing(shopifyProduct.handle)
+      : Promise.resolve(null),
+  ])
 
-  try {
-    // Type assertion: shopifyProduct.id is already a Shopify GID string
-    const media = await getProductMedia(shopifyProduct.id as `gid://shopify/${string}/${string}`)
-    shopifyMedia = transformMediaToPayload(media)
+  const shopifyMedia = mediaResult
+  const primaryFromMedia = getPrimaryImageUrl(shopifyMedia)
+  const primaryImageUrl = primaryFromMedia || shopifyProduct.featuredImage?.url || null
 
-    // Get primary image from media array (backwards compatibility)
-    const primaryFromMedia = getPrimaryImageUrl(shopifyMedia)
-    if (primaryFromMedia) {
-      primaryImageUrl = primaryFromMedia
-    }
-
-    console.log(`[Sync] Fetched ${shopifyMedia.length} media items for ${shopifyProduct.title}`)
-  } catch (error) {
-    console.error('[Sync] Failed to fetch product media:', error)
-    // Continue with sync even if media fetch fails
+  if (caPricing) {
+    console.log(`[Bulk Sync] CA pricing for "${shopifyProduct.handle}": price=${caPricing.price} msrp=${caPricing.msrp} variants=${caPricing.byVariantTitle.size}`)
+  } else {
+    console.warn(`[Bulk Sync] CA pricing unavailable for "${shopifyProduct.handle}"`)
   }
+
+  // Map variants — include CA per-variant prices when available
+  const variations = shouldCreateVariations
+    ? shopifyProduct.variants.map((variant) => {
+        const caVariant = caPricing?.byVariantTitle.get(variant.title.toLowerCase().trim()) ?? null
+        return {
+          name: variant.title,
+          shopifyVariantId: variant.id,
+          price: parseFloat(variant.price) || null,
+          compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+          priceCAD: caVariant?.price ?? null,
+          compareAtPriceCAD: caVariant?.compareAtPrice ?? null,
+          sku: variant.sku || null,
+          barcode: variant.barcode || null,
+          available: variant.available,
+          inventoryQuantity: variant.inventoryQuantity || 0,
+          imageUrl: variant.image?.url || null,
+          options: variant.options.map((opt) => ({
+            name: opt.name,
+            value: opt.value,
+          })),
+        }
+      })
+    : null
 
   // Build the base product data
   const baseData = {
@@ -101,12 +112,19 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     category: (shopifyProduct as any).category?.name || null,
     // Collections from Shopify
     shopifyCollections,
-    shopifyMedia, // ✅ New field with all media from Shopify
-    imageUrl: primaryImageUrl, // ✅ Updated to use media array or fallback
+    shopifyMedia,
+    imageUrl: primaryImageUrl,
     price: {
       msrp: parseFloat(shopifyProduct.price.min) || null,
       currency: (shopifyProduct.price.currency as 'USD' | 'EUR' | 'GBP' | 'CAD') || 'USD',
     },
+    // CA pricing — only written when CA store responded; left unchanged otherwise
+    ...(caPricing && {
+      priceCAD: {
+        price: caPricing.price,
+        msrp: caPricing.msrp,
+      },
+    }),
     variations, // Already null if no true variations exist
     shopify: {
       productId: shopifyProduct.id,
@@ -341,15 +359,24 @@ export const Products: CollectionConfig = {
               type: 'group',
               fields: [
                 {
+                  name: 'price',
+                  type: 'number',
+                  admin: {
+                    description: 'CA current price — synced from CA Shopify (min variant price)',
+                    readOnly: true,
+                  }
+                },
+                {
                   name: 'msrp',
                   type: 'number',
                   admin: {
-                    description: 'Canadian MSRP — shown on ca.kawaius.com',
+                    description: 'CA MSRP / compare-at price — synced from CA Shopify (min compareAtPrice). Shown as MSRP on ca.kawaius.com.',
+                    readOnly: true,
                   }
                 },
               ],
               admin: {
-                description: 'Canadian pricing (ca.kawaius.com)',
+                description: 'Canadian pricing (ca.kawaius.com) — synced from CA Shopify on product sync',
               }
             },
 
@@ -748,7 +775,23 @@ export const Products: CollectionConfig = {
                   name: 'compareAtPrice',
                   type: 'number',
                   admin: {
-                    description: 'Compare at price / MSRP (synced from Shopify)',
+                    description: 'Compare at price / MSRP (synced from US Shopify)',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'priceCAD',
+                  type: 'number',
+                  admin: {
+                    description: 'CA current price for this variant (synced from CA Shopify)',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'compareAtPriceCAD',
+                  type: 'number',
+                  admin: {
+                    description: 'CA compare at price / MSRP for this variant (synced from CA Shopify)',
                     readOnly: true,
                   },
                 },
@@ -1210,7 +1253,9 @@ export const Products: CollectionConfig = {
 
           console.log(`[Bulk Sync] Found ${existingProducts.length} existing products in Payload`)
 
-          // Step 3: Process each Shopify product (create or update)
+          // Step 3: Process each Shopify product (create or update) in parallel batches
+          const BATCH_SIZE = 5
+
           const results = {
             total: shopifyProducts.length,
             created: 0,
@@ -1221,27 +1266,24 @@ export const Products: CollectionConfig = {
 
           const errors: Array<{ model: string; error: string }> = []
 
-          for (const shopifyProduct of shopifyProducts) {
+          const processOne = async (shopifyProduct: ShopifyProductData) => {
             const model = shopifyProduct.metafields?.model
 
             if (!model) {
               results.skipped++
-              continue
+              return
             }
 
             const normalizedModel = model.toUpperCase().trim()
 
             try {
-              // Check if product exists in Payload
               const existing = productsByModel.get(normalizedModel)
 
-              // Transform Shopify data to Payload format
+              // transformShopifyToPayload fetches media + CA pricing internally
               const productData = await transformShopifyToPayload(shopifyProduct)
 
               if (existing) {
-                // UPDATE existing product — only sync Shopify-owned fields.
-                // Exclude `slug` (CMS URL, should never change after creation) and
-                // `status` (CMS workflow status, should not be overridden by Shopify).
+                // UPDATE — exclude slug (CMS URL) and status (CMS workflow)
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { slug: _slug, status: _status, ...shopifySyncData } = productData
                 console.log(`[Bulk Sync] Updating existing product: ${model}`)
@@ -1250,19 +1292,18 @@ export const Products: CollectionConfig = {
                   collection: 'products',
                   id: existing.id,
                   data: shopifySyncData,
-                  context: { skipShopifySync: true }, // Prevent infinite loop
+                  context: { skipShopifySync: true },
                   req,
                 })
 
                 results.updated++
               } else {
-                // CREATE new product
                 console.log(`[Bulk Sync] Creating new product: ${model}`)
 
                 await req.payload.create({
                   collection: 'products',
                   data: productData,
-                  context: { skipShopifySync: true }, // Prevent infinite loop
+                  context: { skipShopifySync: true },
                   req,
                 })
 
@@ -1276,6 +1317,14 @@ export const Products: CollectionConfig = {
                 error: error instanceof Error ? error.message : 'Unknown error',
               })
             }
+          }
+
+          for (let i = 0; i < shopifyProducts.length; i += BATCH_SIZE) {
+            const batch = shopifyProducts.slice(i, i + BATCH_SIZE)
+            console.log(
+              `[Bulk Sync] Processing batch ${Math.floor(i / BATCH_SIZE) + 1} / ${Math.ceil(shopifyProducts.length / BATCH_SIZE)} (${batch.length} products)`
+            )
+            await Promise.all(batch.map(processOne))
           }
 
           console.log('[Bulk Sync] ✅ Bulk sync completed:', results)
@@ -1826,6 +1875,8 @@ export const Products: CollectionConfig = {
             revalidateTag(`product-${doc.slug}`)
             // Invalidate any list views that include all products
             revalidateTag('products')
+            // Bust the Google Merchant Center feed so GMC sees the latest data
+            revalidatePath('/api/feeds/google-merchant')
             console.log(`[Products Hook] ✅ Product page revalidated: /products/${doc.slug}`)
           } catch (error) {
             // Log error but don't throw - revalidation failure shouldn't block saves

@@ -17,7 +17,10 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: [
+          '/',
+          '/api/feeds/', // Google Merchant Center feed must be publicly crawlable
+        ],
         disallow: [
           '/admin',
           '/admin/*',
@@ -26,6 +29,15 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           '/ingest/*',
           '/terms',
         ],
+      },
+      // ─── Google Shopping crawlers ──────────────────────────────────────────────
+      // AdsBot-Google fetches the GMC product feed on a daily schedule.
+      // Must be explicitly allowed on /api/feeds/* — the wildcard /api/* block
+      // above would otherwise prevent GMC from reading the feed.
+      {
+        userAgent: ['AdsBot-Google', 'Googlebot'],
+        allow: ['/api/feeds/'],
+        disallow: ['/admin/*', '/api/*'],
       },
       // ─── AI citation & search agents ──────────────────────────────────────────
       // These are the retrieval/search crawlers that power ChatGPT Browse,

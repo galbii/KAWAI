@@ -2061,11 +2061,15 @@ export interface Product {
     currency?: ('USD' | 'EUR' | 'GBP' | 'CAD') | null;
   };
   /**
-   * Canadian pricing (ca.kawaius.com)
+   * Canadian pricing (ca.kawaius.com) — synced from CA Shopify on product sync
    */
   priceCAD?: {
     /**
-     * Canadian MSRP — shown on ca.kawaius.com
+     * CA current price — synced from CA Shopify (min variant price)
+     */
+    price?: number | null;
+    /**
+     * CA MSRP / compare-at price — synced from CA Shopify (min compareAtPrice). Shown as MSRP on ca.kawaius.com.
      */
     msrp?: number | null;
   };
@@ -2371,9 +2375,17 @@ export interface Product {
          */
         price?: number | null;
         /**
-         * Compare at price / MSRP (synced from Shopify)
+         * Compare at price / MSRP (synced from US Shopify)
          */
         compareAtPrice?: number | null;
+        /**
+         * CA current price for this variant (synced from CA Shopify)
+         */
+        priceCAD?: number | null;
+        /**
+         * CA compare at price / MSRP for this variant (synced from CA Shopify)
+         */
+        compareAtPriceCAD?: number | null;
         /**
          * Stock Keeping Unit (synced from Shopify)
          */
@@ -12386,6 +12398,7 @@ export interface ProductsSelect<T extends boolean = true> {
   priceCAD?:
     | T
     | {
+        price?: T;
         msrp?: T;
       };
   customMedia?:
@@ -12476,6 +12489,8 @@ export interface ProductsSelect<T extends boolean = true> {
         shopifyVariantId?: T;
         price?: T;
         compareAtPrice?: T;
+        priceCAD?: T;
+        compareAtPriceCAD?: T;
         sku?: T;
         barcode?: T;
         available?: T;

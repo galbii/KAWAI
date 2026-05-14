@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAWAI — Logo Showcase Concepts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --kawai-red: #E11922;
+      --kawai-black: #1E1B16;
+      --kawai-charcoal: #2C2C2C;
+      --kawai-pearl: #FAF8F5;
+      --kawai-neutral: #DBDBDB;
+      --kawai-gold: #d5c78c;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--kawai-black);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── Concept labels ─────────────────────────────────────── */
+    .concept-label {
+      text-align: center;
+      padding: 48px 24px 18px;
+      background: var(--kawai-black);
+      position: relative;
+      z-index: 10;
+    }
+    .concept-label .number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.4em;
+      color: var(--kawai-red);
+      display: block;
+      margin-bottom: 8px;
+    }
+    .concept-label h2 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(22px, 3vw, 28px);
+      color: var(--kawai-pearl);
+      letter-spacing: 0.04em;
+    }
+    .concept-label p {
+      font-size: 13px;
+      color: rgba(250,248,245,0.35);
+      margin-top: 8px;
+      letter-spacing: 0.02em;
+      max-width: 520px;
+      margin-inline: auto;
+      line-height: 1.6;
+    }
+
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(250,248,245,0.06), transparent);
+    }
+
+    /* Fixed dot nav */
+    .concept-nav {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(250,248,245,0.2);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      display: block;
+    }
+    .nav-dot:hover {
+      background: var(--kawai-gold);
+      transform: scale(1.6);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CONCEPT 1 — FROSTED TICKER
+       Dark luxe background · Syne typeface · gold accents
+       Infinite marquee strip with glassmorphism tiles
+    ═══════════════════════════════════════════════════════════ */
+    .concept-1 {
+      position: relative;
+      width: 100%;
+      min-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(158deg, #0d0c0a 0%, #1a1712 45%, #0f0e0b 100%);
+    }
+    .concept-1::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 25%, rgba(213,199,140,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 15% 85%, rgba(225,25,34,0.04) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    /* Subtle grain */
+    .concept-1::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .c1-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .c1-eyebrow {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--kawai-gold);
+      margin-bottom: 22px;
+      opacity: 0.8;
+    }
+
+    .c1-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(40px, 7.5vw, 88px);
+      font-weight: 800;
+      color: var(--kawai-pearl);
+      text-align: center;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+    .c1-heading em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--kawai-gold);
+    }
+
+    .c1-sub {
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(13px, 1.4vw, 15px);
+      font-weight: 300;
+      color: rgba(250,248,245,0.4);
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    /* Ticker */
+    .ticker-wrapper {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 60px;
+    }
+    .ticker-wrapper::before,
+    .ticker-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 140px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .ticker-wrapper::before {
+      left: 0;
+      background: linear-gradient(to right, #0d0c0a 0%, transparent 100%);
+    }
+    .ticker-wrapper::after {
+      right: 0;
+      background: linear-gradient(to left, #0d0c0a 0%, transparent 100%);
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      width: max-content;
+      animation: ticker-scroll 30s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .ticker-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 196px;
+      height: 116px;
+      padding: 20px 24px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.055);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.09);
+      transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+      cursor: default;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .ticker-tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .ticker-tile:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(213,199,140,0.35);
+      transform: translateY(-6px);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(213,199,140,0.12);
+    }
+    .ticker-tile:hover::before { opacity: 1; }
+
+    .ticker-logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--kawai-pearl);
+      letter-spacing: -0.01em;
+      opacity: 0.88;
+    }
+    .ticker-logo-text.accent { color: var(--kawai-gold); }
+
+    .ticker-sub {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(250,248,245,0.28);
+      font-weight: 400;
+      text-align: center;
+    }
+
+    .c1-cta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .btn-fill-1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 14px 38px;
+      background: var(--kawai-red);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-fill-1:hover {
+      background: #c4151c;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(225,25,34,0.38);
+    }
+
+    .btn-ghost-1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 14px 38px;
+      background: transparent;
+      color: rgba(250,248,245,0.5);
+      border: 1px solid rgba(250,248,245,0.18);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-ghost-1:hover {
+      color: var(--kawai-pearl);
+      border-color: rgba(250,248,245,0.45);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CONCEPT 2 — CONSTELLATION
+       Deep space bg · Cormorant Garamond · offset grid · SVG lines
+    ═══════════════════════════════════════════════════════════ */
+    .concept-2 {
+      position: relative;
+      width: 100%;
+      min-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(185deg, #0c0b10 0%, #10131c 55%, #0c0e14 100%);
+    }
+    .concept-2::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 55% 45% at 50% 55%, rgba(225,25,34,0.035) 0%, transparent 70%),
+        radial-gradient(ellipse 90% 50% at 50% 100%, rgba(12,11,16,0.9) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .stars {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      animation: twinkle var(--d,3s) ease-in-out infinite;
+      animation-delay: var(--dl,0s);
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: var(--lo,0.12); }
+      50%      { opacity: var(--hi,0.45); }
+    }
+
+    .c2-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .c2-eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-style: italic;
+      letter-spacing: 0.18em;
+      color: rgba(250,248,245,0.35);
+      margin-bottom: 16px;
+    }
+
+    .c2-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(44px, 8.5vw, 100px);
+      font-weight: 300;
+      color: var(--kawai-pearl);
+      text-align: center;
+      line-height: 0.92;
+      letter-spacing: -0.015em;
+      margin-bottom: 60px;
+    }
+    .c2-heading .sub-line {
+      display: block;
+      font-style: italic;
+      font-size: 0.42em;
+      color: rgba(250,248,245,0.3);
+      letter-spacing: 0.12em;
+      margin-top: 14px;
+      font-weight: 300;
+    }
+
+    /* Grid with offsets */
+    .constellation-outer {
+      position: relative;
+      width: 100%;
+      max-width: 740px;
+      margin-bottom: 56px;
+    }
+
+    /* SVG lines behind tiles */
+    .c2-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .c2-line {
+      stroke: rgba(213,199,140,0.13);
+      stroke-width: 1;
+      fill: none;
+      stroke-dasharray: 5 8;
+      animation: dash-anim 10s linear infinite;
+    }
+    @keyframes dash-anim {
+      to { stroke-dashoffset: -52; }
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      position: relative;
+    }
+
+    .c2-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 30px 18px;
+      background: rgba(12,11,16,0.55);
+      border: 1px solid rgba(213,199,140,0.1);
+      border-radius: 3px;
+      cursor: default;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+    }
+    .c2-tile::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--kawai-gold), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    /* Stagger offset like a constellation */
+    .c2-tile:nth-child(2) { margin-top: 36px; }
+    .c2-tile:nth-child(5) { margin-top: -36px; }
+
+    .c2-tile:hover {
+      background: rgba(213,199,140,0.055);
+      border-color: rgba(213,199,140,0.28);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    }
+    .c2-tile:hover::after { opacity: 0.75; }
+
+    .c2-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--kawai-gold);
+      opacity: 0.4;
+      margin-bottom: 4px;
+      animation: dot-pulse 3s ease-in-out infinite;
+    }
+    @keyframes dot-pulse {
+      0%,100% { transform: scale(1); opacity: 0.4; }
+      50%      { transform: scale(1.6); opacity: 0.9; }
+    }
+    .c2-tile:nth-child(even) .c2-dot { animation-delay: 1.5s; }
+
+    .c2-logo-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--kawai-pearl);
+      letter-spacing: 0.06em;
+      opacity: 0.82;
+    }
+    .c2-logo-loc {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      font-style: italic;
+      letter-spacing: 0.1em;
+      color: rgba(250,248,245,0.26);
+      text-align: center;
+    }
+
+    .c2-cta {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .btn-fill-2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 13px 42px;
+      background: transparent;
+      color: var(--kawai-pearl);
+      border: 1px solid rgba(250,248,245,0.45);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+    .btn-fill-2::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--kawai-red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s cubic-bezier(0.23,1,0.32,1);
+    }
+    .btn-fill-2:hover::before { transform: scaleX(1); }
+    .btn-fill-2 span { position: relative; z-index: 1; }
+
+    .btn-ghost-2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-style: italic;
+      letter-spacing: 0.06em;
+      color: rgba(250,248,245,0.32);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      background: none; border: none;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    .btn-ghost-2:hover {
+      color: var(--kawai-gold);
+      border-bottom-color: var(--kawai-gold);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CONCEPT 3 — EDITORIAL STACK
+       Split panel · light left / dark right · Bebas Neue + DM Sans
+       Numbered list, red accent bar on hover
+    ═══════════════════════════════════════════════════════════ */
+    .concept-3 {
+      position: relative;
+      width: 100%;
+      min-height: 88vh;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      background: var(--kawai-pearl);
+    }
+
+    /* Dark right half */
+    .c3-dark-panel {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 42%;
+      background: var(--kawai-black);
+    }
+
+    /* Left content */
+    .c3-left {
+      position: relative;
+      z-index: 2;
+      width: 58%;
+      padding: clamp(48px, 7vw, 80px) clamp(32px, 6vw, 96px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .c3-eyebrow {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.45em;
+      color: var(--kawai-red);
+      margin-bottom: 28px;
+    }
+
+    .c3-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(64px, 9vw, 120px);
+      color: var(--kawai-black);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      margin-bottom: 44px;
+    }
+    .c3-heading .outline {
+      -webkit-text-stroke: 2.5px var(--kawai-black);
+      color: transparent;
+    }
+
+    /* Numbered list */
+    .logo-stack {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid rgba(30,27,22,0.12);
+    }
+
+    .stack-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 15px 0 15px clamp(0px,1vw,8px);
+      border-bottom: 1px solid rgba(30,27,22,0.1);
+      cursor: default;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    /* Red accent bar slides in from left */
+    .stack-row::before {
+      content: '';
+      position: absolute;
+      left: -clamp(32px, 6vw, 96px);
+      top: 0; bottom: 0;
+      width: 3px;
+      background: var(--kawai-red);
+      transform: scaleY(0);
+      transition: transform 0.3s cubic-bezier(0.23,1,0.32,1);
+    }
+    .stack-row:hover::before { transform: scaleY(1); }
+
+    .stack-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(30,27,22,0.22);
+      width: 24px;
+      flex-shrink: 0;
+    }
+
+    .stack-mark {
+      width: 42px; height: 42px;
+      border-radius: 2px;
+      background: rgba(30,27,22,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.3s ease;
+    }
+    .stack-row:hover .stack-mark { background: rgba(225,25,34,0.09); }
+
+    .stack-initial {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px;
+      color: var(--kawai-black);
+      letter-spacing: 0.04em;
+    }
+
+    .stack-info { flex: 1; }
+    .stack-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--kawai-black);
+      letter-spacing: 0.01em;
+      transition: color 0.3s ease;
+    }
+    .stack-row:hover .stack-name { color: var(--kawai-red); }
+
+    .stack-type {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(30,27,22,0.32);
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    .stack-arrow {
+      font-size: 14px;
+      color: rgba(30,27,22,0.18);
+      transition: all 0.3s ease;
+    }
+    .stack-row:hover .stack-arrow {
+      color: var(--kawai-red);
+      transform: translateX(5px);
+    }
+
+    /* Right dark panel content */
+    .c3-right {
+      position: relative;
+      z-index: 2;
+      width: 42%;
+      padding: clamp(48px, 7vw, 80px) clamp(32px, 5vw, 64px);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    /* Giant ghost number */
+    .c3-ghost-num {
+      position: absolute;
+      top: 50%;
+      right: clamp(24px, 4vw, 48px);
+      transform: translateY(-58%);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(100px, 16vw, 200px);
+      color: rgba(250,248,245,0.04);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .c3-right-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.4em;
+      color: rgba(250,248,245,0.2);
+      margin-bottom: 20px;
+    }
+
+    .c3-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .btn-fill-3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 14px 34px;
+      background: var(--kawai-pearl);
+      color: var(--kawai-black);
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-fill-3:hover {
+      background: var(--kawai-red);
+      color: white;
+    }
+
+    .btn-ghost-3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: rgba(250,248,245,0.28);
+      cursor: pointer;
+      transition: color 0.25s ease;
+      text-decoration: none;
+      background: none; border: none;
+      text-transform: uppercase;
+      padding: 0;
+    }
+    .btn-ghost-3:hover { color: var(--kawai-pearl); }
+
+    .c3-vert {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.55em;
+      color: rgba(250,248,245,0.06);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* ── responsive ─────────────────────────── */
+    @media (max-width: 768px) {
+      .logo-grid { grid-template-columns: repeat(2,1fr); }
+      .c2-tile:nth-child(2),
+      .c2-tile:nth-child(5) { margin-top: 0; }
+      .ticker-tile { width: 160px; height: 100px; }
+      .concept-3 { flex-direction: column; }
+      .c3-dark-panel { display: none; }
+      .c3-left { width: 100%; }
+      .c3-right { width: 100%; background: var(--kawai-black); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="concept-nav" aria-label="Concept navigation">
+    <a href="#c1" class="nav-dot" title="01 Frosted Ticker"></a>
+    <a href="#c2" class="nav-dot" title="02 Constellation"></a>
+    <a href="#c3" class="nav-dot" title="03 Editorial Stack"></a>
+  </nav>
+
+  <!-- ──────────────────────────────────────────────────────────
+       CONCEPT 1 — FROSTED TICKER
+  ────────────────────────────────────────────────────────── -->
+  <div class="concept-label">
+    <span class="number">CONCEPT 01</span>
+    <h2>Frosted Ticker</h2>
+    <p>Infinite auto-scrolling logo strip with glassmorphism tiles. Hover to pause. Works with any number of logos — just add more tiles.</p>
+  </div>
+
+  <section id="c1" class="concept-1">
+    <div class="c1-content">
+      <p class="c1-eyebrow">University Partnerships</p>
+      <h1 class="c1-heading">Played by the<br><em>World's Best</em></h1>
+      <p class="c1-sub">Trusted by leading music institutions across the globe</p>
+
+      <div class="ticker-wrapper" aria-hidden="true">
+        <div class="ticker-track">
+          <!-- Set A -->
+          <div class="ticker-tile">
+            <span class="ticker-logo-text accent">KAWAI</span>
+            <span class="ticker-sub">Kawai America</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">JUILLIARD</span>
+            <span class="ticker-sub">The Juilliard School</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">BERKLEE</span>
+            <span class="ticker-sub">College of Music</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">NYU</span>
+            <span class="ticker-sub">New York University</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">SHSU</span>
+            <span class="ticker-sub">Sam Houston State</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">UCLA</span>
+            <span class="ticker-sub">Herb Alpert School</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">PEABODY</span>
+            <span class="ticker-sub">Johns Hopkins</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">NEC</span>
+            <span class="ticker-sub">New England Conservatory</span>
+          </div>
+          <!-- Set B (duplicate for seamless loop) -->
+          <div class="ticker-tile">
+            <span class="ticker-logo-text accent">KAWAI</span>
+            <span class="ticker-sub">Kawai America</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">JUILLIARD</span>
+            <span class="ticker-sub">The Juilliard School</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">BERKLEE</span>
+            <span class="ticker-sub">College of Music</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">NYU</span>
+            <span class="ticker-sub">New York University</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">SHSU</span>
+            <span class="ticker-sub">Sam Houston State</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">UCLA</span>
+            <span class="ticker-sub">Herb Alpert School</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">PEABODY</span>
+            <span class="ticker-sub">Johns Hopkins</span>
+          </div>
+          <div class="ticker-tile">
+            <span class="ticker-logo-text">NEC</span>
+            <span class="ticker-sub">New England Conservatory</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="c1-cta">
+        <a href="#" class="btn-fill-1">View All Partners</a>
+        <a href="#" class="btn-ghost-1">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ──────────────────────────────────────────────────────────
+       CONCEPT 2 — CONSTELLATION
+  ────────────────────────────────────────────────────────── -->
+  <div class="concept-label">
+    <span class="number">CONCEPT 02</span>
+    <h2>Constellation</h2>
+    <p>Logos in an offset staggered grid with animated SVG connecting lines and pulsing gold nodes. Celestial · classical · editorial.</p>
+  </div>
+
+  <section id="c2" class="concept-2">
+
+    <!-- Starfield -->
+    <div class="stars" aria-hidden="true">
+      <div class="star" style="width:1.5px;height:1.5px;top:7%;left:11%;--d:4.3s;--dl:0s;--lo:0.1;--hi:0.42;"></div>
+      <div class="star" style="width:2px;height:2px;top:14%;left:79%;--d:3.2s;--dl:0.9s;--lo:0.08;--hi:0.38;"></div>
+      <div class="star" style="width:1px;height:1px;top:24%;left:47%;--d:5.1s;--dl:1.6s;--lo:0.12;--hi:0.48;"></div>
+      <div class="star" style="width:1.5px;height:1.5px;top:71%;left:7%;--d:3.9s;--dl:0.4s;--lo:0.1;--hi:0.32;"></div>
+      <div class="star" style="width:1px;height:1px;top:84%;left:91%;--d:4.6s;--dl:2.2s;--lo:0.07;--hi:0.38;"></div>
+      <div class="star" style="width:2px;height:2px;top:39%;left:93%;--d:3.4s;--dl:1.2s;--lo:0.15;--hi:0.52;"></div>
+      <div class="star" style="width:1px;height:1px;top:59%;left:62%;--d:4.9s;--dl:0.6s;--lo:0.06;--hi:0.25;"></div>
+      <div class="star" style="width:1.5px;height:1.5px;top:4%;left:56%;--d:3.7s;--dl:2.9s;--lo:0.11;--hi:0.4;"></div>
+      <div class="star" style="width:1px;height:1px;top:91%;left:34%;--d:4.2s;--dl:1.0s;--lo:0.09;--hi:0.34;"></div>
+      <div class="star" style="width:2px;height:2px;top:47%;left:2%;--d:5.3s;--dl:1.8s;--lo:0.1;--hi:0.3;"></div>
+      <div class="star" style="width:1px;height:1px;top:30%;left:30%;--d:4.0s;--dl:0.7s;--lo:0.08;--hi:0.35;"></div>
+      <div class="star" style="width:1.5px;height:1.5px;top:65%;left:50%;--d:3.5s;--dl:3.1s;--lo:0.13;--hi:0.44;"></div>
+    </div>
+
+    <div class="c2-content">
+      <p class="c2-eyebrow">In partnership with</p>
+      <h1 class="c2-heading">
+        A Network of Excellence
+        <span class="sub-line">Institutional Partners &mdash; 2025</span>
+      </h1>
+
+      <div class="constellation-outer">
+        <!-- SVG connecting lines -->
+        <svg class="c2-svg" viewBox="0 0 740 280" preserveAspectRatio="none" aria-hidden="true">
+          <!-- Connections between tile centers (approx positions in 3-col grid) -->
+          <line class="c2-line" x1="123" y1="90"  x2="370" y2="126" />
+          <line class="c2-line" x1="370" y1="126" x2="617" y2="90"  />
+          <line class="c2-line" x1="123" y1="90"  x2="123" y2="220" />
+          <line class="c2-line" x1="370" y1="126" x2="370" y2="190" />
+          <line class="c2-line" x1="617" y1="90"  x2="617" y2="220" />
+          <line class="c2-line" x1="123" y1="220" x2="370" y2="190" />
+          <line class="c2-line" x1="370" y1="190" x2="617" y2="220" />
+          <line class="c2-line" x1="123" y1="220" x2="617" y2="90"  style="stroke-dasharray:2 14;opacity:0.6;" />
+          <!-- Pulsing nodes at intersections -->
+          <circle cx="247" cy="108" r="3" fill="#d5c78c" opacity="0.35" style="animation:dot-pulse 3.2s ease-in-out infinite;"/>
+          <circle cx="494" cy="108" r="3" fill="#d5c78c" opacity="0.35" style="animation:dot-pulse 3.2s ease-in-out infinite;animation-delay:1.6s;"/>
+          <circle cx="247" cy="205" r="3" fill="#d5c78c" opacity="0.35" style="animation:dot-pulse 3.2s ease-in-out infinite;animation-delay:0.8s;"/>
+          <circle cx="494" cy="205" r="3" fill="#d5c78c" opacity="0.35" style="animation:dot-pulse 3.2s ease-in-out infinite;animation-delay:2.4s;"/>
+        </svg>
+
+        <div class="logo-grid">
+          <div class="c2-tile">
+            <div class="c2-dot"></div>
+            <span class="c2-logo-name">JUILLIARD</span>
+            <span class="c2-logo-loc">New York, NY</span>
+          </div>
+          <div class="c2-tile">
+            <div class="c2-dot" style="animation-delay:0.8s"></div>
+            <span class="c2-logo-name">BERKLEE</span>
+            <span class="c2-logo-loc">Boston, MA</span>
+          </div>
+          <div class="c2-tile">
+            <div class="c2-dot" style="animation-delay:1.6s"></div>
+            <span class="c2-logo-name">NYU</span>
+            <span class="c2-logo-loc">New York, NY</span>
+          </div>
+          <div class="c2-tile">
+            <div class="c2-dot" style="animation-delay:2.4s"></div>
+            <span class="c2-logo-name">SHSU</span>
+            <span class="c2-logo-loc">Huntsville, TX</span>
+          </div>
+          <div class="c2-tile">
+            <div class="c2-dot" style="animation-delay:3.2s"></div>
+            <span class="c2-logo-name">PEABODY</span>
+            <span class="c2-logo-loc">Baltimore, MD</span>
+          </div>
+          <div class="c2-tile">
+            <div class="c2-dot" style="animation-delay:4.0s"></div>
+            <span class="c2-logo-name">NEC</span>
+            <span class="c2-logo-loc">Boston, MA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="c2-cta">
+        <a href="#" class="btn-fill-2"><span>Explore Partnerships</span></a>
+        <a href="#" class="btn-ghost-2">View all institutions →</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ──────────────────────────────────────────────────────────
+       CONCEPT 3 — EDITORIAL STACK
+  ────────────────────────────────────────────────────────── -->
+  <div class="concept-label">
+    <span class="number">CONCEPT 03</span>
+    <h2>Editorial Stack</h2>
+    <p>Split-panel layout: light left with bold type + numbered list, dark right with a ghost counter. Red accent bar slides in on hover. Magazine · architectural.</p>
+  </div>
+
+  <section id="c3" class="concept-3">
+    <div class="c3-dark-panel" aria-hidden="true"></div>
+
+    <!-- Left: heading + numbered logo list -->
+    <div class="c3-left">
+      <p class="c3-eyebrow">University Program</p>
+      <h1 class="c3-heading">
+        PARTNER<br>
+        <span class="outline">SCHOOLS</span>
+      </h1>
+
+      <div class="logo-stack" role="list">
+        <div class="stack-row" role="listitem">
+          <span class="stack-num">01</span>
+          <div class="stack-mark"><span class="stack-initial">J</span></div>
+          <div class="stack-info">
+            <div class="stack-name">The Juilliard School</div>
+            <div class="stack-type">Performance · New York, NY</div>
+          </div>
+          <span class="stack-arrow">→</span>
+        </div>
+        <div class="stack-row" role="listitem">
+          <span class="stack-num">02</span>
+          <div class="stack-mark"><span class="stack-initial">B</span></div>
+          <div class="stack-info">
+            <div class="stack-name">Berklee College of Music</div>
+            <div class="stack-type">Contemporary · Boston, MA</div>
+          </div>
+          <span class="stack-arrow">→</span>
+        </div>
+        <div class="stack-row" role="listitem">
+          <span class="stack-num">03</span>
+          <div class="stack-mark"><span class="stack-initial">S</span></div>
+          <div class="stack-info">
+            <div class="stack-name">Sam Houston State Univ.</div>
+            <div class="stack-type">Academic · Huntsville, TX</div>
+          </div>
+          <span class="stack-arrow">→</span>
+        </div>
+        <div class="stack-row" role="listitem">
+          <span class="stack-num">04</span>
+          <div class="stack-mark"><span class="stack-initial">P</span></div>
+          <div class="stack-info">
+            <div class="stack-name">Peabody Institute</div>
+            <div class="stack-type">Classical · Baltimore, MD</div>
+          </div>
+          <span class="stack-arrow">→</span>
+        </div>
+        <div class="stack-row" role="listitem">
+          <span class="stack-num">05</span>
+          <div class="stack-mark"><span class="stack-initial">N</span></div>
+          <div class="stack-info">
+            <div class="stack-name">New England Conservatory</div>
+            <div class="stack-type">Classical · Boston, MA</div>
+          </div>
+          <span class="stack-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: dark panel with ghost count + CTAs -->
+    <div class="c3-right">
+      <div class="c3-ghost-num" aria-hidden="true">05</div>
+      <p class="c3-right-label">Established Partnerships</p>
+      <div class="c3-cta">
+        <a href="#" class="btn-fill-3">Join the Program</a>
+        <a href="#" class="btn-ghost-3">View Curriculum →</a>
+      </div>
+      <div class="c3-vert" aria-hidden="true">KAWAI UNIVERSITY PROGRAM — EST. 1927</div>
+    </div>
+  </section>
+
+</body>
+</html>

@@ -677,7 +677,7 @@ type CatalogProduct = {
   category?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
-  priceCAD?: { msrp?: number | null } | null
+  priceCAD?: { price?: number | null; msrp?: number | null } | null
   salePrice?: number | null
   compareAtPrice?: number | null
   shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -685,6 +685,8 @@ type CatalogProduct = {
     name: string
     price: number | null
     compareAtPrice: number | null
+    priceCAD: number | null
+    compareAtPriceCAD: number | null
     imageUrl: string | null
     available: boolean
   }> | null
@@ -739,9 +741,14 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
       price: doc.price
         ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
         : null,
-      priceCAD: (doc as any).priceCAD?.msrp != null
-        ? { msrp: (doc as any).priceCAD.msrp as number }
-        : null,
+      priceCAD: (() => {
+        const cad = (doc as any).priceCAD
+        if (!cad) return null
+        const price = typeof cad.price === 'number' ? cad.price : null
+        const msrp = typeof cad.msrp === 'number' ? cad.msrp : null
+        if (price === null && msrp === null) return null
+        return { price, msrp }
+      })(),
       ...(() => {
         const vars = doc.variations
         if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
@@ -770,6 +777,8 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
             name: (v.name as string) ?? '',
             price: typeof v.price === 'number' ? v.price : null,
             compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+            priceCAD: typeof v.priceCAD === 'number' ? v.priceCAD : null,
+            compareAtPriceCAD: typeof v.compareAtPriceCAD === 'number' ? v.compareAtPriceCAD : null,
             imageUrl: (v.imageUrl as string) ?? null,
             available: v.available !== false,
           }))
@@ -1164,7 +1173,7 @@ type CollectionProduct = {
   type?: string | null
   imageUrl?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
-  priceCAD?: { msrp?: number | null } | null
+  priceCAD?: { price?: number | null; msrp?: number | null } | null
   currency?: string | null
   salePrice?: number | null
   compareAtPrice?: number | null
@@ -1174,6 +1183,8 @@ type CollectionProduct = {
     shopifyVariantId: string | null
     price: number | null
     compareAtPrice: number | null
+    priceCAD: number | null
+    compareAtPriceCAD: number | null
     available: boolean
     imageUrl: string | null
   }>
@@ -1260,6 +1271,8 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
               shopifyVariantId: variantId,
               price: shopifyPrice?.price ?? (typeof v.price === 'number' ? v.price : null),
               compareAtPrice: shopifyPrice?.compareAtPrice ?? (typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null),
+              priceCAD: typeof v.priceCAD === 'number' ? v.priceCAD : null,
+              compareAtPriceCAD: typeof v.compareAtPriceCAD === 'number' ? v.compareAtPriceCAD : null,
               available: v.available === true,
               imageUrl: (v.imageUrl as string) ?? null,
             }
@@ -1283,9 +1296,14 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
         price: doc.price
           ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
           : null,
-        priceCAD: (doc as any).priceCAD?.msrp != null
-          ? { msrp: (doc as any).priceCAD.msrp as number }
-          : null,
+        priceCAD: (() => {
+          const cad = (doc as any).priceCAD
+          if (!cad) return null
+          const price = typeof cad.price === 'number' ? cad.price : null
+          const msrp = typeof cad.msrp === 'number' ? cad.msrp : null
+          if (price === null && msrp === null) return null
+          return { price, msrp }
+        })(),
         currency: site === 'cad' ? 'CAD' : 'USD',
         salePrice: minSaleVar?.price ?? null,
         compareAtPrice: minSaleVar?.compareAtPrice ?? null,
@@ -1885,7 +1903,7 @@ export function getCatalogProductsByCategory(
     category?: string | null
     imageUrl?: string | null
     price?: { msrp?: number | null; currency?: string | null } | null
-    priceCAD?: { msrp?: number | null } | null
+    priceCAD?: { price?: number | null; msrp?: number | null } | null
     salePrice?: number | null
     compareAtPrice?: number | null
     shopifyCollections?: Array<{ title: string; handle: string }> | null
@@ -1893,6 +1911,8 @@ export function getCatalogProductsByCategory(
       name: string
       price: number | null
       compareAtPrice: number | null
+      priceCAD: number | null
+      compareAtPriceCAD: number | null
       imageUrl: string | null
       available: boolean
     }> | null
@@ -1958,9 +1978,14 @@ export function getCatalogProductsByCategory(
         price: doc.price
           ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null }
           : null,
-        priceCAD: (doc as any).priceCAD?.msrp != null
-          ? { msrp: (doc as any).priceCAD.msrp as number }
-          : null,
+        priceCAD: (() => {
+          const cad = (doc as any).priceCAD
+          if (!cad) return null
+          const price = typeof cad.price === 'number' ? cad.price : null
+          const msrp = typeof cad.msrp === 'number' ? cad.msrp : null
+          if (price === null && msrp === null) return null
+          return { price, msrp }
+        })(),
         ...(() => {
           const vars = doc.variations
           if (!Array.isArray(vars) || vars.length === 0) return { salePrice: null, compareAtPrice: null }
@@ -1989,6 +2014,8 @@ export function getCatalogProductsByCategory(
               name: (v.name as string) ?? '',
               price: typeof v.price === 'number' ? v.price : null,
               compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+              priceCAD: typeof v.priceCAD === 'number' ? v.priceCAD : null,
+              compareAtPriceCAD: typeof v.compareAtPriceCAD === 'number' ? v.compareAtPriceCAD : null,
               imageUrl: (v.imageUrl as string) ?? null,
               available: v.available !== false,
             }))

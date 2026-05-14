@@ -5,19 +5,19 @@ import config from '@/payload.config'
 import { syncShopifyDataToProduct } from '@/lib/shopify/sync-to-payload'
 
 /**
- * Server Action: Manually Sync Product with Shopify
+ * Server actions for syncing Payload CMS products with Shopify.
  *
- * Fetches fresh product data from Shopify and updates the CMS product record.
- * Uses the existing Shopify integration to populate product fields.
+ * Individual sync (`syncProductWithShopify`):
+ *   - Fetches US product data via Admin API (by shopify.productId GID or model metafield)
+ *   - In parallel, fetches CA pricing via `fetchCAPricing` (CA Admin API, handle-based)
+ *   - Writes price, priceCAD, variations (with priceCAD/compareAtPriceCAD per variant),
+ *     and all other Shopify-owned fields to Payload
+ *   - Guards against hook loops with context.skipShopifySync
  *
- * @example
- * ```tsx
- * // From an admin component
- * const result = await syncProductWithShopify('product-id-123')
- * if (result.success) {
- *   console.log('Product synced:', result.product)
- * }
- * ```
+ * Bulk sync (`bulkSyncProductsWithShopify`):
+ *   - Iterates a list of Payload product IDs and calls syncProductWithShopify for each
+ *   - Sequential — use the /api/products/bulk-sync-from-shopify endpoint for a
+ *     faster batched sync (fetches all Shopify products in one pass, 5 concurrent)
  */
 
 export interface SyncProductResult {
@@ -32,12 +32,7 @@ export interface SyncProductResult {
   }
 }
 
-/**
- * Sync a product with Shopify data
- *
- * @param productId - Payload product document ID
- * @returns Result with success status and updated product info
- */
+/** Sync one product by its Payload document ID. */
 export async function syncProductWithShopify(
   productId: string
 ): Promise<SyncProductResult> {
@@ -142,10 +137,9 @@ export async function syncProductWithShopify(
 }
 
 /**
- * Bulk sync multiple products with Shopify
- *
- * @param productIds - Array of Payload product document IDs
- * @returns Results for each product sync operation
+ * Sync a list of products by Payload document ID (sequential).
+ * For full-catalog re-sync prefer the /api/products/bulk-sync-from-shopify
+ * endpoint which processes all Shopify products in batched parallel passes.
  */
 export async function bulkSyncProductsWithShopify(
   productIds: string[]
