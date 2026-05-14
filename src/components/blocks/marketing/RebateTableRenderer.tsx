@@ -47,6 +47,7 @@ type PopulatedProductPage = {
   imageUrl?: string
   model?: string
   price?: { msrp?: number; currency?: string }
+  priceCAD?: { price?: number | null; msrp?: number | null }
   variations?: Array<{ shopifyVariantId?: string; available?: boolean }>
   backorder?: boolean
 }
@@ -99,7 +100,12 @@ export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
           let liveCompareAtPrice: number | undefined
           let liveShopifyPrice: number | undefined
 
-          if (isObj && productPage.model) {
+          if (isCanada && isObj) {
+            // CA: read prices directly from Payload — no Shopify call needed
+            const cadPricing = productPage.priceCAD
+            if (cadPricing?.msrp != null) liveCompareAtPrice = cadPricing.msrp
+            if (cadPricing?.price != null) liveShopifyPrice = cadPricing.price
+          } else if (!isCanada && isObj && productPage.model) {
             try {
               const shopifyProduct = await getProductByModelCached(productPage.model, site)
               if (shopifyProduct) {

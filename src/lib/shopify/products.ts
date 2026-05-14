@@ -364,15 +364,17 @@ export function getProductByModel(
   options?: ShopifyRequestOptions
 ): Promise<Product | null> {
   const normalizedModel = model.toUpperCase().trim()
-  const isCA = site === 'cad'
-  const cachePrefix = isCA ? 'shopify-product-model-ca' : 'shopify-product-model'
-  const storefrontClient = isCA ? shopifyClientCA : shopifyClient
+  const cachePrefix = site === 'cad' ? 'shopify-product-model-ca' : 'shopify-product-model'
 
-  // Wraps the lookup in unstable_cache but throws on null so errors/misses
-  // are not persisted — only successful finds are cached for 1 hour.
+  // Pass `site` and `normalizedModel` as explicit parameters so unstable_cache
+  // includes them in its automatic key (arguments + fn string). The keyParts
+  // also encode both values as belt-and-suspenders against any hash collisions.
   return unstable_cache(
-    async () => {
-      console.log(`[getProductByModel] Searching for model: "${normalizedModel}" (site: ${site})`)
+    async (siteParam: string, modelParam: string) => {
+      const isCA = siteParam === 'cad'
+      const storefrontClient = isCA ? shopifyClientCA : shopifyClient
+
+      console.log(`[getProductByModel] Searching for model: "${modelParam}" (site: ${siteParam})`)
 
       try {
         // STRATEGY 1: Metafield-based lookup via Admin API
@@ -389,19 +391,26 @@ export function getProductByModel(
         let adminProduct: ShopifyProductData | null = null
 
         if (isCA) {
-          // Step 1: resolve handle using US Admin API
-          const usProduct = await fetchShopifyProductByModel(normalizedModel)
-          if (usProduct?.handle) {
-            // Step 2: fetch CA product by that handle using CA Admin API
-            adminProduct = await fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
+          // Query CA Admin API directly. fetchShopifyProductByModel tries productByIdentifier
+          // first (throws "Metafield definition" error on CA since the flag isn't set there),
+          // then automatically falls back to tag search on the CA Admin API (tag:CN201 etc.).
+          adminProduct = await fetchShopifyProductByModel(modelParam, shopifyAdminClientCA)
+
+          // If CA direct lookup fails, fall back to resolving the handle via US Admin API
+          // then fetching the CA product by that handle.
+          if (!adminProduct) {
+            const usProduct = await fetchShopifyProductByModel(modelParam)
+            if (usProduct?.handle) {
+              adminProduct = await fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
+            }
           }
         } else {
-          adminProduct = await fetchShopifyProductByModel(normalizedModel)
+          adminProduct = await fetchShopifyProductByModel(modelParam)
         }
 
         if (adminProduct) {
           console.log(
-            `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${normalizedModel})`
+            `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${modelParam})`
           )
 
           return transformAdminProductToStorefront(adminProduct)
@@ -412,7 +421,7 @@ export function getProductByModel(
 
         const data = await storefrontClient.query<ProductsResponse, ProductsQueryVariables>(
           SEARCH_PRODUCTS,
-          { query: `tag:${normalizedModel}`, first: 1 },
+          { query: `tag:${modelParam}`, first: 1 },
           options
         )
 
@@ -420,14 +429,14 @@ export function getProductByModel(
 
         if (foundProduct) {
           console.log(
-            `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${normalizedModel})`
+            `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${modelParam})`
           )
           return transformProduct(foundProduct)
         }
 
-        console.log(`[getProductByModel] No product found for model "${normalizedModel}" — not caching miss`)
+        console.log(`[getProductByModel] No product found for model "${modelParam}" — not caching miss`)
         // Throw so unstable_cache does not store the null — next request will retry
-        throw new Error(`PRODUCT_NOT_FOUND:${normalizedModel}`)
+        throw new Error(`PRODUCT_NOT_FOUND:${modelParam}`)
 
       } catch (error) {
         // Re-throw not-found marker so it bypasses the cache
@@ -443,7 +452,7 @@ export function getProductByModel(
         try {
           const data = await storefrontClient.query<ProductsResponse, ProductsQueryVariables>(
             SEARCH_PRODUCTS,
-            { query: `tag:${normalizedModel}`, first: 1 },
+            { query: `tag:${modelParam}`, first: 1 },
             options
           )
 
@@ -457,12 +466,12 @@ export function getProductByModel(
           console.error(`[getProductByModel] Tag fallback also failed:`, fallbackError)
         }
 
-        throw new Error(`PRODUCT_NOT_FOUND:${normalizedModel}`)
+        throw new Error(`PRODUCT_NOT_FOUND:${modelParam}`)
       }
     },
     [`${cachePrefix}-${normalizedModel}`],
     { tags: [`${cachePrefix}-${normalizedModel}`, 'shopify-products'], revalidate: 3600 }
-  )().catch((error: unknown) => {
+  )(site, normalizedModel).catch((error: unknown) => {
     if (error instanceof Error && error.message.startsWith('PRODUCT_NOT_FOUND:')) {
       return null
     }
