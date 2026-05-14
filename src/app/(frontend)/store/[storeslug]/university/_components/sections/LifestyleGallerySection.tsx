@@ -1,10 +1,15 @@
-import { lifestyleItems } from '../data/testimonials';
+import type { LifestyleItem, StatItem } from '../../event.config';
 
-export default function LifestyleGallerySection() {
+interface LifestyleGallerySectionProps {
+  lifestyleItems: LifestyleItem[]
+  stats: StatItem[]
+}
+
+export default function LifestyleGallerySection({ lifestyleItems, stats }: LifestyleGallerySectionProps) {
   return (
     <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj4KPGcgZmlsbD0iIzMzMzMzMyIgZmlsbC1vcGFjaXR5PSIwLjEiPgo8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+CjwvZz4KPC9nPgo8L3N2Zz4=')] opacity-30"></div>
-      
+
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="text-center mb-16 animate-fade-in-up">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
@@ -15,7 +20,7 @@ export default function LifestyleGallerySection() {
             Witness the artistry and passion that goes into every KAWAI piano
           </p>
         </div>
-        
+
         <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
           {lifestyleItems.map((item, index) => (
             <div key={index} className={`gallery-item relative h-72 bg-gradient-to-br ${item.gradient} rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up animate-delay-${index * 100}`}>
@@ -29,20 +34,14 @@ export default function LifestyleGallerySection() {
             </div>
           ))}
         </div>
-        
+
         <div className="grid md:grid-cols-3 gap-8 mt-16">
-          <div className="text-center animate-fade-in-up animate-delay-100">
-            <div className="text-4xl font-bold text-gradient-gold mb-2">90+</div>
-            <p className="text-gray-300 font-medium">Years of Excellence</p>
-          </div>
-          <div className="text-center animate-fade-in-up animate-delay-200">
-            <div className="text-4xl font-bold text-gradient-gold mb-2">50k+</div>
-            <p className="text-gray-300 font-medium">Satisfied Customers</p>
-          </div>
-          <div className="text-center animate-fade-in-up animate-delay-300">
-            <div className="text-4xl font-bold text-gradient-gold mb-2">150+</div>
-            <p className="text-gray-300 font-medium">Countries Worldwide</p>
-          </div>
+          {stats.map((stat, index) => (
+            <div key={index} className={`text-center animate-fade-in-up animate-delay-${(index + 1) * 100}`}>
+              <div className="text-4xl font-bold text-gradient-gold mb-2">{stat.value}</div>
+              <p className="text-gray-300 font-medium">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

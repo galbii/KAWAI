@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Barlow_Condensed, Comforter_Brush, Inter } from "next/font/google";
 import { WebVitals } from "./_components/WebVitals";
 import Script from "next/script";
 import "./globals.css";
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair-display",
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-tcu-display",
   subsets: ["latin"],
+  weight: ["700", "800", "900"],
+  style: ["normal"],
+  display: "swap",
+});
+
+const comforterBrush = Comforter_Brush({
+  variable: "--font-tcu-script",
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
 });
 
@@ -54,7 +63,7 @@ export default function UniversityLayout({
       <link rel="dns-prefetch" href="https://www.google.com/recaptcha/" />
       <link rel="dns-prefetch" href="https://www.gstatic.com/recaptcha/" />
 
-      <div className={`${playfairDisplay.variable} ${inter.variable} antialiased overflow-x-hidden`}>
+      <div className={`${barlowCondensed.variable} ${comforterBrush.variable} ${inter.variable} antialiased overflow-x-hidden`}>
         {children}
         <WebVitals />
 
@@ -65,7 +74,7 @@ export default function UniversityLayout({
           src="https://assets.calendly.com/assets/external/widget.js"
           strategy="afterInteractive"
         />
-        
+
       </div>
     </>
   );

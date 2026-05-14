@@ -3,15 +3,19 @@
 import { useEffect } from 'react';
 import './types/calendly';
 
-export default function CalendlyPreloader() {
+interface CalendlyPreloaderProps {
+  calendlyUrl: string;
+}
+
+export function CalendlyPreloader({ calendlyUrl }: CalendlyPreloaderProps) {
   useEffect(() => {
     // Resource preloader - warm up Calendly servers and cache resources
     const preloadCalendlyResources = () => {
       console.log('🚀 Preloading Calendly resources for faster modal loading...');
-      
+
       // Create invisible iframe to preload the booking page and warm up servers
       const preloadFrame = document.createElement('iframe');
-      preloadFrame.src = 'https://calendly.com/kawaipianogallery/tsu-kawai-piano-sale?utm_source=kawai-landing-page&utm_medium=preload&utm_campaign=tsu-piano-sale-2025';
+      preloadFrame.src = calendlyUrl;
       preloadFrame.style.cssText = `
         position: fixed;
         top: -9999px;
@@ -52,7 +56,7 @@ export default function CalendlyPreloader() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, []);
+  }, [calendlyUrl]);
 
   // This component doesn't render anything visible - it's purely for resource preloading
   return null;

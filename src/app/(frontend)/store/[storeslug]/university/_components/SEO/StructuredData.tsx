@@ -1,33 +1,34 @@
 'use client';
 
 import { LocalBusinessJsonLd, EventJsonLd } from 'next-seo';
+import type { UniversityEventConfig } from '../../event.config';
 
-export function StructuredData() {
+interface StructuredDataProps {
+  config: UniversityEventConfig;
+}
+
+export function StructuredData({ config }: StructuredDataProps) {
   return (
     <>
       <LocalBusinessJsonLd
         type="Store"
-        id="https://www.kawai-piano-sale-houston.com"
-        name="KAWAI Piano Sales Houston - TSU Partnership Event"
+        id={config.structuredData.businessUrl}
+        name={config.structuredData.businessName}
         description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special prices. Partnership with Texas Southern University."
-        url="https://www.kawai-piano-sale-houston.com"
-        telephone="+1-713-904-0001"
+        url={config.structuredData.businessUrl}
+        telephone={config.structuredData.businessPhone}
         address={{
-          streetAddress: "601 W. Plano Parkway, Suite 153",
-          addressLocality: "Plano",
-          addressRegion: "TX",
-          postalCode: "75075",
+          streetAddress: config.structuredData.businessAddress.street,
+          addressLocality: config.structuredData.businessAddress.city,
+          addressRegion: config.structuredData.businessAddress.state,
+          postalCode: config.structuredData.businessAddress.zip,
           addressCountry: "US",
         }}
         geo={{
-          latitude: "33.0198",
-          longitude: "-96.6989",
+          latitude: String(config.structuredData.coordinates.lat),
+          longitude: String(config.structuredData.coordinates.lng),
         }}
-        images={[
-          "/images/optimized/pianos/es120.webp",
-          "/images/optimized/pianos/K-200_EP_styling_1200.webp",
-          "/images/optimized/pianos/GL10_1200.webp",
-        ]}
+        images={config.structuredData.images}
         sameAs={[
           "https://www.kawai-global.com",
           "https://www.tsu.edu",
@@ -55,15 +56,15 @@ export function StructuredData() {
           },
         ]}
         rating={{
-          ratingValue: "4.9",
-          ratingCount: "127",
+          ratingValue: String(config.seo.ratingValue),
+          ratingCount: String(config.seo.reviewCount),
         }}
         makesOffer={[
           {
             priceSpecification: {
               type: "UnitPriceSpecification",
               priceCurrency: "USD",
-              price: "949-18995",
+              price: config.seo.priceRange,
             },
             itemOffered: {
               name: "KAWAI Piano Sales",
@@ -81,36 +82,32 @@ export function StructuredData() {
           },
         ]}
       />
-      
+
       <EventJsonLd
-        name="KAWAI Piano Sale Event Houston"
-        startDate="2025-12-04T09:00:00-06:00"
-        endDate="2025-12-07T18:00:00-06:00"
+        name={config.eventName}
+        startDate={config.eventStartDate}
+        endDate={config.eventEndDate}
         description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special reduced prices. Partnership with Texas Southern University offering savings up to $6,000."
         location={{
-          name: "C.S. Lane Home Economics Center at Texas Southern University",
+          name: config.structuredData.eventLocationName,
           address: {
-            streetAddress: "3100 Cleburne St",
-            addressLocality: "Houston",
-            addressRegion: "TX",
-            postalCode: "77004",
+            streetAddress: config.structuredData.eventAddress.street,
+            addressLocality: config.structuredData.eventAddress.city,
+            addressRegion: config.structuredData.eventAddress.state,
+            postalCode: config.structuredData.eventAddress.zip,
             addressCountry: "US",
           },
         }}
-        url="https://www.kawai-piano-sale-houston.com"
-        images={[
-          "/images/optimized/pianos/es120.webp",
-          "/images/optimized/pianos/K-200_EP_styling_1200.webp",
-          "/images/optimized/pianos/GL10_1200.webp",
-        ]}
+        url={config.structuredData.businessUrl}
+        images={config.structuredData.images}
         offers={[
           {
-            price: "949",
+            price: config.structuredData.startPrice,
             priceCurrency: "USD",
             availability: "https://schema.org/InStock",
-            url: "https://www.kawai-piano-sale-houston.com",
-            validFrom: "2025-12-04",
-            validThrough: "2025-12-07",
+            url: config.structuredData.businessUrl,
+            validFrom: config.eventStartDate,
+            validThrough: config.eventEndDate,
           },
         ]}
         performer={{

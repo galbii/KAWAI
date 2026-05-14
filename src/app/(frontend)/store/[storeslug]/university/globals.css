@@ -22,8 +22,18 @@
   --gold: #FFD700;
   --gold-light: #FFED4A;
   --gold-dark: #B8860B;
-  --tsu-maroon: #800000;
-  --tsu-gold: #FFD700;
+  --tcu-purple:        #4D1979;
+  --tcu-purple-dark:   #3a1258;
+  --tcu-purple-light:  #6b2fa0;
+  --tcu-purple-tint:   rgba(77, 25, 121, 0.15);
+  --tcu-purple-border: rgba(77, 25, 121, 0.40);
+  --tcu-grey:          #A3A9AC;
+  --tcu-aqua:          #95DACF;
+  --tcu-orange:        #F47D20;
+  --tcu-yellow:        #F9D44B;
+  --tcu-steel:         #6E8EAE;
+  --tcu-bg-deep:       #0D0714;
+  --tcu-bg-surface:    #120B1E;
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
@@ -98,7 +108,7 @@
   --color-gray-dark: var(--gray-dark);
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
-  --font-heading: var(--font-playfair-display);
+  --font-heading: var(--font-tcu-display);
   --font-body: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -146,7 +156,11 @@ body {
 
 /* Typography Classes */
 .font-heading {
-  font-family: var(--font-playfair-display), Georgia, serif;
+  font-family: var(--font-tcu-display), system-ui, sans-serif;
+}
+
+.font-script {
+  font-family: var(--font-tcu-script), cursive;
 }
 
 .font-body {
@@ -406,7 +420,7 @@ body {
 }
 
 .brand-tsu {
-  color: var(--tsu-gold);
+  color: var(--gold);
   font-weight: 600;
 }
 

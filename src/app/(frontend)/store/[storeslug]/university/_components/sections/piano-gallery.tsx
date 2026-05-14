@@ -3,8 +3,7 @@
 import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
-
-// PostHog import removed
+import type { Piano } from '../../event.config';
 
 interface FeaturedPiano {
   id: string;
@@ -20,48 +19,6 @@ interface FeaturedPiano {
   availability: string;
 }
 
-const featuredPianos: FeaturedPiano[] = [
-  {
-    id: "es-120",
-    model: "ES-120",
-    title: "Kawai ES-120",
-    description: "Compact digital piano with Responsive Hammer Compact action, 88 weighted keys, and premium piano sounds. Perfect for Houston piano lessons, home practice, and portable performances.",
-    image: "/images/optimized/pianos/es120.webp",
-    category: "Digital Piano",
-    originalPrice: 1099,
-    salePrice: 949,
-    savings: 150,
-    keyFeatures: ["88 Weighted Keys", "Responsive Hammer Action", "19 Premium Sounds"],
-    availability: "Available for demonstration"
-  },
-  {
-    id: "k-200",
-    model: "K-200",
-    title: "Kawai K-200",
-    description: "Professional upright piano with premium spruce soundboard, responsive action, and rich, resonant tone. Popular choice for Houston piano families, serious students, teachers, and music institutions.",
-    image: "/images/optimized/pianos/K-200_EP_styling_1200.webp",
-    category: "Upright Piano",
-    originalPrice: 8395,
-    salePrice: 6390,
-    savings: 2005,
-    keyFeatures: ["Solid Spruce Soundboard", "Premium Action", "114cm Height"],
-    availability: "Available for demonstration"
-  },
-  {
-    id: "gl-10",
-    model: "GL-10",
-    title: "Kawai GL-10",
-    description: "Baby grand piano combining traditional craftsmanship with modern precision. Delivers exceptional touch, tone, and musical expression for the most discerning musicians.",
-    image: "/images/optimized/pianos/GL10_1200.webp",
-    category: "Grand Piano",
-    originalPrice: 18995,
-    salePrice: 12950,
-    savings: 6045,
-    keyFeatures: ["5'1\" Baby Grand", "Premium Action", "Solid Spruce Soundboard"],
-    availability: "Available for demonstration"
-  }
-];
-
 interface PianoSectionProps {
   piano: FeaturedPiano;
   index: number;
@@ -73,14 +30,11 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
     threshold: 0.2,
     rootMargin: '0px 0px -100px 0px'
   });
-  // PostHog tracking removed
   const activeTimer = useRef<NodeJS.Timeout | null>(null);
 
   const isEven = index % 2 === 0;
 
-  // Track piano gallery view after 6 seconds (once per page view, any model)
   useEffect(() => {
-    // Clear any existing timer first
     if (activeTimer.current) {
       clearTimeout(activeTimer.current);
       activeTimer.current = null;
@@ -88,15 +42,11 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
 
     if (isVisible && !hasTrackedAnyPiano.current) {
       activeTimer.current = setTimeout(() => {
-        // Double-check we haven't tracked any piano yet
         if (!hasTrackedAnyPiano.current) {
-          // Mark as tracked FIRST to prevent duplicate calls
           hasTrackedAnyPiano.current = true;
-          
-          // Piano view tracking removed
         }
         activeTimer.current = null;
-      }, 6000); // 6 seconds
+      }, 6000);
     }
 
     return () => {
@@ -108,72 +58,125 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
   }, [isVisible, piano.model, piano.salePrice, piano.category, hasTrackedAnyPiano]);
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      className="min-h-[30vh] flex items-center py-3"
+      className="py-10"
     >
       <div className="max-w-5xl mx-auto px-6 w-full">
-        <div className={`grid lg:grid-cols-2 gap-4 lg:gap-6 items-center ${
-          isEven ? '' : 'lg:grid-flow-col-dense'
-        }`}>
-          {/* Image */}
-          <div className={`relative ${isEven ? 'order-1 lg:order-2' : 'order-1 lg:col-start-1'}`}>
-            <div className={`relative transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'}`}>
-              <Image
-                src={piano.image}
-                alt={`${piano.title} - Houston Piano Sales - Available at KAWAI Piano Store Houston`}
-                width={800}
-                height={600}
-                className="w-full h-auto object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-              />
+        <div
+          className={`rounded-2xl border transition-all duration-500 overflow-hidden ${
+            isEven ? '' : 'lg:grid-flow-col-dense'
+          }`}
+          style={{
+            background: '#FFFFFF',
+            borderColor: 'rgba(77,25,121,0.12)',
+            boxShadow: '0 2px 20px rgba(77,25,121,0.08)',
+          }}
+        >
+          <div className={`grid lg:grid-cols-2 items-stretch`}>
+            {/* Image */}
+            <div className={`relative ${isEven ? 'order-1 lg:order-2' : 'order-1 lg:col-start-1'}`}>
+              <div
+                className={`relative h-72 lg:h-full min-h-[300px] transition-all duration-700 delay-300 ${
+                  isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'
+                }`}
+              >
+                <Image
+                  src={piano.image}
+                  alt={`${piano.title} - Houston Piano Sales - Available at KAWAI Piano Store Houston`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a0d2e]/20 to-transparent" />
+                <div
+                  className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs tracking-wider uppercase font-medium"
+                  style={{
+                    background: 'rgba(77,25,121,0.08)',
+                    border: '1px solid rgba(77,25,121,0.25)',
+                    color: '#4D1979',
+                  }}
+                >
+                  {piano.model}
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Content */}
-          <div className={`space-y-4 ${isEven ? 'order-2 lg:order-1' : 'order-2 lg:col-start-2'}`}>
-            <div className="space-y-3">
-              <div className={`space-y-1 transition-all duration-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="text-sm font-medium text-gray-600 break-words overflow-hidden">{piano.category}</div>
-                <h2 className="font-heading text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-kawai-black break-words overflow-hidden">
+            {/* Content */}
+            <div className={`p-8 lg:p-10 flex flex-col justify-center space-y-6 ${isEven ? 'order-2 lg:order-1' : 'order-2 lg:col-start-2'}`}>
+              <div
+                className={`space-y-1 transition-all duration-600 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+              >
+                <div className="text-xs tracking-[0.2em] uppercase" style={{ color: 'rgba(26,13,46,0.45)' }}>
+                  {piano.category}
+                </div>
+                <h2 className="font-heading italic text-[#1a0d2e] text-2xl md:text-3xl lg:text-4xl font-black">
                   {piano.title}
                 </h2>
               </div>
-              
-              {/* Experience Information */}
-              <div className={`space-y-2 transition-all duration-600 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className={`inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-500 delay-300 hover:bg-blue-200 hover:scale-105 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
-                  </svg>
-                  Book an Appointment for Priority Deals and University Pricing
+
+              {/* Pricing */}
+              <div
+                className={`space-y-2 transition-all duration-600 delay-200 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+              >
+                <div className="flex items-end gap-3 flex-wrap">
+                  <span className="text-3xl font-bold" style={{ color: '#4D1979' }}>
+                    ${piano.salePrice.toLocaleString()}
+                  </span>
+                  <span className="text-sm line-through" style={{ color: 'rgba(26,13,46,0.40)' }}>
+                    ${piano.originalPrice.toLocaleString()}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{
+                      background: 'rgba(244,125,32,0.2)',
+                      border: '1px solid rgba(244,125,32,0.5)',
+                      color: '#F47D20',
+                    }}
+                  >
+                    Save ${piano.savings.toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-sm" style={{ color: 'rgba(26,13,46,0.65)' }}>
+                  As low as ${Math.round(piano.salePrice / 60).toLocaleString()}/mo with financing
                 </div>
               </div>
-              
-              <div className={`space-y-4 transition-all duration-600 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <p className="text-sm md:text-base leading-relaxed text-kawai-black/80 max-w-lg">
-                  {piano.description}
-                </p>
-                
-                {/* Key Features */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-kawai-black">Key Features:</h4>
-                  <ul className="text-sm text-kawai-black/70 space-y-1">
-                    {piano.keyFeatures.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* Availability */}
-                <div className="flex items-center gap-2 text-sm">
-                  <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-green-600 font-medium">{piano.availability}</span>
+
+              {/* Features */}
+              <div
+                className={`space-y-2 transition-all duration-600 delay-400 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+              >
+                <ul className="space-y-2">
+                  {piano.keyFeatures.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <svg
+                        className="w-4 h-4 mt-0.5 shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        style={{ color: '#4D1979' }}
+                      >
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm" style={{ color: '#3a2060' }}>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Availability + CTA */}
+              <div
+                className={`space-y-4 transition-all duration-600 delay-500 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+              >
+                <div className="text-xs" style={{ color: 'rgba(26,13,46,0.45)' }}>
+                  {piano.availability}
                 </div>
               </div>
             </div>
@@ -185,75 +188,108 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
 }
 
 interface FeaturedDealsProps {
+  pianos: Piano[]
   onOpenConsultation: () => void;
 }
 
-export function FeaturedDeals({ onOpenConsultation }: FeaturedDealsProps) {
+export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps) {
   const hasTrackedAnyPiano = useRef<boolean>(false);
-  // const heroRef = useRef<HTMLDivElement>(null);
   const { ref: headerRef, isVisible: headerVisible } = useIntersectionAnimation({
     threshold: 0.2,
     rootMargin: '0px 0px -100px 0px'
   });
 
   return (
-    <div id="featured-deals" className="bg-white">
+    <div id="featured-deals" style={{ background: '#FAFAFE' }} className="border-t border-[rgba(77,25,121,0.12)]">
       {/* Section Header */}
-      <section ref={headerRef} className="py-12 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-white opacity-50"></div>
+      <section ref={headerRef} className="pt-16 pb-4 text-center relative overflow-hidden">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div className={`mb-8 transition-all duration-600 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            {/* Premium Gallery Title */}
-            <div className={`relative inline-block mb-6 transition-all duration-600 delay-200 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <div className="text-red-600 font-bold text-lg mb-2 tracking-wide">FEATURED MODELS</div>
-              <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-kawai-black mb-2">
-                HOUSTON PIANO GALLERY
-              </h1>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 rounded-full shadow-lg"></div>
+          <div
+            className={`mb-8 transition-all duration-600 ${
+              headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <div
+              className={`text-xs tracking-[0.2em] uppercase mb-4 transition-all duration-600 ${
+                headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ color: 'rgba(26,13,46,0.45)' }}
+            >
+              Featured Models
             </div>
-            
-            {/* Premium Subtitle */}
-            <div className={`space-y-4 mb-6 transition-all duration-600 delay-400 ${headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <p className="text-xl md:text-2xl font-semibold text-gray-700 tracking-wide">
-                Premium Collection • Expert Guidance
-              </p>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  EXCLUSIVE SHOWCASE
-                </div>
-                <span className="text-red-600 font-bold text-lg">December 4th - 7th, 2025</span>
-              </div>
+
+            <h1 className="font-heading italic text-[#1a0d2e] text-4xl md:text-5xl lg:text-6xl font-black mb-6">
+              Houston Piano Gallery
+            </h1>
+
+            <div
+              className={`flex items-center justify-center gap-4 flex-wrap transition-all duration-600 delay-300 ${
+                headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
+              <span
+                className="text-xs tracking-wider uppercase px-4 py-2 rounded"
+                style={{
+                  background: 'rgba(77,25,121,0.06)',
+                  border: '1px solid rgba(77,25,121,0.15)',
+                  color: 'rgba(26,13,46,0.65)',
+                }}
+              >
+                Exclusive Showcase &nbsp;·&nbsp; December 4th – 7th, 2025
+              </span>
             </div>
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-4 left-4 w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full opacity-30 animate-pulse"></div>
-        <div className="absolute bottom-4 right-4 w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20 animate-pulse delay-1000"></div>
       </section>
 
       {/* Piano Models */}
-      {featuredPianos.map((piano, index) => (
-        <PianoSection key={piano.id} piano={piano} index={index} hasTrackedAnyPiano={hasTrackedAnyPiano} />
-      ))}
-      
+      {pianos.map((piano, index) => {
+        const mapped: FeaturedPiano = {
+          id: piano.model,
+          model: piano.model,
+          title: piano.name,
+          description: piano.features[0] ?? '',
+          image: piano.image,
+          category: piano.category,
+          originalPrice: parseFloat(piano.originalPrice.replace(/[^0-9.]/g, '')),
+          salePrice: parseFloat(piano.price.replace(/[^0-9.]/g, '')),
+          savings: parseFloat(piano.savings.replace(/[^0-9.]/g, '')),
+          keyFeatures: piano.features,
+          availability: piano.remaining,
+        };
+        return <PianoSection key={mapped.id} piano={mapped} index={index} hasTrackedAnyPiano={hasTrackedAnyPiano} />;
+      })}
+
       {/* CTA Section */}
-      <section className="py-12 text-center bg-white">
-        <div className="max-w-2xl mx-auto px-6 space-y-4">
-          <h3 className="font-heading text-2xl font-semibold text-kawai-black">
+      <section className="py-16 text-center border-t border-[rgba(77,25,121,0.12)]" style={{ background: 'rgba(77,25,121,0.04)' }}>
+        <div className="max-w-2xl mx-auto px-6 space-y-5">
+          <h3 className="font-heading italic text-[#1a0d2e] text-2xl md:text-3xl font-black">
             Schedule Your Personal Appointment
           </h3>
-          <p className="text-kawai-black/70 max-w-lg mx-auto">
+          <p className="text-sm md:text-base max-w-lg mx-auto" style={{ color: '#3a2060' }}>
             Get priority access to special university pricing and deals when you book your appointment. See more models in person and connect with our KAWAI piano experts for personalized recommendations.
           </p>
-          <div className="space-y-2">
+          <div className="space-y-3 pt-2">
             <button
               onClick={onOpenConsultation}
-              className="inline-flex items-center px-8 py-4 bg-red-700 hover:bg-red-600 text-white font-semibold text-lg rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 group"
+              style={{
+                background: '#4D1979',
+                color: 'white',
+                fontSize: '13px',
+                fontWeight: 600,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                padding: '14px 32px',
+                border: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+              }}
             >
               <span>Book Appointment</span>
               <svg
-                className="w-6 h-6 ml-3 transition-transform duration-300 group-hover:translate-x-1"
+                className="w-5 h-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -262,8 +298,8 @@ export function FeaturedDeals({ onOpenConsultation }: FeaturedDealsProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </button>
-            <p className="text-sm text-blue-600 font-medium">
-              December 4th-7th experiences available • Appointment only
+            <p className="text-xs" style={{ color: 'rgba(26,13,46,0.45)' }}>
+              December 4th–7th experiences available · Appointment only
             </p>
           </div>
         </div>

@@ -2,56 +2,11 @@
 
 import { useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import type { FAQItem } from '../../event.config';
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+interface FAQSectionProps { faqs: FAQItem[] }
 
-const faqData: FAQItem[] = [
-  {
-    question: "Where can I find piano sales in Houston?",
-    answer: "Our KAWAI piano sales Houston event at our Piano Gallery offers the best selection of digital and acoustic pianos in the Greater Houston Area. We're Houston's trusted Piano Gallery with over 5 years of partnership with TSU."
-  },
-  {
-    question: "Do you have used pianos for sale in Houston?",
-    answer: "Yes! Our Houston piano sale event features both new and carefully selected used pianos Houston families love. All used pianos are inspected by TSU music faculty and come with warranties. Prices start at $949 for digital pianos."
-  },
-  {
-    question: "What piano deals are available in Houston during the event?",
-    answer: "Piano deals Houston residents can save up to $6,000 on premium KAWAI instruments. Our event features special pricing on digital pianos, upright pianos, and grand pianos, plus free delivery and tuning for VIP early access customers. Limited quantities available - only 25 consultation slots for guaranteed first selection."
-  },
-  {
-    question: "Do you offer piano lessons in Houston area?",
-    answer: "While our primary focus is piano sales Houston, we can connect you with qualified piano teachers in the Houston area through our TSU Music Department partnership. Many of our piano customers also take advantage of piano lessons Houston has to offer."
-  },
-  {
-    question: "Where is your Houston piano store located?",
-    answer: "Our Houston piano sale event takes place at our KAWAI Piano Gallery Houston showroom at 601 W. Plano Parkway, Suite 153. As Houston's premier Piano Gallery, our convenient location makes it easy for Greater Houston Area families to shop for pianos."
-  },
-  {
-    question: "What types of pianos are available at your Houston location?",
-    answer: "Our piano store Houston event features KAWAI digital pianos, upright acoustic pianos, and grand pianos. From compact ES-120 models perfect for apartments to full-size GL-10 grand pianos, we have options for every Houston piano family."
-  },
-  {
-    question: "Do you provide financing for piano purchases in Houston?",
-    answer: "Yes! We offer financing options for our piano sales Houston event. Monthly payments start as low as $79 for digital pianos. VIP consultation customers receive priority approval and exclusive financing terms. Limited-time special rates available only during this event."
-  },
-  {
-    question: "What makes your Houston piano sale different from other galleries?",
-    answer: "Our partnership with Texas Southern University's Music Department ensures every piano meets institutional quality standards. Unlike other Piano Galleries Houston offers, our instruments are faculty-approved and your purchase directly supports TSU's music programs through our ongoing partnership."
-  },
-  {
-    question: "How do I get priority booking for the Houston event?",
-    answer: "TSU students, faculty, and staff receive automatic priority booking privileges. With only 15 VIP consultation slots available for Day 1 early access, we recommend booking within 48 hours to guarantee your preferred time slot and first selection of our premium Houston inventory."
-  },
-  {
-    question: "How do I secure priority access to the best piano deals?",
-    answer: "VIP consultation bookings receive guaranteed first selection privileges and early access to our premium inventory. With only 25 consultation slots available, booking early ensures you get priority access to the most sought-after instruments and exclusive early bird pricing."
-  }
-];
-
-export default function FAQSection() {
+export default function FAQSection({ faqs }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFAQ = (index: number) => {
@@ -71,7 +26,7 @@ export default function FAQSection() {
         </div>
 
         <div className="space-y-4">
-          {faqData.map((faq, index) => (
+          {faqs.map((faq, index) => (
             <div
               key={index}
               className="border border-gray-200 rounded-lg overflow-hidden"

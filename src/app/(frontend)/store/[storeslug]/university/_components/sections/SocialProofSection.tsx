@@ -1,9 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { reviews } from '../data/testimonials';
+import type { StatItem, Review, ActivityFeedItem } from '../../event.config';
 
-export default function SocialProofSection() {
+interface SocialProofSectionProps {
+  stats: StatItem[]
+  testimonials: Review[]
+  activityFeed: ActivityFeedItem[]
+}
+
+export default function SocialProofSection({ stats, testimonials, activityFeed }: SocialProofSectionProps) {
+  const half = Math.ceil(activityFeed.length / 2);
+  const feedLeft = activityFeed.slice(0, half);
+  const feedRight = activityFeed.slice(half);
+
   return (
     <section className="py-24 bg-slate-900 text-white">
       <div className="max-w-7xl mx-auto px-6">
@@ -22,37 +32,14 @@ export default function SocialProofSection() {
 
         {/* Community Metrics Grid - Clean */}
         <div className="grid md:grid-cols-4 gap-6 mb-16">
-          <Card className="bg-white/10 border-white/20 text-center">
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold text-amber-300 mb-2">847</div>
-              <div className="text-white text-sm font-medium mb-1">Happy Families</div>
-              <div className="text-gray-300 text-xs">4.9/5 satisfaction</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 border-white/20 text-center">
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold text-amber-300 mb-2">200+</div>
-              <div className="text-white text-sm font-medium mb-1">TSU Students</div>
-              <div className="text-gray-300 text-xs">Musical excellence</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 border-white/20 text-center">
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold text-amber-300 mb-2">15+</div>
-              <div className="text-white text-sm font-medium mb-1">Years Serving</div>
-              <div className="text-gray-300 text-xs">Houston community</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 border-white/20 text-center">
-            <CardContent className="pt-6">
-              <div className="text-4xl font-bold text-amber-300 mb-2">48</div>
-              <div className="text-white text-sm font-medium mb-1">Pianos Remaining</div>
-              <div className="text-gray-300 text-xs">Limited inventory</div>
-            </CardContent>
-          </Card>
+          {stats.map((stat, index) => (
+            <Card key={index} className="bg-white/10 border-white/20 text-center">
+              <CardContent className="pt-6">
+                <div className="text-4xl font-bold text-amber-300 mb-2">{stat.value}</div>
+                <div className="text-white text-sm font-medium mb-1">{stat.label}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Live Activity Feed - Clean */}
@@ -67,33 +54,21 @@ export default function SocialProofSection() {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3 text-white/90 text-sm">
-                  <div className="flex justify-between">
-                    <span>Sarah from Katy booked consultation</span>
-                    <span className="text-amber-300 text-xs">2 min ago</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Johnson family reserved K200 piano</span>
-                    <span className="text-amber-300 text-xs">7 min ago</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>New review from Michael R.</span>
-                    <span className="text-amber-300 text-xs">12 min ago</span>
-                  </div>
+                  {feedLeft.map((item, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span>{item.name} {item.action}</span>
+                      <span className="text-amber-300 text-xs">{item.timeAgo}</span>
+                    </div>
+                  ))}
                 </div>
-                
+
                 <div className="space-y-3 text-white/90 text-sm">
-                  <div className="flex justify-between">
-                    <span>TSU student inquiry for ES520</span>
-                    <span className="text-amber-300 text-xs">15 min ago</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Phone consultation completed</span>
-                    <span className="text-amber-300 text-xs">18 min ago</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-amber-300 font-medium">12 consultations booked today</span>
-                    <Badge className="bg-green-500 text-white text-xs">LIVE</Badge>
-                  </div>
+                  {feedRight.map((item, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span>{item.name} {item.action}</span>
+                      <span className="text-amber-300 text-xs">{item.timeAgo}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -111,9 +86,9 @@ export default function SocialProofSection() {
               <span className="text-white/80">847 verified reviews</span>
             </div>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
-            {reviews.map((review, index) => (
+            {testimonials.map((review, index) => (
               <Card key={index} className="bg-white/10 border-white/20">
                 <CardContent className="pt-6">
                   <div className="h-20 bg-gray-200 rounded mb-4 flex items-center justify-center">

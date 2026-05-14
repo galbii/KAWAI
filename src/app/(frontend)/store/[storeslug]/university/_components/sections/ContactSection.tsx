@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import PianoConsultationDialog from '../PianoConsultationDialog';
+import { TSU_2025 } from '../../event.config';
 
 export default function ContactSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -159,9 +160,12 @@ export default function ContactSection() {
       </div>
       
       {/* Piano Consultation Dialog */}
-      <PianoConsultationDialog 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <PianoConsultationDialog
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        calendlyUrl={TSU_2025.calendlyUrl}
+        eventName={TSU_2025.eventName}
+        tags={['university-sale', 'uta-2025']}
       />
     </section>
   );

@@ -1,15 +1,33 @@
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
+import type { HeroFeature } from '../../event.config';
 
 interface HeroSectionProps {
-  onOpenConsultation: () => void;
+  config: {
+    videoSources: { src: string; type: string }[]
+    videoStartTime: number
+    heroGradient: string
+    mobileOverlay: string
+    ghostWatermarkText: string
+    headline: string
+    subtext: string
+    supportText: string
+    features: HeroFeature[]
+    primaryCtaLabel: string
+    secondaryCtaLabel: string
+    secondaryCtaScrollTarget: string
+  }
+  partnerLogoUrl: string
+  kawaiLogoUrl: string
+  eventDateDisplay: string
+  onOpenConsultation: () => void
 }
 
-export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
+export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, eventDateDisplay, onOpenConsultation }: HeroSectionProps) {
 
   const handleExploreCollectionClick = () => {
     const featuredDealsSection =
-      document.getElementById('featured-deals') ??
+      document.getElementById(config.secondaryCtaScrollTarget) ??
       document.querySelector<HTMLElement>('.piano-gallery, .featured-deals');
     if (featuredDealsSection) {
       featuredDealsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -21,6 +39,8 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
     e.stopPropagation();
     onOpenConsultation();
   };
+
+  const ghostLines = config.ghostWatermarkText.split('\n');
 
   return (
     <section className="relative min-h-screen overflow-hidden flex">
@@ -37,12 +57,13 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
         style={{ pointerEvents: 'none' }}
         onLoadedData={(e) => {
           const video = e.target as HTMLVideoElement;
-          video.currentTime = 13.10;
+          video.currentTime = config.videoStartTime;
           video.play().catch(() => {});
         }}
       >
-        <source src="/videos/CA.webm" type="video/webm" />
-        <source src="/videos/CA.mp4" type="video/mp4" />
+        {config.videoSources.map((source, i) => (
+          <source key={i} src={source.src} type={source.type} />
+        ))}
       </video>
 
       {/* ── Dark base layer ────────────────────────────── */}
@@ -53,15 +74,14 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
       <div
         className="absolute inset-0 z-[2] pointer-events-none"
         style={{
-          background:
-            'linear-gradient(100deg, rgba(77,25,121,0.96) 0%, rgba(77,25,121,0.88) 28%, rgba(60,18,96,0.52) 50%, rgba(50,12,80,0.14) 66%, transparent 80%)',
+          background: config.heroGradient,
         }}
       />
 
       {/* Mobile: extra fill so text is readable on narrow screens */}
       <div
         className="absolute inset-0 z-[2] pointer-events-none md:hidden"
-        style={{ background: 'rgba(77,25,121,0.45)' }}
+        style={{ background: config.mobileOverlay }}
       />
 
       {/* ── Ghost watermark headline ────────────────────── */}
@@ -72,17 +92,16 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
           top: '50%',
           left: '-1%',
           transform: 'translateY(-52%)',
-          fontFamily: 'var(--font-playfair-display), Georgia, serif',
+          fontFamily: 'var(--font-tcu-script)',
           fontSize: 'clamp(110px, 22vw, 280px)',
-          fontWeight: 900,
-          fontStyle: 'italic',
+          fontWeight: 400,
           color: 'rgba(255,255,255,0.042)',
           lineHeight: 0.87,
           letterSpacing: '-0.025em',
           whiteSpace: 'nowrap',
         }}
       >
-        Piano<br />Sale
+        {ghostLines[0]}{ghostLines.length > 1 && <><br />{ghostLines[1]}</>}
       </div>
 
       {/* ── TCU logo — desktop only, right column ──────── */}
@@ -91,8 +110,8 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
         style={{ left: '55%', right: 0, top: 0, bottom: 0 }}
       >
         <Image
-          src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/logo_-texas-christian-university-horned-frogs-tcu-frog.webp"
-          alt="Texas Christian University"
+          src={partnerLogoUrl}
+          alt="University Partner"
           width={400}
           height={400}
           className="drop-shadow-2xl"
@@ -109,8 +128,8 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
         {/* TCU logo — mobile only, top of content */}
         <div className="flex md:hidden">
           <Image
-            src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/logo_-texas-christian-university-horned-frogs-tcu-frog.webp"
-            alt="Texas Christian University"
+            src={partnerLogoUrl}
+            alt="University Partner"
             width={200}
             height={200}
             className="drop-shadow-xl"
@@ -122,15 +141,15 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
         {/* Middle: headline + brought to you by */}
         <div className="flex-1 flex flex-col justify-center py-4 sm:py-8">
           <h1
-            className="font-heading italic text-white whitespace-nowrap"
+            className="font-heading uppercase text-white whitespace-nowrap"
             style={{
               fontSize: 'clamp(56px, 10vw, 132px)',
               fontWeight: 900,
               lineHeight: 0.9,
-              letterSpacing: '-0.02em',
+              letterSpacing: '0.01em',
             }}
           >
-            Piano Sale
+            {config.headline}
           </h1>
 
           {/* Brought to you by KAWAI */}
@@ -142,7 +161,7 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
               Brought to you by
             </span>
             <Image
-              src="/images/Kawai (Red)(2).png"
+              src={kawaiLogoUrl}
               alt="KAWAI"
               width={100}
               height={30}
@@ -155,8 +174,7 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
             className="text-white/50 font-light mt-4 max-w-sm"
             style={{ fontSize: 'clamp(13px, 1.3vw, 15px)', lineHeight: 1.65 }}
           >
-            Book your appointment for special event pricing on a wide
-            variety of Kawai pianos — with free delivery and tuning.
+            {config.subtext}
           </p>
         </div>
 
@@ -168,39 +186,25 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
             className="grid grid-cols-3 gap-3 sm:gap-5 pt-4 sm:pt-5"
             style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}
           >
-            <div>
-              <p className="text-white font-semibold leading-tight mb-1.5" style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}>
-                Digital Piano Rebates
-              </p>
-              <p className="text-white/55 font-light leading-snug" style={{ fontSize: 'clamp(12px, 1.2vw, 15px)' }}>
-                Get up to $400 off
-              </p>
-            </div>
-            <div>
-              <p className="text-white font-semibold leading-tight mb-1.5" style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}>
-                Financing
-              </p>
-              <p className="text-white/55 font-light leading-snug" style={{ fontSize: 'clamp(12px, 1.2vw, 15px)' }}>
-                36 months<br />0% APR
-              </p>
-            </div>
-            <div>
-              <p className="text-white font-semibold leading-tight mb-1.5" style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}>
-                Exclusive TCU Pricing
-              </p>
-              <p className="text-white/55 font-light leading-snug" style={{ fontSize: 'clamp(12px, 1.2vw, 15px)' }}>
-                Up to 10% Off MSRP
-              </p>
-            </div>
+            {config.features.map((f, i) => (
+              <div key={i}>
+                <p className="text-white font-semibold leading-tight mb-1.5" style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}>
+                  {f.label}
+                </p>
+                <p className="text-white/55 font-light leading-snug" style={{ fontSize: 'clamp(12px, 1.2vw, 15px)' }}>
+                  {f.description}
+                </p>
+              </div>
+            ))}
           </div>
 
           {/* Date + CTA buttons — centered */}
           <div className="flex flex-col items-center gap-4 pb-2">
             <p
-              className="font-heading italic text-white font-bold"
+              className="font-heading uppercase text-white font-bold"
               style={{ fontSize: 'clamp(26px, 3.2vw, 40px)' }}
             >
-              December 4 – 7, 2025
+              {eventDateDisplay}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
@@ -219,7 +223,7 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Book Appointment
+                {config.primaryCtaLabel}
               </button>
               <button
                 onClick={handleExploreCollectionClick}
@@ -237,11 +241,11 @@ export default function HeroSection({ onOpenConsultation }: HeroSectionProps) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                View Collection
+                {config.secondaryCtaLabel}
               </button>
             </div>
             <p className="text-white/38 italic" style={{ fontSize: '13px' }}>
-              Your purchase supports the TCU Music Department
+              {config.supportText}
             </p>
           </div>
         </div>

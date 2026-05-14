@@ -1,6 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Guarantee } from '../../event.config';
 
-export default function AuthorityTrustSection() {
+interface AuthorityTrustSectionProps {
+  quote: { text: string; author: string; role: string }
+  guarantees: Guarantee[]
+}
+
+export default function AuthorityTrustSection({ quote, guarantees }: AuthorityTrustSectionProps) {
   return (
     <section className="py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-6">
@@ -37,13 +43,13 @@ export default function AuthorityTrustSection() {
             </CardHeader>
             <CardContent>
               <blockquote className="text-muted-foreground italic mb-4">
-                &ldquo;Our partnership with Kawai ensures that our students and the Houston community have access to exceptional piano quality that meets our institutional performance standards.&rdquo;
+                &ldquo;{quote.text}&rdquo;
               </blockquote>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-muted rounded-full"></div>
                 <div>
-                  <div className="font-medium text-sm">Dr. Marcus Williams</div>
-                  <div className="text-xs text-muted-foreground">Chair, Music Department</div>
+                  <div className="font-medium text-sm">{quote.author}</div>
+                  <div className="text-xs text-muted-foreground">{quote.role}</div>
                 </div>
               </div>
             </CardContent>
@@ -55,33 +61,17 @@ export default function AuthorityTrustSection() {
               <CardTitle className="text-lg">Quality Guarantees</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-kawai-red rounded flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs">✓</span>
+              {guarantees.map((guarantee, index) => (
+                <div key={index} className="flex gap-3">
+                  <div className="w-8 h-8 bg-kawai-red rounded flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-sm">{guarantee.title}</h4>
+                    <p className="text-xs text-muted-foreground">{guarantee.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-sm">10-Year Comprehensive Warranty</h4>
-                  <p className="text-xs text-muted-foreground">Complete coverage including parts and service</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-kawai-red rounded flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">Authorized Piano Gallery</h4>
-                  <p className="text-xs text-muted-foreground">Official Kawai Piano Gallery with factory support</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-8 h-8 bg-kawai-red rounded flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">30-Day Satisfaction Guarantee</h4>
-                  <p className="text-xs text-muted-foreground">Full return policy with confidence</p>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </div>

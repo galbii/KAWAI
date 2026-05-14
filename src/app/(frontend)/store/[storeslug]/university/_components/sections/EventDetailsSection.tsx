@@ -1,17 +1,9 @@
-export default function EventDetailsSection() {
-  const schedules = [
-    { day: "Wednesday, Dec 4", time: "10:00 AM - 7:00 PM", highlight: false },
-    { day: "Thursday, Dec 5", time: "10:00 AM - 7:00 PM", highlight: true },
-    { day: "Friday, Dec 6", time: "10:00 AM - 7:00 PM", highlight: false },
-    { day: "Sunday, Dec 7", time: "12:00 PM - 5:00 PM", highlight: false }
-  ];
+import type { ScheduleDay, Offer } from '../../event.config';
 
-  const offers = [
-    { icon: "💰", title: "Up to 40% off select models", desc: "Premium upright and grand pianos" },
-    { icon: "🚚", title: "Free delivery within 50 miles", desc: "Professional setup included" },
-    { icon: "🛡️", title: "Extended warranty available", desc: "Up to 10 years coverage" },
-    { icon: "🔄", title: "Trade-in program", desc: "Upgrade your current instrument" }
-  ];
+interface EventDetailsSectionProps { schedule: ScheduleDay[]; offers: Offer[] }
+
+export default function EventDetailsSection({ schedule, offers }: EventDetailsSectionProps) {
+  const schedules = schedule;
 
   return (
     <section id="event" className="py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
