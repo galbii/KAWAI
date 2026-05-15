@@ -27,14 +27,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'),
-  title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Dec 2025",
-  description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Dec 4-7, 2025 at C.S. Lane Home Economics Center. Free delivery!",
+  title: "Piano Sale Fort Worth | KAWAI Piano Deals | TCU Event May 2026",
+  description: "Fort Worth piano sale at Texas Christian University featuring KAWAI digital & acoustic pianos. Save up to $6,000. TCU partnership May 28–31, 2026 at Boschini Music Center. Free delivery!",
   icons: {
     apple: '/images/optimized/logos/Kawai-Red.webp',
   },
   openGraph: {
-    title: "Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Dec 2025",
-    description: "Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Dec 4-7, 2025 at C.S. Lane Home Economics Center. Free delivery!",
+    title: "Piano Sale Fort Worth | KAWAI Piano Deals | TCU Event May 2026",
+    description: "Fort Worth piano sale at Texas Christian University featuring KAWAI digital & acoustic pianos. Save up to $6,000. TCU partnership May 28–31, 2026 at Boschini Music Center. Free delivery!",
     images: [
       {
         url: '/images/optimized/misc/kawai-piano-hands_1200.webp',

@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
-import type { Piano } from '../../event.config';
+import type { Product } from '@/payload-types';
 
 interface FeaturedPiano {
   id: string;
@@ -83,7 +83,7 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
               >
                 <Image
                   src={piano.image}
-                  alt={`${piano.title} - Houston Piano Sales - Available at KAWAI Piano Store Houston`}
+                  alt={`${piano.title} - Available at the TCU Piano Sale Fort Worth`}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
@@ -124,26 +124,38 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
                 }`}
               >
                 <div className="flex items-end gap-3 flex-wrap">
-                  <span className="text-3xl font-bold" style={{ color: '#4D1979' }}>
-                    ${piano.salePrice.toLocaleString()}
-                  </span>
-                  <span className="text-sm line-through" style={{ color: 'rgba(26,13,46,0.40)' }}>
-                    ${piano.originalPrice.toLocaleString()}
-                  </span>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full"
-                    style={{
-                      background: 'rgba(244,125,32,0.2)',
-                      border: '1px solid rgba(244,125,32,0.5)',
-                      color: '#F47D20',
-                    }}
-                  >
-                    Save ${piano.savings.toLocaleString()}
-                  </span>
+                  {piano.salePrice > 0 ? (
+                    <span className="text-3xl font-bold" style={{ color: '#4D1979' }}>
+                      ${piano.salePrice.toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className="text-lg font-medium" style={{ color: 'rgba(26,13,46,0.55)' }}>
+                      Contact for pricing
+                    </span>
+                  )}
+                  {piano.originalPrice > piano.salePrice && piano.salePrice > 0 && (
+                    <span className="text-sm line-through" style={{ color: 'rgba(26,13,46,0.40)' }}>
+                      ${piano.originalPrice.toLocaleString()}
+                    </span>
+                  )}
+                  {piano.savings > 0 && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full"
+                      style={{
+                        background: 'rgba(244,125,32,0.2)',
+                        border: '1px solid rgba(244,125,32,0.5)',
+                        color: '#F47D20',
+                      }}
+                    >
+                      Save ${piano.savings.toLocaleString()}
+                    </span>
+                  )}
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(26,13,46,0.65)' }}>
-                  As low as ${Math.round(piano.salePrice / 60).toLocaleString()}/mo with financing
-                </div>
+                {piano.salePrice > 0 && (
+                  <div className="text-sm" style={{ color: 'rgba(26,13,46,0.65)' }}>
+                    As low as ${Math.round(piano.salePrice / 36).toLocaleString()}/mo · 36-month 0% financing
+                  </div>
+                )}
               </div>
 
               {/* Features */}
@@ -187,12 +199,39 @@ function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
   );
 }
 
+function mapProduct(product: Product): FeaturedPiano {
+  const variation = product.variations?.[0]
+  const salePrice = variation?.price ?? 0
+  const compareAtPrice = variation?.compareAtPrice ?? product.price?.msrp ?? 0
+  const savings = compareAtPrice > salePrice ? compareAtPrice - salePrice : 0
+
+  const keyFeatures = (product.highlights ?? [])
+    .slice(0, 4)
+    .map(h => h.highlight ?? '')
+    .filter(Boolean)
+
+  return {
+    id: product.model,
+    model: product.model,
+    title: product.name ?? product.model,
+    description: product.description ?? '',
+    image: product.imageUrl ?? '/images/optimized/pianos/es120.webp',
+    category: product.type ?? product.category ?? '',
+    originalPrice: compareAtPrice,
+    salePrice,
+    savings,
+    keyFeatures,
+    availability: 'Available at the event · Fort Worth',
+  }
+}
+
 interface FeaturedDealsProps {
-  pianos: Piano[]
+  products: Product[]
   onOpenConsultation: () => void;
 }
 
-export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps) {
+export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsProps) {
+  const pianos = products.map(mapProduct);
   const hasTrackedAnyPiano = useRef<boolean>(false);
   const { ref: headerRef, isVisible: headerVisible } = useIntersectionAnimation({
     threshold: 0.2,
@@ -219,7 +258,7 @@ export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps
             </div>
 
             <h1 className="font-heading italic text-[#1a0d2e] text-4xl md:text-5xl lg:text-6xl font-black mb-6">
-              Houston Piano Gallery
+              TCU Piano Sale
             </h1>
 
             <div
@@ -235,7 +274,7 @@ export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps
                   color: 'rgba(26,13,46,0.65)',
                 }}
               >
-                Exclusive Showcase &nbsp;·&nbsp; December 4th – 7th, 2025
+                Exclusive Showcase &nbsp;·&nbsp; May 28th – 31st, 2026
               </span>
             </div>
           </div>
@@ -243,22 +282,9 @@ export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps
       </section>
 
       {/* Piano Models */}
-      {pianos.map((piano, index) => {
-        const mapped: FeaturedPiano = {
-          id: piano.model,
-          model: piano.model,
-          title: piano.name,
-          description: piano.features[0] ?? '',
-          image: piano.image,
-          category: piano.category,
-          originalPrice: parseFloat(piano.originalPrice.replace(/[^0-9.]/g, '')),
-          salePrice: parseFloat(piano.price.replace(/[^0-9.]/g, '')),
-          savings: parseFloat(piano.savings.replace(/[^0-9.]/g, '')),
-          keyFeatures: piano.features,
-          availability: piano.remaining,
-        };
-        return <PianoSection key={mapped.id} piano={mapped} index={index} hasTrackedAnyPiano={hasTrackedAnyPiano} />;
-      })}
+      {pianos.map((piano, index) => (
+        <PianoSection key={piano.id} piano={piano} index={index} hasTrackedAnyPiano={hasTrackedAnyPiano} />
+      ))}
 
       {/* CTA Section */}
       <section className="py-16 text-center border-t border-[rgba(77,25,121,0.12)]" style={{ background: 'rgba(77,25,121,0.04)' }}>
@@ -299,7 +325,7 @@ export function FeaturedDeals({ pianos, onOpenConsultation }: FeaturedDealsProps
               </svg>
             </button>
             <p className="text-xs" style={{ color: 'rgba(26,13,46,0.45)' }}>
-              December 4th–7th experiences available · Appointment only
+              May 28th–31st experiences available · Appointment only
             </p>
           </div>
         </div>

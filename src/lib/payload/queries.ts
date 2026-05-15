@@ -610,6 +610,40 @@ export function getProductBySlugDirect(slug: string): Promise<Product | null> {
 }
 
 /**
+ * Fetch a specific set of products by model identifier, preserving the supplied order.
+ * Used by event landing pages (e.g. university piano sale) to pull live CMS pricing.
+ */
+export async function getUniversityEventProducts(models: string[]): Promise<Product[]> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'products',
+      where: { model: { in: models } },
+      select: {
+        name: true,
+        model: true,
+        type: true,
+        category: true,
+        imageUrl: true,
+        variations: true,
+        highlights: true,
+        price: true,
+        description: true,
+      },
+      depth: 0,
+      limit: models.length,
+    })
+    // Preserve caller-specified display order
+    return models
+      .map(m => result.docs.find(p => p.model === m))
+      .filter((p): p is Product => p !== undefined)
+  } catch (error) {
+    console.error('Error fetching university event products:', error)
+    return []
+  }
+}
+
+/**
  * Get active products using direct Payload access
  * @param category - Optional category filter (e.g., 'digital', 'grand', 'upright', 'hybrid')
  * @param options - Additional query options

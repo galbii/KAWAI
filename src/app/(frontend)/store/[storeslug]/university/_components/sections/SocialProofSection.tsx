@@ -23,10 +23,10 @@ export default function SocialProofSection({ stats, testimonials, activityFeed }
             Join the <span className="text-amber-300">Musical Community</span>
           </h2>
           <p className="text-amber-200 text-lg">
-            December 4-7, 2025 • Limited Appointment Slots Available
+            May 28–31, 2026 • Limited Appointment Slots Available
           </p>
           <p className="text-slate-300 max-w-3xl mx-auto">
-            Be part of Houston&apos;s exclusive piano community with TSU-endorsed expert guidance and premium instrument selection
+            Be part of Houston&apos;s exclusive piano community with TCU-endorsed expert guidance and premium instrument selection
           </p>
         </div>
 
@@ -113,7 +113,7 @@ export default function SocialProofSection({ stats, testimonials, activityFeed }
           <Card className="bg-white/10 border-white/20 max-w-3xl mx-auto">
             <CardContent className="pt-8">
               <h3 className="text-white text-2xl font-bold mb-4">Reserve Your Exclusive Access</h3>
-              <p className="text-white/90 mb-6">Join hundreds of satisfied Houston families in the TSU piano community</p>
+              <p className="text-white/90 mb-6">Join hundreds of satisfied Houston families in the TCU piano community</p>
               
               <Button size="lg" className="bg-kawai-red hover:bg-kawai-red-dark text-white font-bold text-lg px-12 py-4 mb-6">
                 BOOK YOUR CONSULTATION NOW

@@ -18,7 +18,7 @@ export default function PianoShowcase() {
             Featured <span className="text-kawai-red">Piano Sale</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Specially negotiated pricing through our TSU partnership &ndash; unavailable elsewhere
+            Specially negotiated pricing through our TCU partnership &ndash; unavailable elsewhere
           </p>
         </div>
 

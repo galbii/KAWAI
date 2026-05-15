@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useScrollAnimations } from '@/hooks/useScrollAnimations';
 import { usePageTracking } from '@/hooks/usePageTracking';
-import { TSU_2025 } from './event.config';
+import type { Product } from '@/payload-types';
+import { TCU_2025 } from './event.config';
 import HeroSection from './_components/sections/HeroSection';
 import ValuePropositionSection from './_components/sections/ValuePropositionSection';
 import AboutEventSection from './_components/sections/AboutEventSection';
@@ -16,7 +17,11 @@ import { CountdownTimer } from './_components/CountdownTimer';
 import { NewsletterPopup } from './_components/NewsletterPopup';
 import PianoConsultationDialog from './_components/PianoConsultationDialog';
 
-export default function UniversityPage() {
+interface UniversityPageProps {
+  products: Product[]
+}
+
+export default function UniversityPage({ products }: UniversityPageProps) {
   useScrollAnimations();
 
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
@@ -24,7 +29,7 @@ export default function UniversityPage() {
   const closeConsultation = () => setIsConsultationModalOpen(false);
 
   usePageTracking({
-    pageName: TSU_2025.tracking.pageName,
+    pageName: TCU_2025.tracking.pageName,
     enableScrollTracking: true,
     enableTimeTracking: true,
     enableExitIntent: true,
@@ -34,17 +39,17 @@ export default function UniversityPage() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
-      <StructuredData config={TSU_2025} />
-      <HeroSection config={TSU_2025.hero} partnerLogoUrl={TSU_2025.partnerLogoUrl} kawaiLogoUrl={TSU_2025.kawaiLogoUrl} eventDateDisplay={TSU_2025.eventDateDisplay} onOpenConsultation={openConsultation} />
-      <AboutEventSection partnerName={TSU_2025.partnerName} partnerShortName={TSU_2025.partnerShortName} onOpenConsultation={openConsultation} />
-      <ValuePropositionSection valueProps={TSU_2025.valueProps} phone={TSU_2025.valuePropsPhone} note={TSU_2025.valuePropsNote} />
-      <FeaturedDeals pianos={TSU_2025.pianos} onOpenConsultation={openConsultation} />
-      <BookingSection onOpenConsultation={openConsultation} eventDateDisplay={TSU_2025.eventDateDisplay} />
-      <ShowroomLocation eventLocation={TSU_2025.eventLocation} />
-      <CountdownTimer targetDate={TSU_2025.eventStartDate} onOpenConsultation={openConsultation} isConsultationModalOpen={isConsultationModalOpen} />
+      <StructuredData config={TCU_2025} />
+      <HeroSection config={TCU_2025.hero} partnerLogoUrl={TCU_2025.partnerLogoUrl} kawaiLogoUrl={TCU_2025.kawaiLogoUrl} eventDateDisplay={TCU_2025.eventDateDisplay} onOpenConsultation={openConsultation} />
+      <AboutEventSection partnerName={TCU_2025.partnerName} partnerShortName={TCU_2025.partnerShortName} onOpenConsultation={openConsultation} />
+      <ValuePropositionSection valueProps={TCU_2025.valueProps} phone={TCU_2025.valuePropsPhone} note={TCU_2025.valuePropsNote} />
+      <FeaturedDeals products={products} onOpenConsultation={openConsultation} />
+      <BookingSection onOpenConsultation={openConsultation} eventDateDisplay={TCU_2025.eventDateDisplay} />
+      <ShowroomLocation eventLocation={TCU_2025.eventLocation} />
+      <CountdownTimer targetDate={TCU_2025.eventStartDate} onOpenConsultation={openConsultation} isConsultationModalOpen={isConsultationModalOpen} />
       <NewsletterPopup />
-      <PianoConsultationDialog isOpen={isConsultationModalOpen} onClose={closeConsultation} calendlyUrl={TSU_2025.calendlyUrl} eventName={TSU_2025.eventName} tags={['university-sale', 'uta-2025']} />
-      <Footer businessLocation={TSU_2025.businessLocation} />
+      <PianoConsultationDialog isOpen={isConsultationModalOpen} onClose={closeConsultation} calendlyUrl={TCU_2025.calendlyUrl} eventName={TCU_2025.eventName} tags={['university-sale', 'uta-2025']} />
+      <Footer businessLocation={TCU_2025.businessLocation} />
     </div>
   );
 }

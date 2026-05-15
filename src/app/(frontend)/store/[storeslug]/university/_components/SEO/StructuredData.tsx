@@ -14,7 +14,7 @@ export function StructuredData({ config }: StructuredDataProps) {
         type="Store"
         id={config.structuredData.businessUrl}
         name={config.structuredData.businessName}
-        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special prices. Partnership with Texas Southern University."
+        description="Exclusive KAWAI piano sale event at Texas Christian University featuring digital and acoustic pianos at special prices."
         url={config.structuredData.businessUrl}
         telephone={config.structuredData.businessPhone}
         address={{
@@ -31,19 +31,19 @@ export function StructuredData({ config }: StructuredDataProps) {
         images={config.structuredData.images}
         sameAs={[
           "https://www.kawai-global.com",
-          "https://www.tsu.edu",
+          "https://www.tcu.edu",
         ]}
         openingHours={[
           {
             opens: "10:00",
-            closes: "19:00",
+            closes: "18:00",
             dayOfWeek: [
-              "Wednesday",
               "Thursday",
               "Friday",
+              "Saturday",
             ],
-            validFrom: "2025-12-04",
-            validThrough: "2025-12-06",
+            validFrom: "2026-05-28",
+            validThrough: "2026-05-30",
           },
           {
             opens: "12:00",
@@ -51,8 +51,8 @@ export function StructuredData({ config }: StructuredDataProps) {
             dayOfWeek: [
               "Sunday",
             ],
-            validFrom: "2025-12-07",
-            validThrough: "2025-12-07",
+            validFrom: "2026-05-31",
+            validThrough: "2026-05-31",
           },
         ]}
         rating={{
@@ -68,17 +68,17 @@ export function StructuredData({ config }: StructuredDataProps) {
             },
             itemOffered: {
               name: "KAWAI Piano Sales",
-              description: "Digital and acoustic pianos including upright and grand pianos with special Houston pricing.",
+              description: "Digital and acoustic pianos including upright and grand pianos with special TCU event pricing.",
             },
           },
         ]}
         areaServed={[
           {
             geoMidpoint: {
-              latitude: "32.7767",
-              longitude: "-96.7970",
+              latitude: "32.7096",
+              longitude: "-97.3634",
             },
-            geoRadius: "50000", // 50km radius covering Greater Houston Area
+            geoRadius: "50000", // 50km radius covering Greater Fort Worth / DFW Area
           },
         ]}
       />
@@ -87,7 +87,7 @@ export function StructuredData({ config }: StructuredDataProps) {
         name={config.eventName}
         startDate={config.eventStartDate}
         endDate={config.eventEndDate}
-        description="Exclusive KAWAI piano sale event in Houston featuring digital and acoustic pianos at special reduced prices. Partnership with Texas Southern University offering savings up to $6,000."
+        description="Exclusive KAWAI piano sale event at Texas Christian University in Fort Worth featuring digital and acoustic pianos at special reduced prices. TCU partnership offering savings up to $6,000."
         location={{
           name: config.structuredData.eventLocationName,
           address: {
@@ -115,8 +115,8 @@ export function StructuredData({ config }: StructuredDataProps) {
           sameAs: "https://www.kawai-global.com",
         }}
         organizer={{
-          name: "Texas Southern University Music Department",
-          sameAs: "https://www.tsu.edu",
+          name: "Texas Christian University Music Department",
+          sameAs: "https://www.tcu.edu",
         }}
         eventStatus="https://schema.org/EventScheduled"
         eventAttendanceMode="https://schema.org/OfflineEventAttendanceMode"

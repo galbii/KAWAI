@@ -100,13 +100,13 @@ export default function HoustonEventInfoDialog({ isOpen, onClose }: HoustonEvent
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">TSU</span>
+                <span className="text-white font-bold text-xs">TCU</span>
               </div>
               <div>
                 <h3 className="font-semibold text-amber-800">Exclusive Houston Showcase</h3>
                 <p className="text-sm text-amber-700">
-                  December 4-7, 2025 • TSU Partnership Event<br />
-                  <span className="text-xs">3100 Cleburne St, Houston TX 77004<br />C.S. Lane Home Economics Center</span>
+                  May 28–31, 2026 • TCU Partnership Event<br />
+                  <span className="text-xs">2900 W Lowden St, Fort Worth TX 76109<br />Boschini Music Center – TCU Campus</span>
                 </p>
               </div>
             </div>

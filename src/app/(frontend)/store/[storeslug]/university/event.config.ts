@@ -208,19 +208,19 @@ export interface UniversityEventConfig {
   }
 }
 
-// ─── TSU 2025 Config ──────────────────────────────────────────────────────────
+// ─── TCU 2026 Config ──────────────────────────────────────────────────────────
 
-export const TSU_2025: UniversityEventConfig = {
-  eventName: 'TSU Piano Sale',
-  partnerName: 'Texas Southern University',
-  partnerShortName: 'TSU',
+export const TCU_2025: UniversityEventConfig = {
+  eventName: 'TCU Piano Sale',
+  partnerName: 'Texas Christian University',
+  partnerShortName: 'TCU',
   partnerLogoUrl:
     'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/logo_-texas-christian-university-horned-frogs-tcu-frog.webp',
   kawaiLogoUrl: '/images/Kawai (Red)(2).png',
 
-  eventStartDate: '2025-12-04T10:00:00',
-  eventEndDate: '2025-12-07T17:00:00',
-  eventDateDisplay: 'December 4 – 7, 2025',
+  eventStartDate: '2026-05-28T10:00:00',
+  eventEndDate: '2026-05-31T17:00:00',
+  eventDateDisplay: 'May 28 – May 31, 2026',
 
   hero: {
     videoSources: [
@@ -237,9 +237,9 @@ export const TSU_2025: UniversityEventConfig = {
       'Book your appointment for special event pricing on a wide variety of Kawai pianos — with free delivery and tuning.',
     supportText: 'Your purchase supports the TCU Music Department',
     features: [
-      { label: 'Digital Piano Rebates', description: 'Get up to $400 off' },
-      { label: 'Financing', description: '36 months\n0% APR' },
-      { label: 'Exclusive TCU Pricing', description: 'Up to 10% Off MSRP' },
+      { label: 'Digital Piano Rebates', description: 'All digital models' },
+      { label: '36-Month 0% Financing', description: 'Zero interest\n36 months' },
+      { label: 'TCU Invitation Pricing', description: '8–10% Off MSRP' },
     ],
     primaryCtaLabel: 'Book Appointment',
     secondaryCtaLabel: 'View Collection',
@@ -249,19 +249,19 @@ export const TSU_2025: UniversityEventConfig = {
   calendlyUrl: 'https://calendly.com/kawaipianogallery/uta-x-kawai-piano-sale-clone',
 
   eventLocation: {
-    venueName: 'C.S. Lane Home Economics Center at Texas Southern University',
-    address: '3100 Cleburne St',
-    city: 'Houston',
+    venueName: 'Orchestral Rehearsal Hall, Boschini Music Center – Texas Christian University',
+    address: '2900 W Lowden St',
+    city: 'Fort Worth',
     state: 'TX',
-    zip: '77004',
+    zip: '76109',
     phone: '(713) 904-0001',
     email: 'info@kawaipianosdallas.com',
     constantContactFormId: '3ba8c9c8-796d-41fd-987f-7a506d7e03be',
     hours: [
-      { day: 'Wednesday, Dec 4', time: '10:00 AM – 7:00 PM', highlight: false },
-      { day: 'Thursday, Dec 5', time: '10:00 AM – 7:00 PM', highlight: true },
-      { day: 'Friday, Dec 6', time: '10:00 AM – 7:00 PM', highlight: false },
-      { day: 'Sunday, Dec 7', time: '12:00 PM – 5:00 PM', highlight: false },
+      { day: 'Thursday, May 28', time: '10:00 AM – 6:00 PM', highlight: false },
+      { day: 'Friday, May 29', time: '10:00 AM – 6:00 PM', highlight: true },
+      { day: 'Saturday, May 30', time: '10:00 AM – 6:00 PM', highlight: false },
+      { day: 'Sunday, May 31', time: '12:00 PM – 5:00 PM', highlight: false },
     ],
   },
 
@@ -274,16 +274,16 @@ export const TSU_2025: UniversityEventConfig = {
     phone: '(713) 904-0001',
     email: 'info@kawaipianosdallas.com',
     hours: [
-      { day: 'Wednesday–Friday', time: '10:00 AM – 7:00 PM' },
+      { day: 'Thursday–Saturday', time: '10:00 AM – 6:00 PM' },
       { day: 'Sunday', time: '12:00 PM – 5:00 PM' },
     ],
   },
 
   schedule: [
-    { day: 'Wednesday, Dec 4', time: '10:00 AM - 7:00 PM', highlight: false },
-    { day: 'Thursday, Dec 5', time: '10:00 AM - 7:00 PM', highlight: true },
-    { day: 'Friday, Dec 6', time: '10:00 AM - 7:00 PM', highlight: false },
-    { day: 'Sunday, Dec 7', time: '12:00 PM - 5:00 PM', highlight: false },
+    { day: 'Thursday, May 28', time: '10:00 AM - 6:00 PM', highlight: false },
+    { day: 'Friday, May 29', time: '10:00 AM - 6:00 PM', highlight: true },
+    { day: 'Saturday, May 30', time: '10:00 AM - 6:00 PM', highlight: false },
+    { day: 'Sunday, May 31', time: '12:00 PM - 5:00 PM', highlight: false },
   ],
 
   offers: [
@@ -295,29 +295,29 @@ export const TSU_2025: UniversityEventConfig = {
 
   valueProps: [
     {
-      icon: 'graduation-cap',
-      title: 'University Pricing',
+      icon: 'piano',
+      title: 'Digital Piano Rebate Program',
       description:
-        'Exclusive pricing available through our partnership with Texas Southern University. TSU students, faculty, and staff receive additional discounts.',
+        'Exclusive rebate program applies to all digital piano models. Get money back on your purchase at this special event.',
     },
     {
-      icon: 'piano',
-      title: 'Premium Selection',
+      icon: 'graduation-cap',
+      title: '36-Month Zero-Interest Financing',
       description:
-        'Access to our full inventory of digital pianos, upright acoustics, and grand pianos — all faculty-approved for quality.',
+        '36 months at 0% APR — no interest, no hidden fees. Take home your Kawai piano today and pay over time with ease.',
     },
     {
       icon: 'shield',
-      title: 'Protection & Support',
+      title: 'Exclusive TCU Invitation Pricing',
       description:
-        'Every piano includes comprehensive warranty coverage, free delivery, and lifetime tuning support from our certified technicians.',
+        'TCU invitation pricing delivers 8–10% off MSRP on select instruments — available exclusively at this partnered event.',
     },
   ],
   valuePropsPhone: '(713) 904-0001',
-  valuePropsNote: 'Limited Houston appointment slots – TSU priority access',
+  valuePropsNote: 'Limited appointment slots – TCU priority access',
 
   authorityQuote: {
-    text: 'Our partnership with Kawai ensures that our students and the Houston community have access to exceptional piano quality at prices that make musical education accessible to everyone.',
+    text: 'Our partnership with Kawai ensures that our students and the Fort Worth community have access to exceptional piano quality at prices that make musical education accessible to everyone.',
     author: 'Dr. Marcus Williams',
     role: 'Chair, Music Department',
   },
@@ -329,8 +329,8 @@ export const TSU_2025: UniversityEventConfig = {
 
   stats: [
     { value: '847', label: 'Happy Families' },
-    { value: '200+', label: 'TSU Students Served' },
-    { value: '15+', label: 'Years Serving Houston' },
+    { value: '200+', label: 'TCU Students Served' },
+    { value: '15+', label: 'Years Serving DFW' },
     { value: '48', label: 'Pianos Remaining' },
   ],
 
@@ -410,12 +410,12 @@ export const TSU_2025: UniversityEventConfig = {
     {
       question: 'Where can I find piano sales in Houston?',
       answer:
-        'Our KAWAI piano sales Houston event at our Piano Gallery offers the best selection of digital and acoustic pianos in the Greater Houston Area. We\'re Houston\'s trusted Piano Gallery with over 5 years of partnership with TSU.',
+        'Our KAWAI piano sales Houston event at our Piano Gallery offers the best selection of digital and acoustic pianos in the Greater Houston Area. We\'re Houston\'s trusted Piano Gallery with over 5 years of partnership with TCU.',
     },
     {
       question: 'Do you have used pianos for sale in Houston?',
       answer:
-        'Yes! Our Houston piano sale event features both new and carefully selected used pianos Houston families love. All used pianos are inspected by TSU music faculty and come with warranties. Prices start at $949 for digital pianos.',
+        'Yes! Our Houston piano sale event features both new and carefully selected used pianos Houston families love. All used pianos are inspected by TCU music faculty and come with warranties. Prices start at $949 for digital pianos.',
     },
     {
       question: 'What piano deals are available in Houston during the event?',
@@ -425,7 +425,7 @@ export const TSU_2025: UniversityEventConfig = {
     {
       question: 'Do you offer piano lessons in Houston area?',
       answer:
-        'While our primary focus is piano sales Houston, we can connect you with qualified piano teachers in the Houston area through our TSU Music Department partnership. Many of our piano customers also take advantage of piano lessons Houston has to offer.',
+        'While our primary focus is piano sales Houston, we can connect you with qualified piano teachers in the Houston area through our TCU Music Department partnership. Many of our piano customers also take advantage of piano lessons Houston has to offer.',
     },
     {
       question: 'Where is your Houston piano store located?',
@@ -445,12 +445,12 @@ export const TSU_2025: UniversityEventConfig = {
     {
       question: 'What makes your Houston piano sale different from other galleries?',
       answer:
-        'Our partnership with Texas Southern University\'s Music Department ensures every piano meets institutional quality standards. Unlike other Piano Galleries Houston offers, our instruments are faculty-approved and your purchase directly supports TSU\'s music programs through our ongoing partnership.',
+        'Our partnership with Texas Christian University\'s Music Department ensures every piano meets institutional quality standards. Unlike other Piano Galleries Houston offers, our instruments are faculty-approved and your purchase directly supports TCU\'s music programs through our ongoing partnership.',
     },
     {
       question: 'How do I get priority booking for the Houston event?',
       answer:
-        'TSU students, faculty, and staff receive automatic priority booking privileges. With only 15 VIP consultation slots available for Day 1 early access, we recommend booking within 48 hours to guarantee your preferred time slot and first selection of our premium Houston inventory.',
+        'TCU students, faculty, and staff receive automatic priority booking privileges. With only 15 VIP consultation slots available for Day 1 early access, we recommend booking within 48 hours to guarantee your preferred time slot and first selection of our premium Houston inventory.',
     },
     {
       question: 'How do I secure priority access to the best piano deals?',
@@ -494,15 +494,15 @@ export const TSU_2025: UniversityEventConfig = {
 
   tracking: {
     pageName: 'kawai_piano_sale_landing',
-    posthogEventName: 'tsu_piano_booking',
-    posthogModalEventName: 'tsu_piano_booking_modal',
-    constantContactList: 'TSU2025',
-    constantContactListDescription: 'TSU Piano Sale 2025 - Event consultation bookings',
-    utmCampaign: 'tsu-piano-sale-2025',
+    posthogEventName: 'tcu_piano_booking',
+    posthogModalEventName: 'tcu_piano_booking_modal',
+    constantContactList: 'TCU2026',
+    constantContactListDescription: 'TCU Piano Sale 2026 - Event consultation bookings',
+    utmCampaign: 'tcu-piano-sale-2026',
     utmSource: 'kawai-landing-page',
     metaPixel: {
-      contentName: 'TSU Piano Sale Consultation',
-      contentNameModal: 'TSU Piano Sale Consultation (Modal)',
+      contentName: 'TCU Piano Sale 2026 Consultation',
+      contentNameModal: 'TCU Piano Sale 2026 Consultation (Modal)',
       contentCategory: 'appointment_booking',
       value: 1000,
       currency: 'USD',
@@ -510,9 +510,9 @@ export const TSU_2025: UniversityEventConfig = {
   },
 
   seo: {
-    title: 'Piano Sales Houston | KAWAI Piano Deals & Used Pianos | TSU Event Dec 2025',
+    title: 'Piano Sale Fort Worth | KAWAI Piano Deals | TCU Event May 2026',
     description:
-      'Houston piano sales event featuring KAWAI digital & acoustic pianos. Save up to $6,000 on new & used pianos. Piano deals Houston - TSU partnership Dec 4-7, 2025 at C.S. Lane Home Economics Center. Free delivery!',
+      'Fort Worth piano sale at Texas Christian University featuring KAWAI digital & acoustic pianos. Save up to $6,000. TCU partnership May 28–31, 2026 at Boschini Music Center. Free delivery!',
     ogImage: '/images/optimized/misc/kawai-piano-hands_1200.webp',
     priceRange: '$949-$18,995',
     ratingValue: 4.9,
@@ -520,7 +520,7 @@ export const TSU_2025: UniversityEventConfig = {
   },
 
   structuredData: {
-    businessName: 'KAWAI Piano Sales Houston – TSU Partnership Event',
+    businessName: 'KAWAI Piano Sales – TCU Partnership Event',
     businessUrl: 'https://www.kawaius.com',
     businessAddress: {
       street: '601 W. Plano Parkway, Suite 153',
@@ -529,18 +529,18 @@ export const TSU_2025: UniversityEventConfig = {
       zip: '75075',
     },
     businessPhone: '+1-713-904-0001',
-    coordinates: { lat: 33.0198, lng: -96.6989 },
+    coordinates: { lat: 32.7096, lng: -97.3634 },
     images: [
       '/images/optimized/misc/kawai-piano-hands_1200.webp',
       '/images/optimized/pianos/GL10_1200.webp',
       '/images/optimized/pianos/K-200_EP_styling_1200.webp',
     ],
-    eventLocationName: 'C.S. Lane Home Economics Center at Texas Southern University',
+    eventLocationName: 'Orchestral Rehearsal Hall, Boschini Music Center – Texas Christian University',
     eventAddress: {
-      street: '3100 Cleburne St',
-      city: 'Houston',
+      street: '2900 W Lowden St',
+      city: 'Fort Worth',
       state: 'TX',
-      zip: '77004',
+      zip: '76109',
     },
     startPrice: '949',
   },

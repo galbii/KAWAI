@@ -45,10 +45,10 @@ export default function ValuePropositionSection({ valueProps, phone, note }: Val
             Why Choose This Event
           </p>
           <h2 className="font-heading italic text-2xl sm:text-3xl lg:text-4xl font-black mb-4 leading-tight" style={{ color: '#1a0d2e' }}>
-            Special University Pricing
+            Exclusive TCU Event Benefits
           </h2>
           <p className="text-lg sm:text-xl max-w-2xl mx-auto" style={{ color: '#3a2060' }}>
-            Exclusive savings for the TSU community with flexible financing options
+            Rebates, zero-interest financing, and invitation pricing — only at this event
           </p>
         </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import PianoConsultationDialog from '../PianoConsultationDialog';
-import { TSU_2025 } from '../../event.config';
+import { TCU_2025 } from '../../event.config';
 
 export default function ContactSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,9 +46,9 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold text-gray-dark mb-1">Event Address</h4>
                   <p className="text-gray-medium leading-relaxed">
-                    3100 Cleburne St<br />
-                    Houston, TX 77004<br />
-                    <span className="text-sm text-primary font-medium">C.S. Lane Home Economics Center - TSU</span>
+                    2900 W Lowden St<br />
+                    Fort Worth, TX 76109<br />
+                    <span className="text-sm text-primary font-medium">Boschini Music Center – TCU Campus</span>
                   </p>
                 </div>
               </div>
@@ -87,8 +87,8 @@ export default function ContactSection() {
                 <div>
                   <h4 className="font-semibold text-gray-dark mb-1">Event Hours</h4>
                   <p className="text-gray-medium text-sm">
-                    Wed-Fri, Dec 4-6: 10:00 AM - 7:00 PM<br />
-                    Sunday, Dec 7: 12:00 PM - 5:00 PM
+                    Thu–Sat, May 28–30: 10:00 AM – 6:00 PM<br />
+                    Sunday, May 31: 12:00 PM – 5:00 PM
                   </p>
                 </div>
               </div>
@@ -96,7 +96,7 @@ export default function ContactSection() {
             
             <div className="mt-8 space-y-3">
               <button
-                onClick={() => window.open('https://maps.google.com/maps?q=3100+Cleburne+St,+Houston,+TX+77004', '_blank')}
+                onClick={() => window.open('https://maps.google.com/maps?q=2900+W+Lowden+St,+Fort+Worth,+TX+76109', '_blank')}
                 className="w-full btn-primary text-white font-semibold py-3 px-6 rounded-xl shadow-lg"
               >
                 Get Directions
@@ -131,7 +131,7 @@ export default function ContactSection() {
                   <h4 className="text-xl font-bold text-gray-dark mb-2">Interactive Map</h4>
                   <p className="text-gray-medium mb-6">Click to view detailed directions<br />and parking information</p>
                   <button
-                    onClick={() => window.open('https://maps.google.com/maps?q=3100+Cleburne+St,+Houston,+TX+77004', '_blank')}
+                    onClick={() => window.open('https://maps.google.com/maps?q=2900+W+Lowden+St,+Fort+Worth,+TX+76109', '_blank')}
                     className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
                   >
                     Open Map
@@ -163,8 +163,8 @@ export default function ContactSection() {
       <PianoConsultationDialog
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        calendlyUrl={TSU_2025.calendlyUrl}
-        eventName={TSU_2025.eventName}
+        calendlyUrl={TCU_2025.calendlyUrl}
+        eventName={TCU_2025.eventName}
         tags={['university-sale', 'uta-2025']}
       />
     </section>

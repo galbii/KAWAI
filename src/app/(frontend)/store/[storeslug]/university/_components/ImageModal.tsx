@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import PdfViewer from './PdfViewer';
+import dynamic from 'next/dynamic';
+
+const PdfViewer = dynamic(() => import('./PdfViewer'), { ssr: false });
 
 interface ImageModalProps {
   isOpen: boolean;
