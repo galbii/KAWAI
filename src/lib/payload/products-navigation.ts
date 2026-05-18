@@ -260,7 +260,10 @@ export async function getProductTypesWithProducts(options?: {
     const result = await payload.find({
       collection: 'products',
       where: {
-        status: { equals: 'active' }, // Only active products
+        and: [
+          { status: { equals: 'active' } },
+          { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+        ],
       },
       select: {
         // Core identification
@@ -434,8 +437,11 @@ export async function getProductsByTypeForNav(
     const result = await payload.find({
       collection: 'products',
       where: {
-        status: { equals: 'active' },
-        category: { equals: normalizedCategory }
+        and: [
+          { status: { equals: 'active' } },
+          { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+          { category: { equals: normalizedCategory } },
+        ],
       },
       select: {
         id: true,
@@ -621,7 +627,7 @@ export async function getAccessoriesForNav(limit = 8): Promise<NavAccessory[]> {
     const payload = await getPayload({ config })
     const result = await payload.find({
       collection: 'products',
-      where: { and: [{ status: { equals: 'active' } }, { type: { equals: 'accessory' } }] },
+      where: { and: [{ status: { equals: 'active' } }, { type: { equals: 'accessory' } }, { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } }] },
       select: { model: true, name: true, slug: true, imageUrl: true, accessoryType: true },
       depth: 0,
       limit,

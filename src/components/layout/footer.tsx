@@ -2,6 +2,7 @@
 
 import type React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube, Linkedin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useActionState } from 'react'
@@ -77,6 +78,8 @@ interface FooterProps {
 }
 
 export function Footer({ locationContactData, isSignaturePage = false }: FooterProps) {
+  const pathname = usePathname()
+  const isUniversityPage = pathname.includes('/university')
   const [newsletterState, newsletterAction, newsletterPending] = useActionState<NewsletterSignupResult | null, FormData>(
     submitNewsletterSignup,
     null,
@@ -132,7 +135,7 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
             {/* Contact Info - Only show when location data is available */}
             {!isSignaturePage && locationContactData && (
               <div className="space-y-3 flex flex-col items-center">
-                {locationContactData.phone && (
+                {locationContactData.phone && !isUniversityPage && (
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-kawai-red" />
                     <span>{locationContactData.phone}</span>

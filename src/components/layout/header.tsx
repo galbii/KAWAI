@@ -474,6 +474,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const lastScrollY = useRef(0)
   const lastScrollTime = useRef(0)
   const isScrolledRef = useRef(false)
+  const isAutoHiddenRef = useRef(false)
 
   // Derive Shigeru collection thumbnail — same source as desktop BannerOnlyView
   const shigeruCol = (productsNavData?.allCollections ?? productsNavData?.collections ?? [])
@@ -541,17 +542,12 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Auto-hide: show nav on mount, then hide after 2s (only when autoMinimize is enabled)
-  // DISABLED — bottom bar should always be visible
+  // When autoMinimize is disabled, always show the bottom nav.
   useEffect(() => {
-    setIsAutoHidden(false)
-    // if (!autoMinimize) return
-    // autoHideTimeoutRef.current = setTimeout(() => {
-    //   setIsAutoHidden(true)
-    // }, 2000)
-    // return () => {
-    //   if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    // }
+    if (!autoMinimize) {
+      isAutoHiddenRef.current = false
+      setIsAutoHidden(false)
+    }
   }, [autoMinimize])
 
   // Initialize scroll state based on initial scroll position
@@ -668,6 +664,26 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
       lastScrollTime.current = Date.now()
     }
 
+    // Auto-hide bottom nav based on scroll direction (desktop only, when autoMinimize is on).
+    // At the top: always show. Scrolling down: hide. Scrolling up: show.
+    if (autoMinimize && !isMenuOpen) {
+      if (latest <= 50) {
+        // Back at top — always show
+        if (isAutoHiddenRef.current) {
+          isAutoHiddenRef.current = false
+          setIsAutoHidden(false)
+        }
+      } else if (movement > 5 && !isAutoHiddenRef.current) {
+        // Intentional downward scroll — hide nav
+        isAutoHiddenRef.current = true
+        setIsAutoHidden(true)
+      } else if (movement < -5 && isAutoHiddenRef.current) {
+        // Intentional upward scroll — reveal nav
+        isAutoHiddenRef.current = false
+        setIsAutoHidden(false)
+      }
+    }
+
     // Close menus only on intentional scrolling (120px+ movement) to prevent
     // trackpad jitter and accidental closes when moving mouse toward a mega menu.
     if (Math.abs(movement) > 120) {
@@ -714,13 +730,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     menuTimeoutRef.current = setTimeout(() => {
       setActiveMenu(null)
     }, 500)
-    // DISABLED — bottom bar should always be visible
-    // if (!autoMinimize) return
-    // if (autoHideTimeoutRef.current) clearTimeout(autoHideTimeoutRef.current)
-    // autoHideTimeoutRef.current = setTimeout(() => {
-    //   setIsAutoHidden(true)
-    // }, 2000)
-  }, [autoMinimize])
+  }, [])
 
   // Desktop dropdown handlers (for generic nav items with dropdowns)
   const handleDropdownOpen = useCallback((itemLabel: string) => {
@@ -797,14 +807,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   }, [])
 
   const handleBottomNavMouseLeave = useCallback(() => {
-    // DISABLED — bottom bar should always be visible
-    // if (!autoMinimize) return
-    // if (autoHideTimeoutRef.current) {
-    //   clearTimeout(autoHideTimeoutRef.current)
-    // }
-    // autoHideTimeoutRef.current = setTimeout(() => {
-    //   setIsAutoHidden(true)
-    // }, 2000)
+    // Nav was revealed on hover — re-hide only if the user has scrolled down
+    // (i.e., the scroll handler would have hidden it). At the top, leave it visible.
+    if (autoMinimize && lastScrollY.current > 50) {
+      autoHideTimeoutRef.current = setTimeout(() => {
+        isAutoHiddenRef.current = true
+        setIsAutoHidden(true)
+      }, 800)
+    }
   }, [autoMinimize])
 
   // Header hover handlers for bottom navigation reveal

@@ -275,7 +275,13 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
   const handleFilterChange = (key: FilterKey) => {
     setActiveFilter(key);
     requestAnimationFrame(() => {
-      stickyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!stickyRef.current) return;
+      const el = stickyRef.current;
+      const rect = el.getBoundingClientRect();
+      // getComputedStyle resolves the sticky `top` to actual px at this moment,
+      // correctly accounting for whether the nav bar is visible or hidden.
+      const stickyTop = parseFloat(getComputedStyle(el).top) || 70;
+      window.scrollTo({ top: window.scrollY + rect.top - stickyTop, behavior: 'smooth' });
     });
   };
 
@@ -379,7 +385,6 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
         )}
         style={{
           top: "var(--header-bottom, 70px)",
-          scrollMarginTop: "var(--header-bottom, 70px)",
           background: "rgba(250,250,254,0.95)",
           borderColor: "rgba(77,25,121,0.12)",
         }}
@@ -529,7 +534,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
       </div>
 
       {/* ── Product grid ───────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 pt-8 md:pt-10 pb-20 md:pb-28">
+      <div className="max-w-7xl mx-auto px-6 pt-4 md:pt-6 pb-20 md:pb-28">
         <AnimatePresence mode="wait">
           {filtered.length === 0 ? (
             <motion.div
@@ -567,7 +572,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
               <motion.p
                 variants={fadeUp}
                 transition={{ duration: 0.4 }}
-                className="text-[10px] tracking-[0.25em] uppercase mb-6 font-[family-name:var(--font-brand-sans)]"
+                className="text-[10px] tracking-[0.25em] uppercase mb-4 font-[family-name:var(--font-brand-sans)]"
                 style={{ color: "rgba(77,25,121,0.4)" }}
               >
                 {filtered.length} instrument{filtered.length !== 1 ? "s" : ""}

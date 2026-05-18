@@ -77,10 +77,10 @@ function Thumbnail({
       {/* Thumbnail image */}
       <div
         className={cn(
-          'relative w-[88px] h-[50px] rounded overflow-hidden shrink-0 transition-all duration-300',
+          'relative w-[200px] h-[113px] rounded overflow-hidden shrink-0 transition-all duration-300',
           isActive
-            ? 'ring-2 ring-kawai-red scale-[1.04] shadow-[0_0_16px_rgba(225,25,34,0.3)]'
-            : 'opacity-40 hover:opacity-70',
+            ? 'ring-2 ring-kawai-red scale-[1.03] shadow-[0_0_24px_rgba(225,25,34,0.45)]'
+            : 'opacity-40 hover:opacity-80',
         )}
       >
         <Image
@@ -88,7 +88,7 @@ function Thumbnail({
           alt={video.title}
           fill
           className="object-cover"
-          sizes="88px"
+          sizes="200px"
         />
         {!isActive && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/5 transition-colors duration-200">
@@ -101,7 +101,7 @@ function Thumbnail({
 
       {/* Title for active item — desktop only */}
       {isActive && (
-        <span className="hidden xl:block text-xs text-white/65 leading-snug max-w-[110px] line-clamp-2 font-[family-name:var(--font-brand-sans)]">
+        <span className="hidden xl:block text-xs text-white/70 leading-snug max-w-[160px] line-clamp-3 font-[family-name:var(--font-brand-sans)]">
           {video.title}
         </span>
       )}
@@ -127,6 +127,7 @@ export function ArtistI2LRenderer({
 }: ArtistI2LRendererProps) {
   const [idx, setIdx] = useState(0)
   const [thumbsExpanded, setThumbsExpanded] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const total = resolvedVideos.length
   const safeIdx = Math.min(idx, total - 1)
@@ -149,8 +150,18 @@ export function ArtistI2LRenderer({
 
   const idxLabel = String(safeIdx + 1).padStart(2, '0')
   const totalLabel = String(total).padStart(2, '0')
-  const visibleCount = thumbsExpanded ? total : initialVisible
-  const hiddenCount = total - initialVisible
+
+  const q = searchQuery.trim().toLowerCase()
+  const filteredVideos = q
+    ? resolvedVideos.filter(
+        v =>
+          v.title.toLowerCase().includes(q) ||
+          (v.artistName?.toLowerCase().includes(q) ?? false),
+      )
+    : resolvedVideos
+
+  const visibleCount = thumbsExpanded ? filteredVideos.length : Math.min(initialVisible, filteredVideos.length)
+  const hiddenCount = filteredVideos.length - initialVisible
 
   return (
     <section
@@ -181,12 +192,22 @@ export function ArtistI2LRenderer({
         </motion.div>
       </AnimatePresence>
 
-      {/* ── Diagonal gradient overlay ─────────────────────────────────── */}
+      {/* ── Gradient overlays ─────────────────────────────────────────── */}
+      {/* Strong bottom vignette — this is where the text lives */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
           background:
-            'linear-gradient(135deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.28) 52%, rgba(0,0,0,0.72) 100%)',
+            'linear-gradient(to top, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.75) 30%, rgba(0,0,0,0.25) 65%, rgba(0,0,0,0.10) 100%)',
+        }}
+        aria-hidden="true"
+      />
+      {/* Left-side vignette so left-column text always sits on dark */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(to right, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.40) 45%, rgba(0,0,0,0.0) 100%)',
         }}
         aria-hidden="true"
       />
@@ -202,16 +223,133 @@ export function ArtistI2LRenderer({
       <CornerAccent className="top-0 left-0" />
       <CornerAccent className="bottom-0 right-0 rotate-180" />
 
+      {/* ── Full-height glass panel — right side ─────────────────────── */}
+      {total > 1 && (
+        <div
+          className="hidden md:flex absolute top-0 right-0 bottom-0 z-20 flex-col w-[280px] xl:w-[320px]"
+          style={{
+            background: 'rgba(10,8,6,0.52)',
+            backdropFilter: 'blur(28px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(28px) saturate(150%)',
+            borderLeft: '1px solid rgba(255,255,255,0.09)',
+            boxShadow: '-8px 0 40px rgba(0,0,0,0.45), inset 1px 0 0 rgba(255,255,255,0.04)',
+          }}
+        >
+          {/* Sticky header: label + counter + search */}
+          <div
+            className="flex-shrink-0 px-5 pt-5 pb-4"
+            style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.20)' }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] tracking-[0.28em] uppercase text-kawai-red font-semibold font-[family-name:var(--font-brand-sans)]">
+                Video Library
+              </p>
+              <span
+                className="text-white/35 tabular-nums font-[family-name:var(--font-brand-sans)]"
+                style={{ fontSize: '11px', letterSpacing: '0.08em' }}
+              >
+                <span className="text-white/65">{idxLabel}</span>
+                <span className="mx-1 text-white/20">/</span>
+                {totalLabel}
+              </span>
+            </div>
+
+            {/* Search input */}
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35 pointer-events-none"
+                fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path strokeLinecap="round" d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search videos or artists…"
+                className="w-full bg-white/8 border border-white/12 text-white placeholder-white/28 text-[11px] pl-8 pr-8 py-2.5 rounded-lg focus:outline-none focus:border-kawai-red/50 focus:bg-white/12 transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors focus-visible:outline-none"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Scrollable video list */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 min-h-0">
+            {filteredVideos.length === 0 ? (
+              <p className="text-[11px] text-white/30 py-6 text-center font-[family-name:var(--font-brand-sans)]">
+                No results
+              </p>
+            ) : (
+              filteredVideos.map((video) => {
+                const globalIdx = resolvedVideos.indexOf(video)
+                return (
+                  <Thumbnail
+                    key={video.id}
+                    video={video}
+                    isActive={globalIdx === safeIdx}
+                    onClick={() => setIdx(globalIdx)}
+                  />
+                )
+              })
+            )}
+          </div>
+
+          {/* Nav arrows footer */}
+          <div
+            className="flex-shrink-0 flex items-center justify-between px-5 py-4"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.20)' }}
+          >
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous video"
+              className="w-11 h-10 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white hover:bg-white/8 transition-all duration-200 focus-visible:outline-none focus-visible:border-kawai-red rounded"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <span className="text-[9px] text-white/22 tracking-widest uppercase font-[family-name:var(--font-brand-sans)]">
+              Recent Work
+            </span>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next video"
+              className="w-11 h-10 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white hover:bg-white/8 transition-all duration-200 focus-visible:outline-none focus-visible:border-kawai-red rounded"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Bottom content panel ──────────────────────────────────────── */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="max-w-7xl mx-auto px-8 md:px-12 pb-12">
-          <div className="flex items-end justify-between gap-8 md:gap-14">
+        <div
+          className="px-8 md:px-12 pb-12"
+          style={{ paddingRight: total > 1 ? 'calc(280px + 3rem)' : undefined }}
+        >
+          <div className="flex items-end">
 
             {/* ── Left: section label + heading + animated slide info ─── */}
             <div className="flex-1 min-w-0 max-w-2xl">
 
               {/* Section label */}
-              <p className="text-xs tracking-[0.28em] uppercase text-kawai-red mb-4 font-semibold font-[family-name:var(--font-brand-sans)]">
+              <p
+                className="text-xs tracking-[0.28em] uppercase text-kawai-red mb-4 font-semibold font-[family-name:var(--font-brand-sans)]"
+                style={{ textShadow: '0 1px 12px rgba(0,0,0,0.9)' }}
+              >
                 {sectionLabel ?? 'Instrumental To Life'}
               </p>
 
@@ -251,7 +389,10 @@ export function ArtistI2LRenderer({
                           />
                         </div>
                       )}
-                      <span className="text-xs tracking-[0.22em] uppercase text-white/70 font-medium font-[family-name:var(--font-brand-sans)]">
+                      <span
+                        className="text-xs tracking-[0.22em] uppercase text-white/80 font-semibold font-[family-name:var(--font-brand-sans)]"
+                        style={{ textShadow: '0 1px 8px rgba(0,0,0,0.95)' }}
+                      >
                         {current.artistName}
                       </span>
                     </motion.div>
@@ -261,7 +402,8 @@ export function ArtistI2LRenderer({
                   {current.isManual && current.eyebrowText && (
                     <motion.p
                       variants={itemVariants}
-                      className="text-xs tracking-[0.22em] uppercase text-white/70 font-medium mb-3 font-[family-name:var(--font-brand-sans)]"
+                      className="text-xs tracking-[0.22em] uppercase text-white/80 font-semibold mb-3 font-[family-name:var(--font-brand-sans)]"
+                      style={{ textShadow: '0 1px 8px rgba(0,0,0,0.95)' }}
                     >
                       {current.eyebrowText}
                     </motion.p>
@@ -271,7 +413,12 @@ export function ArtistI2LRenderer({
                   <motion.p
                     variants={itemVariants}
                     className="text-3xl md:text-4xl xl:text-5xl text-white mb-3 leading-tight"
-                    style={{ fontFamily: 'var(--font-brand-luxury)', fontStyle: 'italic', fontWeight: 600 }}
+                    style={{
+                      fontFamily: 'var(--font-brand-luxury)',
+                      fontStyle: 'italic',
+                      fontWeight: 600,
+                      textShadow: '0 2px 24px rgba(0,0,0,0.9), 0 1px 6px rgba(0,0,0,0.95)',
+                    }}
                   >
                     {current.title}
                   </motion.p>
@@ -280,20 +427,35 @@ export function ArtistI2LRenderer({
                   {current.description && (
                     <motion.p
                       variants={itemVariants}
-                      className="text-base text-white/65 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                      className="text-base text-white/80 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                      style={{ textShadow: '0 1px 12px rgba(0,0,0,0.95)' }}
                     >
                       {current.description}
                     </motion.p>
                   )}
 
-                  {/* CTA */}
-                  <motion.div variants={itemVariants} className={cn(!current.description && 'mt-5')}>
+                  {/* CTAs */}
+                  <motion.div variants={itemVariants} className={cn('flex flex-wrap items-center gap-3', !current.description && 'mt-5')}>
+                    {/* Watch video — always shown */}
+                    <Link
+                      href={`https://www.youtube.com/watch?v=${current.youtubeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 px-9 py-4 text-xs font-semibold uppercase tracking-[0.18em] bg-white text-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+                    >
+                      Watch Video
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </Link>
+
+                    {/* Secondary CTA — manual custom or artist link */}
                     {current.isManual && current.ctaText && current.ctaUrl ? (
                       <Link
                         href={current.ctaUrl}
                         target={current.ctaOpenInNewTab ? '_blank' : undefined}
                         rel={current.ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
-                        className="inline-flex items-center gap-3 px-9 py-4 text-xs font-semibold uppercase tracking-[0.18em] bg-white text-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+                        className="inline-flex items-center gap-3 px-9 py-4 text-xs font-semibold uppercase tracking-[0.18em] border border-white/40 text-white hover:border-white hover:bg-white/10 transition-all duration-300 font-[family-name:var(--font-brand-sans)]"
                       >
                         {current.ctaText}
                         <ArrowRight className="h-4 w-4" />
@@ -301,7 +463,7 @@ export function ArtistI2LRenderer({
                     ) : !current.isManual && current.artistSlug ? (
                       <Link
                         href={`/artists/${current.artistSlug}`}
-                        className="inline-flex items-center gap-3 px-9 py-4 text-xs font-semibold uppercase tracking-[0.18em] bg-white text-kawai-black hover:bg-kawai-pearl transition-colors duration-300 font-[family-name:var(--font-brand-sans)]"
+                        className="inline-flex items-center gap-3 px-9 py-4 text-xs font-semibold uppercase tracking-[0.18em] border border-white/40 text-white hover:border-white hover:bg-white/10 transition-all duration-300 font-[family-name:var(--font-brand-sans)]"
                       >
                         View Artist
                         <ArrowRight className="h-4 w-4" />
@@ -312,80 +474,6 @@ export function ArtistI2LRenderer({
               </AnimatePresence>
             </div>
 
-            {/* ── Right: thumbnail strip + counter + nav ────────────── */}
-            {total > 1 && (
-              <div className="hidden md:flex flex-col items-end gap-4 flex-shrink-0">
-
-                {/* Counter */}
-                <div
-                  className="text-white/22 tabular-nums font-[family-name:var(--font-brand-sans)]"
-                  style={{ fontSize: '13px', letterSpacing: '0.1em' }}
-                >
-                  <span className="text-white/60">{idxLabel}</span>
-                  <span className="mx-2 text-white/20">/</span>
-                  {totalLabel}
-                </div>
-
-                {/* Thumbnail strip */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-2">
-                    {resolvedVideos.slice(0, visibleCount).map((video, i) => (
-                      <Thumbnail
-                        key={video.id}
-                        video={video}
-                        isActive={i === safeIdx}
-                        onClick={() => setIdx(i)}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Expand / collapse toggle */}
-                  {hiddenCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setThumbsExpanded(e => !e)}
-                      className="flex items-center gap-1.5 text-[9px] tracking-[0.22em] uppercase text-white/28 hover:text-white/55 transition-colors duration-200 font-[family-name:var(--font-brand-sans)] pt-0.5 focus-visible:outline-none"
-                    >
-                      {thumbsExpanded ? (
-                        <>
-                          <svg className="w-2.5 h-2.5 rotate-180" fill="none" viewBox="0 0 10 6" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M1 1l4 4 4-4" />
-                          </svg>
-                          Show Less
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 10 6" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M1 1l4 4 4-4" />
-                          </svg>
-                          +{hiddenCount} More
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Nav arrows */}
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={prev}
-                    aria-label="Previous video"
-                    className="w-12 h-12 border border-white/18 flex items-center justify-center text-white/45 hover:border-white/50 hover:text-white transition-all duration-200 focus-visible:outline-none focus-visible:border-kawai-red"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={next}
-                    aria-label="Next video"
-                    className="w-12 h-12 border border-white/18 flex items-center justify-center text-white/45 hover:border-white/50 hover:text-white transition-all duration-200 focus-visible:outline-none focus-visible:border-kawai-red"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ── Progress bars ─────────────────────────────────────────── */}

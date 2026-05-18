@@ -21,9 +21,14 @@ interface HeroSectionProps {
   kawaiLogoUrl: string
   eventDateDisplay: string
   onOpenConsultation: () => void
+  venueInfo: {
+    venue: string
+    parking: string
+    mapsUrl: string
+  }
 }
 
-export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, eventDateDisplay, onOpenConsultation }: HeroSectionProps) {
+export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, eventDateDisplay, onOpenConsultation, venueInfo }: HeroSectionProps) {
 
   const handleExploreCollectionClick = () => {
     const featuredDealsSection =
@@ -247,6 +252,39 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
             <p className="text-white/38 italic" style={{ fontSize: '13px' }}>
               {config.supportText}
             </p>
+
+            {/* ── Venue & directions strip ── */}
+            <a
+              href={venueInfo.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-3 w-full group"
+              style={{
+                borderTop: '1px solid rgba(255,255,255,0.15)',
+                paddingTop: '14px',
+                marginTop: '4px',
+                textDecoration: 'none',
+              }}
+            >
+              <svg className="w-4 h-4 flex-shrink-0 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity" style={{ color: 'white' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              <div>
+                <p className="text-white/75 leading-snug group-hover:text-white transition-colors" style={{ fontSize: '12px' }}>
+                  {venueInfo.venue}
+                </p>
+                <p className="text-white/45 mt-0.5 group-hover:text-white/65 transition-colors" style={{ fontSize: '11px' }}>
+                  Parking: {venueInfo.parking}
+                </p>
+                <span className="inline-flex items-center gap-1 mt-1 text-white/50 group-hover:text-white/80 transition-colors" style={{ fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                  Get Directions
+                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </span>
+              </div>
+            </a>
           </div>
         </div>
       </div>

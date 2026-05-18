@@ -37,9 +37,20 @@ export default function UniversityPage({ products }: UniversityPageProps) {
   });
 
   return (
-    <div className="min-h-screen w-full overflow-x-clip">
+    <div className="min-h-screen w-full">
       <StructuredData config={TCU_2025} />
-      <HeroSection config={TCU_2025.hero} partnerLogoUrl={TCU_2025.partnerLogoUrl} kawaiLogoUrl={TCU_2025.kawaiLogoUrl} eventDateDisplay={TCU_2025.eventDateDisplay} onOpenConsultation={openConsultation} />
+      <HeroSection
+        config={TCU_2025.hero}
+        partnerLogoUrl={TCU_2025.partnerLogoUrl}
+        kawaiLogoUrl={TCU_2025.kawaiLogoUrl}
+        eventDateDisplay={TCU_2025.eventDateDisplay}
+        onOpenConsultation={openConsultation}
+        venueInfo={{
+          venue: 'Orchestral Rehearsal Hall, Boschini Music Center — TCU Campus',
+          parking: 'Van Cliburn Concert Hall Parking Lot (2900 W Lowden St)',
+          mapsUrl: `https://maps.google.com?q=${encodeURIComponent('2900 W Lowden St, Fort Worth, TX 76109')}`,
+        }}
+      />
       <AboutEventSection partnerName={TCU_2025.partnerName} partnerShortName={TCU_2025.partnerShortName} onOpenConsultation={openConsultation} />
       <ValuePropositionSection valueProps={TCU_2025.valueProps} phone={TCU_2025.valuePropsPhone} note={TCU_2025.valuePropsNote} />
       <FeaturedDeals products={products} onOpenConsultation={openConsultation} />
