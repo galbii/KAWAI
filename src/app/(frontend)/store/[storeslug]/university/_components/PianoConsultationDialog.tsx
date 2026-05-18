@@ -375,7 +375,7 @@ export default function PianoConsultationDialog({
                   className="w-full flex items-center justify-between px-6 py-4 text-sm tracking-[0.15em] uppercase font-semibold transition-colors rounded-sm group relative overflow-hidden"
                   style={{ background: '#4D1979', color: '#FFFFFF' }}
                 >
-                  <span className="relative z-10">Continue to Book</span>
+                  <span className="relative z-10">Book Now</span>
                   <svg className="w-4 h-4 relative z-10 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
