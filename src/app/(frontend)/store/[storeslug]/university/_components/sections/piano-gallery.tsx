@@ -275,7 +275,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
   const handleFilterChange = (key: FilterKey) => {
     setActiveFilter(key);
     requestAnimationFrame(() => {
-      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      stickyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
 
@@ -379,6 +379,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
         )}
         style={{
           top: "var(--header-bottom, 70px)",
+          scrollMarginTop: "var(--header-bottom, 70px)",
           background: "rgba(250,250,254,0.95)",
           borderColor: "rgba(77,25,121,0.12)",
         }}

@@ -101,7 +101,7 @@ function Thumbnail({
 
       {/* Title for active item — desktop only */}
       {isActive && (
-        <span className="hidden xl:block text-[11px] text-white/55 leading-snug max-w-[110px] line-clamp-2 font-[family-name:var(--font-brand-sans)]">
+        <span className="hidden xl:block text-xs text-white/65 leading-snug max-w-[110px] line-clamp-2 font-[family-name:var(--font-brand-sans)]">
           {video.title}
         </span>
       )}
@@ -211,7 +211,7 @@ export function ArtistI2LRenderer({
             <div className="flex-1 min-w-0 max-w-2xl">
 
               {/* Section label */}
-              <p className="text-[10px] tracking-[0.28em] uppercase text-kawai-red mb-4 font-medium font-[family-name:var(--font-brand-sans)]">
+              <p className="text-xs tracking-[0.28em] uppercase text-kawai-red mb-4 font-semibold font-[family-name:var(--font-brand-sans)]">
                 {sectionLabel ?? 'Instrumental To Life'}
               </p>
 
@@ -241,7 +241,7 @@ export function ArtistI2LRenderer({
                   {!current.isManual && current.artistName && (
                     <motion.div variants={itemVariants} className="flex items-center gap-2 mb-3">
                       {current.artistImageUrl && (
-                        <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0 ring-1 ring-white/15">
+                        <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-white/20">
                           <Image
                             src={current.artistImageUrl}
                             alt={current.artistName}
@@ -251,7 +251,7 @@ export function ArtistI2LRenderer({
                           />
                         </div>
                       )}
-                      <span className="text-[10px] tracking-[0.22em] uppercase text-white/38 font-[family-name:var(--font-brand-sans)]">
+                      <span className="text-xs tracking-[0.22em] uppercase text-white/70 font-medium font-[family-name:var(--font-brand-sans)]">
                         {current.artistName}
                       </span>
                     </motion.div>
@@ -261,7 +261,7 @@ export function ArtistI2LRenderer({
                   {current.isManual && current.eyebrowText && (
                     <motion.p
                       variants={itemVariants}
-                      className="text-[10px] tracking-[0.22em] uppercase text-white/38 mb-3 font-[family-name:var(--font-brand-sans)]"
+                      className="text-xs tracking-[0.22em] uppercase text-white/70 font-medium mb-3 font-[family-name:var(--font-brand-sans)]"
                     >
                       {current.eyebrowText}
                     </motion.p>
@@ -270,8 +270,8 @@ export function ArtistI2LRenderer({
                   {/* Video title */}
                   <motion.p
                     variants={itemVariants}
-                    className="text-2xl md:text-3xl xl:text-4xl text-white/80 mb-2 leading-snug"
-                    style={{ fontFamily: 'var(--font-brand-luxury)', fontStyle: 'italic', fontWeight: 400 }}
+                    className="text-3xl md:text-4xl xl:text-5xl text-white mb-3 leading-tight"
+                    style={{ fontFamily: 'var(--font-brand-luxury)', fontStyle: 'italic', fontWeight: 600 }}
                   >
                     {current.title}
                   </motion.p>
@@ -280,7 +280,7 @@ export function ArtistI2LRenderer({
                   {current.description && (
                     <motion.p
                       variants={itemVariants}
-                      className="text-sm text-white/38 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                      className="text-base text-white/65 mb-6 max-w-lg leading-relaxed font-[family-name:var(--font-brand-sans)]"
                     >
                       {current.description}
                     </motion.p>

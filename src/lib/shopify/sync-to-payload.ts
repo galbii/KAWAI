@@ -477,11 +477,9 @@ export async function syncShopifyDataToProduct(
       tone: shopifyData.metafields?.tone ?? [],
       features: shopifyData.metafields?.features ?? [],
 
-      // Propagate status changes that represent intentional de-listing in Shopify.
-      // ACTIVE and DRAFT are left to editor control.
+      // Only ARCHIVED propagates to Payload status (discontinued).
+      // UNLISTED only updates shopifyStatus below — Payload status stays editor-controlled.
       ...(shopifyData.status === 'ARCHIVED' && { status: 'discontinued' as const }),
-      // UNLISTED = visible only via direct link (hidden from search/collections since API 2025-10).
-      ...(shopifyData.status === 'UNLISTED' && { status: 'draft' as const }),
 
       // Update shopify sync group (read-only metadata)
       shopify: {

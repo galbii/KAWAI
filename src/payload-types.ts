@@ -2571,7 +2571,7 @@ export interface Product {
     /**
      * Shopify product status (synced from Shopify)
      */
-    shopifyStatus?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED') | null;
+    shopifyStatus?: ('ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'UNLISTED') | null;
   };
   updatedAt: string;
   createdAt: string;

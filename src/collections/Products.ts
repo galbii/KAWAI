@@ -39,9 +39,9 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     ACTIVE: 'active',
     DRAFT: 'draft',
     ARCHIVED: 'discontinued',
-    // UNLISTED = active in Shopify but hidden from search/collections (requires direct link).
-    // Map to draft so it stays off the frontend until explicitly activated.
-    UNLISTED: 'draft',
+    // UNLISTED = hidden from search/collections but accessible via direct link.
+    // Do NOT change the Payload status — editors control that independently.
+    UNLISTED: 'active',
   }
 
   // Map Shopify collections to Payload format
@@ -1293,7 +1293,6 @@ export const Products: CollectionConfig = {
                 const syncData = {
                   ...shopifySyncData,
                   ...(shopifyProduct.status === 'ARCHIVED' && { status: 'discontinued' as const }),
-                  ...(shopifyProduct.status === 'UNLISTED' && { status: 'draft' as const }),
                 }
                 console.log(`[Bulk Sync] Updating existing product: ${model}`)
 

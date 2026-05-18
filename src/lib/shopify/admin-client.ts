@@ -35,7 +35,7 @@ import { getAdminAccessTokenCA } from './auth-ca'
  * Default API version for Admin API
  * Update this when migrating to newer API versions
  */
-const DEFAULT_ADMIN_API_VERSION = '2025-01'
+const DEFAULT_ADMIN_API_VERSION = '2025-10'
 
 /**
  * Default retry configuration

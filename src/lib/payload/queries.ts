@@ -707,6 +707,7 @@ type CatalogProduct = {
   modelLabel?: string | null
   name?: string | null
   slug: string
+  status?: string | null
   type?: string | null
   category?: string | null
   imageUrl?: string | null
@@ -729,7 +730,7 @@ type CatalogProduct = {
 export function getCatalogProductsDirect(): Promise<CatalogProduct[]> {
   return unstable_cache(
     async (): Promise<CatalogProduct[]> => _getCatalogProductsDirect(),
-    ['catalog-products'],
+    ['catalog-products-v2'],
     { tags: ['products'], revalidate: 3600 },
   )()
 }
@@ -741,7 +742,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
     const result = await payload.find({
       collection: 'products',
       where: {
-        status: { equals: 'active' },
+        status: { not_equals: 'draft' },
         'visibility.showInCatalog': { equals: true },
       },
       select: {
@@ -749,6 +750,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
         modelLabel: true,
         name: true,
         slug: true,
+        status: true,
         type: true,
         category: true,
         imageUrl: true,
@@ -767,6 +769,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
       id: String(doc.id),
       model: doc.model,
       modelLabel: (doc as any).modelLabel ?? null,
+      status: doc.status ?? null,
       name: doc.name ?? null,
       slug: doc.slug ?? '',
       type: doc.type ?? null,
@@ -2016,6 +2019,7 @@ export function getCatalogProductsByCategory(
     model: string
     name?: string | null
     slug: string
+    status?: string | null
     type?: string | null
     category?: string | null
     imageUrl?: string | null
@@ -2061,7 +2065,7 @@ export function getCatalogProductsByCategory(
         collection: 'products',
         where: {
           and: [
-            { status: { equals: 'active' } },
+            { status: { not_equals: 'draft' } },
             { 'visibility.showInCatalog': { equals: true } },
             { or: orConditions as Where[] },
           ],
@@ -2070,6 +2074,7 @@ export function getCatalogProductsByCategory(
           model: true,
           name: true,
           slug: true,
+          status: true,
           type: true,
           category: true,
           imageUrl: true,
@@ -2089,6 +2094,7 @@ export function getCatalogProductsByCategory(
         model: doc.model,
         name: doc.name ?? null,
         slug: doc.slug ?? '',
+        status: doc.status ?? null,
         type: doc.type ?? null,
         category: doc.category ?? null,
         imageUrl: doc.imageUrl ?? null,
@@ -2139,7 +2145,7 @@ export function getCatalogProductsByCategory(
           : null,
       }))
     },
-    ['catalog-products-by-category', category],
+    ['catalog-products-by-category-v2', category],
     { tags: ['products', `products-category-${category}`], revalidate: 3600 },
   )()
 }

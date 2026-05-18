@@ -16,6 +16,7 @@ export interface CatalogProduct {
   modelLabel?: string | null
   name?: string | null
   slug: string
+  status?: string | null
   type?: string | null
   category?: string | null
   imageUrl?: string | null
@@ -284,6 +285,8 @@ interface MobileFilterSheetProps {
   setActiveCollection: (v: string) => void
   sort: string
   setSort: (v: string) => void
+  showLegacy: boolean
+  setShowLegacy: (v: boolean) => void
   visibleCollections: Array<{ title: string; handle: string }>
   resultCount: number
   onClearAll: () => void
@@ -299,6 +302,8 @@ function MobileFilterSheet({
   setActiveCollection,
   sort,
   setSort,
+  showLegacy,
+  setShowLegacy,
   visibleCollections,
   resultCount,
   onClearAll,
@@ -465,6 +470,31 @@ function MobileFilterSheet({
                   ))}
                 </div>
               </div>
+
+              <div className="h-px bg-kawai-neutral/50 mx-5" />
+
+              {/* Show Legacy Products */}
+              <div className="px-5 pt-4 pb-4">
+                <button
+                  onClick={() => setShowLegacy(!showLegacy)}
+                  className="flex items-center gap-3 w-full text-left"
+                >
+                  <div className={cn(
+                    'w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-colors duration-150',
+                    showLegacy ? 'bg-kawai-black border-kawai-black' : 'border-kawai-neutral',
+                  )}>
+                    {showLegacy && (
+                      <svg width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden>
+                        <path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-kawai-black font-[family-name:var(--font-brand-sans)]">Show Legacy Products</p>
+                    <p className="text-[10px] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] mt-0.5">Include discontinued models</p>
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Fixed CTA at bottom */}
@@ -493,6 +523,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
   const [search, setSearch] = useState('')
   const [activeCollection, setActiveCollection] = useState<string>('All')
   const [sort, setSort] = useState<string>('default')
+  const [showLegacy, setShowLegacy] = useState(false)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -562,6 +593,11 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
   const filtered = useMemo(() => {
     let items = [...products]
 
+    // Filter out legacy/discontinued unless user opted in
+    if (!showLegacy) {
+      items = items.filter((p) => p.status !== 'discontinued')
+    }
+
     if (activeCollection !== 'All') {
       items = items.filter((p) =>
         (p.shopifyCollections ?? []).some((c) => c.title === activeCollection),
@@ -599,19 +635,30 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
       return aHas - bHas
     })
 
-    return items
-  }, [products, search, activeCollection, sort])
+    // Legacy/discontinued products always sort to the bottom
+    if (showLegacy) {
+      items.sort((a, b) => {
+        const aLegacy = a.status === 'discontinued' ? 1 : 0
+        const bLegacy = b.status === 'discontinued' ? 1 : 0
+        return aLegacy - bLegacy
+      })
+    }
 
-  const hasFilters = search.trim() !== '' || activeCollection !== 'All'
+    return items
+  }, [products, search, activeCollection, sort, showLegacy])
+
+  const hasFilters = search.trim() !== '' || activeCollection !== 'All' || showLegacy
 
   const activeFilterCount = (activeCollection !== 'All' ? 1 : 0) +
-    (search.trim() ? 1 : 0)
+    (search.trim() ? 1 : 0) +
+    (showLegacy ? 1 : 0)
 
-  const gridKey = `${activeCollection}|${search.trim()}|${sort}`
+  const gridKey = `${activeCollection}|${search.trim()}|${sort}|${showLegacy}`
 
   function clearAll() {
     setSearch('')
     setActiveCollection('All')
+    setShowLegacy(false)
   }
 
   return (
@@ -624,6 +671,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
         search={search} setSearch={setSearch}
         activeCollection={activeCollection} setActiveCollection={handleCollectionChange}
         sort={sort} setSort={setSort}
+        showLegacy={showLegacy} setShowLegacy={setShowLegacy}
         visibleCollections={visibleCollections}
         resultCount={filtered.length}
         onClearAll={clearAll}
@@ -694,6 +742,30 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
                 {filtered.length} {filtered.length === 1 ? 'instrument' : 'instruments'}
               </motion.span>
             </AnimatePresence>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-kawai-charcoal/25 flex-shrink-0" />
+
+            {/* Legacy toggle */}
+            <button
+              onClick={() => setShowLegacy(!showLegacy)}
+              className="flex items-center gap-2 flex-shrink-0 group"
+              title={showLegacy ? 'Hide legacy products' : 'Show legacy products'}
+            >
+              <div className={cn(
+                'w-3.5 h-3.5 border flex-shrink-0 flex items-center justify-center transition-colors duration-150',
+                showLegacy ? 'bg-kawai-black border-kawai-black' : 'border-kawai-neutral group-hover:border-kawai-charcoal',
+              )}>
+                {showLegacy && (
+                  <svg width="7" height="5" viewBox="0 0 8 6" fill="none" aria-hidden>
+                    <path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/60 group-hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)] whitespace-nowrap">
+                Legacy
+              </span>
+            </button>
 
             {/* Divider */}
             <div className="h-6 w-px bg-kawai-charcoal/25 flex-shrink-0" />
@@ -1011,6 +1083,7 @@ function normalizeCategory(product: CatalogProduct): string {
 function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct; index: number; site?: 'us' | 'cad' }) {
   const [activeVariantIdx, setActiveVariantIdx] = useState(0)
   const category = normalizeCategory(product)
+  const isLegacy = product.status === 'discontinued'
 
   const variants = product.variations ?? []
   const hasVariants = variants.length >= 2
@@ -1052,7 +1125,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
         className="group relative flex flex-col bg-kawai-pearl hover:bg-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-kawai-red h-full rounded-none"
       >
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-white">
+        <div className={cn('relative aspect-square overflow-hidden bg-white', isLegacy && 'opacity-60 grayscale')}>
           {displayImageUrl ? (
             <Image
               src={displayImageUrl}
@@ -1071,17 +1144,23 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
           )}
 
           <div className="absolute top-3 left-3">
-            <span
-              className={cn(
-                'px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]',
-                category === 'Grand' ? 'bg-kawai-gold/20 text-kawai-charcoal' : 'bg-kawai-black/5 text-kawai-charcoal',
-              )}
-            >
-              {product.type ?? category}
-            </span>
+            {isLegacy ? (
+              <span className="px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] bg-kawai-red text-white">
+                Legacy
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  'px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)]',
+                  category === 'Grand' ? 'bg-kawai-gold/20 text-kawai-charcoal' : 'bg-kawai-black/5 text-kawai-charcoal',
+                )}
+              >
+                {product.type ?? category}
+              </span>
+            )}
           </div>
 
-          {isOnSale && (
+          {isOnSale && !isLegacy && (
             <div className="absolute top-3 right-3">
               <span className="inline-block px-2 py-0.5 bg-kawai-red text-white text-[10px] uppercase tracking-[0.15em] font-semibold font-[family-name:var(--font-brand-sans)]">
                 Sale
