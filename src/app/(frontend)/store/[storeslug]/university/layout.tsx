@@ -63,7 +63,7 @@ export default function UniversityLayout({
       <link rel="dns-prefetch" href="https://www.google.com/recaptcha/" />
       <link rel="dns-prefetch" href="https://www.gstatic.com/recaptcha/" />
 
-      <div className={`${barlowCondensed.variable} ${comforterBrush.variable} ${inter.variable} antialiased overflow-x-hidden`}>
+      <div className={`${barlowCondensed.variable} ${comforterBrush.variable} ${inter.variable} antialiased overflow-x-clip`}>
         {children}
         <WebVitals />
 

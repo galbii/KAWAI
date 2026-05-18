@@ -140,8 +140,8 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-find-a-dealer',          // Find a Dealer (CTA link)
                 'marketing-dealer-finder',          // Dealer Finder (interactive map)
                 'marketing-3d-viewer',              // 3D Model Viewer
-                'marketing-instagram-carousel',     // Instagram Carousel
                 'marketing-artist-carousel',        // Artist Carousel
+                'marketing-artist-i2l',             // Artist I2L — auto-pulls YouTube recent work from all artists
                 'marketing-featured-models',        // Featured Models
                 'marketing-featured-collections',   // Featured Collections carousel
                 'marketing-rebate-table',           // Rebate Table

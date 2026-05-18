@@ -65,8 +65,8 @@ export default function FooterSection() {
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-5 h-5 text-primary">📞</div>
-                <a href="tel:7139040001" className="text-gray-300 hover:text-gold transition-colors duration-300 text-sm">
-                  (713) 904-0001
+                <a href="tel:9723792200" className="text-gray-300 hover:text-gold transition-colors duration-300 text-sm">
+                  (972) 379-2200
                 </a>
               </div>
               <div className="flex items-center space-x-3">

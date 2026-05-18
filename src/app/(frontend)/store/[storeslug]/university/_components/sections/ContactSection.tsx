@@ -63,10 +63,10 @@ export default function ContactSection() {
                   <h4 className="font-semibold text-gray-dark mb-1">Phone & Email</h4>
                   <p className="text-gray-medium">
                     <a
-                      href="tel:7139040001"
+                      href="tel:9723792200"
                       className="hover:text-primary transition-colors"
                     >
-                      (713) 904-0001
+                      (972) 379-2200
                     </a><br />
                     <a
                       href="mailto:info@kawaipianosdallas.com"

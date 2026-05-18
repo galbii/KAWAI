@@ -1517,6 +1517,89 @@ export const getGrandPianoSaleProducts = unstable_cache(
 )
 
 /**
+ * Fetch university event products with full GrandSaleProduct fields (specs, media, slug).
+ * Preserves the caller-supplied model order.
+ */
+export async function getUniversityEventProductsRich(models: string[]): Promise<GrandSaleProduct[]> {
+  try {
+    const payload = await getPayloadClient()
+    const result = await payload.find({
+      collection: 'products',
+      where: { model: { in: models } },
+      select: {
+        model: true,
+        name: true,
+        slug: true,
+        type: true,
+        imageUrl: true,
+        description: true,
+        price: true,
+        specifications: true,
+        highlights: true,
+        variations: true,
+        customMedia: true,
+        shopifyMedia: true,
+      },
+      depth: 1,
+      limit: models.length,
+    })
+    return models
+      .map((m) => result.docs.find((p) => p.model === m))
+      .filter((doc): doc is NonNullable<typeof doc> => doc !== undefined)
+      .map((doc: any) => ({
+        id: String(doc.id),
+        model: doc.model ?? '',
+        name: doc.name ?? null,
+        slug: doc.slug ?? '',
+        type: doc.type ?? null,
+        imageUrl: doc.imageUrl ?? null,
+        description: doc.description ?? null,
+        price: doc.price ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null } : null,
+        specifications: Array.isArray(doc.specifications) ? doc.specifications : null,
+        highlights: Array.isArray(doc.highlights) ? doc.highlights : null,
+        variations: Array.isArray(doc.variations)
+          ? doc.variations.map((v: any) => ({
+              name: v.name ?? '',
+              price: typeof v.price === 'number' ? v.price : null,
+              compareAtPrice: typeof v.compareAtPrice === 'number' ? v.compareAtPrice : null,
+              available: v.available === true,
+            }))
+          : null,
+        customMedia: Array.isArray(doc.customMedia)
+          ? doc.customMedia.map((m: any) => ({
+              mediaType: m.mediaType ?? null,
+              image:
+                typeof m.image === 'object' &&
+                m.image !== null &&
+                typeof (m.image as any).url === 'string' &&
+                (m.image as any).url
+                  ? { url: (m.image as any).url as string, alt: (m.image as any).alt ?? null }
+                  : null,
+              youtubeUrl: m.youtubeUrl ?? null,
+              alt: m.alt ?? null,
+            }))
+          : null,
+        shopifyMedia: Array.isArray(doc.shopifyMedia)
+          ? doc.shopifyMedia.map((m: any) => ({
+              mediaType: m.mediaType ?? null,
+              imageUrl: m.imageUrl ?? null,
+              imageWidth: m.imageWidth ?? null,
+              imageHeight: m.imageHeight ?? null,
+              alt: m.alt ?? null,
+              videoUrl: m.videoUrl ?? null,
+              thumbnailUrl: m.thumbnailUrl ?? null,
+              embedUrl: m.embedUrl ?? null,
+              host: m.host ?? null,
+            }))
+          : null,
+      }))
+  } catch (error) {
+    console.error('Error fetching university event products:', error)
+    return []
+  }
+}
+
+/**
  * Get news items from the HomePage collection that have category 'view-product'.
  * Used to display a product spotlight carousel on the /pianos page.
  * Cached for 5 minutes and tagged with 'home-page' for on-demand revalidation.

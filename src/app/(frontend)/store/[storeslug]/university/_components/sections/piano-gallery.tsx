@@ -1,335 +1,609 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import Image from "next/image";
-import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
-import type { Product } from '@/payload-types';
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import type { GrandSaleProduct } from "@/lib/payload/queries";
+import { ProductMediaModal } from "@/components/grand-spring-sale/ProductMediaModal";
 
-interface FeaturedPiano {
-  id: string;
-  model: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  originalPrice: number;
-  salePrice: number;
-  savings: number;
-  keyFeatures: string[];
-  availability: string;
+// ── Category detection ──────────────────────────────────────────────────────
+
+type PianoCategory = "baby-grand" | "upright" | "hybrid" | "digital";
+
+function getPianoCategory(product: GrandSaleProduct): PianoCategory {
+  const model = (product.model ?? "").replace(/[-\s]/g, "").toUpperCase();
+  if (model.startsWith("GL")) return "baby-grand";
+  if (model.startsWith("K")) return "upright";
+  if (model.startsWith("NV")) return "hybrid";
+  return "digital";
 }
 
-interface PianoSectionProps {
-  piano: FeaturedPiano;
-  index: number;
-  hasTrackedAnyPiano: React.MutableRefObject<boolean>;
+type FilterKey = "all" | PianoCategory;
+
+const FILTERS: { key: FilterKey; label: string; sub: string }[] = [
+  { key: "all",        label: "All Models",  sub: "Featured lineup" },
+  { key: "baby-grand", label: "Baby Grand",  sub: "GL-10 · GL-10 ATX4" },
+  { key: "upright",    label: "Upright",     sub: "K-200" },
+  { key: "hybrid",     label: "Hybrid",      sub: "NV-6" },
+  { key: "digital",    label: "Digital",     sub: "CA Series" },
+];
+
+const CATEGORY_LABELS: Record<PianoCategory, string> = {
+  "baby-grand": "Baby Grand",
+  upright: "Upright",
+  hybrid: "Hybrid",
+  digital: "Digital",
+};
+
+function matchesFilters(
+  product: GrandSaleProduct,
+  filter: FilterKey,
+  query: string
+): boolean {
+  if (filter !== "all" && getPianoCategory(product) !== filter) return false;
+  if (query.trim()) {
+    const q = query.toLowerCase();
+    const haystack = [product.name, product.model, product.description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    if (!haystack.includes(q)) return false;
+  }
+  return true;
 }
 
-function PianoSection({ piano, index, hasTrackedAnyPiano }: PianoSectionProps) {
-  const { ref: sectionRef, isVisible } = useIntersectionAnimation({
-    threshold: 0.2,
-    rootMargin: '0px 0px -100px 0px'
+// ── Spec extraction ─────────────────────────────────────────────────────────
+
+function extractSpec(
+  specs: GrandSaleProduct["specifications"],
+  keywords: string[]
+): string | null {
+  if (!specs) return null;
+  const normalized = keywords.map((k) => k.toLowerCase());
+  const match = specs.find((s) => {
+    const specName = (s.spec ?? "").toLowerCase();
+    return normalized.some((k) => specName.includes(k));
   });
-  const activeTimer = useRef<NodeJS.Timeout | null>(null);
+  return match?.details ?? match?.type ?? null;
+}
 
-  const isEven = index % 2 === 0;
+// ── Animation variants ──────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (activeTimer.current) {
-      clearTimeout(activeTimer.current);
-      activeTimer.current = null;
-    }
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0 },
+};
 
-    if (isVisible && !hasTrackedAnyPiano.current) {
-      activeTimer.current = setTimeout(() => {
-        if (!hasTrackedAnyPiano.current) {
-          hasTrackedAnyPiano.current = true;
-        }
-        activeTimer.current = null;
-      }, 6000);
-    }
+const staggerGrid = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
 
-    return () => {
-      if (activeTimer.current) {
-        clearTimeout(activeTimer.current);
-        activeTimer.current = null;
-      }
-    };
-  }, [isVisible, piano.model, piano.salePrice, piano.category, hasTrackedAnyPiano]);
+const cardVariant = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+};
+
+// ── ProductCard ─────────────────────────────────────────────────────────────
+
+function ProductCard({
+  product,
+  onOpenModal,
+  onOpenConsultation,
+}: {
+  product: GrandSaleProduct;
+  onOpenModal: (product: GrandSaleProduct) => void;
+  onOpenConsultation: () => void;
+}) {
+  const length = extractSpec(product.specifications, [
+    "length",
+    "cabinet length",
+    "piano length",
+  ]);
+  const action = extractSpec(product.specifications, ["action", "key action"]);
+  const keys = extractSpec(product.specifications, [
+    "keys",
+    "keyboard range",
+    "number of keys",
+  ]);
+
+  const specs = [
+    length && { label: "Length", value: length },
+    action && { label: "Action", value: action },
+    keys && { label: "Keys", value: keys },
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+
+  const fallbackSpecs = (product.highlights ?? [])
+    .slice(0, 3)
+    .map((h) => ({ label: "Feature", value: h.highlight ?? "" }))
+    .filter((h) => h.value);
+
+  const displaySpecs = specs.length >= 2 ? specs.slice(0, 3) : fallbackSpecs.slice(0, 3);
+  const category = getPianoCategory(product);
+
+  const variation = product.variations?.[0];
+  const salePrice = variation?.price ?? null;
+  const compareAt = variation?.compareAtPrice ?? product.price?.msrp ?? null;
+  const savings =
+    compareAt && salePrice && compareAt > salePrice ? compareAt - salePrice : null;
 
   return (
-    <section
-      ref={sectionRef}
-      className="py-10"
-    >
-      <div className="max-w-5xl mx-auto px-6 w-full">
-        <div
-          className={`rounded-2xl border transition-all duration-500 overflow-hidden ${
-            isEven ? '' : 'lg:grid-flow-col-dense'
-          }`}
-          style={{
-            background: '#FFFFFF',
-            borderColor: 'rgba(77,25,121,0.12)',
-            boxShadow: '0 2px 20px rgba(77,25,121,0.08)',
-          }}
-        >
-          <div className={`grid lg:grid-cols-2 items-stretch`}>
-            {/* Image */}
-            <div className={`relative ${isEven ? 'order-1 lg:order-2' : 'order-1 lg:col-start-1'}`}>
-              <div
-                className={`relative h-72 lg:h-full min-h-[300px] transition-all duration-700 delay-300 ${
-                  isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'
-                }`}
-              >
-                <Image
-                  src={piano.image}
-                  alt={`${piano.title} - Available at the TCU Piano Sale Fort Worth`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1a0d2e]/20 to-transparent" />
-                <div
-                  className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs tracking-wider uppercase font-medium"
-                  style={{
-                    background: 'rgba(77,25,121,0.08)',
-                    border: '1px solid rgba(77,25,121,0.25)',
-                    color: '#4D1979',
-                  }}
-                >
-                  {piano.model}
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className={`p-8 lg:p-10 flex flex-col justify-center space-y-6 ${isEven ? 'order-2 lg:order-1' : 'order-2 lg:col-start-2'}`}>
-              <div
-                className={`space-y-1 transition-all duration-600 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-              >
-                <div className="text-xs tracking-[0.2em] uppercase" style={{ color: 'rgba(26,13,46,0.45)' }}>
-                  {piano.category}
-                </div>
-                <h2 className="font-heading italic text-[#1a0d2e] text-2xl md:text-3xl lg:text-4xl font-black">
-                  {piano.title}
-                </h2>
-              </div>
-
-              {/* Pricing */}
-              <div
-                className={`space-y-2 transition-all duration-600 delay-200 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-              >
-                <div className="flex items-end gap-3 flex-wrap">
-                  {piano.salePrice > 0 ? (
-                    <span className="text-3xl font-bold" style={{ color: '#4D1979' }}>
-                      ${piano.salePrice.toLocaleString()}
-                    </span>
-                  ) : (
-                    <span className="text-lg font-medium" style={{ color: 'rgba(26,13,46,0.55)' }}>
-                      Contact for pricing
-                    </span>
-                  )}
-                  {piano.originalPrice > piano.salePrice && piano.salePrice > 0 && (
-                    <span className="text-sm line-through" style={{ color: 'rgba(26,13,46,0.40)' }}>
-                      ${piano.originalPrice.toLocaleString()}
-                    </span>
-                  )}
-                  {piano.savings > 0 && (
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full"
-                      style={{
-                        background: 'rgba(244,125,32,0.2)',
-                        border: '1px solid rgba(244,125,32,0.5)',
-                        color: '#F47D20',
-                      }}
-                    >
-                      Save ${piano.savings.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-                {piano.salePrice > 0 && (
-                  <div className="text-sm" style={{ color: 'rgba(26,13,46,0.65)' }}>
-                    As low as ${Math.round(piano.salePrice / 36).toLocaleString()}/mo · 36-month 0% financing
-                  </div>
-                )}
-              </div>
-
-              {/* Features */}
-              <div
-                className={`space-y-2 transition-all duration-600 delay-400 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-              >
-                <ul className="space-y-2">
-                  {piano.keyFeatures.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <svg
-                        className="w-4 h-4 mt-0.5 shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        style={{ color: '#4D1979' }}
-                      >
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm" style={{ color: '#3a2060' }}>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Availability + CTA */}
-              <div
-                className={`space-y-4 transition-all duration-600 delay-500 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-              >
-                <div className="text-xs" style={{ color: 'rgba(26,13,46,0.45)' }}>
-                  {piano.availability}
-                </div>
-              </div>
-            </div>
+    <motion.article variants={cardVariant} className="group flex flex-col bg-white">
+      {/* ── Image stage ── */}
+      <div className="relative overflow-hidden bg-white" style={{ aspectRatio: "4/3" }}>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name ?? product.model ?? ""}
+            className="w-full h-full object-contain p-6 transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.04]"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg
+              className="w-20 h-20 text-kawai-neutral"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={0.75}
+                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"
+              />
+            </svg>
           </div>
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white/80 to-transparent pointer-events-none" />
+
+        <p className="absolute bottom-3 left-4 text-kawai-charcoal/50 text-[10px] tracking-[0.28em] uppercase font-[family-name:var(--font-brand-sans)]">
+          {CATEGORY_LABELS[category]}
+        </p>
+
+        {savings && savings > 0 ? (
+          <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#4D1979] text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+            Save ${savings.toLocaleString()}
+          </span>
+        ) : (
+          <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#4D1979] text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+            Event Pricing
+          </span>
+        )}
+
+        {/* Purple reveal line on hover */}
+        <div className="absolute inset-x-0 top-0 h-[2px] bg-[#4D1979] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+      </div>
+
+      {/* ── Card body ── */}
+      <div className="flex flex-col flex-1 p-6 border-x border-b border-kawai-neutral/50">
+        <p className="text-kawai-charcoal/40 text-[10px] tracking-[0.3em] uppercase mb-2 font-[family-name:var(--font-brand-sans)]">
+          Kawai · {product.model}
+        </p>
+
+        <h3
+          className="font-[family-name:var(--font-family-cormorant)] text-kawai-black leading-tight mb-4"
+          style={{ fontSize: "clamp(1.25rem, 2vw, 1.55rem)", fontWeight: 500 }}
+        >
+          {product.name ?? product.model}
+        </h3>
+
+        {/* Pricing */}
+        {salePrice && salePrice > 0 ? (
+          <div className="flex items-baseline gap-2 mb-4 flex-wrap">
+            <span className="text-xl font-bold" style={{ color: "#4D1979" }}>
+              ${salePrice.toLocaleString()}
+            </span>
+            {compareAt && compareAt > salePrice && (
+              <span className="text-sm line-through text-kawai-charcoal/40">
+                ${compareAt.toLocaleString()}
+              </span>
+            )}
+          </div>
+        ) : null}
+
+        {displaySpecs.length > 0 && (
+          <dl className="space-y-2 pt-4 border-t border-kawai-neutral/40 mb-5">
+            {displaySpecs.map(({ label, value }) => (
+              <div key={label} className="flex items-baseline justify-between gap-4">
+                <dt className="text-kawai-charcoal/40 text-[11px] tracking-[0.1em] uppercase font-[family-name:var(--font-brand-sans)]">
+                  {label}
+                </dt>
+                <dd className="text-kawai-black text-[11px] font-medium text-right font-[family-name:var(--font-brand-sans)]">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <div className="mt-auto space-y-2">
+          <button
+            onClick={() => onOpenModal(product)}
+            className="w-full inline-flex items-center justify-between px-5 py-3.5 bg-kawai-black hover:bg-kawai-charcoal text-white text-[10px] tracking-[0.22em] uppercase font-semibold transition-colors duration-200 font-[family-name:var(--font-brand-sans)] group/btn"
+          >
+            Explore Model
+            <svg
+              className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={onOpenConsultation}
+            className="w-full inline-flex items-center justify-center px-5 py-3 text-white text-[10px] tracking-[0.22em] uppercase font-semibold transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
+            style={{ background: "#4D1979" }}
+          >
+            Book Appointment
+          </button>
         </div>
       </div>
-    </section>
+    </motion.article>
   );
 }
 
-function mapProduct(product: Product): FeaturedPiano {
-  const variation = product.variations?.[0]
-  const salePrice = variation?.price ?? 0
-  const compareAtPrice = variation?.compareAtPrice ?? product.price?.msrp ?? 0
-  const savings = compareAtPrice > salePrice ? compareAtPrice - salePrice : 0
-
-  const keyFeatures = (product.highlights ?? [])
-    .slice(0, 4)
-    .map(h => h.highlight ?? '')
-    .filter(Boolean)
-
-  return {
-    id: product.model,
-    model: product.model,
-    title: product.name ?? product.model,
-    description: product.description ?? '',
-    image: product.imageUrl ?? '/images/optimized/pianos/es120.webp',
-    category: product.type ?? product.category ?? '',
-    originalPrice: compareAtPrice,
-    salePrice,
-    savings,
-    keyFeatures,
-    availability: 'Available at the event · Fort Worth',
-  }
-}
+// ── Main component ──────────────────────────────────────────────────────────
 
 interface FeaturedDealsProps {
-  products: Product[]
+  products: GrandSaleProduct[];
   onOpenConsultation: () => void;
 }
 
 export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsProps) {
-  const pianos = products.map(mapProduct);
-  const hasTrackedAnyPiano = useRef<boolean>(false);
-  const { ref: headerRef, isVisible: headerVisible } = useIntersectionAnimation({
-    threshold: 0.2,
-    rootMargin: '0px 0px -100px 0px'
-  });
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isStuck, setIsStuck] = useState(false);
+  const [modalProduct, setModalProduct] = useState<GrandSaleProduct | null>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFilterChange = (key: FilterKey) => {
+    setActiveFilter(key);
+    requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  useEffect(() => {
+    const el = stickyRef.current;
+    if (!el) return;
+    const sentinel = document.createElement("div");
+    sentinel.style.cssText = "height:1px;margin-bottom:-1px;";
+    el.parentElement?.insertBefore(sentinel, el);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setIsStuck(!entry.isIntersecting);
+      },
+      { threshold: [1] }
+    );
+    observer.observe(sentinel);
+    return () => {
+      observer.disconnect();
+      sentinel.remove();
+    };
+  }, []);
+
+  const filtered = products.filter((p) =>
+    matchesFilters(p, activeFilter, searchQuery)
+  );
+
+  const countMap = FILTERS.reduce<Record<FilterKey, number>>(
+    (acc, { key }) => {
+      acc[key] =
+        key === "all"
+          ? products.length
+          : products.filter((p) => getPianoCategory(p) === key).length;
+      return acc;
+    },
+    {} as Record<FilterKey, number>
+  );
+
+  const visibleFilters = FILTERS.filter(
+    ({ key }) => countMap[key] > 0 || key === "all"
+  );
+  const isFiltered = activeFilter !== "all" || !!searchQuery;
 
   return (
-    <div id="featured-deals" style={{ background: '#FAFAFE' }} className="border-t border-[rgba(77,25,121,0.12)]">
-      {/* Section Header */}
-      <section ref={headerRef} className="pt-16 pb-4 text-center relative overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div
-            className={`mb-8 transition-all duration-600 ${
-              headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            <div
-              className={`text-xs tracking-[0.2em] uppercase mb-4 transition-all duration-600 ${
-                headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-              style={{ color: 'rgba(26,13,46,0.45)' }}
+    <div
+      ref={sectionRef}
+      id="featured-deals"
+      className="border-t border-[rgba(77,25,121,0.12)]"
+      style={{ background: "#FAFAFE", scrollMarginTop: 'var(--header-bottom, 70px)' }}
+    >
+      {/* ── Section header ─────────────────────────────────────────── */}
+      <motion.div
+        className="max-w-7xl mx-auto px-6 pt-16 md:pt-24 pb-10 md:pb-14"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-60px" }}
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+      >
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-16">
+          <div>
+            <motion.div
+              variants={fadeUp}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex items-center gap-3 mb-5"
+            >
+              <div className="h-px w-10" style={{ background: "#4D1979" }} />
+              <p
+                className="text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]"
+                style={{ color: "rgba(77,25,121,0.6)" }}
+              >
+                Featured Models · TCU Piano Sale
+              </p>
+            </motion.div>
+
+            <motion.h2
+              variants={fadeUp}
+              transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="font-heading italic text-[#1a0d2e] leading-none"
+              style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 800 }}
             >
               Featured Models
+            </motion.h2>
+          </div>
+
+          <motion.p
+            variants={fadeUp}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="text-sm leading-relaxed max-w-xs md:text-right font-[family-name:var(--font-brand-sans)] md:pb-1"
+            style={{ color: "rgba(26,13,46,0.5)" }}
+          >
+            Every instrument available for in-person trial. Exclusive university event pricing — May 28–31 at TCU Boschini Music Center.
+          </motion.p>
+        </div>
+      </motion.div>
+
+      {/* ── Sticky toolbar ─────────────────────────────────────────── */}
+      <div
+        ref={stickyRef}
+        className={cn(
+          "sticky z-20 backdrop-blur-md border-y transition-shadow duration-300",
+          isStuck && "shadow-[0_6px_24px_rgba(77,25,121,0.12)]"
+        )}
+        style={{
+          top: "var(--header-bottom, 70px)",
+          background: "rgba(250,250,254,0.95)",
+          borderColor: "rgba(77,25,121,0.12)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-3">
+          {/* Search */}
+          <div
+            className={cn(
+              "flex items-center gap-3 w-full bg-white border rounded-xl px-4 py-3.5 transition-all duration-200 shadow-sm cursor-text",
+              searchQuery
+                ? "border-[#4D1979]/40 ring-2 ring-[#4D1979]/10"
+                : "border-kawai-neutral hover:border-kawai-charcoal/30"
+            )}
+            onClick={() => inputRef.current?.focus()}
+          >
+            <svg
+              className="w-5 h-5 flex-shrink-0 pointer-events-none"
+              style={{ color: "rgba(77,25,121,0.4)" }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.75}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+              />
+            </svg>
+
+            <input
+              ref={inputRef}
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by model — GL-10, CA901, NV-6…"
+              className="flex-1 bg-transparent border-0 text-sm text-kawai-black placeholder:text-kawai-charcoal/35 focus:outline-none font-[family-name:var(--font-brand-sans)]"
+            />
+
+            <AnimatePresence>
+              {searchQuery && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => {
+                    setSearchQuery("");
+                    inputRef.current?.focus();
+                  }}
+                  className="w-6 h-6 rounded-full bg-kawai-charcoal/10 hover:text-white flex items-center justify-center transition-colors flex-shrink-0"
+                  style={{ color: "rgba(77,25,121,0.5)" }}
+                  aria-label="Clear search"
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18 18 6M6 6l12 12"
+                    />
+                  </svg>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Category filter */}
+          <div className="flex items-center gap-3">
+            <div
+              className="flex-1 flex items-center rounded-xl p-1 gap-0.5"
+              style={{ background: "rgba(77,25,121,0.06)" }}
+            >
+              {visibleFilters.map(({ key, label }) => {
+                const count = countMap[key];
+                const active = activeFilter === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleFilterChange(key)}
+                    className={cn(
+                      "relative flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap font-[family-name:var(--font-brand-sans)]",
+                      active
+                        ? "text-kawai-black"
+                        : "text-kawai-charcoal/50 hover:text-kawai-charcoal/80"
+                    )}
+                  >
+                    {active && (
+                      <motion.span
+                        layoutId="university-filter-pill"
+                        className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
+                    <span
+                      className={cn(
+                        "relative z-10 text-[10px] tabular-nums font-medium transition-colors",
+                        active ? "text-[#4D1979]" : "text-kawai-charcoal/30"
+                      )}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <h1 className="font-heading italic text-[#1a0d2e] text-4xl md:text-5xl lg:text-6xl font-black mb-6">
-              TCU Piano Sale
-            </h1>
+            <AnimatePresence>
+              {isFiltered && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.85, x: 8 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, x: 8 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => {
+                    setSearchQuery("");
+                    handleFilterChange("all");
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-[10px] tracking-[0.15em] uppercase font-semibold rounded-lg transition-colors flex-shrink-0 font-[family-name:var(--font-brand-sans)]"
+                  style={{ color: "#4D1979" }}
+                >
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18 18 6M6 6l12 12"
+                    />
+                  </svg>
+                  Clear
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
 
-            <div
-              className={`flex items-center justify-center gap-4 flex-wrap transition-all duration-600 delay-300 ${
-                headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
+      {/* ── Product grid ───────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-6 pt-8 md:pt-10 pb-20 md:pb-28">
+        <AnimatePresence mode="wait">
+          {filtered.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-center py-28"
             >
-              <span
-                className="text-xs tracking-wider uppercase px-4 py-2 rounded"
-                style={{
-                  background: 'rgba(77,25,121,0.06)',
-                  border: '1px solid rgba(77,25,121,0.15)',
-                  color: 'rgba(26,13,46,0.65)',
+              <p
+                className="font-heading text-2xl font-light mb-5"
+                style={{ color: "rgba(26,13,46,0.35)" }}
+              >
+                No instruments found
+              </p>
+              <button
+                className="text-[10px] tracking-[0.25em] uppercase font-semibold hover:underline font-[family-name:var(--font-brand-sans)]"
+                style={{ color: "#4D1979" }}
+                onClick={() => {
+                  setSearchQuery("");
+                  handleFilterChange("all");
                 }}
               >
-                Exclusive Showcase &nbsp;·&nbsp; May 28th – 31st, 2026
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Piano Models */}
-      {pianos.map((piano, index) => (
-        <PianoSection key={piano.id} piano={piano} index={index} hasTrackedAnyPiano={hasTrackedAnyPiano} />
-      ))}
-
-      {/* CTA Section */}
-      <section className="py-16 text-center border-t border-[rgba(77,25,121,0.12)]" style={{ background: 'rgba(77,25,121,0.04)' }}>
-        <div className="max-w-2xl mx-auto px-6 space-y-5">
-          <h3 className="font-heading italic text-[#1a0d2e] text-2xl md:text-3xl font-black">
-            Schedule Your Personal Appointment
-          </h3>
-          <p className="text-sm md:text-base max-w-lg mx-auto" style={{ color: '#3a2060' }}>
-            Get priority access to special university pricing and deals when you book your appointment. See more models in person and connect with our KAWAI piano experts for personalized recommendations.
-          </p>
-          <div className="space-y-3 pt-2">
-            <button
-              onClick={onOpenConsultation}
-              style={{
-                background: '#4D1979',
-                color: 'white',
-                fontSize: '13px',
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                padding: '14px 32px',
-                border: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '10px',
-                cursor: 'pointer',
-              }}
+                Clear filters
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`grid-${activeFilter}-${searchQuery}`}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0 }}
             >
-              <span>Book Appointment</span>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+              <motion.p
+                variants={fadeUp}
+                transition={{ duration: 0.4 }}
+                className="text-[10px] tracking-[0.25em] uppercase mb-6 font-[family-name:var(--font-brand-sans)]"
+                style={{ color: "rgba(77,25,121,0.4)" }}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
-            <p className="text-xs" style={{ color: 'rgba(26,13,46,0.45)' }}>
-              May 28th–31st experiences available · Appointment only
-            </p>
-          </div>
-        </div>
-      </section>
+                {filtered.length} instrument{filtered.length !== 1 ? "s" : ""}
+                {activeFilter !== "all" && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    {FILTERS.find((f) => f.key === activeFilter)?.label}
+                  </>
+                )}
+              </motion.p>
+
+              <motion.div
+                variants={staggerGrid}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[rgba(77,25,121,0.08)]"
+              >
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onOpenModal={setModalProduct}
+                    onOpenConsultation={onOpenConsultation}
+                  />
+                ))}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Media modal ────────────────────────────────────────────── */}
+      {modalProduct && (
+        <ProductMediaModal
+          product={modalProduct}
+          onClose={() => setModalProduct(null)}
+        />
+      )}
     </div>
   );
 }

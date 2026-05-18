@@ -39,6 +39,9 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     ACTIVE: 'active',
     DRAFT: 'draft',
     ARCHIVED: 'discontinued',
+    // UNLISTED = active in Shopify but hidden from search/collections (requires direct link).
+    // Map to draft so it stays off the frontend until explicitly activated.
+    UNLISTED: 'draft',
   }
 
   // Map Shopify collections to Payload format
@@ -920,7 +923,6 @@ export const Products: CollectionConfig = {
                 'product-related-products',          // Related Products - Auto-fetches same-collection products + accessories
                 'product-accessories',               // Accessories - Auto-displays compatible accessories (hidden if none exist)
                 'product-faq',                       // Product FAQ - Accordion FAQ section pulled from linked FAQs
-                'marketing-instagram-carousel',      // Instagram Carousel - Social proof
                 'marketing-featured-models',         // Featured Models - Showcase related models
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
@@ -1192,6 +1194,7 @@ export const Products: CollectionConfig = {
             { label: 'Active', value: 'ACTIVE' },
             { label: 'Draft', value: 'DRAFT' },
             { label: 'Archived', value: 'ARCHIVED' },
+            { label: 'Unlisted', value: 'UNLISTED' },
           ],
           admin: {
             description: 'Shopify product status (synced from Shopify)',
@@ -1283,15 +1286,21 @@ export const Products: CollectionConfig = {
               const productData = await transformShopifyToPayload(shopifyProduct)
 
               if (existing) {
-                // UPDATE — exclude slug (CMS URL) and status (CMS workflow)
+                // UPDATE — exclude slug (CMS URL); exclude status unless Shopify ARCHIVED
+                // (editors own active/draft; only ARCHIVED → discontinued propagates automatically)
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { slug: _slug, status: _status, ...shopifySyncData } = productData
+                const syncData = {
+                  ...shopifySyncData,
+                  ...(shopifyProduct.status === 'ARCHIVED' && { status: 'discontinued' as const }),
+                  ...(shopifyProduct.status === 'UNLISTED' && { status: 'draft' as const }),
+                }
                 console.log(`[Bulk Sync] Updating existing product: ${model}`)
 
                 await req.payload.update({
                   collection: 'products',
                   id: existing.id,
-                  data: shopifySyncData,
+                  data: syncData,
                   context: { skipShopifySync: true },
                   req,
                 })

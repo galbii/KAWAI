@@ -254,7 +254,7 @@ export const TCU_2025: UniversityEventConfig = {
     city: 'Fort Worth',
     state: 'TX',
     zip: '76109',
-    phone: '(713) 904-0001',
+    phone: '(972) 379-2200',
     email: 'info@kawaipianosdallas.com',
     constantContactFormId: '3ba8c9c8-796d-41fd-987f-7a506d7e03be',
     hours: [
@@ -271,7 +271,7 @@ export const TCU_2025: UniversityEventConfig = {
     city: 'Plano',
     state: 'TX',
     zip: '75075',
-    phone: '(713) 904-0001',
+    phone: '(972) 379-2200',
     email: 'info@kawaipianosdallas.com',
     hours: [
       { day: 'Thursday–Saturday', time: '10:00 AM – 6:00 PM' },
@@ -313,7 +313,7 @@ export const TCU_2025: UniversityEventConfig = {
         'TCU invitation pricing delivers 8–10% off MSRP on select instruments — available exclusively at this partnered event.',
     },
   ],
-  valuePropsPhone: '(713) 904-0001',
+  valuePropsPhone: '(972) 379-2200',
   valuePropsNote: 'Limited appointment slots – TCU priority access',
 
   authorityQuote: {
@@ -528,7 +528,7 @@ export const TCU_2025: UniversityEventConfig = {
       state: 'TX',
       zip: '75075',
     },
-    businessPhone: '+1-713-904-0001',
+    businessPhone: '+1-972-379-2200',
     coordinates: { lat: 32.7096, lng: -97.3634 },
     images: [
       '/images/optimized/misc/kawai-piano-hands_1200.webp',

@@ -37,7 +37,7 @@ export interface ShopifyProductData {
   vendor: string
   productType: string
   tags: string[]
-  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'UNLISTED'
   price: {
     min: string
     max: string

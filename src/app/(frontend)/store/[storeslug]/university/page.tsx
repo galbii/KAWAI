@@ -1,4 +1,4 @@
-import { getStorefrontBySlugDirect, getUniversityEventProducts } from '@/lib/payload/queries';
+import { getStorefrontBySlugDirect, getUniversityEventProductsRich } from '@/lib/payload/queries';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { TCU_2025 } from './event.config';
@@ -25,13 +25,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-const EVENT_PIANO_MODELS = ['GL10', 'GL10 ATX4', 'K200', 'NV6', 'CA901', 'CA701']
+const EVENT_PIANO_MODELS = ['GL-10', 'GL10-ATX4', 'K-200', 'NV6', 'CA901', 'CA701']
 
 export default async function UniversityRoute({ params }: Params) {
   const { storeslug } = await params;
   const [storefront, products] = await Promise.all([
     getStorefrontBySlugDirect(storeslug).catch(() => null),
-    getUniversityEventProducts(EVENT_PIANO_MODELS),
+    getUniversityEventProductsRich(EVENT_PIANO_MODELS),
   ])
   if (!storefront?.isActive) notFound();
   return <UniversityPage products={products} />;

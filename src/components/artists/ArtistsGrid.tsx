@@ -123,6 +123,191 @@ function GridCell({ artist, index }: GridCellProps) {
 }
 
 // ---------------------------------------------------------------------------
+// Alpha Letter Divider — section break between letter groups
+// ---------------------------------------------------------------------------
+
+interface AlphaLetterDividerProps {
+  letter: string
+}
+
+function AlphaLetterDivider({ letter }: AlphaLetterDividerProps) {
+  return (
+    <div
+      className="relative flex items-center px-6 sm:px-12 lg:px-16 pt-10 pb-2 select-none overflow-hidden"
+      aria-hidden="true"
+    >
+      {/* Ghost background letter */}
+      <span
+        className="absolute left-2 sm:left-6 lg:left-8 top-0 text-[8.5rem] font-light leading-none text-white/[0.028] pointer-events-none"
+        style={{ fontFamily: 'var(--font-brand-serif)' }}
+      >
+        {letter}
+      </span>
+      {/* Foreground label */}
+      <span className="relative z-10 text-[10px] font-semibold tracking-[0.26em] uppercase text-kawai-red/50 font-[family-name:var(--font-brand-sans)]">
+        {letter}
+      </span>
+      {/* Extending hairline */}
+      <div className="ml-5 flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Alpha Row — single artist entry in A-Z list view
+// ---------------------------------------------------------------------------
+
+interface AlphaRowProps {
+  artist: Artist
+  /** 1-based display index across all visible artists */
+  index: number
+  /** Position within current load batch — used for stagger timing */
+  batchIndex: number
+}
+
+function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
+  const imageUrl = getArtistImage(artist)
+  const rowDelay = (batchIndex % PAGE_SIZE) * 0.038
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.42, delay: rowDelay, ease }}
+    >
+      <Link
+        href={`/artists/${artist.slug}`}
+        className="group relative flex items-center gap-6 sm:gap-10 px-6 sm:px-12 lg:px-16 py-6 sm:py-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset"
+        aria-label={`View profile: ${artist.name}`}
+      >
+        {/* Vertical red accent bar — grows full-height on hover */}
+        <div
+          className="absolute left-0 top-0 w-[3px] bg-kawai-red h-0 group-hover:h-full transition-[height] duration-500 ease-out"
+          aria-hidden="true"
+        />
+
+        {/* Bottom divider */}
+        <div
+          className="absolute bottom-0 left-6 sm:left-12 lg:left-16 right-6 sm:right-12 lg:right-16 h-px bg-white/[0.05] group-hover:bg-white/[0.09] transition-colors duration-300"
+          aria-hidden="true"
+        />
+
+        {/* Index number */}
+        <span
+          className={cn(
+            'flex-shrink-0 w-9 text-right text-xs tabular-nums leading-none',
+            'text-white/[0.12] group-hover:text-white/30 transition-colors duration-300',
+            'font-[family-name:var(--font-brand-sans)]',
+          )}
+        >
+          {String(index).padStart(2, '0')}
+        </span>
+
+        {/* Artist name */}
+        <div className="flex-1 min-w-0">
+          <span
+            className={cn(
+              'block text-3xl sm:text-4xl lg:text-5xl font-light leading-none truncate',
+              'text-white/85 group-hover:text-white',
+              'transition-colors duration-300',
+              'font-[family-name:var(--font-brand-serif)]',
+            )}
+          >
+            {artist.name}
+          </span>
+        </div>
+
+        {/* Instrument + region metadata */}
+        <div className="hidden sm:flex items-center gap-4 flex-shrink-0">
+          {artist.instrument && INSTRUMENT_LABELS[artist.instrument] && (
+            <span
+              className={cn(
+                'text-[11px] tracking-[0.18em] uppercase',
+                'text-white/25 group-hover:text-kawai-red/70',
+                'transition-colors duration-300',
+                'font-[family-name:var(--font-brand-sans)]',
+              )}
+            >
+              {INSTRUMENT_LABELS[artist.instrument]}
+            </span>
+          )}
+          {artist.instrument && artist.region && (
+            <span className="text-white/[0.12] text-xs" aria-hidden="true">·</span>
+          )}
+          {artist.region && (
+            <span
+              className={cn(
+                'text-[11px] tracking-[0.12em] uppercase',
+                'text-white/[0.18] group-hover:text-white/40',
+                'transition-colors duration-300',
+                'font-[family-name:var(--font-brand-sans)]',
+              )}
+            >
+              {artist.region}
+            </span>
+          )}
+        </div>
+
+        {/* Featured badge */}
+        {artist.featured && (
+          <span
+            className={cn(
+              'hidden lg:block flex-shrink-0',
+              'text-[10px] tracking-[0.22em] uppercase font-medium',
+              'text-kawai-gold/40 group-hover:text-kawai-gold/70',
+              'transition-colors duration-300',
+              'font-[family-name:var(--font-brand-sans)]',
+            )}
+          >
+            Featured
+          </span>
+        )}
+
+        {/* Circular thumbnail */}
+        <div
+          className={cn(
+            'relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden',
+            'border border-white/[0.08] group-hover:border-white/20',
+            'ring-0 group-hover:ring-1 group-hover:ring-kawai-red/20 group-hover:ring-offset-0',
+            'transition-all duration-500',
+          )}
+        >
+          <Image
+            src={imageUrl}
+            alt=""
+            fill
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            sizes="64px"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-0 bg-black/35 group-hover:bg-black/0 transition-colors duration-500"
+            aria-hidden="true"
+          />
+        </div>
+
+        {/* Chevron — slides in on hover */}
+        <svg
+          className={cn(
+            'flex-shrink-0 w-4 h-4',
+            'text-transparent group-hover:text-white/30',
+            '-translate-x-2 group-hover:translate-x-0',
+            'transition-all duration-300',
+          )}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </Link>
+    </motion.div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // ArtistsGrid — main export
 // ---------------------------------------------------------------------------
 
@@ -182,6 +367,20 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
   const progressPct = filteredArtists.length > 0
     ? Math.round((visibleCount / filteredArtists.length) * 100)
     : 100
+
+  // Group visible artists by first letter for A-Z view
+  const alphaGroups = visibleArtists.reduce<
+    { letter: string; artists: { artist: Artist; globalIndex: number }[] }[]
+  >((acc, artist, idx) => {
+    const letter = artist.name[0]?.toUpperCase() ?? '#'
+    const last = acc[acc.length - 1]
+    if (last && last.letter === letter) {
+      last.artists.push({ artist, globalIndex: idx + 1 })
+    } else {
+      acc.push({ letter, artists: [{ artist, globalIndex: idx + 1 }] })
+    }
+    return acc
+  }, [])
 
   if (artists.length === 0) return null
 
@@ -358,19 +557,57 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
           </div>
         </div>
 
-        {/* Photo grid */}
+        {/* Content area — grid view or A-Z list view */}
         {filteredArtists.length > 0 ? (
           <>
-            <div
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-kawai-black/50"
-              aria-label="Artists gallery"
-            >
-              {visibleArtists.map((artist, index) => (
-                <GridCell key={artist.id} artist={artist} index={index} />
-              ))}
-            </div>
+            <AnimatePresence mode="wait">
+              {sortMode === 'alpha' ? (
+                /* ── A-Z list view ── */
+                <motion.div
+                  key="alpha-list"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22, ease }}
+                  role="list"
+                  aria-label="Artists A–Z"
+                >
+                  {alphaGroups.map((group) => (
+                    <div key={group.letter} role="group" aria-label={`Artists starting with ${group.letter}`}>
+                      <AlphaLetterDivider letter={group.letter} />
+                      {group.artists.map(({ artist, globalIndex }, batchIndex) => (
+                        <AlphaRow
+                          key={artist.id}
+                          artist={artist}
+                          index={globalIndex}
+                          batchIndex={batchIndex}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </motion.div>
+              ) : (
+                /* ── Photo grid view ── */
+                <motion.div
+                  key="grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22, ease }}
+                >
+                  <div
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-kawai-black/50"
+                    aria-label="Artists gallery"
+                  >
+                    {visibleArtists.map((artist, index) => (
+                      <GridCell key={artist.id} artist={artist} index={index} />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Load More */}
+            {/* Load More — shared between both views */}
             <AnimatePresence>
               {hasMore && (
                 <motion.div
