@@ -7,7 +7,7 @@ import GallerySection from '../GallerySection';
 import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
 
 const TCU_LETTER_URL =
-  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Screenshot%202026-05-15%20at%203.15.24%E2%80%AFPM.webp';
+  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Screenshot%202026-05-18%20at%204.12.00%E2%80%AFPM.webp';
 
 interface AboutEventSectionProps {
   partnerName: string
