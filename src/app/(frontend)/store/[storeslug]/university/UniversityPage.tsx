@@ -18,9 +18,10 @@ import PianoConsultationDialog from './_components/PianoConsultationDialog';
 
 interface UniversityPageProps {
   products: GrandSaleProduct[]
+  storeslug: string
 }
 
-export default function UniversityPage({ products }: UniversityPageProps) {
+export default function UniversityPage({ products, storeslug }: UniversityPageProps) {
   useScrollAnimations();
 
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
@@ -58,7 +59,7 @@ export default function UniversityPage({ products }: UniversityPageProps) {
       <ShowroomLocation eventLocation={TCU_2025.eventLocation} />
       <CountdownTimer targetDate={TCU_2025.eventStartDate} onOpenConsultation={openConsultation} isConsultationModalOpen={isConsultationModalOpen} />
       <NewsletterPopup />
-      <PianoConsultationDialog isOpen={isConsultationModalOpen} onClose={closeConsultation} calendlyUrl={TCU_2025.calendlyUrl} eventName={TCU_2025.eventName} tags={['university-sale', 'uta-2025']} />
+      <PianoConsultationDialog isOpen={isConsultationModalOpen} onClose={closeConsultation} calendlyUrl={TCU_2025.calendlyUrl} eventName={TCU_2025.eventName} tags={['tcu-2026']} storeslug={storeslug} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ interface PianoConsultationDialogProps {
   calendlyUrl: string;
   eventName?: string;
   tags?: string[];
+  storeslug?: string;
 }
 
 interface ContactForm {
@@ -125,6 +126,7 @@ export default function PianoConsultationDialog({
   calendlyUrl,
   eventName = 'Piano Sale',
   tags = [],
+  storeslug,
 }: PianoConsultationDialogProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<ContactForm>({ firstName: '', lastName: '', email: '', phone: '' });
@@ -196,6 +198,7 @@ export default function PianoConsultationDialog({
       email: form.email,
       phone: form.phone ? toE164US(form.phone) : undefined,
       customTags: tags,
+      storeslug: storeslug ?? null,
       note: `${eventName} — booking appointment inquiry`,
     });
     window.dataLayer = window.dataLayer ?? [];

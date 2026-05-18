@@ -34,5 +34,5 @@ export default async function UniversityRoute({ params }: Params) {
     getUniversityEventProductsRich(EVENT_PIANO_MODELS),
   ])
   if (!storefront?.isActive) notFound();
-  return <UniversityPage products={products} />;
+  return <UniversityPage products={products} storeslug={storeslug} />;
 }
