@@ -164,7 +164,7 @@ export function FloatingActionBar() {
       if (e.ctrlKey || e.metaKey || e.altKey) return
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
-      setCollOpen(v => !v)
+      setCollOpen(true)
     }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)

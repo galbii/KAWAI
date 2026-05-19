@@ -9,6 +9,7 @@ export const t = {
   panel:   '#0E0E14',
   card:    '#191926',
   cardHov: '#1E1E2C',
+  cardSel: '#20203A',
   line:    '#1C1C2C',
   lineStr: '#252535',
   loFaint: '#2A2A40',
@@ -49,10 +50,11 @@ export const IcoMusic  = (p: { size?: number }) => <S size={p.size} ch={<><rect 
 export const IcoFaq    = (p: { size?: number }) => <S size={p.size} ch={<><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M7.5 7.5C7.5 6.12 8.62 5 10 5C11.38 5 12.5 6.12 12.5 7.5C12.5 8.5 11.92 9.35 11.07 9.76L10 10.75V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14.5" r="1" fill="currentColor"/></>} />
 export const IcoGrid   = (p: { size?: number }) => <S size={p.size} ch={<><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></>} />
 export const IcoChevR  = (p: { size?: number }) => <S size={p.size} ch={<path d="M8 4L14 10L8 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>} />
+export const IcoEdit   = (p: { size?: number }) => <S size={p.size} ch={<><path d="M14 3L17 6L8 15H5V12L14 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/><line x1="3" y1="18" x2="17" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></>} />
 
 type IconFC = (p: { size?: number }) => React.ReactElement
 
-// ── Slug → icon mapping (add new collections here) ───────────────────────────
+// ── Slug → icon mapping ──────────────────────────────────────────────────────
 const ICON_MAP: Record<string, IconFC> = {
   products:                        IcoPiano,
   collections:                     IcoColl,
@@ -87,6 +89,15 @@ const GROUP_COLORS: Record<string, string> = {
   Integrations:   t.lo,
 }
 
+// ── Collection type → accent color ───────────────────────────────────────────
+const DOC_COLORS: Record<string, string> = {
+  products:    t.violet,
+  collections: t.violet,
+  storefronts: t.gold,
+  artists:     t.jade,
+  pages:       t.pink,
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 export interface NavItem {
   slug: string
@@ -105,15 +116,72 @@ type DocResult = {
   id: string
   title: string
   excerpt?: string | null
-  doc: { relationTo: string; value: string }
+  category?: string | null
+  doc: {
+    relationTo: string
+    value: string | { id: string; [key: string]: unknown } | null
+  }
+  // product fields
+  productModel?: string | null
+  productImageUrl?: string | null
+  productType?: string | null
+  productCategory?: string | null
+  productSlug?: string | null
+  // page fields
+  pageSlug?: string | null
+  // storefront fields
+  storefrontSlug?: string | null
+  storefrontLocationName?: string | null
+  storefrontLocationText?: string | null
+  storefrontCity?: string | null
+  storefrontRegion?: string | null
+  storefrontAddress?: string | null
+  storefrontPhone?: string | null
+  // collection fields
+  collectionHandle?: string | null
+  collectionTitle?: string | null
+  // artist fields
+  artistSlug?: string | null
+  artistImageUrl?: string | null
+  artistGenre?: string | null
+  artistInstrument?: string | null
+  artistShortBio?: string | null
 }
 
-const DOC_COLORS: Record<string, string> = {
-  products: t.violet, pages: t.jade, storefronts: t.gold,
-  collections: t.pink, posts: t.jade, artists: t.jade,
+// Extract ID from polymorphic value — may be a bare string or a populated document object
+function getDocId(value: string | { id: string; [key: string]: unknown } | null | undefined): string {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  return String(value.id ?? '')
 }
 
-// ── Build groups dynamically from Payload client config ──────────────────────
+// Build the admin edit URL for a document result
+function adminHref(result: DocResult): string {
+  const id = getDocId(result.doc?.value)
+  return `/admin/collections/${result.doc?.relationTo}/${id}`
+}
+
+// ── Subtitle logic per collection type ───────────────────────────────────────
+function getSubtitle(result: DocResult): string | null {
+  const type = result.doc?.relationTo
+  if (type === 'products') {
+    const parts = [result.productType, result.productCategory].filter(Boolean)
+    return parts.length ? parts.join(' · ') : result.excerpt ?? null
+  }
+  if (type === 'storefronts') {
+    const loc = [result.storefrontCity, result.storefrontRegion].filter(Boolean).join(', ')
+    return loc || result.storefrontAddress || (result.excerpt ?? null)
+  }
+  if (type === 'artists') {
+    return [result.artistGenre, result.artistInstrument].filter(Boolean).join(' · ') || (result.excerpt ?? null)
+  }
+  if (type === 'collections') {
+    return result.collectionHandle ? `/${result.collectionHandle}` : result.excerpt ?? null
+  }
+  return result.excerpt ?? null
+}
+
+// ── Build groups from Payload config ─────────────────────────────────────────
 function useCollectionGroups(): { groups: CollGroup[]; flat: NavItem[]; total: number } {
   const { config } = useConfig()
 
@@ -125,22 +193,14 @@ function useCollectionGroups(): { groups: CollGroup[]; flat: NavItem[]; total: n
     const label = typeof col.labels?.plural === 'string' ? col.labels.plural : col.slug
     const Ic = ICON_MAP[col.slug] ?? IcoDoc
 
-    const item: NavItem = {
-      slug: col.slug,
-      label,
-      href: `/admin/collections/${col.slug}`,
-      Ic,
-    }
-
+    const item: NavItem = { slug: col.slug, label, href: `/admin/collections/${col.slug}`, Ic }
     if (!groupMap.has(groupName)) groupMap.set(groupName, [])
     groupMap.get(groupName)!.push(item)
   }
 
-  // Preferred group order
   const ORDER = ['Commerce', 'Content', 'Business', 'Singletons', 'Pages', 'System', 'Administration', 'Integrations']
   const sorted = [...groupMap.keys()].sort((a, b) => {
-    const ai = ORDER.indexOf(a)
-    const bi = ORDER.indexOf(b)
+    const ai = ORDER.indexOf(a), bi = ORDER.indexOf(b)
     if (ai === -1 && bi === -1) return a.localeCompare(b)
     if (ai === -1) return 1
     if (bi === -1) return -1
@@ -148,11 +208,7 @@ function useCollectionGroups(): { groups: CollGroup[]; flat: NavItem[]; total: n
   })
 
   for (const name of sorted) {
-    groups.push({
-      group: name,
-      color: GROUP_COLORS[name] ?? t.mid,
-      items: groupMap.get(name)!,
-    })
+    groups.push({ group: name, color: GROUP_COLORS[name] ?? t.mid, items: groupMap.get(name)! })
   }
 
   const flat = groups.flatMap(g => g.items)
@@ -192,6 +248,115 @@ function CollCard({ item, color, onClose }: { item: NavItem; color: string; onCl
   )
 }
 
+// ── Document result card ─────────────────────────────────────────────────────
+function DocResultCard({
+  result,
+  selected,
+  onClose,
+  elRef,
+}: {
+  result: DocResult
+  selected: boolean
+  onClose: () => void
+  elRef?: React.Ref<HTMLAnchorElement> | undefined
+}) {
+  const [hov, setHov] = useState(false)
+  const collectionType = result.doc?.relationTo ?? 'unknown'
+  const color = DOC_COLORS[collectionType] ?? t.mid
+  const subtitle = getSubtitle(result)
+  const imageUrl = result.productImageUrl ?? result.artistImageUrl ?? null
+  const href = adminHref(result)
+
+  const labelMap: Record<string, string> = {
+    products:    'Product',
+    storefronts: 'Storefront',
+    artists:     'Artist',
+    pages:       'Page',
+    collections: 'Collection',
+  }
+  const typeLabel = labelMap[collectionType] ?? collectionType
+
+  const active = selected || hov
+
+  return (
+    <a
+      ref={elRef}
+      href={href}
+      onClick={onClose}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '12px 16px', borderRadius: 12,
+        background: selected ? t.cardSel : hov ? t.cardHov : t.card,
+        border: `1px solid ${selected ? color + '60' : active ? color + '35' : t.line}`,
+        color: t.high, textDecoration: 'none',
+        transition: 'background 0.1s, border-color 0.1s',
+        outline: 'none',
+      }}
+    >
+      {/* Thumbnail or icon fallback */}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt=""
+          style={{
+            width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0,
+            border: `1px solid ${t.lineStr}`,
+          }}
+        />
+      ) : (
+        <div style={{
+          width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+          background: `${color}14`, border: `1px solid ${color}25`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', color,
+        }}>
+          {ICON_MAP[collectionType] ? (
+            (() => { const Ic = ICON_MAP[collectionType]!; return <Ic size={20} /> })()
+          ) : (
+            <IcoDoc size={20} />
+          )}
+        </div>
+      )}
+
+      {/* Text */}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.3, color: t.high }}>
+          {result.title}
+        </div>
+        {subtitle && (
+          <div style={{
+            fontSize: 12, color: t.mid, marginTop: 3,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+
+      {/* Type badge + edit hint */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+          color, background: `${color}18`, border: `1px solid ${color}30`,
+          borderRadius: 5, padding: '3px 8px',
+        }}>
+          {typeLabel}
+        </span>
+        {selected && (
+          <span style={{
+            fontSize: 10, color: t.lo,
+            background: t.loFaint, borderRadius: 4, padding: '2px 6px',
+            fontFamily: 'inherit', border: `1px solid ${t.lineStr}`,
+          }}>
+            ↵ edit
+          </span>
+        )}
+      </div>
+    </a>
+  )
+}
+
 // ── Main modal ───────────────────────────────────────────────────────────────
 interface CollectionsModalProps {
   open: boolean
@@ -205,40 +370,84 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
   const [mounted, setMounted] = useState(false)
   const [docResults, setDocResults] = useState<DocResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [selectedIdx, setSelectedIdx] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
+  const selectedRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Focus input on open; clear state on close
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 60)
-    else { setQ(''); setDocResults([]) }
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    } else {
+      setQ('')
+      setDocResults([])
+      setSelectedIdx(-1)
+    }
   }, [open])
+
+  // Reset selection when results change
+  useEffect(() => { setSelectedIdx(-1) }, [q])
+
+  // Scroll selected result into view
+  useEffect(() => {
+    selectedRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [selectedIdx])
+
+  // Keyboard: Esc, ArrowDown, ArrowUp, Enter
   useEffect(() => {
     if (!open) return
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (docResults.length > 0) {
+          setSelectedIdx(prev => Math.min(prev + 1, docResults.length - 1))
+        }
+        return
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelectedIdx(prev => {
+          if (prev <= 0) {
+            inputRef.current?.focus()
+            return -1
+          }
+          return prev - 1
+        })
+        return
+      }
+
+      if (e.key === 'Enter' && selectedIdx >= 0) {
+        const result = docResults[selectedIdx]
+        if (result) {
+          window.location.href = adminHref(result)
+          onClose()
+        }
+      }
+    }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)
-  }, [open, onClose])
+  }, [open, onClose, selectedIdx, docResults])
 
-  // Debounced document search
+  // Debounced document search using the rich /api/search endpoint
   useEffect(() => {
     const trimmed = q.trim()
-    if (trimmed.length < 2) { setDocResults([]); return }
+    if (trimmed.length < 2) { setDocResults([]); setSelectedIdx(-1); return }
     const timer = setTimeout(async () => {
       setSearching(true)
       try {
-        const params = new URLSearchParams({
-          'where[or][0][title][like]': trimmed,
-          'where[or][1][excerpt][like]': trimmed,
-          limit: '12', depth: '0', sort: '-priority',
-        })
-        const res = await fetch(`/api/search?${params}`)
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=15`)
         if (res.ok) {
-          const data = await res.json() as { docs: DocResult[] }
-          setDocResults(data.docs)
+          const data = await res.json() as { results: DocResult[]; totalDocs: number }
+          setDocResults(data.results ?? [])
         }
       } catch { /* ignore */ }
       setSearching(false)
-    }, 300)
+    }, 250)
     return () => clearTimeout(timer)
   }, [q])
 
@@ -253,35 +462,47 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
     ? [{ group: 'Collections', color: t.violet, items: flat.filter(i => i.label.toLowerCase().includes(lower) || i.slug.includes(lower)) }]
     : groups
 
+  const hasDocResults = docResults.length > 0
+  const noResults = lower.length >= 2 && !searching && !hasDocResults && navGroups.every(g => g.items.length === 0)
+
   return createPortal(
     <>
+      {/* Backdrop */}
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.76)', backdropFilter: 'blur(8px)', zIndex: 100000,
       }} />
+
+      {/* Panel */}
       <div style={{
         position: 'fixed', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 'min(940px, 94vw)', maxHeight: '86vh',
+        width: 'min(960px, 94vw)', maxHeight: '88vh',
         background: t.panel, border: `1px solid ${t.lineStr}`,
         borderRadius: 20, zIndex: 100001,
         display: 'flex', flexDirection: 'column',
         boxShadow: '0 40px 120px rgba(0,0,0,0.7)', overflow: 'hidden',
       }}>
+
         {/* Search bar */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 14,
           padding: '20px 26px', borderBottom: `1px solid ${t.line}`, flexShrink: 0,
         }}>
-          <IcoSearch size={18} />
+          <span style={{ color: t.lo, flexShrink: 0 }}><IcoSearch size={18} /></span>
           <input
             ref={inputRef}
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Search collections and documents…"
-            style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: t.high, fontSize: 17, fontFamily: 'inherit' }}
+            style={{
+              flex: 1, background: 'none', border: 'none', outline: 'none',
+              color: t.high, fontSize: 17, fontFamily: 'inherit',
+            }}
           />
-          {searching && <span style={{ fontSize: 12, color: t.lo, flexShrink: 0 }}>searching…</span>}
+          {searching && (
+            <span style={{ fontSize: 12, color: t.lo, flexShrink: 0 }}>searching…</span>
+          )}
           <button onClick={onClose} style={{
             background: t.card, border: `1px solid ${t.lineStr}`, color: t.mid,
             borderRadius: 8, padding: '5px 12px', fontSize: 12,
@@ -290,55 +511,53 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
         </div>
 
         {/* Body */}
-        <div style={{ overflowY: 'auto', padding: '26px 30px', flex: 1 }}>
-          {/* Document search results */}
-          {docResults.length > 0 && (
-            <section style={{ marginBottom: 36 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: t.lo, marginBottom: 14 }}>
-                Documents
+        <div style={{ overflowY: 'auto', padding: '24px 28px', flex: 1 }}>
+
+          {/* Document results */}
+          {hasDocResults && (
+            <section style={{ marginBottom: 32 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 14,
+              }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+                  textTransform: 'uppercase', color: t.lo,
+                }}>
+                  Documents
+                </div>
+                <div style={{ fontSize: 11, color: t.lo }}>
+                  {docResults.length} result{docResults.length !== 1 ? 's' : ''}
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {docResults.map(result => {
-                  const col = DOC_COLORS[result.doc.relationTo] ?? t.mid
-                  return (
-                    <a key={result.id}
-                      href={`/admin/collections/${result.doc.relationTo}/${result.doc.value}`}
-                      onClick={onClose}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 14,
-                        padding: '12px 16px', borderRadius: 10,
-                        background: t.card, border: `1px solid ${t.line}`,
-                        color: t.high, textDecoration: 'none',
-                      }}
-                    >
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, flexShrink: 0 }} />
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600 }}>{result.title}</div>
-                        {result.excerpt && (
-                          <div style={{ fontSize: 12, color: t.lo, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {result.excerpt}
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 11, color: t.lo, flexShrink: 0, fontFamily: 'ui-monospace, monospace' }}>
-                        {result.doc.relationTo}
-                      </div>
-                    </a>
-                  )
-                })}
+                {docResults.map((result, i) => (
+                  <DocResultCard
+                    key={result.id}
+                    result={result}
+                    selected={i === selectedIdx}
+                    onClose={onClose}
+                    elRef={i === selectedIdx ? selectedRef : undefined}
+                  />
+                ))}
               </div>
             </section>
           )}
 
           {/* No results */}
-          {lower && !searching && docResults.length === 0 && navGroups.every(g => g.items.length === 0) && (
-            <div style={{ color: t.lo, fontSize: 14, padding: '8px 0' }}>No results for "{q}"</div>
+          {noResults && (
+            <div style={{ color: t.lo, fontSize: 14, padding: '8px 0' }}>
+              No results for &ldquo;{q}&rdquo;
+            </div>
           )}
 
           {/* Recently visited */}
           {!lower && recentItems.length > 0 && (
-            <section style={{ marginBottom: 36 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: t.lo, marginBottom: 14 }}>
+            <section style={{ marginBottom: 32 }}>
+              <div style={{
+                fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+                textTransform: 'uppercase', color: t.lo, marginBottom: 14,
+              }}>
                 Recently Visited
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -363,7 +582,10 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
               <section key={grp.group}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <div style={{ width: 9, height: 9, borderRadius: 3, background: grp.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: t.lo }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+                    textTransform: 'uppercase', color: t.lo,
+                  }}>
                     {grp.group}
                   </span>
                 </div>
@@ -379,18 +601,37 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
 
         {/* Footer */}
         <div style={{
-          padding: '14px 30px', borderTop: `1px solid ${t.line}`, flexShrink: 0,
+          padding: '13px 28px', borderTop: `1px solid ${t.line}`, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <span style={{ fontSize: 12, color: t.lo }}>{total} collections</span>
-          <span style={{ fontSize: 12, color: t.lo }}>
-            <kbd style={{ fontFamily: 'inherit', background: t.card, border: `1px solid ${t.lineStr}`, borderRadius: 4, padding: '2px 6px' }}>esc</kbd> to close
+          <span style={{ display: 'flex', gap: 14, fontSize: 12, color: t.lo, alignItems: 'center' }}>
+            {docResults.length > 0 && (
+              <span>
+                <kbd style={kbdStyle}>↑↓</kbd> navigate
+                <span style={{ margin: '0 6px' }}>·</span>
+                <kbd style={kbdStyle}>↵</kbd> open
+                <span style={{ margin: '0 6px' }}>·</span>
+              </span>
+            )}
+            <kbd style={kbdStyle}>L</kbd> toggle
+            <span style={{ margin: '0 4px' }}>·</span>
+            <kbd style={kbdStyle}>esc</kbd> close
           </span>
         </div>
       </div>
     </>,
     document.body,
   )
+}
+
+const kbdStyle: React.CSSProperties = {
+  fontFamily: 'inherit',
+  background: '#1C1C2C',
+  border: '1px solid #252535',
+  borderRadius: 4,
+  padding: '2px 6px',
+  fontSize: 11,
 }
 
 // ── Export total count hook for button label ─────────────────────────────────

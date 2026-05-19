@@ -38,6 +38,7 @@ const ease = [0.25, 0.46, 0.45, 0.94] as const
 
 interface ArtistsGridProps {
   artists: Artist[]
+  legacyArtists?: Artist[]
   title?: string
   showSearch?: boolean
 }
@@ -50,9 +51,10 @@ interface GridCellProps {
   artist: Artist
   /** Used to stagger within each PAGE_SIZE batch */
   index: number
+  legacy?: boolean
 }
 
-function GridCell({ artist, index }: GridCellProps) {
+function GridCell({ artist, index, legacy }: GridCellProps) {
   const imageUrl = getArtistImage(artist)
   // Stagger resets per batch so load-more feels fresh, not delayed
   const staggerDelay = (index % PAGE_SIZE) * 0.055
@@ -89,6 +91,21 @@ function GridCell({ artist, index }: GridCellProps) {
           className="absolute bottom-0 left-0 h-[2px] bg-kawai-red transition-all duration-500 ease-out w-0 group-hover:w-full"
           aria-hidden="true"
         />
+
+        {/* Legacy badge */}
+        {legacy && (
+          <div className="absolute top-3 right-3 z-10">
+            <span
+              className={cn(
+                'text-[9px] font-semibold tracking-[0.22em] uppercase px-2 py-1 rounded-full',
+                'bg-black/50 text-kawai-gold/60 border border-kawai-gold/20',
+                'font-[family-name:var(--font-brand-sans)]',
+              )}
+            >
+              Legacy
+            </span>
+          </div>
+        )}
 
         {/* Name + instrument */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5">
@@ -163,9 +180,10 @@ interface AlphaRowProps {
   index: number
   /** Position within current load batch — used for stagger timing */
   batchIndex: number
+  legacy?: boolean
 }
 
-function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
+function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
   const imageUrl = getArtistImage(artist)
   const rowDelay = (batchIndex % PAGE_SIZE) * 0.038
 
@@ -248,8 +266,20 @@ function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
           )}
         </div>
 
-        {/* Featured badge */}
-        {artist.featured && (
+        {/* Featured / Legacy badge */}
+        {legacy ? (
+          <span
+            className={cn(
+              'hidden lg:block flex-shrink-0',
+              'text-[10px] tracking-[0.22em] uppercase font-medium',
+              'text-kawai-gold/30 group-hover:text-kawai-gold/55',
+              'transition-colors duration-300',
+              'font-[family-name:var(--font-brand-sans)]',
+            )}
+          >
+            Legacy
+          </span>
+        ) : artist.featured && (
           <span
             className={cn(
               'hidden lg:block flex-shrink-0',
@@ -266,7 +296,7 @@ function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
         {/* Circular thumbnail */}
         <div
           className={cn(
-            'relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden',
+            'relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden',
             'border border-white/[0.08] group-hover:border-white/20',
             'ring-0 group-hover:ring-1 group-hover:ring-kawai-red/20 group-hover:ring-offset-0',
             'transition-all duration-500',
@@ -277,11 +307,11 @@ function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
             alt=""
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            sizes="64px"
+            sizes="(max-width: 640px) 96px, (max-width: 1024px) 112px, 128px"
             aria-hidden="true"
           />
           <div
-            className="absolute inset-0 bg-black/35 group-hover:bg-black/0 transition-colors duration-500"
+            className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500"
             aria-hidden="true"
           />
         </div>
@@ -312,19 +342,25 @@ function AlphaRow({ artist, index, batchIndex }: AlphaRowProps) {
 // ---------------------------------------------------------------------------
 
 type SortMode = 'recent' | 'alpha'
+type ViewMode = 'current' | 'legacy'
 
-export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true }: ArtistsGridProps) {
+export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists', showSearch = true }: ArtistsGridProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [sortMode, setSortMode] = useState<SortMode>('recent')
+  const [viewMode, setViewMode] = useState<ViewMode>('current')
   const [searchFocused, setSearchFocused] = useState(false)
+
+  const hasLegacy = legacyArtists.length > 0
+  const isLegacyView = viewMode === 'legacy'
+  const activePool = isLegacyView ? legacyArtists : artists
 
   // Used to avoid scrolling on initial mount
   const isFirstRender = useRef(true)
   // Ref to the grid section so we can scroll back to its top when filters change
   const sectionRef = useRef<HTMLElement>(null)
 
-  const filteredArtists = artists
+  const filteredArtists = activePool
     .filter((a) => {
       if (!searchQuery) return true
       const q = searchQuery.toLowerCase()
@@ -360,7 +396,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
       const absoluteTop = window.scrollY + rect.top - headerBottom
       window.scrollTo({ top: absoluteTop, behavior: 'smooth' })
     }
-  }, [searchQuery, sortMode])
+  }, [searchQuery, sortMode, viewMode])
 
   const visibleArtists = filteredArtists.slice(0, visibleCount)
   const hasMore = filteredArtists.length > visibleCount
@@ -382,7 +418,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
     return acc
   }, [])
 
-  if (artists.length === 0) return null
+  if (artists.length === 0 && legacyArtists.length === 0) return null
 
   return (
     <section ref={sectionRef} className="bg-kawai-black w-full">
@@ -411,6 +447,39 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
           />
 
           <div className="relative px-6 sm:px-12 lg:px-16 py-5 max-w-7xl mx-auto">
+
+            {/* Current / Legacy tab row — only shown when legacy artists exist */}
+            {hasLegacy && (
+              <div className="flex items-center gap-6 mb-4 border-b border-white/[0.06] pb-4">
+                <button
+                  type="button"
+                  onClick={() => { setViewMode('current'); setSearchQuery('') }}
+                  className={cn(
+                    'text-[11px] font-semibold tracking-[0.18em] uppercase transition-all duration-200',
+                    'font-[family-name:var(--font-brand-sans)]',
+                    viewMode === 'current'
+                      ? 'text-white border-b-2 border-kawai-red pb-0.5'
+                      : 'text-white/30 hover:text-white/55 pb-0.5',
+                  )}
+                >
+                  Current
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setViewMode('legacy'); setSearchQuery('') }}
+                  className={cn(
+                    'text-[11px] font-semibold tracking-[0.18em] uppercase transition-all duration-200',
+                    'font-[family-name:var(--font-brand-sans)]',
+                    viewMode === 'legacy'
+                      ? 'text-kawai-gold/80 border-b-2 border-kawai-gold/50 pb-0.5'
+                      : 'text-white/30 hover:text-white/55 pb-0.5',
+                  )}
+                >
+                  Legacy
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
 
               {/* Title + count — left side */}
@@ -421,11 +490,12 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, ease }}
                   className={cn(
-                    'text-3xl sm:text-4xl font-light text-white',
+                    'text-3xl sm:text-4xl font-light transition-colors duration-300',
+                    isLegacyView ? 'text-kawai-gold/70' : 'text-white',
                     'font-[family-name:var(--font-brand-serif)]',
                   )}
                 >
-                  {title}
+                  {isLegacyView ? 'Legacy Artists' : title}
                 </motion.h2>
                 <motion.span
                   initial={{ opacity: 0 }}
@@ -581,6 +651,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
                           artist={artist}
                           index={globalIndex}
                           batchIndex={batchIndex}
+                          legacy={isLegacyView}
                         />
                       ))}
                     </div>
@@ -600,7 +671,7 @@ export function ArtistsGrid({ artists, title = 'Our Artists', showSearch = true 
                     aria-label="Artists gallery"
                   >
                     {visibleArtists.map((artist, index) => (
-                      <GridCell key={artist.id} artist={artist} index={index} />
+                      <GridCell key={artist.id} artist={artist} index={index} legacy={isLegacyView} />
                     ))}
                   </div>
                 </motion.div>

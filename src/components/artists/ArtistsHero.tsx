@@ -195,26 +195,27 @@ export default function ArtistsHero({ artists }: ArtistsHeroProps) {
             )}
 
             <motion.div
-              key={`cta-${currentIndex}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex items-center gap-3"
             >
+              {/* View Profile — primary, white fill */}
               <Link
                 href={`/artists/${currentArtist.slug}`}
                 className={cn(
-                  'group relative inline-flex items-center gap-2.5 overflow-hidden',
-                  'rounded-full px-6 py-3',
-                  'text-xs font-semibold tracking-[0.14em] uppercase',
+                  'group relative inline-flex items-center gap-3 overflow-hidden',
+                  'rounded-full px-8 py-4',
+                  'text-sm font-semibold tracking-[0.12em] uppercase',
                   'font-[family-name:var(--font-brand-sans)]',
                   'bg-white text-kawai-black',
                   'transition-all duration-300',
-                  'hover:bg-kawai-pearl hover:shadow-[0_6px_24px_rgba(0,0,0,0.25)]',
+                  'hover:bg-kawai-pearl hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]',
                 )}
               >
                 <span className="relative z-10">View Profile</span>
                 <svg
-                  className="relative z-10 w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                  className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
                   aria-hidden="true"
                 >
@@ -222,6 +223,23 @@ export default function ArtistsHero({ artists }: ArtistsHeroProps) {
                 </svg>
                 <span className="absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               </Link>
+
+              {/* All Artists — secondary, outlined */}
+              <a
+                href="#artists-grid"
+                className={cn(
+                  'inline-flex items-center gap-2.5',
+                  'rounded-full px-8 py-4',
+                  'text-sm font-semibold tracking-[0.12em] uppercase',
+                  'font-[family-name:var(--font-brand-sans)]',
+                  'border border-white/30 text-white/80',
+                  'backdrop-blur-sm bg-white/[0.06]',
+                  'transition-all duration-300',
+                  'hover:border-white/60 hover:text-white hover:bg-white/[0.12]',
+                )}
+              >
+                All Artists
+              </a>
             </motion.div>
           </div>
         </div>

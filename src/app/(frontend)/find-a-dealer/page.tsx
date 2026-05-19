@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { generateBreadcrumbSchema } from '@/lib/seo/schemas'
-import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { DealerFinderMapBlock } from '@/components/blocks/DealerFinderMapBlock'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
@@ -87,11 +86,6 @@ export default async function FindADealerPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c'),
         }}
-      />
-      <AdminBarDoc
-        collection="dealers"
-        id=""
-        collectionLabels={{ singular: 'Dealer', plural: 'Dealers' }}
       />
       <DealerFinderMapBlock />
     </main>

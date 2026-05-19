@@ -38,6 +38,25 @@ async function getArtists() {
   }
 }
 
+async function getLegacyArtists() {
+  try {
+    const payload = await getPayloadClient()
+    const artists = await payload.find({
+      collection: 'artists',
+      where: {
+        isActive: { equals: false },
+      },
+      limit: 100,
+      sort: 'name',
+      depth: 1,
+    })
+    return artists.docs as Artist[]
+  } catch (error) {
+    console.error('Error fetching legacy artists:', error)
+    return []
+  }
+}
+
 async function getCMSArtistsPage(): Promise<Page | null> {
   try {
     const payload = await getPayloadClient()
@@ -57,7 +76,7 @@ async function getCMSArtistsPage(): Promise<Page | null> {
 }
 
 export default async function ArtistsPage() {
-  const [artists, cmsPage] = await Promise.all([getArtists(), getCMSArtistsPage()])
+  const [artists, legacyArtists, cmsPage] = await Promise.all([getArtists(), getLegacyArtists(), getCMSArtistsPage()])
 
   // If a CMS page exists with slug "artists", render it instead of the hardcoded layout
   if (cmsPage) {
@@ -98,7 +117,7 @@ export default async function ArtistsPage() {
         )}
 
         {gridArtists.length > 0 ? (
-          <ArtistsGrid artists={gridArtists} />
+          <ArtistsGrid artists={gridArtists} legacyArtists={legacyArtists} />
         ) : (
           <div className="container mx-auto px-6 pb-24">
             <div className="max-w-2xl mx-auto text-center py-24">

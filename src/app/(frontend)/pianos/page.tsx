@@ -50,8 +50,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return getCMSPageMetadata('pianos', fallbackMetadata)
 }
 
-const getPianosPageHeading = unstable_cache(
-  async (): Promise<string | null> => {
+type PianosPageCMSData = { heading: string | null; id: string | null }
+
+const getPianosPageCMSData = unstable_cache(
+  async (): Promise<PianosPageCMSData> => {
     try {
       const payload = await getPayloadClient()
       const result = await payload.find({
@@ -59,9 +61,10 @@ const getPianosPageHeading = unstable_cache(
         limit: 1,
         depth: 0,
       })
-      return result.docs[0]?.heroTitle ?? null
+      const doc = result.docs[0]
+      return { heading: doc?.heroTitle ?? null, id: doc?.id ? String(doc.id) : null }
     } catch {
-      return null
+      return { heading: null, id: null }
     }
   },
   ['pianos-page-heading'],
@@ -112,17 +115,24 @@ export default async function PianosPage() {
     getCatalogProductsDirect(),
     getProductSpotlightNewsItems(),
     getCollectionsForBrowser(),
-    getPianosPageHeading(),
+    getPianosPageCMSData(),
     getSite(),
   ])
 
   return (
     <>
+      {pianosPageData.id && (
+        <AdminBarDoc
+          collection="pianos-page"
+          id={pianosPageData.id}
+          collectionLabels={{ singular: 'Pianos Page', plural: 'Pianos Pages' }}
+        />
+      )}
       {spotlightItems.length > 0 && (
         <NewsCarousel data={{ autoPlayDuration: 7000, newsItems: spotlightItems }} />
       )}
       {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}
-      {pianosPageData && (
+      {pianosPageData.heading && (
         <div className="bg-white px-6 pt-6 pb-1">
           <h1
             style={{
@@ -134,14 +144,14 @@ export default async function PianosPage() {
               color: 'rgba(30, 27, 22, 0.12)',
             }}
           >
-            {pianosPageData}
+            {pianosPageData.heading}
           </h1>
         </div>
       )}
       <PianosBrowser
         products={products}
         collectionsForBrowser={collectionsForBrowser}
-        pageHeading={pianosPageData ?? undefined}
+        pageHeading={pianosPageData.heading ?? undefined}
         site={site}
       />
     </>
