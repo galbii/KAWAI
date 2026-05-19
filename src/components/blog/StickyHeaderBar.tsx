@@ -23,7 +23,6 @@ export function StickyHeaderBar({
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
-        // Show sticky header when hero is out of view
         if (entry) {
           setIsVisible(!entry.isIntersecting)
         }
@@ -34,16 +33,18 @@ export function StickyHeaderBar({
       }
     )
 
-    // Observe the hero element (we'll pass ref from parent)
-    const heroElement = document.querySelector('[data-blog-hero]')
-    if (heroElement) {
-      observer.observe(heroElement)
-    }
+    // Delay observer setup until after PageTransition finishes (220ms) so the
+    // hero's position is settled before we evaluate intersection.
+    const timer = setTimeout(() => {
+      const heroElement = document.querySelector('[data-blog-hero]')
+      if (heroElement) {
+        observer.observe(heroElement)
+      }
+    }, 300)
 
     return () => {
-      if (heroElement) {
-        observer.unobserve(heroElement)
-      }
+      clearTimeout(timer)
+      observer.disconnect()
     }
   }, [])
 

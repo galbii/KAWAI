@@ -50,7 +50,7 @@ export function BlogPostClient({
       {/* Cinematic Hero Section */}
       {hasHero && (
         <div
-          className="relative w-full min-h-[60vh] md:min-h-[68vh] lg:min-h-[72vh] bg-kawai-black overflow-hidden"
+          className="relative w-full min-h-[60dvh] md:min-h-[68dvh] lg:min-h-[72dvh] bg-kawai-black overflow-hidden"
           data-blog-hero
         >
           {youtubeId ? (
@@ -167,9 +167,9 @@ export function BlogPostClient({
           {/* Main Content Column — left, full width on mobile, flex-1 on desktop */}
           <motion.article
             className="flex-1 min-w-0"
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: easeKawai, delay: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, ease: easeKawai, delay: 0.1 }}
           >
             <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
 
