@@ -1,6 +1,17 @@
+'use client';
+
+import { useRef } from 'react';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import type { HeroFeature } from '../../event.config';
+import {
+  fadeUp,
+  fadeUpSlow,
+  fadeIn,
+  staggerContainer,
+  EASE_ELEGANT,
+} from '../animations';
 
 interface HeroSectionProps {
   config: {
@@ -29,6 +40,29 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, eventDateDisplay, onOpenConsultation, venueInfo }: HeroSectionProps) {
+  const heroRef = useRef<HTMLElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const videoY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    shouldReduceMotion ? ['0%', '0%'] : ['0%', '12%'],
+  );
+  const contentY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    shouldReduceMotion ? [0, 0] : [0, -40],
+  );
+  const contentOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.6, 1],
+    [1, 0.9, 0.3],
+  );
 
   const handleExploreCollectionClick = () => {
     const featuredDealsSection =
@@ -48,39 +82,38 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
   const ghostLines = config.ghostWatermarkText.split('\n');
 
   return (
-    <section className="relative min-h-screen overflow-hidden flex">
+    <section ref={heroRef} className="relative min-h-screen overflow-hidden flex">
 
-      {/* ── Video background ───────────────────────────── */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        disablePictureInPicture
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        style={{ pointerEvents: 'none' }}
-        onLoadedData={(e) => {
-          const video = e.target as HTMLVideoElement;
-          video.currentTime = config.videoStartTime;
-          video.play().catch(() => {});
-        }}
-      >
-        {config.videoSources.map((source, i) => (
-          <source key={i} src={source.src} type={source.type} />
-        ))}
-      </video>
+      {/* ── Video background with parallax ───────────────── */}
+      <div className="absolute z-0" style={{ top: '-5%', bottom: '-5%', left: 0, right: 0 }}>
+        <motion.video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          className="w-full h-full object-cover"
+          style={{ pointerEvents: 'none', y: videoY }}
+          onLoadedData={(e) => {
+            const video = e.target as HTMLVideoElement;
+            video.currentTime = config.videoStartTime;
+            video.play().catch(() => {});
+          }}
+        >
+          {config.videoSources.map((source, i) => (
+            <source key={i} src={source.src} type={source.type} />
+          ))}
+        </motion.video>
+      </div>
 
       {/* ── Dark base layer ────────────────────────────── */}
       <div className="absolute inset-0 z-[1] bg-black/45" />
 
       {/* ── Maroon gradient wash (left → transparent right) ─ */}
-      {/* Mirrors the TCU ad left-panel feel over the video */}
       <div
         className="absolute inset-0 z-[2] pointer-events-none"
-        style={{
-          background: config.heroGradient,
-        }}
+        style={{ background: config.heroGradient }}
       />
 
       {/* Mobile: extra fill so text is readable on narrow screens */}
@@ -90,9 +123,12 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
       />
 
       {/* ── Ghost watermark headline ────────────────────── */}
-      <div
+      <motion.div
         aria-hidden="true"
         className="absolute z-[3] pointer-events-none select-none hidden sm:block"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5, delay: 0.1, ease: EASE_ELEGANT }}
         style={{
           top: '50%',
           left: '-1%',
@@ -107,12 +143,15 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
         }}
       >
         {ghostLines[0]}{ghostLines.length > 1 && <><br />{ghostLines[1]}</>}
-      </div>
+      </motion.div>
 
       {/* ── TCU logo — desktop only, right column ──────── */}
-      <div
+      <motion.div
         className="absolute z-[4] hidden md:flex items-start justify-center pt-40 lg:pt-56"
         style={{ left: '55%', right: 0, top: 0, bottom: 0 }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.3, ease: EASE_ELEGANT }}
       >
         <Image
           src={partnerLogoUrl}
@@ -123,15 +162,19 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
           style={{ height: 'clamp(140px, 22vw, 360px)', width: 'auto', maxWidth: '400px' }}
           priority
         />
-      </div>
+      </motion.div>
 
       {/* ── Main content ───────────────────────────────── */}
-      <div
+      <motion.div
         className="relative z-[4] flex flex-col justify-between min-h-screen w-full md:max-w-[60%] px-6 sm:px-10 lg:px-16 py-10 lg:py-14"
+        style={{ y: contentY, opacity: contentOpacity }}
+        variants={staggerContainer(0.13, 0.25)}
+        initial="hidden"
+        animate="visible"
       >
 
         {/* TCU logo — mobile only, top of content */}
-        <div className="flex md:hidden">
+        <motion.div className="flex md:hidden" variants={fadeUp}>
           <Image
             src={partnerLogoUrl}
             alt="University Partner"
@@ -141,11 +184,11 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
             style={{ height: '100px', width: 'auto', maxWidth: '120px' }}
             priority
           />
-        </div>
+        </motion.div>
 
         {/* Middle: headline + brought to you by */}
         <div className="flex-1 flex flex-col justify-center py-4 sm:py-8">
-          <h1
+          <motion.h1
             className="font-heading uppercase text-white whitespace-nowrap"
             style={{
               fontSize: 'clamp(56px, 10vw, 132px)',
@@ -153,12 +196,13 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
               lineHeight: 0.9,
               letterSpacing: '0.01em',
             }}
+            variants={fadeUpSlow}
           >
             {config.headline}
-          </h1>
+          </motion.h1>
 
           {/* Brought to you by KAWAI */}
-          <div className="flex items-center gap-3 mt-4 sm:mt-5">
+          <motion.div className="flex items-center gap-3 mt-4 sm:mt-5" variants={fadeUp}>
             <span
               className="text-white/45 font-light tracking-widest uppercase"
               style={{ fontSize: 'clamp(10px, 1vw, 12px)' }}
@@ -173,49 +217,53 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
               className="drop-shadow"
               style={{ height: 'clamp(20px, 2.2vw, 28px)', width: 'auto', maxWidth: '120px' }}
             />
-          </div>
+          </motion.div>
 
-          <p
+          <motion.p
             className="text-white/50 font-light mt-4 max-w-sm"
             style={{ fontSize: 'clamp(13px, 1.3vw, 15px)', lineHeight: 1.65 }}
+            variants={fadeUp}
           >
             {config.subtext}
-          </p>
+          </motion.p>
         </div>
 
         {/* Bottom: feature grid → date + CTAs */}
         <div className="space-y-4 sm:space-y-5">
 
           {/* 3-column feature strip */}
-          <div
+          <motion.div
             className="grid grid-cols-3 gap-3 sm:gap-5 pt-4 sm:pt-5"
             style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}
+            variants={staggerContainer(0.1)}
           >
             {config.features.map((f, i) => (
-              <div key={i}>
+              <motion.div key={i} variants={fadeUp}>
                 <p className="text-white font-semibold leading-tight mb-1.5" style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}>
                   {f.label}
                 </p>
                 <p className="text-white/55 font-light leading-snug" style={{ fontSize: 'clamp(12px, 1.2vw, 15px)' }}>
                   {f.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Date + CTA buttons — centered */}
           <div className="flex flex-col items-center gap-4 pb-2">
-            <p
+            <motion.p
               className="font-heading uppercase text-white font-bold"
               style={{ fontSize: 'clamp(26px, 3.2vw, 40px)' }}
+              variants={fadeUp}
             >
               {eventDateDisplay}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <button
+            </motion.p>
+
+            <motion.div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto" variants={staggerContainer(0.08)}>
+              <motion.button
                 onClick={handleReserveAppointmentClick}
                 type="button"
-                className="cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                className="cursor-pointer"
                 style={{
                   fontSize: '13px',
                   fontWeight: 600,
@@ -227,13 +275,15 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
                   border: 'none',
                   whiteSpace: 'nowrap',
                 }}
+                variants={fadeUp}
+                whileHover={{ y: -2, transition: { duration: 0.2 } }}
               >
                 {config.primaryCtaLabel}
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={handleExploreCollectionClick}
                 type="button"
-                className="cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                className="cursor-pointer"
                 style={{
                   fontSize: '13px',
                   fontWeight: 600,
@@ -245,16 +295,19 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
                   border: '1.5px solid rgba(255,255,255,0.5)',
                   whiteSpace: 'nowrap',
                 }}
+                variants={fadeUp}
+                whileHover={{ y: -2, backgroundColor: 'rgba(255,255,255,0.1)', transition: { duration: 0.2 } }}
               >
                 {config.secondaryCtaLabel}
-              </button>
-            </div>
-            <p className="text-white/38 italic" style={{ fontSize: '13px' }}>
+              </motion.button>
+            </motion.div>
+
+            <motion.p className="text-white/38 italic" style={{ fontSize: '13px' }} variants={fadeIn}>
               {config.supportText}
-            </p>
+            </motion.p>
 
             {/* ── Venue & directions strip ── */}
-            <a
+            <motion.a
               href={venueInfo.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -265,6 +318,7 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
                 marginTop: '4px',
                 textDecoration: 'none',
               }}
+              variants={fadeIn}
             >
               <svg className="w-4 h-4 flex-shrink-0 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity" style={{ color: 'white' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -284,10 +338,10 @@ export default function HeroSection({ config, partnerLogoUrl, kawaiLogoUrl, even
                   </svg>
                 </span>
               </div>
-            </a>
+            </motion.a>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

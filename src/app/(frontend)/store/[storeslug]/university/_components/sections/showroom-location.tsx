@@ -1,12 +1,21 @@
 'use client';
 
+import { motion, useReducedMotion } from 'framer-motion';
 import type { LocationConfig } from '../../event.config';
+import {
+  fadeUp,
+  lineExpand,
+  staggerContainer,
+  EASE_ELEGANT,
+} from '../animations';
 
 interface ShowroomLocationProps {
   eventLocation: LocationConfig
 }
 
 export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   const mapsUrl = `https://maps.google.com?q=${encodeURIComponent(`${eventLocation.address}, ${eventLocation.city}, ${eventLocation.state}`)}`;
   const embedSrc = eventLocation.googleMapsEmbedUrl
     ?? `https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(`${eventLocation.address}, ${eventLocation.city}, ${eventLocation.state}`)}&zoom=15`;
@@ -19,18 +28,45 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 pt-20 lg:pt-28 pb-20 lg:pb-28">
 
         {/* Section header */}
-        <div className="flex items-center gap-4 mb-14">
-          <div className="h-px w-8" style={{ background: '#4D1979' }} />
-          <p className="text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]"
-            style={{ color: 'rgba(77,25,121,0.6)' }}>
+        <motion.div
+          className="flex items-center gap-4 mb-14"
+          variants={staggerContainer(0.08)}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+        >
+          <motion.div
+            className="h-px w-8"
+            style={{ background: '#4D1979', originX: 0 }}
+            variants={lineExpand}
+          />
+          <motion.p
+            className="text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]"
+            style={{ color: 'rgba(77,25,121,0.6)' }}
+            variants={fadeUp}
+          >
             Event Location
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className="grid lg:grid-cols-5 gap-0" style={{ border: '1px solid rgba(77,25,121,0.1)' }}>
+        <motion.div
+          className="grid lg:grid-cols-5 gap-0"
+          style={{ border: '1px solid rgba(77,25,121,0.1)' }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+          variants={staggerContainer(0, 0)}
+        >
 
           {/* Map — 3 cols */}
-          <div className="lg:col-span-3 relative" style={{ minHeight: '480px' }}>
+          <motion.div
+            className="lg:col-span-3 relative"
+            style={{ minHeight: '480px' }}
+            variants={{
+              hidden: { opacity: 0, x: shouldReduceMotion ? 0 : -40 },
+              visible: { opacity: 1, x: 0, transition: { duration: 0.75, ease: EASE_ELEGANT, delay: 0.15 } },
+            }}
+          >
             <iframe
               width="100%"
               height="100%"
@@ -40,15 +76,20 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
               referrerPolicy="no-referrer-when-downgrade"
               src={embedSrc}
             />
-          </div>
+          </motion.div>
 
           {/* Info panel — 2 cols */}
-          <div
+          <motion.div
             className="lg:col-span-2 flex flex-col"
             style={{ borderLeft: '1px solid rgba(77,25,121,0.1)' }}
+            variants={staggerContainer(0.15, 0.3)}
           >
             {/* Venue + address */}
-            <div className="p-8 lg:p-10" style={{ borderBottom: '1px solid rgba(77,25,121,0.08)' }}>
+            <motion.div
+              className="p-8 lg:p-10"
+              style={{ borderBottom: '1px solid rgba(77,25,121,0.08)' }}
+              variants={fadeUp}
+            >
               <p className="text-[10px] tracking-[0.25em] uppercase mb-3 font-[family-name:var(--font-brand-sans)]"
                 style={{ color: 'rgba(77,25,121,0.5)' }}>
                 Venue
@@ -77,20 +118,28 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
                   {eventLocation.phone}
                 </a>
               )}
-            </div>
+            </motion.div>
 
             {/* Hours */}
-            <div className="p-8 lg:p-10 flex-1" style={{ borderBottom: '1px solid rgba(77,25,121,0.08)' }}>
-              <p className="text-[10px] tracking-[0.25em] uppercase mb-5 font-[family-name:var(--font-brand-sans)]"
-                style={{ color: 'rgba(77,25,121,0.5)' }}>
+            <motion.div
+              className="p-8 lg:p-10 flex-1"
+              style={{ borderBottom: '1px solid rgba(77,25,121,0.08)' }}
+              variants={staggerContainer(shouldReduceMotion ? 0 : 0.07)}
+            >
+              <motion.p
+                className="text-[10px] tracking-[0.25em] uppercase mb-5 font-[family-name:var(--font-brand-sans)]"
+                style={{ color: 'rgba(77,25,121,0.5)' }}
+                variants={fadeUp}
+              >
                 Event Hours
-              </p>
+              </motion.p>
               <div className="space-y-0">
                 {eventLocation.hours.map((hour, i) => (
-                  <div
+                  <motion.div
                     key={i}
                     className="flex items-center justify-between py-3"
                     style={{ borderBottom: '1px solid rgba(77,25,121,0.06)' }}
+                    variants={fadeUp}
                   >
                     <span
                       className="text-[13px] font-[family-name:var(--font-brand-sans)]"
@@ -104,13 +153,13 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
                     >
                       {hour.time}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
             {/* Directions CTA */}
-            <div className="p-8 lg:p-10">
+            <motion.div className="p-8 lg:p-10" variants={fadeUp}>
               <a
                 href={mapsUrl}
                 target="_blank"
@@ -123,9 +172,9 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </svg>
               </a>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
       </div>
     </section>

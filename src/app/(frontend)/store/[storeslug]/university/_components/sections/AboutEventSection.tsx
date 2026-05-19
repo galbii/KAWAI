@@ -1,10 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import ImageModal from '../ImageModal';
 import GallerySection from '../GallerySection';
 import { useIntersectionAnimation } from '@/hooks/useIntersectionAnimation';
+import {
+  fadeUp,
+  fadeUpSlow,
+  slideFromRight,
+  staggerContainer,
+  EASE_ELEGANT,
+} from '../animations';
 
 const TCU_LETTER_URL =
   'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Screenshot%202026-05-18%20at%204.12.00%E2%80%AFPM.webp';
@@ -24,10 +32,21 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
     height?: number;
   }>({ isOpen: false, src: '', alt: '' });
 
-  const { ref: contentRef, isVisible: contentVisible } = useIntersectionAnimation<HTMLDivElement>({
-    threshold: 0.15,
-    rootMargin: '0px 0px -60px 0px'
+  const sectionRef = useRef<HTMLElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
   });
+
+  const watermarkY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    shouldReduceMotion ? ['0px', '0px'] : ['-40px', '40px'],
+  );
+
+  // Keep useIntersectionAnimation only for GallerySection which needs an isVisible boolean
   const { ref: galleryRef, isVisible: galleryVisible } = useIntersectionAnimation<HTMLDivElement>({
     threshold: 0.1,
     rootMargin: '0px 0px -150px 0px'
@@ -56,18 +75,20 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
       </div>
 
       <section
+        ref={sectionRef}
         id="about-event"
         className="relative overflow-hidden border-t border-[rgba(77,25,121,0.08)]"
         style={{ background: '#ffffff' }}
       >
-        {/* Ghost watermark */}
-        <span
+        {/* Ghost watermark with scroll parallax */}
+        <motion.span
           aria-hidden="true"
           className="pointer-events-none select-none absolute font-[family-name:var(--font-family-cormorant)]"
           style={{
             left: '-2%',
             top: '50%',
-            transform: 'translateY(-50%)',
+            translateY: '-50%',
+            y: watermarkY,
             fontSize: 'clamp(180px, 30vw, 420px)',
             fontWeight: 300,
             lineHeight: 0.85,
@@ -78,17 +99,21 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
           }}
         >
           KAWAI
-        </span>
+        </motion.span>
 
-        <div ref={contentRef} className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 py-20 lg:py-28">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 py-20 lg:py-28">
+          <motion.div
+            className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start"
+            variants={staggerContainer(0.11)}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+          >
 
             {/* ── Left column ── */}
             <div>
               {/* Eyebrow */}
-              <div
-                className={`flex items-center gap-3 mb-8 transition-all duration-700 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-              >
+              <motion.div className="flex items-center gap-3 mb-8" variants={fadeUp}>
                 <div className="h-px w-8" style={{ background: '#4D1979' }} />
                 <p
                   className="text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]"
@@ -96,46 +121,48 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
                 >
                   Official Partnership · {partnerShortName}
                 </p>
-              </div>
+              </motion.div>
 
               {/* Heading */}
-              <h2
-                className={`font-[family-name:var(--font-family-cormorant)] mb-8 leading-[1.05] transition-all duration-700 delay-100 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+              <motion.h2
+                className="font-[family-name:var(--font-family-cormorant)] mb-8 leading-[1.05]"
                 style={{
                   fontSize: 'clamp(2.2rem, 4vw, 3.2rem)',
                   fontWeight: 400,
                   color: '#1a0d2e',
                   letterSpacing: '-0.01em',
                 }}
+                variants={fadeUpSlow}
               >
                 Fort Worth&apos;s Premier<br />
                 <span style={{ color: '#4D1979' }}>Piano Sale Event</span>
-              </h2>
+              </motion.h2>
 
               {/* Body copy */}
-              <div className="space-y-5 mb-10">
+              <motion.div
+                className="space-y-5 mb-10"
+                variants={staggerContainer(0.12)}
+              >
                 {[
                   `Our exclusive partnership with ${partnerName} gives Fort Worth families access to premium KAWAI instruments at specially negotiated event pricing — unavailable in any showroom.`,
                   `This four-day event features a carefully curated selection of digital and acoustic pianos. Every instrument meets ${partnerShortName}'s quality standards for sound and craftsmanship.`,
                   `From entry-level digitals to professional grand pianos, each model is available for in-person trial with expert guidance from our KAWAI specialists.`,
                 ].map((text, i) => (
-                  <p
+                  <motion.p
                     key={i}
-                    className={`text-[15px] leading-relaxed font-[family-name:var(--font-brand-sans)] transition-all duration-700 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                    style={{
-                      color: 'rgba(26,13,46,0.58)',
-                      transitionDelay: `${200 + i * 120}ms`,
-                    }}
+                    className="text-[15px] leading-relaxed font-[family-name:var(--font-brand-sans)]"
+                    style={{ color: 'rgba(26,13,46,0.58)' }}
+                    variants={fadeUp}
                   >
                     {text}
-                  </p>
+                  </motion.p>
                 ))}
-              </div>
+              </motion.div>
 
               {/* ── CTA block ── */}
-              <div
-                className={`transition-all duration-700 delay-[560ms] ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+              <motion.div
                 style={{ borderTop: '1px solid rgba(77,25,121,0.1)', paddingTop: '2rem' }}
+                variants={fadeUp}
               >
                 {/* Scarcity signal */}
                 <div className="flex items-center gap-2.5 mb-6">
@@ -171,12 +198,15 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
                     View Models
                   </button>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* ── Right column — TCU letter ── */}
-            <div
-              className={`transition-all duration-700 delay-300 ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, x: shouldReduceMotion ? 0 : 48 },
+                visible: { opacity: 1, x: 0, transition: { duration: 0.75, ease: EASE_ELEGANT, delay: 0.3 } },
+              }}
             >
               {/* Desktop */}
               <div className="hidden lg:block relative">
@@ -217,9 +247,9 @@ export default function AboutEventSection({ partnerName, partnerShortName, onOpe
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
 
           {/* Gallery */}
           <div ref={galleryRef} className="mt-20 lg:mt-28">

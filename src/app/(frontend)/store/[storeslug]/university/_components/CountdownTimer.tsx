@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface TimeLeft {
@@ -19,9 +20,7 @@ export function CountdownTimer({ targetDate, onOpenConsultation, isConsultationM
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0 });
   const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(true);
-  const [hasScrolled, setHasScrolled] = useState(false);
-  const [hasBeenDismissed, setHasBeenDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -30,57 +29,52 @@ export function CountdownTimer({ targetDate, onOpenConsultation, isConsultationM
   useEffect(() => {
     if (!mounted) return;
 
-    const handleScroll = () => {
+    const checkScroll = () => {
       const scrollPosition = window.scrollY;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      const scrollPercentage = (scrollPosition / (documentHeight - windowHeight)) * 100;
+      const scrollable = documentHeight - windowHeight;
 
-      if (scrollPercentage >= 25 && !hasScrolled && !hasBeenDismissed) {
-        console.log('🎯 User scrolled 25% - showing countdown timer');
-        setHasScrolled(true);
+      // If the page isn't scrollable (fits in viewport), show immediately.
+      // Guard against NaN/Infinity from division by zero.
+      if (scrollable <= 0) {
+        setIsVisible(true);
+        return;
+      }
+
+      const scrollPercentage = (scrollPosition / scrollable) * 100;
+      if (scrollPercentage >= 25) {
         setIsVisible(true);
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Check current position immediately (handles reload-while-scrolled case).
+    checkScroll();
+
+    window.addEventListener('scroll', checkScroll, { passive: true });
+
+    // Fallback: show after 4 seconds regardless of scroll, so it's never
+    // permanently hidden if the scroll threshold is never reached.
+    const fallbackTimer = setTimeout(() => setIsVisible(true), 4000);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', checkScroll);
+      clearTimeout(fallbackTimer);
     };
-  }, [mounted, hasScrolled, hasBeenDismissed]);
-
-  useEffect(() => {
-    if (hasScrolled && isMinimized && !hasBeenDismissed && isVisible) {
-      console.log('🚀 Timer is visible - expanding after 3 seconds');
-
-      const timeout = setTimeout(() => {
-        console.log('📈 Expanding timer to full view');
-        setIsMinimized(false);
-      }, 3000);
-
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-    return undefined;
-  }, [hasScrolled, isMinimized, hasBeenDismissed, isVisible]);
+  }, [mounted]);
 
   useEffect(() => {
     if (!mounted) return;
-
     const targetTimestamp = new Date(targetDate).getTime();
 
     const calculateTimeLeft = () => {
-      const now = new Date().getTime();
-      const difference = targetTimestamp - now;
-
+      const difference = targetTimestamp - Date.now();
       if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-        setTimeLeft({ days, hours, minutes });
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+        });
       } else {
         setTimeLeft({ days: 0, hours: 0, minutes: 0 });
       }
@@ -88,245 +82,83 @@ export function CountdownTimer({ targetDate, onOpenConsultation, isConsultationM
 
     calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 60000);
-
     return () => clearInterval(interval);
   }, [mounted, targetDate]);
 
-  const handleBookNowClick = () => {
-    onOpenConsultation();
-  };
+  if (!mounted || !isVisible || isDismissed || isConsultationModalOpen) return null;
 
-  const handleMinimize = () => {
-    setIsMinimized(true);
-    setHasBeenDismissed(true);
-  };
+  return createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '16px',
+        zIndex: 2147483647, // max z-index — above everything
+        width: '200px',
+        backgroundColor: '#0D0714',
+        border: '1px solid rgba(255,255,255,0.10)',
+        borderRadius: '12px',
+        boxShadow: '0 0 30px rgba(77,25,121,0.3)',
+        padding: '14px',
+        // Explicit isolation to prevent stacking context bleed
+        isolation: 'isolate',
+      }}
+    >
+      <button
+        onClick={() => setIsDismissed(true)}
+        aria-label="Close"
+        style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '2px',
+          color: 'rgba(255,255,255,0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          lineHeight: 1,
+        }}
+      >
+        <X size={12} />
+      </button>
 
-  const handleExpand = () => {
-    setIsMinimized(false);
-  };
-
-  if (!mounted) {
-    return null;
-  }
-
-  return (
-    <>
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6" style={{ paddingRight: '12px', paddingTop: '12px', zIndex: 1050 }}>
-        {isVisible && !isConsultationModalOpen && (
-          <>
-            {isMinimized ? (
-              <div
-                onClick={handleExpand}
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: '#4D1979',
-                  position: 'fixed',
-                  bottom: '20px',
-                  right: '20px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: '20px',
-                  cursor: 'pointer',
-                  zIndex: 999,
-                  boxShadow: '0 0 20px rgba(77,25,121,0.4)',
-                }}
-              >
-                <span>...</span>
-              </div>
-            ) : (
-              <div
-                style={{
-                  position: 'fixed',
-                  bottom: '20px',
-                  right: '20px',
-                  zIndex: 999,
-                  width: '220px',
-                  backgroundColor: '#0D0714',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  borderRadius: '12px',
-                  boxShadow: '0 0 30px rgba(77,25,121,0.3)',
-                  padding: '16px',
-                }}
-              >
-                <button
-                  onClick={handleMinimize}
-                  aria-label="Minimize timer"
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '2px',
-                    color: 'rgba(255,255,255,0.30)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'color 0.2s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.60)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.30)')}
-                >
-                  <X size={14} />
-                </button>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: '#4D1979',
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        letterSpacing: '0.15em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.70)',
-                      }}
-                    >
-                      Exclusive Event
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr auto 1fr',
-                    alignItems: 'center',
-                    textAlign: 'center',
-                    marginBottom: '12px',
-                    gap: '2px',
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: '28px',
-                        fontWeight: 900,
-                        color: 'white',
-                        lineHeight: 1,
-                        marginBottom: '4px',
-                        fontFamily: 'var(--font-tcu-display)',
-                      }}
-                    >
-                      {timeLeft.days}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '0.6rem',
-                        letterSpacing: '0.2em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontFamily: 'var(--font-tcu-display)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      Days
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'rgba(255,255,255,0.30)', paddingBottom: '14px' }}>:</div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: '28px',
-                        fontWeight: 900,
-                        color: 'white',
-                        lineHeight: 1,
-                        marginBottom: '4px',
-                        fontFamily: 'var(--font-tcu-display)',
-                      }}
-                    >
-                      {timeLeft.hours}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '0.6rem',
-                        letterSpacing: '0.2em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontFamily: 'var(--font-tcu-display)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      Hours
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'rgba(255,255,255,0.30)', paddingBottom: '14px' }}>:</div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: '28px',
-                        fontWeight: 900,
-                        color: 'white',
-                        lineHeight: 1,
-                        marginBottom: '4px',
-                        fontFamily: 'var(--font-tcu-display)',
-                      }}
-                    >
-                      {timeLeft.minutes}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '0.6rem',
-                        letterSpacing: '0.2em',
-                        textTransform: 'uppercase',
-                        color: 'rgba(255,255,255,0.45)',
-                        fontFamily: 'var(--font-tcu-display)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      Min
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.45)',
-                    textAlign: 'center',
-                    marginBottom: '10px',
-                  }}
-                >
-                  Limited spots available
-                </div>
-
-                <button
-                  onClick={handleBookNowClick}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    background: 'white',
-                    color: '#4D1979',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    letterSpacing: '0.14em',
-                    textTransform: 'uppercase',
-                    padding: '10px 20px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                  }}
-                >
-                  Book Now
-                </button>
-              </div>
-            )}
-          </>
-        )}
+      <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ display: 'inline-block', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#4D1979', flexShrink: 0 }} />
+        <span style={{ fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.60)' }}>
+          Exclusive Event
+        </span>
       </div>
-    </>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', alignItems: 'center', textAlign: 'center', marginBottom: '10px', gap: '2px' }}>
+        <div>
+          <div style={{ fontSize: '26px', fontWeight: 900, color: 'white', lineHeight: 1, marginBottom: '3px', fontFamily: 'var(--font-tcu-display)' }}>{timeLeft.days}</div>
+          <div style={{ fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>Days</div>
+        </div>
+        <div style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.30)', paddingBottom: '12px' }}>:</div>
+        <div>
+          <div style={{ fontSize: '26px', fontWeight: 900, color: 'white', lineHeight: 1, marginBottom: '3px', fontFamily: 'var(--font-tcu-display)' }}>{timeLeft.hours}</div>
+          <div style={{ fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>Hrs</div>
+        </div>
+        <div style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.30)', paddingBottom: '12px' }}>:</div>
+        <div>
+          <div style={{ fontSize: '26px', fontWeight: 900, color: 'white', lineHeight: 1, marginBottom: '3px', fontFamily: 'var(--font-tcu-display)' }}>{timeLeft.minutes}</div>
+          <div style={{ fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>Min</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.40)', textAlign: 'center', marginBottom: '10px' }}>
+        Limited spots available
+      </div>
+
+      <button
+        onClick={onOpenConsultation}
+        style={{ display: 'block', width: '100%', background: 'white', color: '#4D1979', fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '9px 16px', border: 'none', cursor: 'pointer', textAlign: 'center', borderRadius: '2px' }}
+      >
+        Book Now
+      </button>
+    </div>,
+    document.body,
   );
 }

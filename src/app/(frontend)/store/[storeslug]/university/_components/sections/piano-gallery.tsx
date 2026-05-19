@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { GrandSaleProduct } from "@/lib/payload/queries";
 import { ProductMediaModal } from "@/components/grand-spring-sale/ProductMediaModal";
+import { lineExpand } from "../animations";
 
 // ── Category detection ──────────────────────────────────────────────────────
 
@@ -291,11 +292,20 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
     const sentinel = document.createElement("div");
     sentinel.style.cssText = "height:1px;margin-bottom:-1px;";
     el.parentElement?.insertBefore(sentinel, el);
+    // Read --header-bottom as a resolved pixel value so rootMargin can use it.
+    // IntersectionObserver rootMargin does not support CSS var(), so we resolve
+    // it here. The header sets this property reactively; we read once on mount
+    // which is sufficient — if the header height changes the sticky top CSS
+    // variable updates automatically and the visual position stays correct.
+    const headerBottom =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--header-bottom")
+      ) || 70;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry) setIsStuck(!entry.isIntersecting);
       },
-      { threshold: [1] }
+      { rootMargin: `-${headerBottom}px 0px 0px 0px`, threshold: [1] }
     );
     observer.observe(sentinel);
     return () => {
@@ -328,7 +338,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
     <div
       ref={sectionRef}
       id="featured-deals"
-      className="border-t border-[rgba(77,25,121,0.12)] overflow-x-hidden"
+      className="border-t border-[rgba(77,25,121,0.12)]"
       style={{ background: "#FAFAFE", scrollMarginTop: 'var(--header-bottom, 70px)' }}
     >
       {/* ── Section header ─────────────────────────────────────────── */}
@@ -346,7 +356,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="flex items-center gap-3 mb-5"
             >
-              <div className="h-px w-10" style={{ background: "#4D1979" }} />
+              <motion.div className="h-px w-10" style={{ background: "#4D1979", originX: 0 }} variants={lineExpand} />
               <p
                 className="text-[10px] tracking-[0.32em] uppercase font-[family-name:var(--font-brand-sans)]"
                 style={{ color: "rgba(77,25,121,0.6)" }}
@@ -380,7 +390,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
       <div
         ref={stickyRef}
         className={cn(
-          "sticky z-20 backdrop-blur-md border-y transition-shadow duration-300 overflow-hidden",
+          "sticky z-20 backdrop-blur-md border-y transition-shadow duration-300",
           isStuck && "shadow-[0_6px_24px_rgba(77,25,121,0.12)]"
         )}
         style={{
