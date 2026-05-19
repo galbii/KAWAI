@@ -3,11 +3,6 @@
 import { useState } from 'react'
 import { Button, toast } from '@payloadcms/ui'
 
-/**
- * Shown in the Redirects collection list view (admin.components.beforeList).
- * Seeds 50 WooCommerce → Shopify redirects from kawaius_redirect_map.csv.
- * Deduplicates by `from` path — existing records are always skipped.
- */
 export function SeedRedirectsButton() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
 
@@ -15,7 +10,7 @@ export function SeedRedirectsButton() {
     if (status === 'loading') return
 
     const confirmed = confirm(
-      `Seed 50 WooCommerce → Shopify redirects?\n\nAll map /product/[old-slug] → /products/[new-slug] on kawaius.com.\nExisting records (matched by "from" path) will be skipped.`,
+      `Seed/update ~500 redirects from kawaius-redirect-map.csv?\n\nCovers product pages (SK, CA, CN, GX, GL, K-series, hybrids, etc.), WooCommerce categories/tags, artists, and CMS pages.\n\nExisting records will be OVERWRITTEN with corrected destinations.`,
     )
     if (!confirmed) return
 
@@ -31,15 +26,15 @@ export function SeedRedirectsButton() {
         return
       }
 
-      const { created, skipped, errors } = data
+      const { created, updated, errors } = data
       if (errors?.length) {
-        toast.error(`Done with ${errors.length} error(s). ${created} created, ${skipped} skipped.`)
+        toast.error(`Done with ${errors.length} error(s). ${created} created, ${updated} updated.`)
       } else {
-        toast.success(`Seeded! ${created} created, ${skipped} already existed.`)
+        toast.success(`Done! ${created} created, ${updated} updated.`)
       }
 
       setStatus('done')
-      if (created > 0) {
+      if (created > 0 || updated > 0) {
         setTimeout(() => window.location.reload(), 1500)
       } else {
         setTimeout(() => setStatus('idle'), 4000)
@@ -63,7 +58,7 @@ export function SeedRedirectsButton() {
           ? 'Seeding…'
           : status === 'done'
             ? '✓ Done'
-            : '🌱 Seed WooCommerce Redirects'}
+            : '🌱 Seed / Update Redirects'}
       </Button>
     </div>
   )

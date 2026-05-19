@@ -5,8 +5,8 @@ import { REDIRECTS_SEED_DATA } from '@/lib/data/redirects-seed-data'
 /**
  * POST /api/admin/seed-redirects
  *
- * Seeds the redirects collection from REDIRECTS_SEED_DATA (derived from kawaius_redirect_map.csv).
- * Deduplicates by `from` path — existing records are skipped, not overwritten.
+ * Seeds the redirects collection from REDIRECTS_SEED_DATA (derived from kawaius-redirect-map.csv).
+ * Upserts by `from` path — existing records are overwritten with updated destinations/notes.
  * Requires an authenticated admin user (payload-token cookie).
  */
 export async function POST(request: NextRequest) {
@@ -22,8 +22,14 @@ export async function POST(request: NextRequest) {
     }
 
     let created = 0
-    let skipped = 0
+    let updated = 0
     const errors: string[] = []
+
+    const seedData = {
+      to: { type: 'url' as const },
+      redirectType: '301' as const,
+      isActive: true,
+    }
 
     for (const redirect of REDIRECTS_SEED_DATA) {
       const existing = await payload.find({
@@ -33,34 +39,42 @@ export async function POST(request: NextRequest) {
         depth: 0,
       })
 
-      if (existing.docs[0]) {
-        skipped++
-        continue
-      }
-
       try {
-        await payload.create({
-          collection: 'redirects',
-          context: { skipRevalidation: true },
-          data: {
-            from: redirect.from,
-            to: {
-              type: 'url',
-              url: redirect.toUrl,
-            },
-            redirectType: '301',
-            isActive: true,
-            notes: redirect.notes,
-          } as any,
-        })
-        created++
+        if (existing.docs[0]) {
+          await payload.update({
+            collection: 'redirects',
+            id: existing.docs[0].id,
+            context: { skipRevalidation: true },
+            data: {
+              from: redirect.from,
+              to: { ...seedData.to, url: redirect.toUrl },
+              redirectType: seedData.redirectType,
+              isActive: seedData.isActive,
+              notes: redirect.notes,
+            } as any,
+          })
+          updated++
+        } else {
+          await payload.create({
+            collection: 'redirects',
+            context: { skipRevalidation: true },
+            data: {
+              from: redirect.from,
+              to: { ...seedData.to, url: redirect.toUrl },
+              redirectType: seedData.redirectType,
+              isActive: seedData.isActive,
+              notes: redirect.notes,
+            } as any,
+          })
+          created++
+        }
       } catch (err) {
         errors.push(`${redirect.from}: ${err instanceof Error ? err.message : String(err)}`)
       }
     }
 
-    // Single revalidation after all records are created
-    if (created > 0) {
+    // Single revalidation after all records are processed
+    if (created > 0 || updated > 0) {
       const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       fetch(`${baseURL}/api/revalidate`, {
         method: 'POST',
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
       ok: true,
       total: REDIRECTS_SEED_DATA.length,
       created,
-      skipped,
+      updated,
       errors,
     })
   } catch (err) {
