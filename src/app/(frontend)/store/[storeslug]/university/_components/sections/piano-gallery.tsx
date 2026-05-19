@@ -328,7 +328,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
     <div
       ref={sectionRef}
       id="featured-deals"
-      className="border-t border-[rgba(77,25,121,0.12)]"
+      className="border-t border-[rgba(77,25,121,0.12)] overflow-x-hidden"
       style={{ background: "#FAFAFE", scrollMarginTop: 'var(--header-bottom, 70px)' }}
     >
       {/* ── Section header ─────────────────────────────────────────── */}
@@ -380,7 +380,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
       <div
         ref={stickyRef}
         className={cn(
-          "sticky z-20 backdrop-blur-md border-y transition-shadow duration-300",
+          "sticky z-20 backdrop-blur-md border-y transition-shadow duration-300 overflow-hidden",
           isStuck && "shadow-[0_6px_24px_rgba(77,25,121,0.12)]"
         )}
         style={{
@@ -458,10 +458,10 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
           </div>
 
           {/* Category filter */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div
-              className="flex-1 flex items-center rounded-xl p-1 gap-0.5"
-              style={{ background: "rgba(77,25,121,0.06)" }}
+              className="flex-1 min-w-0 flex items-center rounded-xl p-1 gap-0.5 overflow-x-auto"
+              style={{ background: "rgba(77,25,121,0.06)", scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}
             >
               {visibleFilters.map(({ key, label }) => {
                 const count = countMap[key];
@@ -471,7 +471,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
                     key={key}
                     onClick={() => handleFilterChange(key)}
                     className={cn(
-                      "relative flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap font-[family-name:var(--font-brand-sans)]",
+                      "relative flex-shrink-0 sm:flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors duration-150 whitespace-nowrap font-[family-name:var(--font-brand-sans)]",
                       active
                         ? "text-kawai-black"
                         : "text-kawai-charcoal/50 hover:text-kawai-charcoal/80"
