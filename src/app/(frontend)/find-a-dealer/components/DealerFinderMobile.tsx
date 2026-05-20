@@ -7,19 +7,24 @@ import type { DealerWithDistance } from '../types'
 import { DealerMapLibre } from './DealerMapLibre'
 import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
+import { DealerCountryFilter } from './DealerCountryFilter'
+import type { CountryFilter } from './DealerCountryFilter'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
+import { classifyDealerCountry } from '@/lib/utils/dealer-country'
 import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 interface Props {
   dealers: DealerWithDistance[]
+  site?: 'us' | 'cad'
 }
 
 type DealerTypeFilter = 'all' | 'shigeru' | 'acoustic' | 'digital'
 type ViewMode = 'map' | 'list'
 
-export function DealerFinderMobile({ dealers }: Props) {
+export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
+  const defaultCountry: CountryFilter = site === 'cad' ? 'canada' : 'us'
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRadius, setSelectedRadius] = useState(25)
   const [selectedDealerTypes, setSelectedDealerTypes] = useState<string[]>([])
@@ -27,6 +32,7 @@ export function DealerFinderMobile({ dealers }: Props) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerTypeFilter>('all')
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>(defaultCountry)
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
 
@@ -37,6 +43,16 @@ export function DealerFinderMobile({ dealers }: Props) {
       if (dealer.shigeruKawaiDealer) counts.shigeru++
       if (dealer.acousticPianoDealer) counts.acoustic++
       if (dealer.digitalPianoDealer) counts.digital++
+    })
+    return counts
+  }, [dealers])
+
+  const countryCounts = useMemo(() => {
+    const counts = { us: 0, canada: 0, all: dealers.length }
+    dealers.forEach(dealer => {
+      const region = classifyDealerCountry(dealer.address?.country)
+      if (region === 'us') counts.us++
+      else if (region === 'canada') counts.canada++
     })
     return counts
   }, [dealers])
@@ -63,6 +79,12 @@ export function DealerFinderMobile({ dealers }: Props) {
           if (type === 'digital') return dealer.digitalPianoDealer === true
           return false
         })
+      )
+    }
+
+    if (countryFilter !== 'all') {
+      result = result.filter(
+        dealer => classifyDealerCountry(dealer.address?.country) === countryFilter,
       )
     }
 
@@ -95,7 +117,7 @@ export function DealerFinderMobile({ dealers }: Props) {
     }
 
     return result
-  }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes])
+  }, [dealers, searchResults, searchLocation, dealerTypeFilter, selectedDealerTypes, countryFilter])
 
   const handleLocationSearch = useCallback((location: { lat: number; lng: number }, _address: string) => {
     setSearchLocation(location)
@@ -206,8 +228,15 @@ export function DealerFinderMobile({ dealers }: Props) {
             {' '}{filteredDealers.length === 1 ? 'dealer' : 'dealers'}
           </div>
 
-          <button
-            onClick={() => setFiltersOpen(true)}
+          <div className="flex items-center gap-2">
+            <DealerCountryFilter
+              selected={countryFilter}
+              onChange={setCountryFilter}
+              counts={countryCounts}
+            />
+
+            <button
+              onClick={() => setFiltersOpen(true)}
             className={cn(
               "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
               "border-2 active:scale-95",
@@ -223,7 +252,8 @@ export function DealerFinderMobile({ dealers }: Props) {
                 {activeFilterCount}
               </span>
             )}
-          </button>
+            </button>
+          </div>
         </motion.div>
       </div>
 
@@ -242,6 +272,7 @@ export function DealerFinderMobile({ dealers }: Props) {
             searchRadius={selectedRadius}
             selectedDealer={viewMode === 'map' ? selectedDealer : null}
             onMarkerClick={handleDealerSelect}
+            site={countryFilter === 'canada' ? 'cad' : countryFilter === 'us' ? 'us' : site}
           />
         </div>
 
@@ -288,6 +319,7 @@ export function DealerFinderMobile({ dealers }: Props) {
                     setSelectedRadius(25)
                     setSearchResults([])
                     setSearchLocation(null)
+                    setCountryFilter(defaultCountry)
                   }}
                   className="px-6 py-3 rounded-full bg-kawai-charcoal text-white text-sm font-medium active:scale-95 transition-transform"
                 >

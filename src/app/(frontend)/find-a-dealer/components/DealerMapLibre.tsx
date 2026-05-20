@@ -176,7 +176,14 @@ interface Props {
   selectedDealer: string | null
   onMarkerClick: (dealerId: string | null) => void
   onInteract?: () => void
+  site?: 'us' | 'cad'
 }
+
+// Default overview centers — US continental center vs. Canadian populated belt
+const DEFAULT_VIEW = {
+  us: { longitude: -98.5795, latitude: 39.8283, zoom: 4 },
+  cad: { longitude: -96.0, latitude: 55.0, zoom: 3.2 },
+} as const
 
 export function DealerMapLibre({
   dealers,
@@ -185,14 +192,23 @@ export function DealerMapLibre({
   selectedDealer,
   onMarkerClick,
   onInteract,
+  site = 'us',
 }: Props) {
+  const defaultView = site === 'cad' ? DEFAULT_VIEW.cad : DEFAULT_VIEW.us
+
   // Controlled map state
-  const [viewState, setViewState] = useState({
-    longitude: -98.5795,
-    latitude: 39.8283,
-    zoom: 4,
+  const [viewState, setViewState] = useState<{
+    longitude: number
+    latitude: number
+    zoom: number
+    pitch: number
+    bearing: number
+  }>({
+    longitude: defaultView.longitude,
+    latitude: defaultView.latitude,
+    zoom: defaultView.zoom,
     pitch: 0,
-    bearing: 0
+    bearing: 0,
   })
 
   const [activePopup, setActivePopup] = useState<string | null>(null)
@@ -259,6 +275,22 @@ export function DealerMapLibre({
     }
   }, [searchCenter])
 
+  // Re-center to country default when site changes (e.g. user flips country toggle)
+  // Skip if the user has an active search — their search location takes precedence
+  useEffect(() => {
+    if (searchCenter) return
+    setViewState(prev => ({
+      ...prev,
+      longitude: defaultView.longitude,
+      latitude: defaultView.latitude,
+      zoom: defaultView.zoom,
+      pitch: 0,
+      bearing: 0,
+    }))
+    // defaultView is derived from site — depending on site alone keeps deps stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [site])
+
   // Center map and show popup when dealer is selected from list
   useEffect(() => {
     if (selectedDealer) {
@@ -297,7 +329,7 @@ export function DealerMapLibre({
   const handlePopupClose = useCallback(() => {
     setActivePopup(null)
     onMarkerClick(null)
-    // Return to flat search view, or USA overview if no search has been made
+    // Return to flat search view, or country overview if no search has been made
     if (searchCenter) {
       setViewState(prev => ({
         ...prev,
@@ -309,14 +341,14 @@ export function DealerMapLibre({
       }))
     } else {
       setViewState({
-        longitude: -98.5795,
-        latitude: 39.8283,
-        zoom: 4,
+        longitude: defaultView.longitude,
+        latitude: defaultView.latitude,
+        zoom: defaultView.zoom,
         pitch: 0,
         bearing: 0,
       })
     }
-  }, [onMarkerClick, searchCenter])
+  }, [onMarkerClick, searchCenter, defaultView])
 
   const handleMapClick = useCallback(() => {
     onInteract?.()

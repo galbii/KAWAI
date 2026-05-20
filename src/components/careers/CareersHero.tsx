@@ -20,29 +20,29 @@ export function CareersHero() {
   }, [])
 
   return (
-    <section className="relative w-full min-h-[100svh] bg-white flex flex-col overflow-hidden">
+    <section className="relative w-full min-h-[100svh] bg-kawai-black flex flex-col overflow-hidden">
       {/* Radial gradient orbs */}
       <div
         className="absolute pointer-events-none inset-0 z-0"
         style={{
           background:
-            'radial-gradient(ellipse 60% 50% at 15% 60%, rgba(225,25,34,0.05) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 20%, rgba(213,199,140,0.10) 0%, transparent 60%)',
+            'radial-gradient(ellipse 60% 50% at 15% 60%, rgba(225,25,34,0.18) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 20%, rgba(213,199,140,0.14) 0%, transparent 60%)',
         }}
       />
 
       {/* Grain texture */}
       <div
-        className="absolute inset-0 opacity-[0.025] pointer-events-none z-0"
+        className="absolute inset-0 opacity-[0.06] pointer-events-none z-0 mix-blend-screen"
         style={{ backgroundImage: GRAIN_SVG }}
       />
 
       {/* Top bar */}
       <div className="relative z-10 flex items-center justify-between pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 pt-20">
-        <p className="text-[10px] uppercase tracking-[0.22em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+        <p className="text-[10px] uppercase tracking-[0.22em] text-white/45 font-[family-name:var(--font-brand-sans)]">
           Careers at Kawai
         </p>
-        <div className="h-px flex-1 bg-kawai-neutral/60 mx-8" />
-        <p className="text-[10px] uppercase tracking-[0.22em] text-kawai-charcoal/25 font-[family-name:var(--font-brand-sans)]">
+        <div className="h-px flex-1 bg-white/15 mx-8" />
+        <p className="text-[10px] uppercase tracking-[0.22em] text-white/30 font-[family-name:var(--font-brand-sans)]">
           Est. 1927
         </p>
       </div>
@@ -73,7 +73,7 @@ export function CareersHero() {
 
         {/* Sub-copy */}
         <p
-          className="mt-12 text-base md:text-lg text-kawai-charcoal/55 max-w-[400px] font-[family-name:var(--font-brand-sans)] leading-relaxed"
+          className="mt-12 text-base md:text-lg text-white/65 max-w-[400px] font-[family-name:var(--font-brand-sans)] leading-relaxed"
           style={{
             opacity: visible ? 1 : 0,
             transition: 'opacity 0.7s ease 0.25s',
@@ -85,22 +85,22 @@ export function CareersHero() {
       </div>
 
       {/* Bottom row: stats + scroll */}
-      <div className="relative z-10 flex items-end justify-between pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 pb-12 border-t border-kawai-neutral/30 pt-8">
+      <div className="relative z-10 flex items-end justify-between pl-10 pr-8 md:pl-16 md:pr-16 lg:pl-24 lg:pr-24 pb-12 border-t border-white/10 pt-8">
         {/* Glass stat pills */}
         <div className="flex items-center gap-3 md:gap-4 flex-wrap">
           {STATS.map((stat, i) => (
             <div
               key={stat.label}
-              className="bg-white/70 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-xl px-5 py-3"
+              className="bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl px-5 py-3"
               style={{
                 opacity: visible ? 1 : 0,
                 transition: `opacity 0.5s ease ${0.4 + i * 0.1}s`,
               }}
             >
-              <div className="text-2xl md:text-3xl font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none">
+              <div className="text-2xl md:text-3xl font-[family-name:var(--font-brand-luxury)] text-white leading-none">
                 {stat.num}
               </div>
-              <div className="mt-1 text-[9px] uppercase tracking-[0.18em] text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)]">
+              <div className="mt-1 text-[9px] uppercase tracking-[0.18em] text-white/45 font-[family-name:var(--font-brand-sans)]">
                 {stat.label}
               </div>
             </div>
@@ -110,7 +110,7 @@ export function CareersHero() {
         {/* Scroll indicator */}
         <a
           href="#life"
-          className="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-kawai-charcoal/35 hover:text-kawai-black transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
+          className="hidden md:flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/40 hover:text-white transition-colors duration-200 font-[family-name:var(--font-brand-sans)]"
         >
           Explore
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">

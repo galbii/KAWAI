@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { unstable_cache } from 'next/cache'
 import { DealerFinderClient } from '@/app/(frontend)/find-a-dealer/DealerFinderClient'
 import type { DealerWithDistance } from '@/app/(frontend)/find-a-dealer/types'
+import { getSite } from '@/lib/site-context'
 
 interface Props {
   heading?: string | null
@@ -88,7 +89,10 @@ const getDealerMapData = unstable_cache(
 )
 
 export async function DealerFinderMapBlock({ heading }: Props) {
-  const [dealersResponse, storefrontsResponse] = await getDealerMapData()
+  const [site, [dealersResponse, storefrontsResponse]] = await Promise.all([
+    getSite(),
+    getDealerMapData(),
+  ])
 
   const dealers = dealersResponse.docs as Dealer[]
   const storefronts = storefrontsResponse.docs as Storefront[]
@@ -114,6 +118,7 @@ export async function DealerFinderMapBlock({ heading }: Props) {
   return (
     <DealerFinderClient
       dealers={unifiedDealers}
+      site={site}
       {...(heading != null ? { heading } : {})}
     />
   )

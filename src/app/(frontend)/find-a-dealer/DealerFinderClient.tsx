@@ -10,9 +10,12 @@ import { DealerCard } from './components/DealerCard'
 import { SearchBar } from './components/SearchBar'
 import { DealerTypeFilter } from './components/DealerTypeFilter'
 import type { DealerType } from './components/DealerTypeFilter'
+import { DealerCountryFilter } from './components/DealerCountryFilter'
+import type { CountryFilter } from './components/DealerCountryFilter'
 import { DealerFinderMobile } from './components/DealerFinderMobile'
 import { cn } from '@/lib/utils'
 import { calculateDistance } from '@/lib/utils/dealer-search'
+import { classifyDealerCountry } from '@/lib/utils/dealer-country'
 import { MapPin, ChevronDown, X, List, Columns2 } from 'lucide-react'
 import './components/animations.css'
 
@@ -21,10 +24,12 @@ const RADII = [10, 25, 50, 100, 200] as const
 interface Props {
   dealers: DealerWithDistance[]
   heading?: string | null
+  site?: 'us' | 'cad'
 }
 
-export function DealerFinderClient({ dealers, heading }: Props) {
+export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
   const resolvedHeading = heading ?? 'Find an Authorized Kawai Dealer Near You'
+  const defaultCountry: CountryFilter = site === 'cad' ? 'canada' : 'us'
   const [desktopLayout, setDesktopLayout] = useState<'list' | 'split'>('split')
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [searchLocationLabel, setSearchLocationLabel] = useState<string>('')
@@ -32,6 +37,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
   const [radiusMenuOpen, setRadiusMenuOpen] = useState(false)
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
   const [dealerTypeFilter, setDealerTypeFilter] = useState<DealerType>('all')
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>(defaultCountry)
   const [filterKey, setFilterKey] = useState(0)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
 
@@ -41,6 +47,16 @@ export function DealerFinderClient({ dealers, heading }: Props) {
       if (dealer.shigeruKawaiDealer) counts.shigeru++
       if (dealer.acousticPianoDealer) counts.acoustic++
       if (dealer.digitalPianoDealer) counts.digital++
+    })
+    return counts
+  }, [dealers])
+
+  const countryCounts = useMemo(() => {
+    const counts = { us: 0, canada: 0, all: dealers.length }
+    dealers.forEach(dealer => {
+      const region = classifyDealerCountry(dealer.address?.country)
+      if (region === 'us') counts.us++
+      else if (region === 'canada') counts.canada++
     })
     return counts
   }, [dealers])
@@ -56,6 +72,12 @@ export function DealerFinderClient({ dealers, heading }: Props) {
       result = result.filter(dealer => dealer.acousticPianoDealer === true)
     } else if (dealerTypeFilter === 'digital') {
       result = result.filter(dealer => dealer.digitalPianoDealer === true)
+    }
+
+    if (countryFilter !== 'all') {
+      result = result.filter(
+        dealer => classifyDealerCountry(dealer.address?.country) === countryFilter,
+      )
     }
 
     if (searchLocation) {
@@ -85,7 +107,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
     }
 
     return result
-  }, [dealers, searchResults, dealerTypeFilter, searchLocation])
+  }, [dealers, searchResults, dealerTypeFilter, countryFilter, searchLocation])
 
   const handleLocationSearch = useCallback((location: { lat: number; lng: number }, address: string) => {
     setSearchLocation(location)
@@ -114,6 +136,11 @@ export function DealerFinderClient({ dealers, heading }: Props) {
     setFilterKey(k => k + 1)
   }, [])
 
+  const handleCountryFilterChange = useCallback((value: CountryFilter) => {
+    setCountryFilter(value)
+    setFilterKey(k => k + 1)
+  }, [])
+
   const currentRadiusIdx = (RADII as readonly number[]).indexOf(selectedRadius)
   const nextRadius = RADII[currentRadiusIdx + 1]
 
@@ -125,7 +152,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
   return (
     <>
       {/* Mobile View */}
-      <DealerFinderMobile dealers={dealers} />
+      <DealerFinderMobile dealers={dealers} site={site} />
 
       {/* Desktop View */}
       <div
@@ -233,6 +260,15 @@ export function DealerFinderClient({ dealers, heading }: Props) {
               {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
             </span>
 
+            {/* Country filter */}
+            <div className="mr-2">
+              <DealerCountryFilter
+                selected={countryFilter}
+                onChange={handleCountryFilterChange}
+                counts={countryCounts}
+              />
+            </div>
+
             {/* List / Map toggle */}
             <div className="flex items-center rounded-lg border border-kawai-neutral bg-kawai-pearl/50 p-0.5 gap-0.5">
               {([
@@ -323,7 +359,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
                     typeLabel={typeLabel}
                     canExpandRadius={nextRadius !== undefined}
                     nextRadius={nextRadius}
-                    onReset={() => { handleTypeFilterChange('all'); setSearchResults([]); handleClearSearch() }}
+                    onReset={() => { handleTypeFilterChange('all'); setSearchResults([]); handleClearSearch(); setCountryFilter(defaultCountry) }}
                     onExpandRadius={() => { if (nextRadius !== undefined) setSelectedRadius(nextRadius) }}
                   />
                 </div>
@@ -348,7 +384,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
                     typeLabel={typeLabel}
                     canExpandRadius={nextRadius !== undefined}
                     nextRadius={nextRadius}
-                    onReset={() => { handleTypeFilterChange('all'); setSearchResults([]); handleClearSearch() }}
+                    onReset={() => { handleTypeFilterChange('all'); setSearchResults([]); handleClearSearch(); setCountryFilter(defaultCountry) }}
                     onExpandRadius={() => { if (nextRadius !== undefined) setSelectedRadius(nextRadius) }}
                   />
                 )}
@@ -361,6 +397,7 @@ export function DealerFinderClient({ dealers, heading }: Props) {
                   searchRadius={selectedRadius}
                   selectedDealer={selectedDealer}
                   onMarkerClick={handleDealerSelect}
+                  site={countryFilter === 'canada' ? 'cad' : countryFilter === 'us' ? 'us' : site}
                 />
               </div>
             </div>
