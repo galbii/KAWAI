@@ -143,7 +143,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     sitemap.push(
       { url: `${SITE_URL}/warranty-registration`, changeFrequency: 'yearly', priority: 0.5 },
-      { url: `${SITE_URL}/warranty`, changeFrequency: 'yearly', priority: 0.45 },
+      { url: `${SITE_URL}/warranty`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty') } },
+      { url: `${SITE_URL}/warranty/digital`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty/digital') } },
+      { url: `${SITE_URL}/warranty/acoustic`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty/acoustic') } },
       { url: `${SITE_URL}/faq`, changeFrequency: 'monthly', priority: 0.6 },
       { url: `${SITE_URL}/careers`, changeFrequency: 'weekly', priority: 0.6 },
       { url: `${SITE_URL}/technical-support-division`, changeFrequency: 'monthly', priority: 0.55 },

@@ -1250,10 +1250,26 @@ export const Products: CollectionConfig = {
             limit: 1000, // Adjust if you have more than 1000 products
           })
 
-          // Build lookup map: model -> product
-          const productsByModel = new Map(
-            existingProducts.map((p) => [p.model?.toUpperCase().trim(), p])
-          )
+          // Build lookup maps for robust matching.
+          // Primary: model (the documented identity key).
+          // Fallbacks (in order): shopify.productId (stable GID), shopify.handle.
+          // Fallbacks catch the case where the model was renamed on Shopify but
+          // Payload still has the old value — without them, bulk sync would create
+          // a duplicate product and orphan the original with all its editor content.
+          const productsByModel = new Map<string, typeof existingProducts[number]>()
+          const productsByShopifyId = new Map<string, typeof existingProducts[number]>()
+          const productsByHandle = new Map<string, typeof existingProducts[number]>()
+
+          for (const p of existingProducts) {
+            const modelKey = p.model?.toUpperCase().trim()
+            if (modelKey) productsByModel.set(modelKey, p)
+
+            const shopifyId = p.shopify?.productId?.trim()
+            if (shopifyId) productsByShopifyId.set(shopifyId, p)
+
+            const handle = p.shopify?.handle?.trim().toLowerCase()
+            if (handle) productsByHandle.set(handle, p)
+          }
 
           console.log(`[Bulk Sync] Found ${existingProducts.length} existing products in Payload`)
 
@@ -1281,7 +1297,35 @@ export const Products: CollectionConfig = {
             const normalizedModel = model.toUpperCase().trim()
 
             try {
-              const existing = productsByModel.get(normalizedModel)
+              // Lookup chain: model → shopify.productId → shopify.handle.
+              // If a fallback fires, log loudly so the operator notices the drift —
+              // the update path will then realign Payload's model field to match Shopify.
+              let existing = productsByModel.get(normalizedModel)
+              let matchedVia: 'model' | 'productId' | 'handle' | null = existing ? 'model' : null
+
+              if (!existing) {
+                const shopifyId = shopifyProduct.id
+                if (shopifyId) {
+                  existing = productsByShopifyId.get(shopifyId)
+                  if (existing) matchedVia = 'productId'
+                }
+              }
+
+              if (!existing) {
+                const handle = shopifyProduct.handle?.toLowerCase().trim()
+                if (handle) {
+                  existing = productsByHandle.get(handle)
+                  if (existing) matchedVia = 'handle'
+                }
+              }
+
+              if (existing && matchedVia !== 'model') {
+                console.warn(
+                  `[Bulk Sync] ⚠️ Model drift detected — matched via ${matchedVia}. ` +
+                  `Payload model="${existing.model}" but Shopify metafield="${normalizedModel}" ` +
+                  `(handle="${shopifyProduct.handle}"). Payload model will be realigned to Shopify on update.`
+                )
+              }
 
               // transformShopifyToPayload fetches media + CA pricing internally
               const productData = await transformShopifyToPayload(shopifyProduct)

@@ -14,7 +14,7 @@
  */
 
 import { unstable_cache } from 'next/cache'
-import { shopifyClient, shopifyClientCA } from './client'
+import { shopifyClient } from './client'
 import {
   GET_PRODUCTS,
   GET_PRODUCT_BY_HANDLE,
@@ -42,7 +42,7 @@ import type {
 } from './types'
 import { formatPrice } from '../utils'
 import { fetchShopifyProductByModel, fetchShopifyProduct, type ShopifyProductData } from './fetch-product'
-import { shopifyAdminClientCA } from './admin-client'
+import { shopifyAdminClient, shopifyAdminClientCA } from './admin-client'
 
 // ============================================================================
 // Data Transformation
@@ -372,106 +372,75 @@ export function getProductByModel(
   return unstable_cache(
     async (siteParam: string, modelParam: string) => {
       const isCA = siteParam === 'cad'
-      const storefrontClient = isCA ? shopifyClientCA : shopifyClient
 
       console.log(`[getProductByModel] Searching for model: "${modelParam}" (site: ${siteParam})`)
 
-      try {
-        // STRATEGY 1: Metafield-based lookup via Admin API
-        //
-        // For CA: productByIdentifier(customId) requires the metafield definition to have
-        // "use as identifier" enabled — a Shopify Admin setting separate from the definition
-        // existing. To avoid that requirement, we resolve model→handle via the US Admin API
-        // (productByIdentifier works there), then fetch the CA product by handle via the CA
-        // Admin API (productByHandle has no such requirement).
-        //
-        // For US: direct metafield lookup via US Admin API as before.
-        console.log(`[getProductByModel] Attempting metafield lookup...`)
-
-        let adminProduct: ShopifyProductData | null = null
-
-        if (isCA) {
-          // Query CA Admin API directly. fetchShopifyProductByModel tries productByIdentifier
-          // first (throws "Metafield definition" error on CA since the flag isn't set there),
-          // then automatically falls back to tag search on the CA Admin API (tag:CN201 etc.).
-          adminProduct = await fetchShopifyProductByModel(modelParam, shopifyAdminClientCA)
-
-          // If CA direct lookup fails, fall back to resolving the handle via US Admin API
-          // then fetching the CA product by that handle.
-          if (!adminProduct) {
-            const usProduct = await fetchShopifyProductByModel(modelParam)
-            if (usProduct?.handle) {
-              adminProduct = await fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
-            }
-          }
-        } else {
-          adminProduct = await fetchShopifyProductByModel(modelParam)
+      // Single strategy: custom.model metafield lookup via Admin API.
+      // CA store lacks "use as identifier" on its metafield definition, so for CA we resolve
+      // the handle via the US Admin API (which has the flag), then fetch the CA product by
+      // that handle for CA-specific pricing.
+      const adminProduct: ShopifyProductData | null = await (async () => {
+        if (!isCA) {
+          return fetchShopifyProductByModel(modelParam)
         }
+        const usProduct = await fetchShopifyProductByModel(modelParam)
+        if (!usProduct?.handle) return null
+        return fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
+      })()
 
-        if (adminProduct) {
-          console.log(
-            `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${modelParam})`
-          )
-
-          return transformAdminProductToStorefront(adminProduct)
-        }
-
-        // STRATEGY 2: Fallback to tag-based search via Storefront API
-        console.log(`[getProductByModel] Metafield lookup failed, trying tag fallback...`)
-
-        const data = await storefrontClient.query<ProductsResponse, ProductsQueryVariables>(
-          SEARCH_PRODUCTS,
-          { query: `tag:${modelParam}`, first: 1 },
-          options
+      if (adminProduct) {
+        console.log(
+          `[getProductByModel] Found via metafield: "${adminProduct.title}" (model: ${modelParam})`
         )
-
-        const foundProduct = data.products.edges[0]?.node || null
-
-        if (foundProduct) {
-          console.log(
-            `[getProductByModel] Found via tag fallback: "${foundProduct.title}" (tag: ${modelParam})`
-          )
-          return transformProduct(foundProduct)
-        }
-
-        console.log(`[getProductByModel] No product found for model "${modelParam}" — not caching miss`)
-        // Throw so unstable_cache does not store the null — next request will retry
-        throw new Error(`PRODUCT_NOT_FOUND:${modelParam}`)
-
-      } catch (error) {
-        // Re-throw not-found marker so it bypasses the cache
-        if (error instanceof Error && error.message.startsWith('PRODUCT_NOT_FOUND:')) {
-          throw error
-        }
-
-        console.error(`[getProductByModel] Error:`, error)
-
-        // If Admin API fails, still try tag fallback
-        console.log(`[getProductByModel] Admin API error, attempting tag fallback...`)
-
-        try {
-          const data = await storefrontClient.query<ProductsResponse, ProductsQueryVariables>(
-            SEARCH_PRODUCTS,
-            { query: `tag:${modelParam}`, first: 1 },
-            options
-          )
-
-          const foundProduct = data.products.edges[0]?.node || null
-
-          if (foundProduct) {
-            console.log(`[getProductByModel] Found via tag fallback after error`)
-            return transformProduct(foundProduct)
-          }
-        } catch (fallbackError) {
-          console.error(`[getProductByModel] Tag fallback also failed:`, fallbackError)
-        }
-
-        throw new Error(`PRODUCT_NOT_FOUND:${modelParam}`)
+        return transformAdminProductToStorefront(adminProduct)
       }
+
+      console.log(`[getProductByModel] No product found for model "${modelParam}" — not caching miss`)
+      // Throw so unstable_cache does not store the null — next request will retry
+      throw new Error(`PRODUCT_NOT_FOUND:${modelParam}`)
     },
     [`${cachePrefix}-${normalizedModel}`],
     { tags: [`${cachePrefix}-${normalizedModel}`, 'shopify-products'], revalidate: 3600 }
   )(site, normalizedModel).catch((error: unknown) => {
+    if (error instanceof Error && error.message.startsWith('PRODUCT_NOT_FOUND:')) {
+      return null
+    }
+    throw error
+  })
+}
+
+/**
+ * Get a Shopify product using stored Payload references.
+ *
+ * US: looks up by `product.shopify.productId` (Shopify GID stored at sync time) via Admin API.
+ * CA: looks up by `product.shopify.handle` via Admin API — the US GID won't match a product in
+ * the CA store, but handles are synced 1:1 across stores.
+ *
+ * Returns null when the relevant ref is missing or the product can't be found.
+ */
+export function getShopifyProductByRef(
+  productId: string | null | undefined,
+  handle: string | null | undefined,
+  site: 'us' | 'cad' = 'us'
+): Promise<Product | null> {
+  const isCA = site === 'cad'
+  const lookup = isCA ? handle : productId
+  if (!lookup) return Promise.resolve(null)
+
+  const adminClient = isCA ? shopifyAdminClientCA : shopifyAdminClient
+  const cachePrefix = isCA ? 'shopify-product-ref-ca' : 'shopify-product-ref'
+
+  return unstable_cache(
+    async (key: string) => {
+      const adminProduct = await fetchShopifyProduct(key, adminClient)
+      if (!adminProduct) {
+        throw new Error(`PRODUCT_NOT_FOUND:${key}`)
+      }
+      return transformAdminProductToStorefront(adminProduct)
+    },
+    [`${cachePrefix}-${lookup}`],
+    { tags: [`${cachePrefix}-${lookup}`, 'shopify-products'], revalidate: 3600 }
+  )(lookup).catch((error: unknown) => {
     if (error instanceof Error && error.message.startsWith('PRODUCT_NOT_FOUND:')) {
       return null
     }

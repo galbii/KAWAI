@@ -160,6 +160,7 @@ export {
   getProductByHandle,
   getProductById,
   getProductByModel,
+  getShopifyProductByRef,
   getCollectionProducts,
   getAvailableProducts,
   getProductsByType,

@@ -1,77 +1,16 @@
 import React, { cache } from 'react'
 import type { Product } from '@/payload-types'
-import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { populateBlockData } from '@/lib/blockDataPopulation'
 import { validateBlock, logBlockValidation } from './BlockValidator'
-import { getProductByModel } from '@/lib/shopify'
+import { getShopifyProductByRef } from '@/lib/shopify'
 import { getSite } from '@/lib/site-context'
 
-const getProductByModelCached = cache(getProductByModel)
-
-/**
- * Build a synthetic ShopifyProduct from Payload variation data.
- * Used when getProductByModel() fails (missing metafield/tag in Shopify) but the
- * product was previously synced and has shopifyVariantId + pricing stored in Payload.
- */
-function buildFallbackShopifyProduct(product: Product, site: 'us' | 'cad'): ShopifyProduct | null {
-  const variations = product.variations
-  if (!variations || variations.length === 0) return null
-
-  const isCA = site === 'cad'
-  const hasVariantData = variations.some(
-    v => v.shopifyVariantId && typeof (isCA ? v.priceCAD : v.price) === 'number'
-  )
-  if (!hasVariantData) return null
-
-  const prices = variations
-    .map(v => (isCA ? v.priceCAD : v.price))
-    .filter((p): p is number => typeof p === 'number' && p > 0)
-
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 0
-  const currency = isCA ? 'CAD' : ((product as any).price?.currency || 'USD')
-
-  return {
-    id: product.slug || '',
-    title: product.name || '',
-    handle: product.slug || '',
-    description: product.description || '',
-    descriptionHtml: '',
-    type: product.type || '',
-    vendor: 'Kawai',
-    tags: [],
-    available: variations.some(v => v.available === true),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    price: { min: minPrice, max: maxPrice, currency, display: '' },
-    image: null,
-    images: [],
-    variants: variations
-      .filter(v => v.shopifyVariantId)
-      .map(v => ({
-        id: v.shopifyVariantId as string,
-        title: v.name || '',
-        sku: v.sku ?? null,
-        available: v.available ?? true,
-        price: typeof (isCA ? v.priceCAD : v.price) === 'number' ? (isCA ? v.priceCAD! : v.price!) : 0,
-        compareAtPrice: typeof (isCA ? v.compareAtPriceCAD : v.compareAtPrice) === 'number'
-          ? (isCA ? v.compareAtPriceCAD! : v.compareAtPrice!)
-          : null,
-        inventoryTracked: false,
-        image: null,
-      })),
-    ownersManualUrl: null,
-    action: [],
-    tone: [],
-    features: [],
-    metadata: {},
-  }
-}
+const getShopifyProductByRefCached = cache(getShopifyProductByRef)
 
 // Import all block components
 import { HeroBlock } from '@/components/blocks/HeroBlock'
 import { ProductShowcaseBlock } from '@/components/blocks/ProductShowcaseBlock'
-import { ProductHeroBlockWrapper as ProductHeroBlock } from '@/components/blocks/ProductHeroBlockWrapper'
+import { ProductHeroBlock } from '@/components/blocks/ProductHeroBlock'
 import { ProductDescriptionRenderer } from '@/components/blocks/product/ProductDescriptionRenderer'
 import { ProductTechnicalSpecsRenderer } from '@/components/blocks/product/ProductTechnicalSpecsRenderer'
 import { ProductFeatureSlidesRenderer } from '@/components/blocks/product/ProductFeatureSlidesRenderer'
@@ -153,44 +92,38 @@ export async function BlockRenderer({ block, index, product }: BlockRendererProp
   try {
     // For ProductHero, ProductDescription, and FloatingAddToCart blocks, fetch Shopify product and pass both CMS + Shopify data
     if (blockType === 'product-hero' || blockType === 'product-description' || blockType === 'product-floating-add-to-cart') {
-      // Fetch Shopify product server-side using model field
+      // Look up the Shopify product using the refs stored at sync time:
+      //   US → product.shopify.productId (GID, direct lookup)
+      //   CA → product.shopify.handle    (CA store has different IDs; handles match)
       let shopifyProduct = null
       const site = await getSite()
+      const productId = product.shopify?.productId ?? null
+      const handle = product.shopify?.handle ?? null
 
-      if (product.model) {
+      const hasRef = site === 'cad' ? !!handle : !!productId
+      if (hasRef) {
         try {
-          console.log(`[BlockRenderer:DEBUG] site=${site} model="${product.model}" CA_DOMAIN=${process.env.SHOPIFY_CA_STORE_DOMAIN || 'MISSING'} US_DOMAIN=${process.env.SHOPIFY_STORE_DOMAIN || 'MISSING'}`)
-          console.log(`[BlockRenderer] Fetching Shopify product for model: "${product.model}" (site: ${site})`)
-          shopifyProduct = await getProductByModelCached(product.model, site)
+          console.log(`[BlockRenderer] Fetching Shopify product (site: ${site}, ref: ${site === 'cad' ? handle : productId})`)
+          shopifyProduct = await getShopifyProductByRefCached(productId, handle, site)
 
           if (shopifyProduct) {
             console.log(`[BlockRenderer] Shopify product loaded: "${shopifyProduct.title}" with ${shopifyProduct.variants.length} variant(s)`)
           } else {
-            console.log(`[BlockRenderer] No Shopify product found for model "${product.model}"`)
+            console.log(`[BlockRenderer] No Shopify product found for ref`)
           }
         } catch (error) {
           console.error('[BlockRenderer] Failed to fetch Shopify product:', error)
           shopifyProduct = null
         }
       } else {
-        console.log('[BlockRenderer] No model field available, skipping Shopify lookup')
-      }
-
-      // Fallback: synthesize from Payload variation data when Shopify lookup fails.
-      // Products previously synced have shopifyVariantId + pricing stored in variations —
-      // use that so the buy box renders even if the metafield/tag lookup is broken.
-      if (!shopifyProduct) {
-        const fallback = buildFallbackShopifyProduct(product, site)
-        if (fallback) {
-          console.log(`[BlockRenderer] Using Payload variation fallback for shopifyProduct (model: "${product.model}")`)
-          shopifyProduct = fallback
-        }
+        console.log(`[BlockRenderer] No shopify.${site === 'cad' ? 'handle' : 'productId'} on Payload product, skipping Shopify lookup`)
       }
 
       const populatedBlock = {
         ...block,
         product: product,
-        shopifyProduct: shopifyProduct
+        shopifyProduct: shopifyProduct,
+        site,
       }
 
       // Log block rendering in development

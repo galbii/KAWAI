@@ -27,7 +27,7 @@ const INSTRUMENT_LABELS: Record<string, string> = {
   multiple: 'Multiple Instruments',
 }
 
-const PAGE_SIZE = 9
+const PAGE_SIZE = 12
 
 // Easing matching the brand's elegant curve
 const ease = [0.25, 0.46, 0.45, 0.94] as const

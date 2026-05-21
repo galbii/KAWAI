@@ -752,38 +752,10 @@ export function ProductHeroBlock({
               </div>
             )}
 
-            {/* Dynamic Price Display */}
+            {/* Dynamic Price Display — same logic for US and CA; price renders only when Shopify lookup succeeded */}
             {(() => {
               const currency = site === 'cad' ? 'CAD' : (shopifyProduct?.price.currency ?? 'USD')
 
-              // CA: show compareAtPrice (MSRP) only — no sale treatment, no current price
-              if (site === 'cad') {
-                // Prefer compareAtPrice from Shopify variant, fall back to priceCAD from Payload
-                const cadMsrp = (() => {
-                  if (shopifyProduct) {
-                    const variant = selectedVariation >= 0 && allVariations[selectedVariation]
-                      ? shopifyProduct.variants.find(v =>
-                          v.title.toLowerCase().includes(allVariations[selectedVariation]!.name?.toLowerCase() ?? '')
-                        )
-                      : shopifyProduct.variants[0]
-                    if (variant?.compareAtPrice) return variant.compareAtPrice
-                    if (variant?.price && variant.price > 0) return variant.price
-                  }
-                  return (product as any)?.priceCAD?.msrp ?? (product as any)?.price?.msrp ?? null
-                })()
-
-                if (!cadMsrp) return null
-                return (
-                  <div className={cn("flex items-baseline gap-3", textColorClass)}>
-                    <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
-                    <span className="text-3xl font-bold transition-all duration-300">
-                      {formatPrice(cadMsrp, currency)}
-                    </span>
-                  </div>
-                )
-              }
-
-              // US: existing logic
               if (!variationsDisplayPrice || !shopifyProduct) return null
               return (
                 <div className={cn("flex items-baseline gap-3", textColorClass)}>

@@ -96,7 +96,7 @@ import { NewsletterPopupBlock } from './blocks/NewsletterPopupBlock'
 // Product Blocks - Product-specific showcases
 import PianoPagesBlock from './blocks/PianoPagesBlock'
 import { ProductShowcaseBlock } from './blocks/ProductShowcaseBlock'
-import { ProductHeroBlockWrapper as ProductHeroBlock } from './blocks/ProductHeroBlockWrapper'
+import { ProductHeroBlock } from './blocks/ProductHeroBlock'
 import { ImageGalleryBlock } from './blocks/ImageGalleryBlock'
 import { FeaturesListBlock } from './blocks/FeaturesListBlock'
 import { SpecificationsBlock } from './blocks/SpecificationsBlock'
