@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
-import { ArrowRight, Play } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { NavCollection } from '@/lib/payload/products-navigation'
 import { cn } from '@/lib/utils'
 
@@ -53,10 +53,6 @@ function getImageUrl(collection: NavCollection): string | null {
   return null
 }
 
-function hasVideo(collection: NavCollection): boolean {
-  return Boolean(collection.youtubeUrl)
-}
-
 // ─── Grid column map ──────────────────────────────────────────────────────────
 
 const GRID_COLS = {
@@ -86,7 +82,6 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
     : 'Piano Collection')
   const categoryLabels = getCategoryLabels(collection)
   const href = `/pianos/${collection.handle}`
-  const showVideo = hasVideo(collection)
 
   return (
     <motion.div
@@ -134,43 +129,32 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
         {/* Hover: darken slightly */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors duration-500 pointer-events-none" />
 
-        {/* ── Top: category chips + video indicator ── */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-start justify-between z-10">
-          {/* Category chips */}
+        {/* ── Top: category chips ── */}
+        <div className="absolute top-0 left-0 right-0 p-4 z-10">
           <div className="flex flex-wrap gap-1.5">
             {categoryLabels.slice(0, 2).map((label) => (
               <span
                 key={label}
-                className="text-[9px] tracking-[0.2em] uppercase font-medium px-2 py-1 bg-black/40 backdrop-blur-sm text-white/70"
+                className="inline-flex items-center text-[10.5px] tracking-[0.22em] uppercase font-bold px-2.5 py-1.5 bg-white text-kawai-black shadow-[0_2px_10px_rgba(0,0,0,0.25)]"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               >
                 {label}
               </span>
             ))}
           </div>
-
-          {/* Video indicator */}
-          {showVideo && (
-            <span className="flex items-center gap-1 text-[9px] tracking-[0.15em] uppercase font-medium text-white/50 bg-black/40 backdrop-blur-sm px-2 py-1"
-              style={{ fontFamily: 'var(--font-brand-sans)' }}
-            >
-              <Play className="h-2.5 w-2.5" />
-              Video
-            </span>
-          )}
         </div>
 
         {/* ── Bottom: title + count + CTA ── */}
         <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
           {/* Title */}
           <h3
-            className="text-white leading-tight mb-1.5 transition-transform duration-500 group-hover:-translate-y-1"
+            className="text-white leading-[1.05] mb-2 transition-transform duration-500 group-hover:-translate-y-1"
             style={{
-              fontFamily: 'var(--font-brand-luxury)',
-              fontSize: 'clamp(1.1rem, 2vw, 1.5rem)',
-              fontWeight: 400,
-              letterSpacing: '-0.01em',
-              textShadow: '0 1px 12px rgba(0,0,0,0.4)',
+              fontFamily: 'var(--font-brand-sans)',
+              fontSize: 'clamp(1.25rem, 2.1vw, 1.65rem)',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              textShadow: '0 2px 16px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.7)',
             }}
           >
             {displayTitle}
@@ -178,10 +162,10 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
 
           {/* Product count */}
           <p
-            className="text-white/45 text-xs mb-0 transition-all duration-500 group-hover:mb-4"
-            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
+            className="text-white/75 text-[11.5px] font-semibold uppercase mb-0 transition-all duration-500 group-hover:mb-4"
+            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.18em', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
           >
-            {collection.productCount > 0 ? `${collection.productCount} models` : 'Collection'}
+            {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
           </p>
 
           {/* Subheading — only shown on hover */}

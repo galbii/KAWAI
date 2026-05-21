@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated, adminOnly } from '@/lib/payload/access'
+import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 
 export const SupportGroups: CollectionConfig = {
   slug: 'support-groups',
@@ -29,6 +30,7 @@ export const SupportGroups: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL slug — becomes /technical-support-division/[slug]. Use kebab-case (e.g. owner-hub).',
         position: 'sidebar',

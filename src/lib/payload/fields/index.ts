@@ -9,3 +9,4 @@ export {
   responsiveImageGroup,
 } from './media'
 export { shopifyMediaField } from './shopify-media-field'
+export { slugBeforeDuplicate } from './slug'

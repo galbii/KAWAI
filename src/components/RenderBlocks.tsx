@@ -8,7 +8,7 @@
  * - Legacy (4): archive, content, mediaBlock, cta
  * - Content (5): content-text, content-image, content-video, content-code, content-banner
  * - Layout (10): layout-columns, layout-spacer, layout-divider, layout-hero-carousel, layout-video-background, layout-brand-intro, layout-bottom-left-popup, layout-side-navigation, layout-calendly-embed, layout-booking-modal
- * - Marketing (11): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-dealer-finder, marketing-3d-viewer, marketing-artist-carousel, marketing-featured-models
+ * - Marketing (11): marketing-hero, marketing-grand-hero, marketing-cta, marketing-testimonials, marketing-i2l, marketing-technical-showcase, marketing-find-a-dealer, marketing-dealer-map, marketing-3d-viewer, marketing-artist-carousel, marketing-featured-models
  * - Events (2): events-university-hero, events-event-overview
  * - Product (6): product-showcase, product-hero, product-gallery, product-features, product-specs, product-collection-showcase
  *
@@ -72,7 +72,7 @@ import { TestimonialsBlock } from './blocks/TestimonialsBlock'
 import { InstrumentalToLifeBlock } from './blocks/InstrumentalToLifeBlock'
 import { TechnicalShowcaseBlock } from './blocks/TechnicalShowcaseBlock'
 import { FindADealerBlock } from './blocks/FindADealerBlock'
-import { DealerFinderMapBlock } from './blocks/DealerFinderMapBlock'
+import { DealerMapBlock } from './blocks/DealerMapBlock'
 import { ThreeDViewerBlockLazy as ThreeDViewerBlock } from './blocks/ThreeDViewerBlockLazy'
 import { ArtistCarouselBlock } from './blocks/ArtistCarouselBlock'
 import { ArtistI2LBlock } from './blocks/ArtistI2LBlock'
@@ -147,7 +147,7 @@ const blockComponents = {
   'marketing-i2l': InstrumentalToLifeBlock,
   'marketing-technical-showcase': TechnicalShowcaseBlock,
   'marketing-find-a-dealer': FindADealerBlock,
-  'marketing-dealer-finder': DealerFinderMapBlock,
+  'marketing-dealer-map': DealerMapBlock,
   'marketing-3d-viewer': ThreeDViewerBlock,
   'marketing-artist-carousel': ArtistCarouselBlock,
   'marketing-artist-i2l': ArtistI2LBlock,

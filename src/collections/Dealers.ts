@@ -1,5 +1,6 @@
 import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { nominatimGeocode } from '@/lib/payload/geocode'
 
@@ -138,6 +139,7 @@ export const Dealers: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL-friendly identifier (auto-generated from dealer name, e.g., "kawai-piano-gallery-st-louis")'
       },

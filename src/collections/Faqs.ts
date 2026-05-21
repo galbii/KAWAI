@@ -8,6 +8,7 @@ import {
   UploadFeature,
 } from '@payloadcms/richtext-lexical'
 import { authenticated, adminOnly } from '@/lib/payload/access'
+import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 
 export const Faqs: CollectionConfig = {
   slug: 'faqs',
@@ -42,6 +43,7 @@ export const Faqs: CollectionConfig = {
       type: 'text',
       unique: true,
       index: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL-friendly identifier (auto-generated from question)',
         position: 'sidebar',

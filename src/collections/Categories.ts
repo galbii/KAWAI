@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
+import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -31,6 +32,7 @@ export const Categories: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL-friendly version of the category name',
         readOnly: false,

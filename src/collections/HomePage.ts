@@ -80,6 +80,8 @@ export const HomePage: CollectionConfig = {
                 'marketing-featured-collections',
                 'marketing-blog-grid',
                 'marketing-blog-latest',
+                'marketing-dealer-map',
+                'marketing-artist-i2l',
                 'layout-bottom-left-popup',
               ] as any,
               blocks: [], // Required to be empty for compatibility

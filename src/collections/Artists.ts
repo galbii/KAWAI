@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { imageField, mediaArrayField } from '@/lib/payload/fields/media'
+import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 import type { Artist } from '@/payload-types'
 
 export const Artists: CollectionConfig = {
@@ -50,6 +51,7 @@ export const Artists: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL-friendly identifier for this artist (auto-generated from name)',
         position: 'sidebar'

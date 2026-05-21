@@ -3,7 +3,7 @@ import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType, fetchCAPricing } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
-import { imageField, shopifyMediaField } from '@/lib/payload/fields'
+import { imageField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
 
 /**
@@ -246,6 +246,7 @@ export const Products: CollectionConfig = {
               required: true,
               unique: true,
               index: true,
+              hooks: { beforeDuplicate: [slugBeforeDuplicate] },
               admin: {
                 description: 'URL slug — auto-generated on creation. Changing after publishing breaks indexed URLs and cached pages.',
               },

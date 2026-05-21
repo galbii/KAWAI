@@ -90,7 +90,7 @@ export interface Config {
     'marketing-i2l': MarketingI2LBlock;
     'marketing-technical-showcase': MarketingTechnicalShowcaseBlock;
     'marketing-find-a-dealer': MarketingFindADealerBlock;
-    'marketing-dealer-finder': MarketingDealerFinderBlock;
+    'marketing-dealer-map': MarketingDealerMapBlock;
     'marketing-3d-viewer': Marketing3DViewerBlock;
     'marketing-artist-carousel': MarketingArtistCarouselBlock;
     'marketing-artist-i2l': MarketingArtistI2LBlock;
@@ -5079,16 +5079,16 @@ export interface MarketingFindADealerBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MarketingDealerFinderBlock".
+ * via the `definition` "MarketingDealerMapBlock".
  */
-export interface MarketingDealerFinderBlock {
+export interface MarketingDealerMapBlock {
   /**
-   * Heading shown in the dealer list panel
+   * Optional H1 shown in the control bar. Leave blank to use the default ("Find an Authorized Kawai Dealer Near You").
    */
   heading?: string | null;
   id?: string | null;
   blockName?: string | null;
-  blockType: 'marketing-dealer-finder';
+  blockType: 'marketing-dealer-map';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -8556,7 +8556,7 @@ export interface Page {
     | MarketingTechnicalShowcaseBlock
     | MarketingGrandHeroBlock
     | MarketingFindADealerBlock
-    | MarketingDealerFinderBlock
+    | MarketingDealerMapBlock
     | Marketing3DViewerBlock
     | MarketingArtistCarouselBlock
     | MarketingArtistI2LBlock
@@ -8740,6 +8740,8 @@ export interface HomePage {
         | MarketingFeaturedCollectionsBlock
         | MarketingBlogGridBlock
         | MarketingBlogLatestBlock
+        | MarketingDealerMapBlock
+        | MarketingArtistI2LBlock
         | LayoutBottomLeftPopupBlock
       )[]
     | null;

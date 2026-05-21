@@ -1,6 +1,6 @@
 import type { CollectionConfig, CollectionBeforeValidateHook } from 'payload'
 import { revalidateTag, revalidatePath } from 'next/cache'
-import { imageField, videoField } from '@/lib/payload/fields'
+import { imageField, videoField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { nominatimGeocode } from '@/lib/payload/geocode'
 
 /**
@@ -70,6 +70,7 @@ export const Storefronts: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL-friendly identifier for this storefront location (e.g., "st-louis", "chicago")'
       },

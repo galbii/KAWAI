@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { generateBreadcrumbSchema } from '@/lib/seo/schemas'
-import { DealerFinderMapBlock } from '@/components/blocks/DealerFinderMapBlock'
+import { DealerMapBlock } from '@/components/blocks/DealerMapBlock'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
@@ -87,7 +87,7 @@ export default async function FindADealerPage() {
           __html: JSON.stringify(breadcrumbSchema).replace(/</g, '\\u003c'),
         }}
       />
-      <DealerFinderMapBlock />
+      <DealerMapBlock />
     </main>
   )
 }

@@ -138,7 +138,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 'marketing-technical-showcase',     // Technical Showcase
                 'marketing-grand-hero',             // Grand Hero
                 'marketing-find-a-dealer',          // Find a Dealer (CTA link)
-                'marketing-dealer-finder',          // Dealer Finder (interactive map)
+                'marketing-dealer-map',             // Dealer Map (interactive finder)
                 'marketing-3d-viewer',              // 3D Model Viewer
                 'marketing-artist-carousel',        // Artist Carousel
                 'marketing-artist-i2l',             // Artist I2L — auto-pulls YouTube recent work from all artists

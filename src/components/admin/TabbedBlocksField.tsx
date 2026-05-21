@@ -21,7 +21,7 @@ const BLOCK_GROUPS: Record<string, string[]> = {
     'marketing-technical-showcase',
     'marketing-grand-hero',
     'marketing-find-a-dealer',
-    'marketing-dealer-finder',
+    'marketing-dealer-map',
     'marketing-3d-viewer',
     'marketing-artist-carousel',
     'marketing-artist-i2l',

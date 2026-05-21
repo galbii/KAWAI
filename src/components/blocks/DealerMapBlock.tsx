@@ -88,7 +88,7 @@ const getDealerMapData = unstable_cache(
   { tags: ['dealers', 'storefronts'], revalidate: 3600 }
 )
 
-export async function DealerFinderMapBlock({ heading }: Props) {
+export async function DealerMapBlock({ heading }: Props) {
   const [site, [dealersResponse, storefrontsResponse]] = await Promise.all([
     getSite(),
     getDealerMapData(),

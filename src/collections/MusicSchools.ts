@@ -1,5 +1,5 @@
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
-import { imageField } from '@/lib/payload/fields'
+import { imageField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { anyone, authenticated, adminOnly } from '@/lib/payload/access'
 
 const revalidateMusicSchool: CollectionAfterChangeHook = async ({ doc, context }) => {
@@ -45,6 +45,7 @@ export const MusicSchools: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      hooks: { beforeDuplicate: [slugBeforeDuplicate] },
       admin: {
         description: 'URL identifier for this music school',
       },
