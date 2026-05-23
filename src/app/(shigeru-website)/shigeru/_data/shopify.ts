@@ -1,7 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { fetchShopifyProductByModel } from '@/lib/shopify/fetch-product'
 import { getPayloadClient } from '@/lib/payload/queries'
-import type { Media } from '@/payload-types'
 
 export type ShigeruModelShopifyData = {
   imageUrl: string | null
@@ -17,8 +15,9 @@ export type ShigeruModelShopifyData = {
 
 export type ShigeruPageData = Record<string, ShigeruModelShopifyData>
 
-// Values must match Shopify's custom.model metafield exactly.
-// SK-EX is stored with a dash in Shopify — "SKEX" would return no results.
+// Model values must match the Payload product's `model` field exactly.
+// Mirrors Shopify's custom.model metafield: numbered models have no dash,
+// SK-EX retains the dash.
 const SK_MODELS = ['SK2', 'SK3', 'SK5', 'SK6', 'SK7', 'SK-EX'] as const
 
 function fuzzySpec(
@@ -53,49 +52,53 @@ const EMPTY: ShigeruModelShopifyData = {
   specBeams: null,
 }
 
-// Looks up image URL for a given model from Payload CMS.
-// Priority: customMedia[0].image → synced imageUrl field.
-// Returns null if neither is set — caller falls back to Shopify API.
-async function getPayloadImageUrl(payload: Awaited<ReturnType<typeof getPayloadClient>>, model: string): Promise<string | null> {
+type PayloadSkData = {
+  imageUrl: string | null
+  finishes: string[]
+  specificationJson: Record<string, unknown> | null
+}
+
+// Reads the Payload product for a given SK model. All Shigeru page data
+// (image, finishes, specs) is sourced from Payload — the sync job is
+// responsible for keeping these fields fresh from Shopify.
+async function getPayloadSkData(
+  payload: Awaited<ReturnType<typeof getPayloadClient>>,
+  model: string,
+): Promise<PayloadSkData> {
+  const empty: PayloadSkData = { imageUrl: null, finishes: [], specificationJson: null }
   try {
     const result = await payload.find({
       collection: 'products',
       where: { model: { equals: model } },
-      select: { customMedia: true, imageUrl: true, variations: true },
-      depth: 1,
+      select: { imageUrl: true, variations: true, specificationJson: true },
+      depth: 0,
       limit: 1,
     })
     const doc = result.docs[0]
+    if (!doc) return empty
 
-    // 1. Custom media override
-    if (doc?.customMedia?.length) {
-      const firstImage = doc.customMedia.find(
-        (item) => !item.mediaType || item.mediaType === 'media',
-      )
-      if (firstImage?.image) {
-        const img = firstImage.image as Media | string
-        const url = typeof img === 'object' && img !== null && 'url' in img
-          ? (img.url ?? null)
-          : null
-        if (url) return url
-      }
+    const finishes =
+      doc.variations
+        ?.map((v: any) => v.name)
+        .filter((n: string | null | undefined): n is string => !!n && n !== 'Default Title') ?? []
+
+    const rawJson = (doc as any).specificationJson
+    const specificationJson =
+      rawJson && typeof rawJson === 'object' && !Array.isArray(rawJson)
+        ? (rawJson as Record<string, unknown>)
+        : null
+
+    return {
+      imageUrl: doc.imageUrl || null,
+      finishes,
+      specificationJson,
     }
-
-    // 2. Shopify-synced top-level imageUrl
-    if (doc?.imageUrl) return doc.imageUrl
-
-    // 3. First variant imageUrl as last resort
-    const firstVariantImage = doc?.variations?.find((v: any) => v.imageUrl)?.imageUrl ?? null
-    if (firstVariantImage) return firstVariantImage
-
-    return null
   } catch {
-    return null
+    return empty
   }
 }
 
-// Fetches all six SK model images + specs.
-// Priority: Payload CMS customMedia[0] → Shopify featuredImage → Shopify images[0].
+// Fetches all six SK model images + finishes + specs from Payload.
 // Cached for 1h, busted by 'shigeru-product-images' tag.
 export const getShigeruPageData = unstable_cache(
   async (): Promise<ShigeruPageData> => {
@@ -104,18 +107,8 @@ export const getShigeruPageData = unstable_cache(
       SK_MODELS.map(async (model) => {
         const key = model.toLowerCase().replace(/-/g, '') // 'SK-EX' → 'skex'
         try {
-          const [shopifyProduct, payloadImageUrl] = await Promise.all([
-            fetchShopifyProductByModel(model),
-            getPayloadImageUrl(payload, model),
-          ])
-          const shopifyImageUrl =
-            shopifyProduct?.featuredImage?.url ?? shopifyProduct?.images?.[0]?.url ?? null
-          const imageUrl = payloadImageUrl ?? shopifyImageUrl
-          const finishes =
-            shopifyProduct?.variants
-              .filter((v) => v.title !== 'Default Title')
-              .map((v) => v.title) ?? []
-          const json = shopifyProduct?.metafields?.specificationJson ?? null
+          const data = await getPayloadSkData(payload, model)
+          const json = data.specificationJson
           const lengthSpec = json ? fuzzySpec(json, 'length') : null
           const widthSpec = json ? fuzzySpec(json, 'width') : null
           const weightSpec = json ? fuzzySpec(json, 'weight') : null
@@ -123,8 +116,8 @@ export const getShigeruPageData = unstable_cache(
           return [
             key,
             {
-              imageUrl,
-              finishes,
+              imageUrl: data.imageUrl,
+              finishes: data.finishes,
               specLength: lengthSpec?.value ?? null,
               specLengthSub: lengthSpec?.sub ?? null,
               specWidth: widthSpec?.value ?? null,

@@ -75,7 +75,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       { url: `${SITE_URL}/concert-artist-ca`, changeFrequency: 'monthly', priority: 0.7 },
       { url: `${SITE_URL}/the-winners-choice`, changeFrequency: 'monthly', priority: 0.7 },
       { url: `${SITE_URL}/distinguished-owners`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/rebate`, changeFrequency: 'weekly', priority: 0.75 },
     )
 
     // ==========================================

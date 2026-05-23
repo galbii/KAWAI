@@ -8770,7 +8770,7 @@ export interface HomePage {
      */
     divider?: ('bullet' | 'pipe' | 'slash' | 'dash' | 'star' | 'diamond' | 'spaces') | null;
     /**
-     * Optional: URL to navigate to when users click the announcement bar (e.g., /rebate, /promotions)
+     * Optional: URL to navigate to when users click the announcement bar (e.g., /digital-piano-rebate, /promotions)
      */
     link?: string | null;
     /**

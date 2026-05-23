@@ -163,8 +163,8 @@ export const HomePage: CollectionConfig = {
                   name: 'link',
                   type: 'text',
                   admin: {
-                    description: 'Optional: URL to navigate to when users click the announcement bar (e.g., /rebate, /promotions)',
-                    placeholder: '/rebate',
+                    description: 'Optional: URL to navigate to when users click the announcement bar (e.g., /digital-piano-rebate, /promotions)',
+                    placeholder: '/digital-piano-rebate',
                     condition: (data) => data.announcementBar?.enabled === true
                   }
                 },
