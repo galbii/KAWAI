@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getSiteAlternates } from '@/lib/site-context'
+import { HubSpotEmbed } from '@/components/forms/HubSpotEmbed'
 
 export const revalidate = 86400
 
@@ -151,15 +152,13 @@ export default function SupportRequestPage() {
                 </div>
               </div>
 
-              {/* Right — HubSpot form */}
+              {/* Right — HubSpot form (auto-resizing) */}
               <div>
-                <iframe
+                <HubSpotEmbed
                   src="https://share.hsforms.com/22f9oRT3pQ96WhrVrK5C4jwd39hb"
                   title="Kawai Technical Support Request"
-                  className="w-full border-0"
-                  style={{ height: '1100px', background: 'white' }}
-                  scrolling="no"
-                  loading="lazy"
+                  className="w-full border-0 block"
+                  initialHeight={1100}
                 />
               </div>
 
