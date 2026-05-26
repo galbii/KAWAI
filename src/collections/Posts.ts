@@ -23,6 +23,11 @@ export const Posts: CollectionConfig = {
     description: 'Blog posts with rich content, featured images, and flexible page building',
     components: {
       beforeList: ['/components/admin/SeedPostsButton#SeedPostsButton'],
+      edit: {
+        beforeDocumentControls: [
+          '/components/admin/SharePreviewLinkButton#SharePreviewLinkButton',
+        ],
+      },
     },
     livePreview: {
       url: ({ data }) => {

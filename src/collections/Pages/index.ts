@@ -26,6 +26,13 @@ export const Pages: CollectionConfig<'pages'> = {
   admin: {
     group: 'Pages',
     defaultColumns: ['title', 'category', 'tags', 'slug', 'updatedAt'],
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          '/components/admin/SharePreviewLinkButton#SharePreviewLinkButton',
+        ],
+      },
+    },
     livePreview: {
       url: ({ data }) => {
         const baseURL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

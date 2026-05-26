@@ -31,6 +31,11 @@ export const Artists: CollectionConfig = {
     },
     components: {
       beforeList: ['/components/admin/ArtistsButton#SeedArtistsButton'],
+      edit: {
+        beforeDocumentControls: [
+          '/components/admin/SharePreviewLinkButton#SharePreviewLinkButton',
+        ],
+      },
     },
   },
   access: {

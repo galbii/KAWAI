@@ -5,8 +5,6 @@ import {
   ContactForm,
   ShowroomLocation
 } from "@/components/homepage";
-import { CampaignNavigator } from "@/components/storefronts/CampaignNavigator";
-import { SpringSpecialsBanner } from "@/components/storefronts/SpringSpecialsBanner";
 import { MusicSchoolSection } from "@/components/music-school/MusicSchoolSection";
 import { PianoRentalsSection } from '@/components/storefronts/piano-rentals-section'
 import { FacilityRentalsSection } from '@/components/storefronts/facility-rentals-section'
@@ -288,9 +286,6 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         {/* News Carousel Section */}
         <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
-        {/* Spring Specials Promotional Banner */}
-        <SpringSpecialsBanner storeslug={storeslug} />
-
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
@@ -514,7 +509,6 @@ export default async function StorefrontPage({ params }: { params: Promise<{ sto
       }>
         <StorefrontContent storeslug={storeslug} />
       </Suspense>
-      <CampaignNavigator storeslug={storeslug} />
     </>
   );
 }

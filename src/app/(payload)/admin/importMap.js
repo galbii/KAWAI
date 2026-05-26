@@ -28,6 +28,7 @@ import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { TabbedBlocksField as TabbedBlocksField_59f2a4fcf25c7b600d8266019bbd834a } from '../../../components/admin/TabbedBlocksField'
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
+import { SharePreviewLinkButton as SharePreviewLinkButton_d1c442685b80744adadd1e8da7d06906 } from '../../../components/admin/SharePreviewLinkButton'
 import { SeedPostsButton as SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7 } from '../../../components/admin/SeedPostsButton'
 import { SeedArtistsButton as SeedArtistsButton_4b079c3f25a81e3b38d51126776e1754 } from '../../../components/admin/ArtistsButton'
 import { CustomMediaRowLabel as CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149 } from '../../../components/admin/CustomMediaRowLabel'
@@ -115,6 +116,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/TabbedBlocksField#TabbedBlocksField": TabbedBlocksField_59f2a4fcf25c7b600d8266019bbd834a,
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
+  "/components/admin/SharePreviewLinkButton#SharePreviewLinkButton": SharePreviewLinkButton_d1c442685b80744adadd1e8da7d06906,
   "/components/admin/SeedPostsButton#SeedPostsButton": SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7,
   "/components/admin/ArtistsButton#SeedArtistsButton": SeedArtistsButton_4b079c3f25a81e3b38d51126776e1754,
   "/components/admin/CustomMediaRowLabel#CustomMediaRowLabel": CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149,

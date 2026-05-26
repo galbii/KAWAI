@@ -20,6 +20,7 @@ export async function GET(
   const path = searchParams.get('path')
   const collection = searchParams.get('collection') as CollectionSlug
   const slug = searchParams.get('slug')
+  const previewSecret = searchParams.get('previewSecret')
 
   if (!path || !collection || !slug) {
     console.error('[Preview] Missing required parameters:', { path, collection, slug })
@@ -35,7 +36,21 @@ export async function GET(
     )
   }
 
-  // Authenticate user
+  const draft = await draftMode()
+
+  // Shareable preview path — a valid previewSecret enables draft mode for
+  // anyone with the link (no admin login required). Used for sending drafts
+  // to external reviewers. Anyone with the secret in the URL gets access;
+  // rotate PREVIEW_SECRET to revoke all outstanding share links.
+  const expectedSecret = process.env.PREVIEW_SECRET
+  if (previewSecret && expectedSecret && previewSecret === expectedSecret) {
+    console.log(`[Preview] Enabling draft mode via share link, path: ${path}`)
+    draft.enable()
+    redirect(path)
+  }
+
+  // Admin auth path — used by Payload's live preview iframe and admin "View"
+  // buttons. Requires a logged-in user.
   let user
   try {
     user = await payload.auth({
@@ -52,20 +67,15 @@ export async function GET(
     })
   }
 
-  const draft = await draftMode()
-
   if (!user?.user) {
     draft.disable()
-    console.error('[Preview] User not authenticated')
+    console.error('[Preview] User not authenticated and no valid previewSecret')
     return new Response('You are not allowed to preview this page', {
       status: 403,
     })
   }
 
   console.log(`[Preview] Enabling draft mode for user: ${user.user.email || 'unknown'}, path: ${path}`)
-
-  // Enable draft mode
   draft.enable()
-
   redirect(path)
 }
