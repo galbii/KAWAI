@@ -1,9 +1,52 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-context'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
+
+type SitemapEntry = MetadataRoute.Sitemap[number]
+
+interface AddOptions {
+  changeFrequency?: SitemapEntry['changeFrequency']
+  priority?: number
+  lastModified?: Date
+  /**
+   * `true` = skip this URL on the CA sitemap and do NOT emit en-CA hreflang.
+   * Use for routes that are functionally US-only (US dealers, US showrooms,
+   * US-only campaigns, NAMM, careers, etc.). On the US sitemap a US-only URL
+   * is still listed, but without an `en-CA` alternate.
+   */
+  usOnly?: boolean
+}
+
+/**
+ * Build a sitemap URL entry with consistent hreflang handling.
+ *
+ * - Bilingual paths automatically get `<xhtml:link rel="alternate" hreflang="...">`
+ *   pointing at the en-US, en-CA, and x-default variants via `getSiteAlternates`.
+ * - US-only paths are dropped entirely from the CA sitemap and emit no en-CA
+ *   alternate on the US sitemap (sending Google to a non-existent CA URL would
+ *   create misleading hreflang signals).
+ */
+function pushUrl(
+  out: MetadataRoute.Sitemap,
+  site: Site,
+  path: string,
+  options: AddOptions = {},
+): void {
+  if (options.usOnly && site === 'cad') return
+
+  const entry: SitemapEntry = { url: `${getSiteUrl(site)}${path}` }
+  if (options.changeFrequency !== undefined) entry.changeFrequency = options.changeFrequency
+  if (options.priority !== undefined) entry.priority = options.priority
+  if (options.lastModified !== undefined) entry.lastModified = options.lastModified
+  if (!options.usOnly) {
+    entry.alternates = { languages: getSiteAlternates(path) }
+  }
+
+  out.push(entry)
+}
 
 /** Fetch the set of active CMS redirect source paths so they can be excluded from the sitemap. */
 async function getRedirectSourcePaths(): Promise<Set<string>> {
@@ -25,10 +68,9 @@ async function getRedirectSourcePaths(): Promise<Set<string>> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const site = await getSite()
-    const SITE_URL = getSiteUrl(site)
-
     const payload = await getPayloadClient()
     const sitemap: MetadataRoute.Sitemap = []
+    const add = (path: string, opts?: AddOptions) => pushUrl(sitemap, site, path, opts)
 
     // Fetch active redirect sources upfront — these URLs must not appear in the sitemap
     const redirectSources = await getRedirectSourcePaths()
@@ -37,120 +79,111 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // STATIC ROUTES — Core / High Priority
     // ==========================================
 
-    sitemap.push(
-      { url: SITE_URL, changeFrequency: 'daily', priority: 1.0, alternates: { languages: getSiteAlternates('/') } },
-      { url: `${SITE_URL}/pianos`, changeFrequency: 'daily', priority: 0.9, alternates: { languages: getSiteAlternates('/pianos') } },
-      { url: `${SITE_URL}/find-my-piano`, changeFrequency: 'weekly', priority: 0.9 },
-      { url: `${SITE_URL}/piano-finder`, changeFrequency: 'weekly', priority: 0.9 },
-    )
+    add('/', { changeFrequency: 'daily', priority: 1.0 })
+    add('/pianos', { changeFrequency: 'daily', priority: 0.9 })
+    add('/find-my-piano', { changeFrequency: 'weekly', priority: 0.9, usOnly: true })
+    add('/piano-finder', { changeFrequency: 'weekly', priority: 0.9, usOnly: true })
 
     // ==========================================
     // STATIC ROUTES — Piano Categories
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/pianos/digital`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/digital') } },
-      { url: `${SITE_URL}/pianos/grand`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand') } },
-      { url: `${SITE_URL}/pianos/upright`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/upright') } },
-      { url: `${SITE_URL}/pianos/hybrid`, changeFrequency: 'weekly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/hybrid') } },
-      { url: `${SITE_URL}/pianos/shigeru-kawai`, changeFrequency: 'weekly', priority: 0.9, alternates: { languages: getSiteAlternates('/pianos/shigeru-kawai') } },
-      { url: `${SITE_URL}/pianos/shigeru-kawai/sk-ex`, changeFrequency: 'monthly', priority: 0.75 },
-      { url: `${SITE_URL}/pianos/digital/ca901`, changeFrequency: 'monthly', priority: 0.7 },
-      // SEO research landing pages — capture informational queries, funnel to category pages
-      { url: `${SITE_URL}/pianos/digital/es-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/digital/es-series') } },
-      { url: `${SITE_URL}/pianos/digital/ca-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/digital/ca-series') } },
-      { url: `${SITE_URL}/pianos/grand/gl-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gl-series') } },
-      { url: `${SITE_URL}/pianos/grand/gx-series`, changeFrequency: 'monthly', priority: 0.8, alternates: { languages: getSiteAlternates('/pianos/grand/gx-series') } },
-      { url: `${SITE_URL}/pianos/grand/shigeru-kawai`, changeFrequency: 'monthly', priority: 0.85, alternates: { languages: getSiteAlternates('/pianos/grand/shigeru-kawai') } },
-      // /pianos/search and /pianos/compare are noindexed utility pages — excluded from sitemap
-      { url: `${SITE_URL}/accessories`, changeFrequency: 'weekly', priority: 0.65 },
-    )
+    add('/pianos/digital', { changeFrequency: 'weekly', priority: 0.85 })
+    add('/pianos/grand', { changeFrequency: 'weekly', priority: 0.85 })
+    add('/pianos/upright', { changeFrequency: 'weekly', priority: 0.85 })
+    add('/pianos/hybrid', { changeFrequency: 'weekly', priority: 0.85 })
+    add('/pianos/shigeru-kawai', { changeFrequency: 'weekly', priority: 0.9 })
+    add('/pianos/shigeru-kawai/sk-ex', { changeFrequency: 'monthly', priority: 0.75 })
+    add('/pianos/digital/ca901', { changeFrequency: 'monthly', priority: 0.7 })
+    // SEO research landing pages — capture informational queries, funnel to category pages
+    add('/pianos/digital/es-series', { changeFrequency: 'monthly', priority: 0.8 })
+    add('/pianos/digital/ca-series', { changeFrequency: 'monthly', priority: 0.8 })
+    add('/pianos/grand/gl-series', { changeFrequency: 'monthly', priority: 0.8 })
+    add('/pianos/grand/gx-series', { changeFrequency: 'monthly', priority: 0.8 })
+    add('/pianos/grand/shigeru-kawai', { changeFrequency: 'monthly', priority: 0.85 })
+    // /pianos/search and /pianos/compare are noindexed utility pages — excluded from sitemap
+    add('/accessories', { changeFrequency: 'weekly', priority: 0.65 })
 
     // ==========================================
     // STATIC ROUTES — Product / Marketing
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/concert-artist`, changeFrequency: 'monthly', priority: 0.8 },
-      { url: `${SITE_URL}/concert-artist-ca`, changeFrequency: 'monthly', priority: 0.7 },
-      { url: `${SITE_URL}/the-winners-choice`, changeFrequency: 'monthly', priority: 0.7 },
-      { url: `${SITE_URL}/distinguished-owners`, changeFrequency: 'monthly', priority: 0.65 },
-    )
+    add('/concert-artist', { changeFrequency: 'monthly', priority: 0.8, usOnly: true })
+    add('/concert-artist-ca', { changeFrequency: 'monthly', priority: 0.7, usOnly: true })
+    add('/the-winners-choice', { changeFrequency: 'monthly', priority: 0.7, usOnly: true })
+    add('/distinguished-owners', { changeFrequency: 'monthly', priority: 0.65, usOnly: true })
 
     // ==========================================
     // STATIC ROUTES — Content / SEO
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/blog`, changeFrequency: 'daily', priority: 0.8 },
-      { url: `${SITE_URL}/artists`, changeFrequency: 'weekly', priority: 0.75 },
-      { url: `${SITE_URL}/guides`, changeFrequency: 'weekly', priority: 0.7 },
-      { url: `${SITE_URL}/glossary`, changeFrequency: 'monthly', priority: 0.55 },
-      { url: `${SITE_URL}/news`, changeFrequency: 'daily', priority: 0.7 },
-    )
+    add('/blog', { changeFrequency: 'daily', priority: 0.8 })
+    add('/artists', { changeFrequency: 'weekly', priority: 0.75 })
+    add('/guides', { changeFrequency: 'weekly', priority: 0.7 })
+    add('/glossary', { changeFrequency: 'monthly', priority: 0.55 })
+    add('/news', { changeFrequency: 'daily', priority: 0.7 })
 
     // ==========================================
     // STATIC ROUTES — Technology Sub-Pages
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/technology`, changeFrequency: 'monthly', priority: 0.7 },
-      { url: `${SITE_URL}/technology/carbon-fiber-technology`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/technology/sound-technology`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/technology/wooden-key-actions`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/technology/piano-action`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/technology/soundboard-speaker-system`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/technology/abs`, changeFrequency: 'monthly', priority: 0.6 },
-    )
+    add('/technology', { changeFrequency: 'monthly', priority: 0.7 })
+    add('/technology/carbon-fiber-technology', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/technology/sound-technology', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/technology/wooden-key-actions', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/technology/piano-action', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/technology/soundboard-speaker-system', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/technology/abs', { changeFrequency: 'monthly', priority: 0.6 })
 
     // ==========================================
     // STATIC ROUTES — Company
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/company`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/company/awards`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/company/our-philosophy`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/company/koichi-kawai`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.65 },
-    )
+    add('/company', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/company/awards', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/company/our-philosophy', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/company/koichi-kawai', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/about', { changeFrequency: 'monthly', priority: 0.65 })
 
     // ==========================================
     // STATIC ROUTES — Institutions
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/institutions/epic-program`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/institutions/testimonial-videos`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/institutions/financial-assistance`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/institutions/institutional-fleet`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/institutions/loan-programs`, changeFrequency: 'monthly', priority: 0.65 },
-    )
+    add('/institutions/epic-program', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/institutions/testimonial-videos', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/institutions/financial-assistance', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/institutions/institutional-fleet', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/institutions/loan-programs', { changeFrequency: 'monthly', priority: 0.65 })
 
     // ==========================================
-    // STATIC ROUTES — Dealer / Location Discovery
+    // STATIC ROUTES — Dealer / Location Discovery (US-only)
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/find-a-dealer`, changeFrequency: 'weekly', priority: 0.8 },
-      { url: `${SITE_URL}/showroom`, changeFrequency: 'monthly', priority: 0.7 },
-    )
+    add('/find-a-dealer', { changeFrequency: 'weekly', priority: 0.8, usOnly: true })
+    add('/showroom', { changeFrequency: 'monthly', priority: 0.7, usOnly: true })
 
     // ==========================================
     // STATIC ROUTES — Utility
     // ==========================================
 
-    sitemap.push(
-      { url: `${SITE_URL}/warranty-registration`, changeFrequency: 'yearly', priority: 0.5 },
-      { url: `${SITE_URL}/warranty`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty') } },
-      { url: `${SITE_URL}/warranty/digital`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty/digital') } },
-      { url: `${SITE_URL}/warranty/acoustic`, changeFrequency: 'monthly', priority: 0.7, alternates: { languages: getSiteAlternates('/warranty/acoustic') } },
-      { url: `${SITE_URL}/faq`, changeFrequency: 'monthly', priority: 0.6 },
-      { url: `${SITE_URL}/careers`, changeFrequency: 'weekly', priority: 0.6 },
-      { url: `${SITE_URL}/technical-support-division`, changeFrequency: 'monthly', priority: 0.55 },
-      { url: `${SITE_URL}/digital-piano-rebate`, changeFrequency: 'monthly', priority: 0.65 },
-      { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
-    )
+    add('/warranty-registration', { changeFrequency: 'yearly', priority: 0.5, usOnly: true })
+    add('/warranty', { changeFrequency: 'monthly', priority: 0.7 })
+    add('/warranty/digital', { changeFrequency: 'monthly', priority: 0.7 })
+    add('/warranty/acoustic', { changeFrequency: 'monthly', priority: 0.7 })
+    add('/faq', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/careers', { changeFrequency: 'weekly', priority: 0.6, usOnly: true })
+    add('/technical-support-division', { changeFrequency: 'monthly', priority: 0.55, usOnly: true })
+    add('/digital-piano-rebate', { changeFrequency: 'monthly', priority: 0.65, usOnly: true })
+    add('/privacy', { changeFrequency: 'yearly', priority: 0.3 })
+
+    // ==========================================
+    // STATIC ROUTES — NAMM 2026 Event Pages (US-only — NAMM is a US trade show)
+    // ==========================================
+
+    add('/namm-2026', { changeFrequency: 'daily', priority: 0.9, usOnly: true })
+    add('/namm-2026/dealer', { changeFrequency: 'weekly', priority: 0.7, usOnly: true })
+    add('/namm-2026/artists', { changeFrequency: 'weekly', priority: 0.7, usOnly: true })
+    add('/namm-2026/experience', { changeFrequency: 'weekly', priority: 0.7, usOnly: true })
 
     // ==========================================
     // DYNAMIC — FAQ Pages (from CMS)
@@ -165,34 +198,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const faqRoutes: MetadataRoute.Sitemap = faqsResult.docs
-        .filter((f: any) => f.slug)
-        .map((f: any) => ({
-          url: `${SITE_URL}/faq/${f.slug}`,
-          lastModified: new Date(f.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const f of faqsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!f.slug) continue
+        add(`/faq/${f.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.55,
-        }))
-
-      sitemap.push(...faqRoutes)
-      console.log(`✅ Sitemap: ${faqRoutes.length} FAQ pages`)
+          lastModified: new Date(f.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${faqsResult.docs.length} FAQ pages`)
     } catch (err) {
       console.error('❌ Sitemap: faqs fetch failed', err)
     }
 
     // ==========================================
-    // STATIC ROUTES — NAMM 2026 Event Pages
-    // ==========================================
-
-    sitemap.push(
-      { url: `${SITE_URL}/namm-2026`, changeFrequency: 'daily', priority: 0.9 },
-      { url: `${SITE_URL}/namm-2026/dealer`, changeFrequency: 'weekly', priority: 0.7 },
-      { url: `${SITE_URL}/namm-2026/artists`, changeFrequency: 'weekly', priority: 0.7 },
-      { url: `${SITE_URL}/namm-2026/experience`, changeFrequency: 'weekly', priority: 0.7 },
-    )
-
-    // ==========================================
-    // DYNAMIC — Products (from CMS)
+    // DYNAMIC — Products (from CMS) — bilingual (CA gets CAD pricing on same slugs)
     // ==========================================
 
     try {
@@ -204,18 +224,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const productRoutes: MetadataRoute.Sitemap = productsResult.docs
-        .filter((p: any) => p.visibility?.showInCatalog !== false)
-        .map((p: any) => ({
-          url: `${SITE_URL}/products/${p.slug}`,
-          lastModified: new Date(p.updatedAt),
-          changeFrequency: 'weekly' as const,
+      for (const p of productsResult.docs as Array<{
+        slug?: string
+        updatedAt: string
+        visibility?: { showInCatalog?: boolean; featured?: boolean }
+      }>) {
+        if (!p.slug) continue
+        if (p.visibility?.showInCatalog === false) continue
+        add(`/products/${p.slug}`, {
+          changeFrequency: 'weekly',
           priority: p.visibility?.featured ? 0.9 : 0.7,
-          alternates: { languages: getSiteAlternates(`/products/${p.slug}`) },
-        }))
-
-      sitemap.push(...productRoutes)
-      console.log(`✅ Sitemap: ${productRoutes.length} products`)
+          lastModified: new Date(p.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${productsResult.docs.length} products`)
     } catch (err) {
       console.error('❌ Sitemap: products fetch failed', err)
     }
@@ -233,17 +255,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const postRoutes: MetadataRoute.Sitemap = postsResult.docs
-        .filter((p: any) => p.slug)
-        .map((p: any) => ({
-          url: `${SITE_URL}/blog/${p.slug}`,
-          lastModified: new Date(p.publishedDate ?? p.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const p of postsResult.docs as Array<{ slug?: string; updatedAt: string; publishedDate?: string }>) {
+        if (!p.slug) continue
+        add(`/blog/${p.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.65,
-        }))
-
-      sitemap.push(...postRoutes)
-      console.log(`✅ Sitemap: ${postRoutes.length} blog posts`)
+          lastModified: new Date(p.publishedDate ?? p.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${postsResult.docs.length} blog posts`)
     } catch (err) {
       console.error('❌ Sitemap: posts fetch failed', err)
     }
@@ -260,23 +280,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const artistRoutes: MetadataRoute.Sitemap = artistsResult.docs
-        .filter((a: any) => a.slug)
-        .map((a: any) => ({
-          url: `${SITE_URL}/artists/${a.slug}`,
-          lastModified: new Date(a.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const a of artistsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!a.slug) continue
+        add(`/artists/${a.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.6,
-        }))
-
-      sitemap.push(...artistRoutes)
-      console.log(`✅ Sitemap: ${artistRoutes.length} artist profiles`)
+          lastModified: new Date(a.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${artistsResult.docs.length} artist profiles`)
     } catch (err) {
       console.error('❌ Sitemap: artists fetch failed', err)
     }
 
     // ==========================================
-    // DYNAMIC — Dealer Profiles (from CMS)
+    // DYNAMIC — Dealer Profiles (US-only — US dealers, not relevant on CA)
     // ==========================================
 
     try {
@@ -288,24 +306,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const dealerRoutes: MetadataRoute.Sitemap = dealersResult.docs
-        .filter((d: any) => d.slug)
-        .map((d: any) => ({
-          url: `${SITE_URL}/find-a-dealer/${d.slug}`,
-          lastModified: new Date(d.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const d of dealersResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!d.slug) continue
+        add(`/find-a-dealer/${d.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.65,
-          alternates: { languages: getSiteAlternates(`/find-a-dealer/${d.slug}`) },
-        }))
-
-      sitemap.push(...dealerRoutes)
-      console.log(`✅ Sitemap: ${dealerRoutes.length} dealer profiles`)
+          lastModified: new Date(d.updatedAt),
+          usOnly: true,
+        })
+      }
+      console.log(`✅ Sitemap: ${dealersResult.docs.length} dealer profiles`)
     } catch (err) {
       console.error('❌ Sitemap: dealers fetch failed', err)
     }
 
     // ==========================================
-    // DYNAMIC — Storefronts / Store Location Pages
+    // DYNAMIC — Storefronts / Store Location Pages (US-only — physical US showrooms)
     // ==========================================
 
     try {
@@ -317,22 +333,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const storefrontRoutes: MetadataRoute.Sitemap = storefrontsResult.docs.map((s: any) => ({
-        url: `${SITE_URL}/store/${s.slug}`,
-        lastModified: new Date(s.updatedAt),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-        alternates: { languages: getSiteAlternates(`/store/${s.slug}`) },
-      }))
-
-      sitemap.push(...storefrontRoutes)
-      console.log(`✅ Sitemap: ${storefrontRoutes.length} storefronts`)
+      for (const s of storefrontsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!s.slug) continue
+        add(`/store/${s.slug}`, {
+          changeFrequency: 'monthly',
+          priority: 0.7,
+          lastModified: new Date(s.updatedAt),
+          usOnly: true,
+        })
+      }
+      console.log(`✅ Sitemap: ${storefrontsResult.docs.length} storefronts`)
     } catch (err) {
       console.error('❌ Sitemap: storefronts fetch failed', err)
     }
 
     // ==========================================
-    // DYNAMIC — Music School pages
+    // DYNAMIC — Music School pages (US-only — tied to US storefronts)
     // ==========================================
 
     try {
@@ -354,27 +370,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             : null
         if (!storefrontSlug) continue
 
-        const base = `${SITE_URL}/store/${storefrontSlug}/music-school`
+        const base = `/store/${storefrontSlug}/music-school`
         const lastMod = new Date((ms as any).updatedAt)
 
         // Core music school pages
-        sitemap.push(
-          { url: base, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.75 },
-          { url: `${base}/programs`, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.70 },
-          { url: `${base}/faculty`, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.60 },
-          { url: `${base}/policies`, lastModified: lastMod, changeFrequency: 'yearly' as const, priority: 0.50 },
-        )
+        add(base, { changeFrequency: 'monthly', priority: 0.75, lastModified: lastMod, usOnly: true })
+        add(`${base}/programs`, { changeFrequency: 'monthly', priority: 0.70, lastModified: lastMod, usOnly: true })
+        add(`${base}/faculty`, { changeFrequency: 'monthly', priority: 0.60, lastModified: lastMod, usOnly: true })
+        add(`${base}/policies`, { changeFrequency: 'yearly', priority: 0.50, lastModified: lastMod, usOnly: true })
         musicSchoolCount++
 
         // Service area landing pages
         const locations: Array<{ slug?: string }> = (ms as any).serviceLocations ?? []
         for (const loc of locations) {
           if (!loc.slug) continue
-          sitemap.push({
-            url: `${base}/${loc.slug}`,
-            lastModified: lastMod,
-            changeFrequency: 'monthly' as const,
+          add(`${base}/${loc.slug}`, {
+            changeFrequency: 'monthly',
             priority: 0.75,
+            lastModified: lastMod,
+            usOnly: true,
           })
           serviceAreaCount++
         }
@@ -386,7 +400,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // ==========================================
-    // DYNAMIC — Shopify Collections (from CMS)
+    // DYNAMIC — Shopify Collections (from CMS) — bilingual
     // ==========================================
 
     try {
@@ -397,18 +411,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const collectionRoutes: MetadataRoute.Sitemap = collectionsResult.docs
-        .filter((c: any) => c.handle)
-        .map((c: any) => ({
-          url: `${SITE_URL}/pianos/${c.handle}`,
-          lastModified: new Date(c.updatedAt),
-          changeFrequency: 'weekly' as const,
+      for (const c of collectionsResult.docs as Array<{ handle?: string; updatedAt: string }>) {
+        if (!c.handle) continue
+        add(`/pianos/${c.handle}`, {
+          changeFrequency: 'weekly',
           priority: 0.75,
-          alternates: { languages: getSiteAlternates(`/pianos/${c.handle}`) },
-        }))
-
-      sitemap.push(...collectionRoutes)
-      console.log(`✅ Sitemap: ${collectionRoutes.length} collections`)
+          lastModified: new Date(c.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${collectionsResult.docs.length} collections`)
     } catch (err) {
       console.error('❌ Sitemap: collections fetch failed', err)
     }
@@ -427,23 +438,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const pageRoutes: MetadataRoute.Sitemap = pagesResult.docs
-        .filter((p: any) => p.slug)
-        .map((p: any) => ({
-          url: `${SITE_URL}/${p.slug}`,
-          lastModified: new Date(p.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const p of pagesResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!p.slug) continue
+        add(`/${p.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.6,
-        }))
-
-      sitemap.push(...pageRoutes)
-      console.log(`✅ Sitemap: ${pageRoutes.length} CMS pages`)
+          lastModified: new Date(p.updatedAt),
+        })
+      }
+      console.log(`✅ Sitemap: ${pagesResult.docs.length} CMS pages`)
     } catch (err) {
       console.error('❌ Sitemap: pages fetch failed', err)
     }
 
     // ==========================================
-    // DYNAMIC — Job Listings (from CMS)
+    // DYNAMIC — Job Listings (US-only — US employment)
     // ==========================================
 
     try {
@@ -455,23 +464,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const jobRoutes: MetadataRoute.Sitemap = jobsResult.docs
-        .filter((j: any) => j.slug)
-        .map((j: any) => ({
-          url: `${SITE_URL}/careers/${j.slug}`,
-          lastModified: new Date(j.updatedAt),
-          changeFrequency: 'weekly' as const,
+      for (const j of jobsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!j.slug) continue
+        add(`/careers/${j.slug}`, {
+          changeFrequency: 'weekly',
           priority: 0.55,
-        }))
-
-      sitemap.push(...jobRoutes)
-      console.log(`✅ Sitemap: ${jobRoutes.length} job listings`)
+          lastModified: new Date(j.updatedAt),
+          usOnly: true,
+        })
+      }
+      console.log(`✅ Sitemap: ${jobsResult.docs.length} job listings`)
     } catch (err) {
       console.error('❌ Sitemap: jobs fetch failed', err)
     }
 
     // ==========================================
-    // DYNAMIC — Technical Support Hubs (from CMS)
+    // DYNAMIC — Technical Support Hubs (US-only — Kawai America TSD)
     // ==========================================
 
     try {
@@ -483,17 +491,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         depth: 0,
       })
 
-      const hubRoutes: MetadataRoute.Sitemap = hubsResult.docs
-        .filter((h: any) => h.slug)
-        .map((h: any) => ({
-          url: `${SITE_URL}/technical-support-division/${h.slug}`,
-          lastModified: new Date(h.updatedAt),
-          changeFrequency: 'monthly' as const,
+      for (const h of hubsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+        if (!h.slug) continue
+        add(`/technical-support-division/${h.slug}`, {
+          changeFrequency: 'monthly',
           priority: 0.5,
-        }))
-
-      sitemap.push(...hubRoutes)
-      console.log(`✅ Sitemap: ${hubRoutes.length} support hubs`)
+          lastModified: new Date(h.updatedAt),
+          usOnly: true,
+        })
+      }
+      console.log(`✅ Sitemap: ${hubsResult.docs.length} support hubs`)
     } catch (err) {
       console.error('❌ Sitemap: support-groups fetch failed', err)
     }
@@ -518,7 +525,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       console.log(`✅ Sitemap: excluded ${excluded} redirect source(s)`)
     }
 
-    console.log(`✅ Sitemap total: ${filtered.length} URLs`)
+    console.log(`✅ Sitemap total (${site}): ${filtered.length} URLs`)
     return filtered
 
   } catch (err) {
