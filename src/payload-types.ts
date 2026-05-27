@@ -222,14 +222,14 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en-US' | 'en-CA') | ('en-US' | 'en-CA')[];
   globals: {
     'header-settings': HeaderSetting;
   };
   globalsSelect: {
     'header-settings': HeaderSettingsSelect<false> | HeaderSettingsSelect<true>;
   };
-  locale: null;
+  locale: 'en-US' | 'en-CA';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -2460,7 +2460,7 @@ export interface Product {
       )[]
     | null;
   /**
-   * SEO and social media optimization
+   * SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -3719,7 +3719,7 @@ export interface Faq {
    */
   publishedDate?: string | null;
   /**
-   * SEO optimization for FAQ detail pages
+   * SEO optimization for FAQ detail pages. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -3774,6 +3774,9 @@ export interface SupportGroup {
    * Sort order on the TSD landing page (lower = first)
    */
   displayOrder?: number | null;
+  /**
+   * Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
+   */
   seo?: {
     /**
      * Custom meta title for this hub page
@@ -5650,7 +5653,7 @@ export interface Artist {
    */
   internalNotes?: string | null;
   /**
-   * SEO and social media optimization
+   * SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -8379,7 +8382,7 @@ export interface Post {
    */
   featured?: boolean | null;
   /**
-   * SEO and social media optimization
+   * SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -8592,7 +8595,7 @@ export interface Page {
     | MarketingNewsletterPopupBlock
   )[];
   /**
-   * SEO and metadata configuration
+   * SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -9194,7 +9197,7 @@ export interface HomePage {
       | null;
   };
   /**
-   * SEO and metadata configuration
+   * SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -9378,7 +9381,7 @@ export interface PianosPage {
     ctaLink: string;
   };
   /**
-   * SEO and metadata configuration
+   * SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -10025,7 +10028,7 @@ export interface Storefront {
   serviceCtaText?: string | null;
   serviceCtaLink?: string | null;
   /**
-   * SEO and metadata configuration
+   * SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
     /**
@@ -10242,6 +10245,9 @@ export interface Dealer {
    * Payment terms from KAC/KCM records (e.g., "PAS/Net 30 Days")
    */
   paymentTerms?: string | null;
+  /**
+   * Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
+   */
   seo?: {
     /**
      * Custom meta title (leave empty to auto-generate from dealer name)
@@ -10860,6 +10866,7 @@ export interface Export {
   page?: number | null;
   sort?: string | null;
   sortOrder?: ('asc' | 'desc') | null;
+  locale?: ('all' | 'en-US' | 'en-CA') | null;
   drafts?: ('yes' | 'no') | null;
   selectionToUse?: ('currentSelection' | 'currentFilters' | 'all') | null;
   fields?: string[] | null;
@@ -12938,6 +12945,7 @@ export interface ExportsSelect<T extends boolean = true> {
   page?: T;
   sort?: T;
   sortOrder?: T;
+  locale?: T;
   drafts?: T;
   selectionToUse?: T;
   fields?: T;

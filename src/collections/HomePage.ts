@@ -1283,6 +1283,7 @@ export const HomePage: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   defaultValue: 'KAWAI | Find a storefront near you',
                   admin: {
                     description: 'Page meta title for search engines'
@@ -1292,6 +1293,7 @@ export const HomePage: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   defaultValue: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
                   admin: {
                     description: 'Page meta description for search engines (max 160 characters)'
@@ -1300,6 +1302,7 @@ export const HomePage: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   defaultValue: 'kawai piano, piano dealer, grand piano, digital piano, upright piano, piano store, kawai authorized dealer, piano storefront, piano showroom',
                   admin: {
                     description: 'SEO keywords (comma-separated)'
@@ -1308,6 +1311,7 @@ export const HomePage: CollectionConfig = {
                 {
                   name: 'openGraphTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Open Graph title for social media sharing'
                   }
@@ -1315,18 +1319,21 @@ export const HomePage: CollectionConfig = {
                 {
                   name: 'openGraphDescription',
                   type: 'textarea',
+                  localized: true,
                   admin: {
                     description: 'Open Graph description for social media sharing'
                   }
                 },
                 imageField('openGraphImage', {
+                  localized: true,
                   admin: {
                     description: 'Open Graph image for social media sharing'
                   }
                 })
               ],
               admin: {
-                description: 'SEO and metadata configuration'
+                description:
+                  'SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
               }
             }
           ]

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getAllFaqs, getAllFaqCategories } from '@/lib/payload/queries'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { getSite, localeFromSite } from '@/lib/site-context'
 
 export const revalidate = 3600
 
@@ -14,7 +15,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const metadata = await getCMSPageMetadata('faq', fallbackMetadata)
+  const metadata = await getCMSPageMetadata('faq', fallbackMetadata, localeFromSite(await getSite()))
   return {
     ...metadata,
     robots: { index: true, follow: true },

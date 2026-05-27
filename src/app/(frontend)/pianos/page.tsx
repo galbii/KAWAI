@@ -6,7 +6,7 @@ import {
   getCollectionsForBrowser,
   getPayloadClient,
 } from '@/lib/payload/queries'
-import { getSite } from '@/lib/site-context'
+import { getSite, localeFromSite } from '@/lib/site-context'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { PianosBrowser } from '@/components/piano/PianosBrowser'
 import { NewsCarousel } from '@/components/homepage/news-carousel'
@@ -47,7 +47,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('pianos', fallbackMetadata)
+  return getCMSPageMetadata('pianos', fallbackMetadata, localeFromSite(await getSite()))
 }
 
 type PianosPageCMSData = { heading: string | null; id: string | null }

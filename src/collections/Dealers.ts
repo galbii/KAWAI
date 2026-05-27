@@ -565,10 +565,15 @@ export const Dealers: CollectionConfig = {
             {
               name: 'seo',
               type: 'group',
+              admin: {
+                description:
+                  'Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
+              },
               fields: [
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Custom meta title (leave empty to auto-generate from dealer name)'
                   }
@@ -577,6 +582,7 @@ export const Dealers: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Meta description for search engines (max 160 characters)'
                   }

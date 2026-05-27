@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { getConcertArtistPageServer } from '@/lib/payload/server'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { getSite, localeFromSite } from '@/lib/site-context'
 import ConcertArtistHero from './components/ConcertArtistHero'
 import ConcertArtistModels from './components/ConcertArtistModels'
 import CraftsmanPromise from './components/CraftsmanPromise'
@@ -84,7 +85,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('concert-artist', fallbackMetadata)
+  return getCMSPageMetadata('concert-artist', fallbackMetadata, localeFromSite(await getSite()))
 }
 
 // ISR - Revalidate every 15 minutes

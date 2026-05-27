@@ -8,6 +8,7 @@ import { JobGrid } from '@/components/careers/JobGrid'
 import type { JobListingItem } from '@/components/careers/JobListingsPanel'
 import { extractTextFromRichText } from '@/lib/utils'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { getSite, localeFromSite } from '@/lib/site-context'
 
 export const revalidate = 3600
 
@@ -17,7 +18,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('careers', fallbackMetadata)
+  return getCMSPageMetadata('careers', fallbackMetadata, localeFromSite(await getSite()))
 }
 
 function toJobListingItem(doc: {

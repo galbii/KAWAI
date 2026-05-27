@@ -352,6 +352,7 @@ export const PianosPage: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Page meta title for search engines'
                   }
@@ -360,6 +361,7 @@ export const PianosPage: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Page meta description for search engines (max 160 characters)'
                   }
@@ -367,13 +369,15 @@ export const PianosPage: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }
                 }
               ],
               admin: {
-                description: 'SEO and metadata configuration'
+                description:
+                  'SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
               }
             }
           ]

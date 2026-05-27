@@ -25,7 +25,7 @@ import {
 } from '@/lib/payload/queries'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
-import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 
 export const revalidate = 3600
 
@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: CategoryPageParams): Promise<
     }
 
     // Overlay any SEO fields set on the matching Pages collection doc
-    return getCMSPageMetadata(`pianos/${category}`, baseMetadata)
+    return getCMSPageMetadata(`pianos/${category}`, baseMetadata, localeFromSite(site))
   }
 
   // Collection metadata

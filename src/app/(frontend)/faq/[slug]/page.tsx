@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { getAllFaqSlugs, getFaqBySlug } from '@/lib/payload/queries'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
 
 export const revalidate = 3600
 
@@ -17,7 +18,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const faq = await getFaqBySlug(slug)
+  const site = await getSite()
+  const faq = await getFaqBySlug(slug, localeFromSite(site))
 
   if (!faq) {
     return {
@@ -26,7 +28,7 @@ export async function generateMetadata({
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+  const siteUrl = getSiteUrl(site)
   const title = (faq as any).seo?.metaTitle || `${(faq as any).question} | KAWAI FAQ`
   const description =
     (faq as any).seo?.metaDescription || (faq as any).excerpt || undefined
@@ -38,6 +40,7 @@ export async function generateMetadata({
     robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
     alternates: {
       canonical: `${siteUrl}/faq/${slug}`,
+      languages: getSiteAlternates(`/faq/${slug}`),
     },
     openGraph: {
       title,
@@ -55,7 +58,7 @@ export default async function FaqDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const faq = await getFaqBySlug(slug)
+  const faq = await getFaqBySlug(slug, localeFromSite(await getSite()))
 
   if (!faq) {
     notFound()

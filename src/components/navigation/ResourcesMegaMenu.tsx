@@ -34,6 +34,8 @@ interface ResourcesMegaMenuProps {
   bannerDescription?: string | null
   resourceLinks?: ResourceLink[]
   storeLocations?: StoreLocationNavItem[] | undefined
+  /** 'cad' hides the showrooms panel — Kawai has no physical showrooms in Canada */
+  site?: 'us' | 'cad'
   className?: string
   isHeaderScrolled?: boolean
 }
@@ -126,9 +128,11 @@ export function ResourcesMegaMenu({
   bannerDescription,
   resourceLinks,
   storeLocations,
+  site = 'us',
   className,
   isHeaderScrolled = false,
 }: ResourcesMegaMenuProps) {
+  const showShowrooms = site !== 'cad'
   // No accordion state needed — stores panel is always visible
 
   // Use CMS-managed links when provided; fall back to hardcoded defaults.
@@ -178,6 +182,7 @@ export function ResourcesMegaMenu({
           <div className="flex items-stretch max-h-[75vh]">
 
             {/* ── LEFT: Showrooms panel ─────────────────────────────────── */}
+            {showShowrooms && (
             <div className="w-[38%] shrink-0 flex flex-col bg-[#F7F7F7] border-r border-kawai-black/[0.07] overflow-y-auto">
               <div className="flex flex-col h-full px-8 py-8">
 
@@ -257,6 +262,7 @@ export function ResourcesMegaMenu({
 
               </div>
             </div>
+            )}
 
             {/* ── RIGHT: Resources + Register ──────────────────────────────── */}
             <div className="flex-1 flex flex-col overflow-y-auto">

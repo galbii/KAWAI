@@ -7,7 +7,7 @@ import { Hero as PageHero } from '@/components/Hero';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 import { getPayloadClient, getActiveStorefrontSlugs } from '@/lib/payload/queries'
-import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context';
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context';
 
 // Enable ISR — pages statically generated at build, revalidated every 1 hour
 export const revalidate = 3600
@@ -35,7 +35,7 @@ export async function generateStaticParams() {
   }
 }
 
-function getPageData(slugPath: string, isDraftMode: boolean): Promise<Page | null> {
+function getPageData(slugPath: string, isDraftMode: boolean, locale: Locale): Promise<Page | null> {
   if (isDraftMode) {
     // Draft mode: never cache, always fetch live
     return (async () => {
@@ -46,6 +46,7 @@ function getPageData(slugPath: string, isDraftMode: boolean): Promise<Page | nul
           where: { slug: { equals: slugPath } },
           limit: 1,
           depth: 1,
+          locale,
           draft: true,
           overrideAccess: true,
         })
@@ -65,10 +66,11 @@ function getPageData(slugPath: string, isDraftMode: boolean): Promise<Page | nul
           },
           limit: 1,
           depth: 1,
+          locale,
         })
         .then(({ docs }) => docs[0] as Page ?? null)
     },
-    [`page-${slugPath}`],
+    [`page-${slugPath}-${locale}`],
     { tags: [`page-${slugPath}`, 'pages'], revalidate: 3600 },
   )()
 }
@@ -86,6 +88,9 @@ export async function generateMetadata(
       return { title: 'Redirecting...', robots: { index: false, follow: false } };
     }
 
+    const site = await getSite()
+    const locale = localeFromSite(site)
+
     const page = await unstable_cache(
       async () => {
         const payload = await getPayloadClient()
@@ -95,10 +100,11 @@ export async function generateMetadata(
             where: { slug: { equals: slugPath }, _status: { equals: 'published' } },
             limit: 1,
             depth: 1,
+            locale,
           })
           .then(({ docs }) => docs[0] ?? null)
       },
-      [`page-meta-${slugPath}`],
+      [`page-meta-${slugPath}-${locale}`],
       { tags: [`page-meta-${slugPath}`, 'pages'], revalidate: 3600 },
     )()
 
@@ -110,7 +116,6 @@ export async function generateMetadata(
       };
     }
 
-    const site = await getSite()
     const siteUrl = getSiteUrl(site)
     const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`;
     const metaDescription = page.seo?.metaDescription || `${page.title} - Kawai Pianos`;
@@ -163,10 +168,11 @@ export default async function DynamicPage({ params }: { params: Promise<{ slug: 
   }
 
   const { isEnabled: isDraftMode } = await draftMode();
+  const locale = localeFromSite(await getSite())
 
   // Single query: fetch page at depth:1 — replaces the old depth:0 existence
   // check + separate depth:1 render fetch. If null → 404, else → render.
-  const page = await getPageData(slugPath, isDraftMode)
+  const page = await getPageData(slugPath, isDraftMode, locale)
 
   if (!page) {
     notFound()

@@ -535,11 +535,13 @@ export const MusicSchools: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: { description: 'SEO title override. Defaults to "[Headline] | [School Name]".' },
                 },
                 {
                   name: 'metaDescription',
                   type: 'textarea',
+                  localized: true,
                   admin: { description: 'SEO description override.' },
                 },
                 {
@@ -582,10 +584,13 @@ export const MusicSchools: CollectionConfig = {
         // Tab 7: SEO
         {
           label: 'SEO',
+          description:
+            'Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.',
           fields: [
             {
               name: 'metaTitle',
               type: 'text',
+              localized: true,
               admin: {
                 description: 'Page title for search engines (50–60 characters recommended)',
               },
@@ -593,6 +598,7 @@ export const MusicSchools: CollectionConfig = {
             {
               name: 'metaDescription',
               type: 'textarea',
+              localized: true,
               admin: {
                 description: 'Page description for search engines (150–160 characters recommended)',
               },

@@ -1434,6 +1434,7 @@ export const Storefronts: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Page meta title for search engines (leave empty to auto-generate "KAWAI [City Name]" from storefront name)'
                   }
@@ -1442,6 +1443,7 @@ export const Storefronts: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Page meta description for search engines (max 160 characters, leave empty for auto-generated description)'
                   }
@@ -1449,6 +1451,7 @@ export const Storefronts: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }
@@ -1456,6 +1459,7 @@ export const Storefronts: CollectionConfig = {
                 {
                   name: 'openGraphTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Open Graph title for social media sharing'
                   }
@@ -1463,18 +1467,21 @@ export const Storefronts: CollectionConfig = {
                 {
                   name: 'openGraphDescription',
                   type: 'textarea',
+                  localized: true,
                   admin: {
                     description: 'Open Graph description for social media sharing'
                   }
                 },
                 imageField('openGraphImage', {
+                  localized: true,
                   admin: {
                     description: 'Open Graph image for social media sharing'
                   }
                 })
               ],
               admin: {
-                description: 'SEO and metadata configuration'
+                description:
+                  'SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
               }
             }
           ]

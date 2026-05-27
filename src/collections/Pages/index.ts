@@ -209,35 +209,44 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'seo',
               type: 'group',
-              admin: { description: 'SEO and metadata configuration' },
+              admin: {
+                description:
+                  'SEO and metadata configuration. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.',
+              },
               fields: [
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: { description: 'Page title for search engines (defaults to page title if empty)' },
                 },
                 {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: { description: 'Page meta description for search engines (max 160 characters)' },
                 },
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: { description: 'SEO keywords (comma-separated)' },
                 },
                 {
                   name: 'openGraphTitle',
                   type: 'text',
+                  localized: true,
                   admin: { description: 'Open Graph title for social media sharing (defaults to metaTitle)' },
                 },
                 {
                   name: 'openGraphDescription',
                   type: 'textarea',
+                  localized: true,
                   admin: { description: 'Open Graph description for social media sharing' },
                 },
                 imageField('openGraphImage', {
+                  localized: true,
                   admin: { description: 'Open Graph image for social media sharing (1200x630px recommended)' },
                 }),
               ],

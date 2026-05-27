@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { getSite, localeFromSite } from '@/lib/site-context'
 import { generateBreadcrumbSchema } from '@/lib/seo/schemas'
 import { DealerMapBlock } from '@/components/blocks/DealerMapBlock'
 
@@ -36,7 +37,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const metadata = await getCMSPageMetadata('find-a-dealer', fallbackMetadata)
+  const metadata = await getCMSPageMetadata('find-a-dealer', fallbackMetadata, localeFromSite(await getSite()))
   return {
     ...metadata,
     robots: { index: true, follow: true },

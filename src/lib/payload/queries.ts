@@ -536,6 +536,46 @@ export const getHomePageDataDirect = unstable_cache(
   { tags: ['home-page'], revalidate: 300 }
 )
 
+type HomePageSeo = {
+  metaTitle?: string | null
+  metaDescription?: string | null
+  keywords?: string | null
+  openGraphTitle?: string | null
+  openGraphDescription?: string | null
+  openGraphImage?: Media | string | null
+}
+
+/**
+ * Locale-aware SEO fetch for the homepage.
+ *
+ * Separate from getHomePageDataDirect so that the existing content fetcher
+ * stays locale-agnostic (homepage content fields aren't localized — only the
+ * seo group is). Cache keys include the locale so en-US and en-CA don't
+ * collide. Tag 'home-page' is shared so a single revalidateTag invalidates both.
+ */
+export function getHomePageSeoDirect(locale: 'en-US' | 'en-CA' = 'en-US'): Promise<HomePageSeo | null> {
+  return unstable_cache(
+    async () => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'home-page',
+          depth: 1,
+          limit: 1,
+          locale,
+        })
+        const doc = result?.docs?.[0]
+        return (doc?.seo as HomePageSeo | undefined) ?? null
+      } catch (error) {
+        console.error('Error fetching home-page SEO:', error)
+        return null
+      }
+    },
+    [`home-page-seo-${locale}`],
+    { tags: ['home-page'], revalidate: 300 },
+  )()
+}
+
 /**
  * Helper function to get fallback images for featured models
  */
@@ -582,7 +622,7 @@ export async function getProductsDirect(category?: string): Promise<Product[]> {
  * @param slug - The URL-friendly slug identifier for the product
  * @returns Product object or null if not found
  */
-export function getProductBySlugDirect(slug: string): Promise<Product | null> {
+export function getProductBySlugDirect(slug: string, locale: 'en-US' | 'en-CA' = 'en-US'): Promise<Product | null> {
   return unstable_cache(
     async () => {
       try {
@@ -595,7 +635,8 @@ export function getProductBySlugDirect(slug: string): Promise<Product | null> {
             status: { not_equals: 'draft' }
           },
           depth: 2,
-          limit: 1
+          limit: 1,
+          locale,
         })
 
         return result.docs[0] ?? null
@@ -604,7 +645,7 @@ export function getProductBySlugDirect(slug: string): Promise<Product | null> {
         return null
       }
     },
-    [`product-${slug}`],
+    [`product-${slug}-${locale}`],
     { tags: ['products', `product-${slug}`], revalidate: 3600 }
   )()
 }
@@ -931,7 +972,7 @@ export const getActiveStorefrontsDirect = unstable_cache(
  * Get dealer by slug with full relationship population
  * Used for dealer detail pages
  */
-export async function getDealerBySlugDirect(slug: string): Promise<any | null> {
+export async function getDealerBySlugDirect(slug: string, locale: 'en-US' | 'en-CA' = 'en-US'): Promise<any | null> {
   try {
     const payload = await getPayloadClient()
 
@@ -943,6 +984,7 @@ export async function getDealerBySlugDirect(slug: string): Promise<any | null> {
       },
       depth: 2, // Populate dealerImage relationship
       limit: 1,
+      locale,
       draft: false
     })
 
@@ -1705,7 +1747,7 @@ export const getAllFaqSlugs = unstable_cache(
 /**
  * Get a single FAQ by slug.
  */
-export function getFaqBySlug(slug: string) {
+export function getFaqBySlug(slug: string, locale: 'en-US' | 'en-CA' = 'en-US') {
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
@@ -1717,10 +1759,11 @@ export function getFaqBySlug(slug: string) {
         },
         depth: 2,
         limit: 1,
+        locale,
       })
       return result.docs[0] ?? null
     },
-    [`faq-${slug}`],
+    [`faq-${slug}-${locale}`],
     { tags: ['faqs', `faq-${slug}`], revalidate: 3600 }
   )()
 }
@@ -1731,7 +1774,7 @@ export function getFaqBySlug(slug: string) {
  * Fetch a single support group by its URL slug.
  * Used by the hub page for metadata and heading text.
  */
-export function getSupportGroupBySlug(slug: string) {
+export function getSupportGroupBySlug(slug: string, locale: 'en-US' | 'en-CA' = 'en-US') {
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
@@ -1740,10 +1783,11 @@ export function getSupportGroupBySlug(slug: string) {
         where: { slug: { equals: slug }, isActive: { equals: true } },
         depth: 0,
         limit: 1,
+        locale,
       })
       return result.docs[0] ?? null
     },
-    [`support-group-${slug}`],
+    [`support-group-${slug}-${locale}`],
     { tags: ['support-groups', `tsd-hub-${slug}`], revalidate: 3600 }
   )()
 }

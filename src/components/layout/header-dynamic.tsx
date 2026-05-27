@@ -444,6 +444,7 @@ export async function HeaderDynamic() {
         quickLinks={quickLinks}
         resourceLinks={resourceLinks}
         storeLocations={storeLocations}
+        site={site === 'cad' ? 'cad' : 'us'}
         autoMinimize={headerSettings.autoMinimize}
       />
     )

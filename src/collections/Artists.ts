@@ -512,6 +512,7 @@ export const Artists: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Custom meta title (defaults to artist name + "| KAWAI Artist")'
                   }
@@ -520,6 +521,7 @@ export const Artists: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Meta description for search engines (max 160 characters, auto-generated from short bio if empty)'
                   }
@@ -527,18 +529,21 @@ export const Artists: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }
                 },
                 imageField('ogImage', {
+                  localized: true,
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to artist image)'
                   }
                 })
               ],
               admin: {
-                description: 'SEO and social media optimization'
+                description:
+                  'SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
               }
             }
           ]

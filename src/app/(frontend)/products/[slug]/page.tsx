@@ -13,7 +13,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 1 hour
@@ -27,7 +27,8 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params
   const { slug } = params
-  const product = await getCachedProduct(slug)
+  const site = await getSite()
+  const product = await getCachedProduct(slug, localeFromSite(site))
 
   if (!product) {
     return {
@@ -36,7 +37,6 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     }
   }
 
-  const site = await getSite()
   const siteUrl = getSiteUrl(site)
 
   const typeLabels: Record<string, string> = {
@@ -97,7 +97,8 @@ export default async function ProductPage(props: PageProps) {
   try {
     const params = await props.params
     const { slug } = params
-    const product = await getCachedProduct(slug)
+    const site = await getSite()
+    const product = await getCachedProduct(slug, localeFromSite(site))
 
     if (!product) {
       notFound()

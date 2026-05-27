@@ -4,7 +4,7 @@ import { draftMode } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { BlogIndexClient } from '@/components/blog/BlogIndexClient'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 import { Hero as PageHero } from '@/components/Hero'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import type { Post, Page } from '@/payload-types'
@@ -15,23 +15,26 @@ interface BlogPageProps {
   searchParams: Promise<{ category?: string }>
 }
 
-const getCachedBlogPage = unstable_cache(
-  async (): Promise<Page | null> => {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'pages',
-      where: { slug: { equals: 'blog' }, _status: { equals: 'published' } },
-      limit: 1,
-      depth: 1,
-      overrideAccess: true,
-    })
-    return (result.docs[0] as Page) ?? null
-  },
-  ['blog-page'],
-  { tags: ['pages'], revalidate: 3600 },
-)
+function getCachedBlogPage(locale: Locale): Promise<Page | null> {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'pages',
+        where: { slug: { equals: 'blog' }, _status: { equals: 'published' } },
+        limit: 1,
+        depth: 1,
+        locale,
+        overrideAccess: true,
+      })
+      return (result.docs[0] as Page) ?? null
+    },
+    [`blog-page-${locale}`],
+    { tags: ['pages'], revalidate: 3600 },
+  )()
+}
 
-async function getBlogPage(): Promise<Page | null> {
+async function getBlogPage(locale: Locale): Promise<Page | null> {
   const { isEnabled: isDraftMode } = await draftMode()
   if (isDraftMode) {
     const payload = await getPayloadClient()
@@ -40,17 +43,19 @@ async function getBlogPage(): Promise<Page | null> {
       where: { slug: { equals: 'blog' } },
       limit: 1,
       depth: 1,
+      locale,
       draft: true,
       overrideAccess: true,
     })
     return (result.docs[0] as Page) ?? null
   }
-  return getCachedBlogPage()
+  return getCachedBlogPage(locale)
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
-  const page = await getBlogPage()
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
+  const page = await getBlogPage(localeFromSite(site))
 
   if (page) {
     const metaTitle = page.seo?.metaTitle || `${page.title} | Kawai Pianos`
@@ -160,8 +165,9 @@ const BLOG_DESCRIPTION =
   'Explore our piano journal featuring education guides, product news, artist spotlights, and more.'
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
-  const page = await getBlogPage()
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
+  const page = await getBlogPage(localeFromSite(site))
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',

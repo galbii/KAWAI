@@ -7,6 +7,7 @@ import {
   getAllSupportGroups,
   getPopularFaqsByHub,
 } from '@/lib/payload/queries'
+import { getSite, getSiteAlternates, localeFromSite } from '@/lib/site-context'
 import { HubFaqAccordion } from './_components/HubFaqAccordion'
 import type { FaqItem, FaqGroup } from './_components/HubFaqAccordion'
 import { FaqSearch } from '../_components/FaqSearch'
@@ -24,13 +25,16 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { hub } = await params
-  const group = await getSupportGroupBySlug(hub)
+  const group = await getSupportGroupBySlug(hub, localeFromSite(await getSite()))
   if (!group) return { title: 'Support | Kawai' }
   const seo = group.seo as { metaTitle?: string; metaDescription?: string } | undefined
   return {
     title: seo?.metaTitle ?? `${group.name} | Kawai Technical Support`,
     description: seo?.metaDescription ?? (group.description as string | undefined),
-    alternates: { canonical: `/technical-support-division/${hub}` },
+    alternates: {
+      canonical: `/technical-support-division/${hub}`,
+      languages: getSiteAlternates(`/technical-support-division/${hub}`),
+    },
   }
 }
 

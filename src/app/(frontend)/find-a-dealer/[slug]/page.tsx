@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { unstable_cache } from 'next/cache'
 import { getDealerBySlugDirect, getNearbyDealersDirect } from '@/lib/payload/queries'
 import { DealerBusinessSchema } from '@/components/seo/DealerBusinessSchema'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 import type { Media } from '@/payload-types'
 
 // Component imports
@@ -22,10 +23,10 @@ function isMediaObject(media: unknown): media is Media {
   return typeof media === 'object' && media !== null && 'url' in media
 }
 
-function getCachedDealer(slug: string) {
+function getCachedDealer(slug: string, locale: Locale) {
   return unstable_cache(
-    async () => getDealerBySlugDirect(slug),
-    [`dealer-${slug}`],
+    async () => getDealerBySlugDirect(slug, locale),
+    [`dealer-${slug}-${locale}`],
     { tags: [`dealer-${slug}`], revalidate: 900 }
   )()
 }
@@ -56,7 +57,8 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params
-  const dealer = await getDealerBySlugDirect(slug)
+  const site = await getSite()
+  const dealer = await getCachedDealer(slug, localeFromSite(site))
 
   // Only noindex if the dealer genuinely doesn't exist
   if (!dealer) {
@@ -68,20 +70,27 @@ export async function generateMetadata(
     const state = dealer.address?.state
     const locationText = city && state ? `${city}, ${state}` : ''
 
-    const title = locationText
+    const autoTitle = locationText
       ? `Piano Dealer in ${locationText} | ${dealer.dealerName} | KAWAI`
       : `${dealer.dealerName} | Authorized Kawai Piano Dealer`
 
-    const description = `${dealer.dealerName} — Authorized Kawai piano dealer in ${locationText}. Call ${dealer.contactInfo?.phone || 'us'} or visit our showroom at ${dealer.address?.street}.`
+    const autoDescription = `${dealer.dealerName} — Authorized Kawai piano dealer in ${locationText}. Call ${dealer.contactInfo?.phone || 'us'} or visit our showroom at ${dealer.address?.street}.`
+
+    // CMS overrides take priority (locale-aware: en-CA values returned on CA domain)
+    const title = dealer.seo?.metaTitle || autoTitle
+    const description = dealer.seo?.metaDescription || autoDescription
 
     const dealerImage = isMediaObject(dealer.dealerImage) ? dealer.dealerImage.url : null
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaipianogallerystl.com'
+    const siteUrl = getSiteUrl(site)
     const canonicalUrl = `${siteUrl}/find-a-dealer/${slug}`
 
     return {
       title,
       description,
-      alternates: { canonical: canonicalUrl },
+      alternates: {
+        canonical: canonicalUrl,
+        languages: getSiteAlternates(`/find-a-dealer/${slug}`),
+      },
       robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
       openGraph: {
         title,
@@ -110,7 +119,7 @@ export async function generateMetadata(
 
 // Main content — server component
 async function DealerContent({ slug }: { slug: string }) {
-  const dealer = await getCachedDealer(slug)
+  const dealer = await getCachedDealer(slug, localeFromSite(await getSite()))
 
   if (!dealer) notFound()
 

@@ -77,16 +77,22 @@ export const SupportGroups: CollectionConfig = {
       type: 'group',
       name: 'seo',
       label: 'SEO',
+      admin: {
+        description:
+          'Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.',
+      },
       fields: [
         {
           name: 'metaTitle',
           type: 'text',
+          localized: true,
           admin: { description: 'Custom meta title for this hub page' },
         },
         {
           name: 'metaDescription',
           type: 'textarea',
           maxLength: 160,
+          localized: true,
           admin: { description: 'Meta description (max 160 chars)' },
         },
       ],

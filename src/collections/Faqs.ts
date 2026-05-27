@@ -192,6 +192,7 @@ export const Faqs: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Custom meta title (defaults to question)',
                   },
@@ -200,6 +201,7 @@ export const Faqs: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Meta description (max 160 characters, defaults to excerpt)',
                   },
@@ -207,13 +209,15 @@ export const Faqs: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'SEO keywords (comma-separated)',
                   },
                 },
               ],
               admin: {
-                description: 'SEO optimization for FAQ detail pages',
+                description:
+                  'SEO optimization for FAQ detail pages. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.',
               },
             },
           ],

@@ -33,6 +33,8 @@ interface MobileResourcesSheetProps {
   storeLocations?: StoreLocationNavItem[] | undefined
   resourceLinks?: ResourceLink[] | undefined
   registerEnabled?: boolean | undefined
+  /** 'cad' hides showrooms — Kawai has no physical showrooms in Canada */
+  site?: 'us' | 'cad'
 }
 
 // ─── Icon map ─────────────────────────────────────────────────────────────────
@@ -67,8 +69,10 @@ export function MobileResourcesSheet({
   storeLocations = [],
   resourceLinks,
   registerEnabled = true,
+  site = 'us',
 }: MobileResourcesSheetProps) {
   const MIGRATION_NAV = process.env.NEXT_PUBLIC_MIGRATION_NAV === 'true'
+  const showShowrooms = site !== 'cad' && storeLocations.length > 0
 
   const resources = resourceLinks && resourceLinks.length > 0
     ? resourceLinks.filter((r) => r.enabled !== false)
@@ -113,7 +117,7 @@ export function MobileResourcesSheet({
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm font-medium">Back</span>
               </button>
-              <h2 className="text-base font-bold tracking-tight text-kawai-black">Official Stores & Resources</h2>
+              <h2 className="text-base font-bold tracking-tight text-kawai-black">{showShowrooms ? 'Official Stores & Resources' : 'Resources'}</h2>
               <button
                 onClick={onNavigate}
                 className="p-1.5 rounded-md hover:bg-kawai-neutral/30 transition-colors"
@@ -127,7 +131,7 @@ export function MobileResourcesSheet({
             <div className="flex-1 overflow-y-auto min-h-0">
 
               {/* Showrooms section */}
-              {storeLocations.length > 0 && (
+              {showShowrooms && (
                 <section className="px-4 pt-5 pb-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-kawai-charcoal/50 px-1 mb-3">
                     Our Showrooms
@@ -169,7 +173,7 @@ export function MobileResourcesSheet({
               )}
 
               {/* divider */}
-              {storeLocations.length > 0 && (
+              {showShowrooms && (
                 <div className="mx-4 border-t border-kawai-neutral/40" />
               )}
 

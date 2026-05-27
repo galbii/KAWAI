@@ -165,6 +165,17 @@ export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   // Hard cap on ?depth= query param — prevents recursive MongoDB lookup abuse on public endpoints
   maxDepth: 3,
+  // Per-locale field values for SEO overrides on the CA domain (ca.kawaius.com).
+  // Only fields marked `localized: true` are stored per-locale; everything else is shared.
+  // With fallback: true, missing en-CA values automatically resolve to the en-US value.
+  localization: {
+    locales: [
+      { code: 'en-US', label: 'United States' },
+      { code: 'en-CA', label: 'Canada' },
+    ],
+    defaultLocale: 'en-US',
+    fallback: true,
+  },
   graphQL: {
     disable: process.env.NODE_ENV === 'production',
   },

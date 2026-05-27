@@ -1,24 +1,28 @@
 import 'server-only'
 import type { Metadata } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
+import type { Locale } from '@/lib/site-context'
 
 /**
  * Fetches a page from the Pages collection by slug and overlays any CMS SEO
  * fields on top of the provided fallback metadata. If the page doesn't exist
  * or has no SEO fields filled, the fallback is returned unchanged.
  *
+ * Pass the current request locale so the CA domain receives any en-CA SEO
+ * overrides set in the admin (with automatic fallback to en-US for blanks).
+ *
  * Usage in a page file:
- *   export async function generateMetadata(): Promise<Metadata> {
- *     return getCMSPageMetadata('artists', {
- *       title: 'KAWAI Artists | ...',
- *       description: '...',
- *     })
- *   }
+ *   const site = await getSite()
+ *   return getCMSPageMetadata('artists', baseMetadata, localeFromSite(site))
  *
  * The CMS page slug must match the slug entered in the Pages collection admin.
  * Only fields that have been filled in the CMS SEO tab will override the fallback.
  */
-export async function getCMSPageMetadata(slug: string, fallback: Metadata): Promise<Metadata> {
+export async function getCMSPageMetadata(
+  slug: string,
+  fallback: Metadata,
+  locale: Locale = 'en-US',
+): Promise<Metadata> {
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({
@@ -29,6 +33,7 @@ export async function getCMSPageMetadata(slug: string, fallback: Metadata): Prom
       },
       limit: 1,
       depth: 1,
+      locale,
     })
 
     const page = result.docs[0]

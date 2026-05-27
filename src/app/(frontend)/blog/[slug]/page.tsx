@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 import { LivePreviewPost } from '@/components/blog/LivePreviewPost'
 import { ArticleSidebar } from '@/components/blog/ArticleSidebar'
 import { RelatedPosts } from '@/components/blog/RelatedPosts'
@@ -19,7 +19,7 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string }>
 }
 
-async function _fetchPostBySlug(slug: string, isDraft: boolean): Promise<Post | null> {
+async function _fetchPostBySlug(slug: string, isDraft: boolean, locale: Locale): Promise<Post | null> {
   try {
     const payload = await getPayloadClient()
     const posts = await payload.find({
@@ -30,6 +30,7 @@ async function _fetchPostBySlug(slug: string, isDraft: boolean): Promise<Post | 
       },
       limit: 1,
       depth: 2,
+      locale,
       draft: isDraft,
       overrideAccess: true, // Posts has no versioning — authenticatedOrPublished uses _status which doesn't exist
     })
@@ -40,16 +41,16 @@ async function _fetchPostBySlug(slug: string, isDraft: boolean): Promise<Post | 
   }
 }
 
-function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Post | null> {
+function getPostBySlug(slug: string, isDraft: boolean = false, locale: Locale = 'en-US'): Promise<Post | null> {
   // Never cache draft mode — editor must see live data.
-  if (isDraft) return _fetchPostBySlug(slug, true)
+  if (isDraft) return _fetchPostBySlug(slug, true, locale)
 
   // Cached for production: generateMetadata and BlogPostPage both call this
   // function. unstable_cache deduplicates the MongoDB hit so only one query
   // runs per ISR revalidation cycle regardless of how many callers there are.
   return unstable_cache(
-    () => _fetchPostBySlug(slug, false),
-    [`post-${slug}`],
+    () => _fetchPostBySlug(slug, false, locale),
+    [`post-${slug}-${locale}`],
     { tags: ['posts', `post-${slug}`], revalidate: 300 },
   )()
 }
@@ -57,7 +58,8 @@ function getPostBySlug(slug: string, isDraft: boolean = false): Promise<Post | n
 export async function generateMetadata(props: BlogPostPageProps): Promise<Metadata> {
   const params = await props.params
   const { slug } = params
-  const post = await getPostBySlug(slug)
+  const site = await getSite()
+  const post = await getPostBySlug(slug, false, localeFromSite(site))
 
   if (!post) {
     return {
@@ -67,7 +69,7 @@ export async function generateMetadata(props: BlogPostPageProps): Promise<Metada
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+  const siteUrl = getSiteUrl(site)
 
   const metaTitle = post.seo?.metaTitle || post.title
   const metaDescription = post.seo?.metaDescription || post.excerpt || post.title
@@ -132,13 +134,14 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
     const { slug } = params
 
     const { isEnabled: isDraftMode } = await draftMode()
-    const post = await getPostBySlug(slug, isDraftMode)
+    const site = await getSite()
+    const post = await getPostBySlug(slug, isDraftMode, localeFromSite(site))
 
     if (!post) {
       notFound()
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+    const siteUrl = getSiteUrl(site)
 
     let ogImageUrl = ''
     if (post.seo?.ogImage) {

@@ -958,6 +958,7 @@ export const Products: CollectionConfig = {
                 {
                   name: 'metaTitle',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'Custom meta title (defaults to product title)'
                   }
@@ -966,6 +967,7 @@ export const Products: CollectionConfig = {
                   name: 'metaDescription',
                   type: 'textarea',
                   maxLength: 160,
+                  localized: true,
                   admin: {
                     description: 'Meta description for search engines (max 160 characters)'
                   }
@@ -973,12 +975,14 @@ export const Products: CollectionConfig = {
                 {
                   name: 'keywords',
                   type: 'text',
+                  localized: true,
                   admin: {
                     description: 'SEO keywords (comma-separated)'
                   }
                 },
                 imageField('ogImage', {
                   maxDepth: 0, // Prevent deep media fetching
+                  localized: true,
                   admin: {
                     description: 'Open Graph image for social sharing (defaults to main image)'
                   }
@@ -992,7 +996,8 @@ export const Products: CollectionConfig = {
                 },
               ],
               admin: {
-                description: 'SEO and social media optimization'
+                description:
+                  'SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.'
               }
             }
           ]

@@ -11,12 +11,13 @@ import { InnovationSection } from "@/components/homepage/innovation-section";
 import { SoundQualitySection } from "@/components/homepage/sound-quality-section";
 import { FAQSection } from "@/components/homepage/faq-section";
 import { SimpleDivider } from "@/components/ui/SimpleDivider";
-import { getHomePageDataDirect, getActiveStorefrontsDirect } from "@/lib/payload/queries";
+import { getHomePageDataDirect, getActiveStorefrontsDirect, getHomePageSeoDirect } from "@/lib/payload/queries";
 import type { HomePageData } from "@/lib/types/homepage";
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
 import type { Metadata } from 'next';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { HomePageLivePreview } from '@/components/homepage/HomePageLivePreview';
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context';
 
 // Enable Incremental Static Regeneration (ISR)
 // Revalidate the homepage every 5 minutes (300 seconds)
@@ -27,37 +28,39 @@ export const revalidate = 300;
 // Generate metadata for SEO
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const homePageData = await getHomePageDataDirect();
+    const site = await getSite();
+    const locale = localeFromSite(site);
+    const siteUrl = getSiteUrl(site);
+    const seo = await getHomePageSeoDirect(locale);
 
     // Use CMS SEO data if available
-    if (homePageData?.seo) {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
-
+    if (seo) {
       return {
-        title: { absolute: homePageData.seo.metaTitle || 'Kawai America | Grand, Upright, Hybrid & Digital Pianos' },
-        description: homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
-        keywords: homePageData.seo.keywords,
+        title: { absolute: seo.metaTitle || 'Kawai America | Grand, Upright, Hybrid & Digital Pianos' },
+        description: seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos. Find a KAWAI storefront near you.',
+        keywords: seo.keywords,
         alternates: {
-          canonical: siteUrl
+          canonical: siteUrl,
+          languages: getSiteAlternates('/'),
         },
         openGraph: {
-          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
-          description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.',
+          title: seo.openGraphTitle || seo.metaTitle || 'KAWAI ™ | Digital and Acoustic Pianos',
+          description: seo.openGraphDescription || seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.',
           url: siteUrl,
           siteName: 'Kawai Pianos',
           type: 'website',
-          images: homePageData.seo.openGraphImage ? [
+          images: seo.openGraphImage ? [
             {
-              url: typeof homePageData.seo.openGraphImage === 'string'
-                ? homePageData.seo.openGraphImage
-                : homePageData.seo.openGraphImage.url || ''
+              url: typeof seo.openGraphImage === 'string'
+                ? seo.openGraphImage
+                : seo.openGraphImage.url || ''
             }
           ] : []
         },
         twitter: {
           card: 'summary_large_image',
-          title: homePageData.seo.openGraphTitle || homePageData.seo.metaTitle || 'KAWAI | Find a storefront near you',
-          description: homePageData.seo.openGraphDescription || homePageData.seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.'
+          title: seo.openGraphTitle || seo.metaTitle || 'KAWAI | Find a storefront near you',
+          description: seo.openGraphDescription || seo.metaDescription || 'Discover premium KAWAI pianos at authorized dealers nationwide.'
         }
       };
     }
@@ -68,7 +71,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Discover premium KAWAI pianos at authorized dealers nationwide. Explore our collection of grand, upright, and digital pianos crafted with 95+ years of Japanese excellence.',
       keywords: ['kawai piano', 'piano dealer', 'grand piano', 'digital piano', 'upright piano', 'piano store', 'kawai authorized dealer'],
       alternates: {
-        canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+        canonical: siteUrl,
+        languages: getSiteAlternates('/'),
       }
     };
   } catch (error) {

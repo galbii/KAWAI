@@ -433,6 +433,8 @@ interface HeaderProps {
   quickLinks?: QuickLink[]
   resourceLinks?: ResourceLink[]
   storeLocations?: StoreLocationNavItem[]
+  /** 'cad' hides storefronts/showrooms from the resources mega menu — CA has no physical Kawai showrooms */
+  site?: 'us' | 'cad'
   autoMinimize?: boolean
 }
 
@@ -452,7 +454,7 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
-export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, storeLocations, autoMinimize = true }: HeaderProps) {
+export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, storeLocations, site = 'us', autoMinimize = true }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
@@ -1572,6 +1574,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           bannerDescription={registerConfig?.bannerDescription ?? null}
           {...(resourceLinks !== undefined && { resourceLinks })}
           storeLocations={storeLocations}
+          site={site}
           isHeaderScrolled={isScrolled}
         />
       </div>
@@ -1631,6 +1634,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           onBack={() => setActiveMobileSheet(null)}
           onNavigate={() => { setActiveMobileSheet(null); closeMobileMenu() }}
           storeLocations={storeLocations}
+          site={site}
           {...(resourceLinks !== undefined && { resourceLinks })}
           registerEnabled={registerConfig?.enabled !== false}
         />

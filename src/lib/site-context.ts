@@ -2,6 +2,7 @@ import 'server-only'
 import { headers } from 'next/headers'
 
 export type Site = 'us' | 'cad'
+export type Locale = 'en-US' | 'en-CA'
 
 export const SITE_URLS = {
   us: 'https://www.kawaius.com',
@@ -11,6 +12,13 @@ export const SITE_URLS = {
 export async function getSite(): Promise<Site> {
   const h = await headers()
   return (h.get('x-site') ?? 'us') as Site
+}
+
+// Maps the site discriminant to the Payload locale code used in payload.config.ts.
+// Pass this into `payload.find({ locale })` and into cache keys so US and CA
+// requests don't collide in the unstable_cache.
+export function localeFromSite(site: Site): Locale {
+  return site === 'cad' ? 'en-CA' : 'en-US'
 }
 
 export function getSiteName(site: Site): string {

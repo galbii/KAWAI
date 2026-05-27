@@ -6,6 +6,7 @@ import ArtistsHeroWrapper from '@/components/artists/ArtistsHeroWrapper'
 import { ArtistsGrid } from '@/components/artists/ArtistsGrid'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
+import { getSite, localeFromSite } from '@/lib/site-context'
 
 const fallbackMetadata: Metadata = {
   title: 'KAWAI Artists | World-Class Musicians & Performers',
@@ -13,7 +14,7 @@ const fallbackMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getCMSPageMetadata('artists', fallbackMetadata)
+  return getCMSPageMetadata('artists', fallbackMetadata, localeFromSite(await getSite()))
 }
 
 // Enable ISR with 15-minute revalidation

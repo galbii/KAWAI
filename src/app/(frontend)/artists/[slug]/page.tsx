@@ -5,6 +5,7 @@ import { draftMode } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { Trophy } from 'lucide-react'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 import type { Artist, Media, Page, Product } from '@/payload-types'
 import { RenderBlocks } from '@/components/RenderBlocks'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
@@ -35,7 +36,7 @@ export async function generateStaticParams() {
   }
 }
 
-function getArtist(slug: string, isDraftMode: boolean): Promise<Artist | null> {
+function getArtist(slug: string, isDraftMode: boolean, locale: Locale): Promise<Artist | null> {
   if (isDraftMode) {
     return (async () => {
       try {
@@ -47,6 +48,7 @@ function getArtist(slug: string, isDraftMode: boolean): Promise<Artist | null> {
           overrideAccess: true,
           depth: 1,
           limit: 1,
+          locale,
         })
         return (result.docs[0] as Artist) ?? null
       } catch {
@@ -69,18 +71,19 @@ function getArtist(slug: string, isDraftMode: boolean): Promise<Artist | null> {
           },
           depth: 1,
           limit: 1,
+          locale,
         })
         return (result.docs[0] as Artist) ?? null
       } catch {
         return null
       }
     },
-    [`artist-${slug}`],
+    [`artist-${slug}-${locale}`],
     { tags: [`artist-${slug}`, 'artists'], revalidate: 3600 },
   )()
 }
 
-async function getCMSArtistPage(slug: string): Promise<Page | null> {
+async function getCMSArtistPage(slug: string, locale: Locale): Promise<Page | null> {
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({
@@ -88,6 +91,7 @@ async function getCMSArtistPage(slug: string): Promise<Page | null> {
       where: { slug: { equals: slug }, _status: { equals: 'published' } },
       depth: 2,
       limit: 1,
+      locale,
     })
     return (result.docs[0] as Page) ?? null
   } catch {
@@ -100,7 +104,8 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   try {
     const { slug } = await params
-    const artist = await getArtist(slug, false)
+    const site = await getSite()
+    const artist = await getArtist(slug, false, localeFromSite(site))
 
     if (!artist) {
       return {
@@ -109,7 +114,7 @@ export async function generateMetadata(
       }
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
+    const siteUrl = getSiteUrl(site)
     const modelName =
       artist.kawaiModel && typeof artist.kawaiModel === 'object'
         ? (artist.kawaiModel as Product).name ?? null
@@ -158,7 +163,10 @@ export async function generateMetadata(
       title: artist.seo?.metaTitle || defaultTitle,
       description: artist.seo?.metaDescription || defaultDescription,
       keywords,
-      alternates: { canonical: `${siteUrl}/artists/${slug}` },
+      alternates: {
+        canonical: `${siteUrl}/artists/${slug}`,
+        languages: getSiteAlternates(`/artists/${slug}`),
+      },
       robots: { index: true, follow: true },
       openGraph: {
         title: artist.seo?.metaTitle || defaultTitle,
@@ -185,8 +193,9 @@ export async function generateMetadata(
 export default async function ArtistPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const { isEnabled: isDraftMode } = await draftMode()
+  const locale = localeFromSite(await getSite())
 
-  const cmsPage = await getCMSArtistPage(slug)
+  const cmsPage = await getCMSArtistPage(slug, locale)
   if (cmsPage?.layout?.length) {
     return (
       <div className="min-h-screen">
@@ -195,7 +204,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
     )
   }
 
-  const artist = await getArtist(slug, isDraftMode)
+  const artist = await getArtist(slug, isDraftMode, locale)
   if (!artist) notFound()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
