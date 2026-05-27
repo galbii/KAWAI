@@ -19,6 +19,13 @@ function getArtistImage(artist: Artist): string {
   return artist.imageUrl ?? '/images/defaults/artist-placeholder.jpg'
 }
 
+function hasFeaturedImage(artist: Artist): boolean {
+  if (artist.image && typeof artist.image === 'object') {
+    if ((artist.image as Media).url) return true
+  }
+  return Boolean(artist.imageUrl)
+}
+
 const INSTRUMENT_LABELS: Record<string, string> = {
   grand: 'Grand Piano',
   upright: 'Upright Piano',
@@ -150,12 +157,12 @@ interface AlphaLetterDividerProps {
 function AlphaLetterDivider({ letter }: AlphaLetterDividerProps) {
   return (
     <div
-      className="relative flex items-center px-6 sm:px-12 lg:px-16 pt-10 pb-2 select-none overflow-hidden"
+      className="relative flex items-center px-6 sm:px-12 lg:px-16 pt-10 pb-2 select-none"
       aria-hidden="true"
     >
-      {/* Ghost background letter */}
+      {/* Ghost background letter — extends down into the rows below as a watermark */}
       <span
-        className="absolute left-2 sm:left-6 lg:left-8 top-0 text-[8.5rem] font-light leading-none text-white/[0.028] pointer-events-none"
+        className="absolute left-2 sm:left-6 lg:left-8 top-0 text-[8.5rem] font-light leading-none text-white/[0.028] pointer-events-none z-0"
         style={{ fontFamily: 'var(--font-brand-serif)' }}
       >
         {letter}
@@ -165,7 +172,7 @@ function AlphaLetterDivider({ letter }: AlphaLetterDividerProps) {
         {letter}
       </span>
       {/* Extending hairline */}
-      <div className="ml-5 flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+      <div className="relative z-10 ml-5 flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
     </div>
   )
 }
@@ -195,7 +202,7 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
     >
       <Link
         href={`/artists/${artist.slug}`}
-        className="group relative flex items-center gap-6 sm:gap-10 px-6 sm:px-12 lg:px-16 py-6 sm:py-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset"
+        className="group relative flex items-center gap-6 sm:gap-10 px-6 sm:px-12 lg:px-16 py-8 sm:py-10 lg:py-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset"
         aria-label={`View profile: ${artist.name}`}
       >
         {/* Vertical red accent bar — grows full-height on hover */}
@@ -225,10 +232,11 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
         <div className="flex-1 min-w-0">
           <span
             className={cn(
-              'block text-3xl sm:text-4xl lg:text-5xl font-light leading-none truncate',
+              'block text-xl sm:text-2xl lg:text-3xl font-light leading-tight',
               'text-white/85 group-hover:text-white',
               'transition-colors duration-300',
               'font-[family-name:var(--font-brand-serif)]',
+              'line-clamp-2 break-words',
             )}
           >
             {artist.name}
@@ -293,10 +301,10 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
           </span>
         )}
 
-        {/* Circular thumbnail */}
+        {/* Circular thumbnail — large, prominent portrait */}
         <div
           className={cn(
-            'relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden',
+            'relative flex-shrink-0 w-36 h-36 sm:w-52 sm:h-52 lg:w-64 lg:h-64 rounded-full overflow-hidden',
             'border border-white/[0.08] group-hover:border-white/20',
             'ring-0 group-hover:ring-1 group-hover:ring-kawai-red/20 group-hover:ring-offset-0',
             'transition-all duration-500',
@@ -307,7 +315,7 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
             alt=""
             fill
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            sizes="(max-width: 640px) 96px, (max-width: 1024px) 112px, 128px"
+            sizes="(max-width: 640px) 144px, (max-width: 1024px) 208px, 256px"
             aria-hidden="true"
           />
           <div
@@ -351,9 +359,15 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
   const [viewMode, setViewMode] = useState<ViewMode>('current')
   const [searchFocused, setSearchFocused] = useState(false)
 
-  const hasLegacy = legacyArtists.length > 0
+  // Hide *current* artists with no featured image (no upload AND no URL fallback).
+  // Legacy is an archival view — show them all regardless, so the toggle stays accessible
+  // even when the legacy roster is mostly imageless.
+  const visibleCurrent = artists.filter(hasFeaturedImage)
+  const visibleLegacy = legacyArtists
+
+  const hasLegacy = visibleLegacy.length > 0
   const isLegacyView = viewMode === 'legacy'
-  const activePool = isLegacyView ? legacyArtists : artists
+  const activePool = isLegacyView ? visibleLegacy : visibleCurrent
 
   // Used to avoid scrolling on initial mount
   const isFirstRender = useRef(true)
@@ -418,7 +432,7 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
     return acc
   }, [])
 
-  if (artists.length === 0 && legacyArtists.length === 0) return null
+  if (visibleCurrent.length === 0 && visibleLegacy.length === 0) return null
 
   return (
     <section ref={sectionRef} className="bg-kawai-black w-full">

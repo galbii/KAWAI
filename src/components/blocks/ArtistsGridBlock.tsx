@@ -12,24 +12,34 @@ interface ArtistsGridBlockProps {
 const getArtistsGrid = unstable_cache(
   async (limit: number) => {
     const payload = await getPayloadClient()
-    const { docs } = await payload.find({
-      collection: 'artists',
-      where: { isActive: { equals: true } },
-      sort: '-featured,-updatedAt',
-      limit,
-      depth: 1,
-    })
-    return docs
+    const [current, legacy] = await Promise.all([
+      payload.find({
+        collection: 'artists',
+        where: { isActive: { equals: true } },
+        sort: '-featured,-updatedAt',
+        limit,
+        depth: 1,
+      }),
+      payload.find({
+        collection: 'artists',
+        where: { isActive: { equals: false } },
+        sort: 'name',
+        limit,
+        depth: 1,
+      }),
+    ])
+    return { current: current.docs, legacy: legacy.docs }
   },
   ['artists-grid'],
   { tags: ['artists'], revalidate: 3600 }
 )
 
 export async function ArtistsGridBlock({ title, showSearch, limit }: ArtistsGridBlockProps) {
-  const docs = await getArtistsGrid(limit ?? 200)
+  const { current, legacy } = await getArtistsGrid(limit ?? 200)
   return (
     <ArtistsGrid
-      artists={docs as Artist[]}
+      artists={current as Artist[]}
+      legacyArtists={legacy as Artist[]}
       title={title ?? 'Our Artists'}
       showSearch={showSearch ?? true}
     />

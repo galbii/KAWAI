@@ -163,6 +163,16 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
     })
   }
 
+  // Action / Tone / Features list metafields + owner's manual URL.
+  // Always written (matches single-product sync semantics in sync-to-payload.ts) —
+  // Shopify is the source of truth for these fields. Empty arrays / null clear stale data.
+  Object.assign(baseData, {
+    action: shopifyProduct.metafields?.action || [],
+    tone: shopifyProduct.metafields?.tone || [],
+    features: shopifyProduct.metafields?.features || [],
+    ownersManualUrl: shopifyProduct.metafields?.ownersManual ?? null,
+  })
+
   return baseData
 }
 
@@ -1479,6 +1489,23 @@ export const Products: CollectionConfig = {
                   })
                   if (matchingCollections.length > 0 && matchingCollections[0]) {
                     collectionId = matchingCollections[0].id
+                  } else if (firstShopifyCollection.shopifyCollectionId && firstShopifyCollection.title) {
+                    // Mirror beforeChange-on-create: if no matching Payload collection exists yet,
+                    // create one so the relationship validates. Runs in its own transaction
+                    // (no `req` passed) so it commits before the product update lands.
+                    console.log(`[PatchBlocks] Collection not found, creating: ${firstShopifyCollection.title}`)
+                    const newCollection = await req.payload.create({
+                      collection: 'collections',
+                      data: {
+                        shopifyCollectionId: firstShopifyCollection.shopifyCollectionId,
+                        title: firstShopifyCollection.title,
+                        handle: firstShopifyCollection.handle,
+                        productCount: 0,
+                      },
+                      context: { skipCollectionCleanup: true },
+                    })
+                    collectionId = newCollection.id
+                    console.log(`[PatchBlocks] Created collection: ${firstShopifyCollection.title} (ID: ${collectionId})`)
                   }
                 } catch (err) {
                   console.error(`[PatchBlocks] Error resolving collection for ${product.model}:`, err)

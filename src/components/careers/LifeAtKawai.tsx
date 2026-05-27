@@ -1,3 +1,9 @@
+'use client'
+
+import { motion } from 'framer-motion'
+
+const EASE = [0.16, 1, 0.3, 1] as const
+
 const PILLARS = [
   {
     num: '01',
@@ -28,6 +34,16 @@ const STATS = [
   { num: '1927', label: 'Founded' },
 ]
 
+const cardContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.15 } },
+}
+
+const cardItem = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
+}
+
 export function LifeAtKawai() {
   return (
     <>
@@ -48,29 +64,61 @@ export function LifeAtKawai() {
         <div className="relative z-10 max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           {/* Left: Intro copy */}
           <div className="lg:sticky lg:top-24">
-            <div className="w-10 h-px bg-kawai-red mb-10" />
-            <h2 className="text-[2.25rem] md:text-[2.75rem] leading-[1.05] font-[family-name:var(--font-brand-luxury)] text-kawai-black mb-8">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: EASE }}
+              style={{ transformOrigin: 'left' }}
+              className="w-10 h-px bg-kawai-red mb-10"
+            />
+            <motion.h2
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.75, ease: EASE, delay: 0.1 }}
+              className="text-[2.25rem] md:text-[2.75rem] leading-[1.05] font-[family-name:var(--font-brand-luxury)] text-kawai-black mb-8"
+            >
               What it means
               <br />
               to work at Kawai.
-            </h2>
-            <p className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-sm mb-10">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.22 }}
+              className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-sm mb-10"
+            >
               Kawai America Corporation has been based in Southern California since 1963.
               We are a small, experienced team — and that is by design. Every role here
               has real scope.
-            </p>
-            <p className="text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] text-sm leading-relaxed max-w-sm">
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.32 }}
+              className="text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] text-sm leading-relaxed max-w-sm"
+            >
               Our work spans sales and distribution, artist relations, institutional programs,
               technical support, and dealer partnerships. Colleagues here often stay for
               decades. The people who join tend to find reasons to stay.
-            </p>
+            </motion.p>
           </div>
 
           {/* Right: Glass pillar cards */}
-          <div className="flex flex-col gap-3">
+          <motion.div
+            variants={cardContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="flex flex-col gap-3"
+          >
             {PILLARS.map((pillar) => (
-              <div
+              <motion.div
                 key={pillar.num}
+                variants={cardItem}
                 className="bg-white/65 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl px-7 py-7 flex gap-6 hover:shadow-brand-medium hover:bg-white/80 transition-all duration-200"
               >
                 <span className="text-kawai-red text-[11px] font-mono font-medium leading-none mt-1 flex-shrink-0 w-6 font-[family-name:var(--font-brand-sans)]">
@@ -84,9 +132,9 @@ export function LifeAtKawai() {
                     {pillar.desc}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -103,36 +151,68 @@ export function LifeAtKawai() {
 
         <div className="relative z-10 px-8 md:px-16 lg:px-24 py-28 md:py-36 max-w-screen-xl mx-auto">
           {/* Red rule */}
-          <div className="w-12 h-px bg-kawai-red mb-14" />
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: EASE }}
+            style={{ transformOrigin: 'left' }}
+            className="w-12 h-px bg-kawai-red mb-14"
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-16 lg:gap-24 items-end">
             {/* Value proposition */}
             <div className="max-w-3xl">
-              <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[1.2] mb-6">
+              <motion.h2
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
+                className="text-[2rem] md:text-[2.5rem] lg:text-[3rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[1.2] mb-6"
+              >
                 A century of craft.<br />
                 <span className="text-kawai-red">Built for the next century.</span>
-              </h2>
-              <p className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-lg">
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ duration: 0.7, ease: EASE, delay: 0.25 }}
+                className="text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] text-base leading-relaxed max-w-lg"
+              >
                 Kawai has been part of how people experience music since 1927 — in concert halls, universities, conservatories, and living rooms across 180 countries. Kawai America is where that presence is built and maintained in North America.
-              </p>
+              </motion.p>
             </div>
 
             {/* Attribution */}
-            <div className="lg:pb-1">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.4 }}
+              className="lg:pb-1"
+            >
               <p className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
                 Kawai Musical Instruments
               </p>
               <p className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] mt-1">
                 Est. 1927, Hamamatsu Japan
               </p>
-            </div>
+            </motion.div>
           </div>
 
           {/* Glass stat cards */}
-          <div className="mt-16 pt-12 border-t border-kawai-neutral/30 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <motion.div
+            variants={cardContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="mt-16 pt-12 border-t border-kawai-neutral/30 grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
             {STATS.map((stat) => (
-              <div
+              <motion.div
                 key={stat.label}
+                variants={cardItem}
                 className="bg-white/70 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl px-6 py-6 hover:shadow-brand-medium hover:bg-white/85 transition-all duration-200"
               >
                 <div className="text-[2rem] md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none">
@@ -141,9 +221,9 @@ export function LifeAtKawai() {
                 <div className="text-[9px] uppercase tracking-[0.18em] text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)] mt-2">
                   {stat.label}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

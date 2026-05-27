@@ -1197,17 +1197,6 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     </div>
                   )}
 
-                  {/* Artists Link */}
-                  {navigation.filter(item => item.label === 'Artists').map((item) => (
-                    <ContextAwareLink
-                      key={item.label}
-                      href={item.href || '#'}
-                      className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-red/75 hover:bg-kawai-red/[0.06] transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
-                    >
-                      {item.label}
-                    </ContextAwareLink>
-                  ))}
-
                   {/* Support Link */}
                   <ContextAwareLink
                     href="/technical-support-division"
@@ -1233,6 +1222,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                       Resources
                     </button>
                   </div>
+
+                  {/* Artists Link — placed just before Shigeru Kawai */}
+                  <ContextAwareLink
+                    href="/artists"
+                    className="px-3 py-2 font-medium text-kawai-charcoal hover:text-kawai-red/75 hover:bg-kawai-red/[0.06] transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]"
+                  >
+                    Artists
+                  </ContextAwareLink>
 
                   {/* Shigeru Kawai — image link, no dropdown */}
                   <Link

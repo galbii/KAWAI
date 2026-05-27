@@ -8,7 +8,6 @@ import { JobGrid } from '@/components/careers/JobGrid'
 import type { JobListingItem } from '@/components/careers/JobListingsPanel'
 import { extractTextFromRichText } from '@/lib/utils'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
-import { TallyEmbed } from '@/components/careers/TallyEmbed'
 
 export const revalidate = 3600
 
@@ -65,22 +64,6 @@ export default async function CareersPage() {
 
       {/* 5. Open positions */}
       <JobGrid jobs={openJobs} />
-
-      {/* 6. Apply */}
-      <section id="apply" className="bg-kawai-pearl border-t border-kawai-neutral/50 py-28 md:py-36 px-8 md:px-16 lg:px-24">
-        <div className="max-w-screen-xl mx-auto">
-          <div className="mb-16">
-            <div className="w-10 h-px bg-kawai-red mb-8" />
-            <h2 className="text-[2.25rem] md:text-[2.75rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight mb-4">
-              Apply
-            </h2>
-            <p className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] max-w-sm leading-relaxed">
-              If you do not see an open role that fits, you are welcome to introduce yourself. We review every application.
-            </p>
-          </div>
-          <TallyEmbed />
-        </div>
-      </section>
 
     </main>
   )

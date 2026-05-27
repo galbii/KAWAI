@@ -1,3 +1,9 @@
+'use client'
+
+import { motion } from 'framer-motion'
+
+const EASE = [0.16, 1, 0.3, 1] as const
+
 const BENEFITS = [
   {
     icon: (
@@ -41,6 +47,16 @@ const BENEFITS = [
   },
 ]
 
+const cardContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+}
+
+const cardItem = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+}
+
 export function BenefitsSection() {
   return (
     <section className="relative bg-kawai-pearl py-28 md:py-36 px-8 md:px-16 lg:px-24 border-t border-kawai-neutral/30 overflow-hidden">
@@ -57,21 +73,47 @@ export function BenefitsSection() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
           <div>
-            <div className="w-10 h-px bg-kawai-red mb-8" />
-            <h2 className="text-[2.25rem] md:text-[2.75rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: EASE }}
+              style={{ transformOrigin: 'left' }}
+              className="w-10 h-px bg-kawai-red mb-8"
+            />
+            <motion.h2
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.75, ease: EASE, delay: 0.1 }}
+              className="text-[2.25rem] md:text-[2.75rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight"
+            >
               Working Here
-            </h2>
+            </motion.h2>
           </div>
-          <p className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] max-w-xs leading-relaxed md:text-right">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: EASE, delay: 0.25 }}
+            className="text-sm text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] max-w-xs leading-relaxed md:text-right"
+          >
             A small team with a long institutional history. The people who join us tend to stay.
-          </p>
+          </motion.p>
         </div>
 
         {/* Glass benefit cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <motion.div
+          variants={cardContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-80px' }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        >
           {BENEFITS.map((benefit) => (
-            <div
+            <motion.div
               key={benefit.title}
+              variants={cardItem}
               className="group relative p-8 md:p-10 bg-white/65 backdrop-blur-md border border-kawai-neutral/20 shadow-brand-subtle rounded-2xl hover:shadow-brand-medium hover:bg-white/85 hover:-translate-y-0.5 transition-all duration-200"
             >
               {/* Icon */}
@@ -85,9 +127,9 @@ export function BenefitsSection() {
               <p className="text-sm text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] leading-relaxed">
                 {benefit.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -5,6 +5,11 @@
  * It handles pagination to retrieve large catalogs and returns a clean list of products
  * suitable for bulk import into Payload CMS.
  *
+ * ⚠️ KEEP IN SYNC WITH `fetch-product.ts` — the metafield GraphQL selections and the
+ *    `transformShopifyProduct` parser are intentionally duplicated across both files.
+ *    When adding a new metafield, update BOTH files AND `Products.ts:transformShopifyToPayload`
+ *    if the field should be persisted by bulk sync.
+ *
  * @module fetch-all-products
  */
 
@@ -20,9 +25,15 @@ import type { ShopifyProductData, ShopifySpecification } from './fetch-product'
  * - Only fetches necessary fields for sync
  * - Filters for products with custom.model metafield
  */
+// Page size is constrained by Shopify's 1000-point per-query cost cap.
+// With ~9 metafield lookups + variants(first:100) + images(first:20) + nested
+// metaobject references, per-product node cost lands around ~4 points.
+// first:100 → cost ≈ 400-450, leaving headroom for future metafield additions.
+// Bumping this back to 250 will exceed the cap; if you need fewer round-trips,
+// trim sub-connection sizes (variants/images/references) first.
 const PRODUCTS_WITH_MODEL_QUERY = `
   query GetProductsWithModels($cursor: String) {
-    products(first: 250, after: $cursor, query: "metafields.custom.model:*") {
+    products(first: 100, after: $cursor, query: "metafields.custom.model:*") {
       edges {
         node {
           id
@@ -171,6 +182,32 @@ const PRODUCTS_WITH_MODEL_QUERY = `
             key
             value
             type
+          }
+
+          metafield_action: metafield(namespace: "custom", key: "action") {
+            key
+            value
+            type
+          }
+
+          metafield_tone: metafield(namespace: "custom", key: "tone") {
+            key
+            value
+            type
+          }
+
+          metafield_features: metafield(namespace: "custom", key: "features") {
+            key
+            value
+            type
+          }
+
+          metafield_ownermanual: metafield(namespace: "custom", key: "ownermanual") {
+            reference {
+              ... on GenericFile {
+                url
+              }
+            }
           }
 
           seo {
@@ -561,6 +598,22 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
           console.warn(`[Transform] ⚠️ Failed to parse specification_json for ${shopifyProduct.title}`)
           return null
         }
+      })(),
+
+      // Owner's manual URL (synced from Shopify custom.ownermanual file reference)
+      ownersManual: shopifyProduct.metafield_ownermanual?.reference?.url || null,
+
+      // Parse list.single_line_text_field metafields (JSON-encoded string arrays).
+      // Powers the Touch & Action / Sound & Tone / Connectivity & Features tabs
+      // in the CollectionShowcase block.
+      action: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_action?.value || '[]') as string[] } catch { return [] }
+      })(),
+      tone: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_tone?.value || '[]') as string[] } catch { return [] }
+      })(),
+      features: (() => {
+        try { return JSON.parse(shopifyProduct.metafield_features?.value || '[]') as string[] } catch { return [] }
       })(),
     },
 

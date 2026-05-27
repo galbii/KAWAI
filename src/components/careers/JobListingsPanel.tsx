@@ -21,25 +21,22 @@ interface Props {
   jobs: JobListingItem[]
 }
 
+const EASE = [0.16, 1, 0.3, 1] as const
+
 const listVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
   },
 }
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i: number) => ({
+  hidden: { opacity: 0, y: 14 },
+  visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.35,
-      delay: Math.min(i * 0.04, 0.4),
-      ease: [0.25, 0.46, 0.45, 0.94] as const,
-    },
-  }),
+    transition: { duration: 0.55, ease: EASE },
+  },
 }
 
 export function JobListingsPanel({ jobs }: Props) {
@@ -119,14 +116,20 @@ export function JobListingsPanel({ jobs }: Props) {
       </div>
 
       {/* Section header */}
-      <div className="relative z-10 px-8 md:px-16 lg:px-24 pt-12 pb-4 flex items-baseline justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.7, ease: EASE }}
+        className="relative z-10 px-8 md:px-16 lg:px-24 pt-12 pb-4 flex items-baseline justify-between"
+      >
         <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-brand-luxury)] text-kawai-black">
           Open Positions
         </h2>
         <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
           {filteredJobs.length} {filteredJobs.length === 1 ? 'role' : 'roles'}
         </span>
-      </div>
+      </motion.div>
 
       {/* Job list */}
       <div className="relative z-10 px-8 md:px-16 lg:px-24 pb-20">
@@ -137,10 +140,15 @@ export function JobListingsPanel({ jobs }: Props) {
             </p>
           </div>
         ) : (
-          <motion.div variants={listVariants} initial="hidden" animate="visible">
+          <motion.div
+            variants={listVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+          >
             <div className="h-px bg-kawai-neutral/40" />
             {filteredJobs.map((job, i) => (
-              <motion.div key={job.id} variants={itemVariants} custom={i}>
+              <motion.div key={job.id} variants={itemVariants}>
                 <button onClick={() => setActiveJob(job)} className="w-full text-left group">
                   <div className="flex items-center gap-6 py-6 border-b border-kawai-neutral/40 hover:bg-white/70 hover:backdrop-blur-sm transition-all duration-150 px-3 -mx-3 rounded-xl">
                     {/* Index */}
