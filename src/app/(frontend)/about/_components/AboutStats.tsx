@@ -1,3 +1,7 @@
+import { cn } from '@/lib/utils'
+import Reveal from './Reveal'
+import Counter from './Counter'
+
 const stats = [
   { value: '1927', label: 'Founded' },
   { value: '2.4M+', label: 'Pianos Built' },
@@ -8,17 +12,26 @@ const stats = [
 
 export default function AboutStats() {
   return (
-    <section className="bg-kawai-black text-white py-16">
+    <section className="bg-kawai-black py-20 text-white md:py-28">
       <div className="container mx-auto px-6">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-          {stats.map(({ value, label }, index) => (
-            <div
-              key={label}
-              className={index === stats.length - 1 ? 'col-span-2 md:col-span-1' : undefined}
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
+          {stats.map((stat, index) => (
+            <Reveal
+              key={stat.label}
+              delay={index * 0.1}
+              className={cn(
+                'px-4 text-center md:border-l md:border-white/10',
+                index === 0 && 'md:border-l-0',
+                index === stats.length - 1 && 'col-span-2 md:col-span-1',
+              )}
             >
-              <div className="text-3xl md:text-4xl font-bold text-kawai-red mb-2">{value}</div>
-              <div className="text-white/60 text-sm uppercase tracking-widest">{label}</div>
-            </div>
+              <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-medium leading-none md:text-6xl">
+                <Counter value={stat.value} />
+              </div>
+              <div className="mt-4 text-[11px] uppercase tracking-[0.25em] text-kawai-gold/80">
+                {stat.label}
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>

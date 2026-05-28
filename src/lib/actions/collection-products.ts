@@ -19,6 +19,8 @@ export async function getProductsByCollection(handle: string): Promise<NavProduc
           'shopifyCollections.handle': { equals: handle },
           status: { equals: 'active' },
           type: { not_equals: 'accessory' },
+          'visibility.showInCatalog': { equals: true },
+          'shopify.shopifyStatus': { not_equals: 'UNLISTED' },
         },
         select: {
           id: true,

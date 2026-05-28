@@ -1001,12 +1001,13 @@ export function ProductsMegaMenu({
         .filter((c) => c.featured)
         .map((c) => c.handle)
     )
-    if (featuredHandles.size === 0) return products
     return [...products].sort((a, b) => {
+      // Product-flagged featured leads (mirrors the nav action ordering)
+      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1
+      // Then products belonging to a featured collection
       const aInFeatured = a.collectionIds.some((h) => featuredHandles.has(h))
       const bInFeatured = b.collectionIds.some((h) => featuredHandles.has(h))
-      if (aInFeatured && !bInFeatured) return -1
-      if (!aInFeatured && bInFeatured) return 1
+      if (aInFeatured !== bInFeatured) return aInFeatured ? -1 : 1
       return 0
     })
   }, [selectedKey, productTypes, collections, allCollections])

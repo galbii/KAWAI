@@ -2,7 +2,7 @@
 
 import { unstable_cache } from 'next/cache'
 import { getProductTypesWithProducts, getNavCollections, getAccessoriesForNav } from '@/lib/payload/products-navigation'
-import type { ProductsNavigation } from '@/lib/payload/products-navigation'
+import type { ProductsNavigation, NavProduct } from '@/lib/payload/products-navigation'
 
 /**
  * Cached version of products navigation query
@@ -20,7 +20,7 @@ import type { ProductsNavigation } from '@/lib/payload/products-navigation'
  * - Cache hit rate: ~95% in production
  * - Reduces database load by 95%
  */
-const DISPLAY_SAMPLES = 6
+const DISPLAY_SAMPLES = 12
 
 const getCachedProductsNavigation = unstable_cache(
   async (): Promise<ProductsNavigation> => {
@@ -40,25 +40,25 @@ const getCachedProductsNavigation = unstable_cache(
       featuredHandleScore.set(col.handle, col.collectionPriority ?? 0)
     }
 
-    // For each category, sort products so featured-collection members come first
-    // (ranked by their collection's collectionPriority, descending), then slice to DISPLAY_SAMPLES.
+    // For each category, sort products so flagged-featured models lead, then
+    // featured-collection members (ranked by collectionPriority), then slice to DISPLAY_SAMPLES.
     const sortedTypes = navData.types.map((typeNav) => {
-      if (featuredHandleScore.size === 0) {
-        return { ...typeNav, products: typeNav.products.slice(0, DISPLAY_SAMPLES) }
-      }
+      // Score = highest collectionPriority among featured collections this product belongs to.
+      // Products not in any featured collection score -Infinity and sink to the bottom.
+      const score = (product: NavProduct) =>
+        product.collectionIds.reduce<number>((max, h) => {
+          const s = featuredHandleScore.get(h)
+          return s !== undefined && s > max ? s : max
+        }, -Infinity)
 
       const sorted = [...typeNav.products].sort((a, b) => {
-        // Score = highest collectionPriority among featured collections this product belongs to.
-        // Products not in any featured collection score -Infinity and sink to the bottom.
-        const score = (product: typeof a) =>
-          product.collectionIds.reduce<number>((max, h) => {
-            const s = featuredHandleScore.get(h)
-            return s !== undefined && s > max ? s : max
-          }, -Infinity)
-
+        // 1. Product-flagged featured (product.featured OR visibility.featured) leads
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1
+        // 2. Then by featured-collection priority (highest first)
         const diff = score(b) - score(a)
-        if (diff !== 0) return diff // Higher priority first
-        return 0 // Preserve the DB sort order (featured flag → sortOrder → date → name) among ties
+        if (diff !== 0) return diff
+        // 3. Preserve the DB sort order (featured flag → sortOrder → date → name) among ties
+        return 0
       })
 
       return { ...typeNav, products: sorted.slice(0, DISPLAY_SAMPLES) }

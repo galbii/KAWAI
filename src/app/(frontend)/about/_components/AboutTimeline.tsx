@@ -1,3 +1,10 @@
+'use client'
+
+import { useRef } from 'react'
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import Reveal from './Reveal'
+import SectionEyebrow from './SectionEyebrow'
+
 const events = [
   {
     year: '1927',
@@ -38,23 +45,48 @@ const events = [
 ]
 
 export default function AboutTimeline() {
+  const listRef = useRef<HTMLOListElement>(null)
+  const reduce = useReducedMotion()
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ['start 75%', 'end 65%'],
+  })
+  const scaleY = useTransform(scrollYProgress, [0, 1], [0, 1])
+
   return (
-    <section className="bg-kawai-pearl py-16 md:py-24">
+    <section className="bg-kawai-pearl py-20 md:py-28">
       <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-kawai-red text-sm uppercase tracking-widest mb-3">HERITAGE</p>
-          <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-brand-serif)] text-kawai-black mb-10">
-            A Legacy of Innovation
-          </h2>
-          <ol className="relative border-l border-kawai-neutral ml-2">
-            {events.map((e) => (
-              <li key={e.year} className="mb-10 last:mb-0 pl-8 relative">
-                <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-kawai-red" />
-                <div className="text-xl font-[family-name:var(--font-brand-serif)] text-kawai-red mb-1">
-                  {e.year}
-                </div>
-                <h3 className="text-lg font-semibold text-kawai-black mb-2">{e.title}</h3>
-                <p className="text-kawai-charcoal leading-relaxed">{e.description}</p>
+        <div className="mx-auto max-w-3xl">
+          <Reveal>
+            <SectionEyebrow>Heritage</SectionEyebrow>
+            <h2 className="mt-4 mb-14 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,5vw,3.25rem)] leading-tight text-kawai-black">
+              A Legacy of Innovation
+            </h2>
+          </Reveal>
+
+          <ol ref={listRef} className="relative ml-3">
+            {/* Static track */}
+            <span aria-hidden className="absolute bottom-2 left-0 top-2 w-px bg-kawai-neutral" />
+            {/* Progress line that draws as the section scrolls through the viewport */}
+            <motion.span
+              aria-hidden
+              className="absolute bottom-2 left-0 top-2 w-px origin-top bg-kawai-red"
+              style={{ scaleY: reduce ? 1 : scaleY }}
+            />
+
+            {events.map((event) => (
+              <li key={event.year} className="relative mb-12 pl-10 last:mb-0">
+                <span
+                  aria-hidden
+                  className="absolute -left-[5px] top-2 h-2.5 w-2.5 rounded-full bg-kawai-red ring-4 ring-kawai-pearl"
+                />
+                <Reveal>
+                  <div className="font-[family-name:var(--font-brand-serif)] text-2xl text-kawai-red">
+                    {event.year}
+                  </div>
+                  <h3 className="mt-1 mb-2 text-lg font-semibold text-kawai-black">{event.title}</h3>
+                  <p className="leading-relaxed text-kawai-charcoal">{event.description}</p>
+                </Reveal>
               </li>
             ))}
           </ol>
