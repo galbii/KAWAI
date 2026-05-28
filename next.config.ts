@@ -105,6 +105,13 @@ const nextConfig: NextConfig = {
         destination: '/products/:slug*',
         permanent: true,
       },
+      // The /company hub was consolidated into /about. Exact-match only —
+      // /company/koichi-kawai, /company/awards, /company/our-philosophy are unaffected.
+      {
+        source: '/company',
+        destination: '/about',
+        permanent: true,
+      },
     ]
   },
   async rewrites() {

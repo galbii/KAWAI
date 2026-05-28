@@ -6,10 +6,13 @@ import Link from 'next/link'
 import NextImage from 'next/image'
 import type { GrandSaleProduct } from '@/lib/payload/queries'
 import { extractYouTubeId } from '@/lib/utils/youtube'
+import { cn } from '@/lib/utils'
+import { parseSpecificationJson } from '@/lib/utils/parse-specification-json'
 
 interface ProductMediaModalProps {
   product: GrandSaleProduct
   onClose: () => void
+  showProductLink?: boolean
 }
 
 function YouTubeEmbed({ youtubeId, title }: { youtubeId: string; title?: string | undefined }) {
@@ -41,7 +44,73 @@ function CmsImage({ url, alt }: { url: string; alt?: string }) {
   )
 }
 
-function ModalContent({ product, onClose }: ProductMediaModalProps) {
+type SpecRow = { label: string; value: string; subItems?: string[] }
+
+/**
+ * Build spec rows for the modal. The site treats `specificationJson`
+ * (Shopify custom.specification-json) as the source of truth — the technical
+ * specs block defaults to dataSource: 'json' — so prefer it and fall back to
+ * the structured `specifications` array only when JSON is absent.
+ */
+function buildSpecRows(product: GrandSaleProduct): SpecRow[] {
+  if (product.specificationJson && typeof product.specificationJson === 'object') {
+    const rows = parseSpecificationJson(product.specificationJson)
+    if (rows.length > 0) {
+      return rows.map((r) => ({
+        label: r.label,
+        value: r.value,
+        ...(r.subItems && r.subItems.length > 0 ? { subItems: r.subItems } : {}),
+      }))
+    }
+  }
+  return (product.specifications ?? [])
+    .filter((s) => s.spec)
+    .map((s) => ({ label: s.spec ?? '', value: s.details ?? '' }))
+}
+
+function SpecsTable({ rows }: { rows: SpecRow[] }) {
+  return (
+    <div className="p-6">
+      <div className="grid grid-cols-[2fr_3fr] gap-4 pb-2.5 border-b-2 border-kawai-red mb-1">
+        <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold font-[family-name:var(--font-brand-sans)]">
+          Specification
+        </span>
+        <span className="text-[10px] text-kawai-red uppercase tracking-[0.2em] font-semibold font-[family-name:var(--font-brand-sans)]">
+          Details
+        </span>
+      </div>
+      <dl className="divide-y divide-kawai-neutral/60">
+        {rows.map((row, i) => {
+          const valueLines = row.value.split('\n').map((l) => l.trim()).filter(Boolean)
+          const primary = valueLines[0] ?? '—'
+          const extra = [...valueLines.slice(1), ...(row.subItems ?? [])]
+          return (
+            <div key={i} className="grid grid-cols-[2fr_3fr] gap-4 py-3.5">
+              <dt className="text-sm text-kawai-charcoal/65 leading-relaxed font-[family-name:var(--font-brand-sans)]">
+                {row.label}
+              </dt>
+              <dd className="text-sm text-kawai-black">
+                <span className="font-mono font-semibold leading-relaxed">{primary}</span>
+                {extra.length > 0 && (
+                  <ul className="space-y-1 mt-1">
+                    {extra.map((line, j) => (
+                      <li key={j} className="flex items-start gap-2">
+                        <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/30 flex-shrink-0" />
+                        <span className="font-mono font-semibold leading-relaxed">{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </dd>
+            </div>
+          )
+        })}
+      </dl>
+    </div>
+  )
+}
+
+function ModalContent({ product, onClose, showProductLink = true }: ProductMediaModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Build ordered media list
@@ -74,6 +143,13 @@ function ModalContent({ product, onClose }: ProductMediaModalProps) {
     const alt = product.name ?? product.model
     items.push({ kind: 'shopify-image', url: product.imageUrl, ...(alt ? { alt } : {}) })
   }
+
+  const specRows = buildSpecRows(product)
+  const hasSpecs = specRows.length > 0
+
+  const [activeTab, setActiveTab] = useState<'media' | 'specs'>(
+    items.length === 0 && hasSpecs ? 'specs' : 'media',
+  )
 
   return (
     <>
@@ -113,9 +189,36 @@ function ModalContent({ product, onClose }: ProductMediaModalProps) {
           </button>
         </div>
 
-        {/* Scrollable media */}
+        {/* Tabs */}
+        {hasSpecs && (
+          <div className="flex-shrink-0 flex gap-6 px-6 border-b border-kawai-neutral">
+            {([
+              { key: 'media', label: 'Gallery' },
+              { key: 'specs', label: 'Specifications' },
+            ] as const).map(({ key, label }) => {
+              const active = activeTab === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={cn(
+                    'relative py-3 text-[11px] tracking-[0.18em] uppercase font-semibold transition-colors font-[family-name:var(--font-brand-sans)]',
+                    active ? 'text-kawai-black' : 'text-kawai-charcoal/40 hover:text-kawai-charcoal/70',
+                  )}
+                >
+                  {label}
+                  {active && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-kawai-red" />}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Scrollable content */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain min-h-0">
-          {items.length === 0 ? (
+          {activeTab === 'specs' ? (
+            <SpecsTable rows={specRows} />
+          ) : items.length === 0 ? (
             <div className="flex items-center justify-center py-16 px-6 text-center">
               <p className="text-kawai-charcoal/50 text-sm font-[family-name:var(--font-brand-sans)]">
                 Media gallery coming soon.
@@ -164,22 +267,24 @@ function ModalContent({ product, onClose }: ProductMediaModalProps) {
           >
             Book Now
           </button>
-          <Link
-            href={`/products/${product.slug}`}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white text-sm font-medium tracking-[0.08em] uppercase transition-colors rounded-sm font-[family-name:var(--font-brand-sans)]"
-          >
-            View Product
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-            </svg>
-          </Link>
+          {showProductLink && (
+            <Link
+              href={`/products/${product.slug}`}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white text-sm font-medium tracking-[0.08em] uppercase transition-colors rounded-sm font-[family-name:var(--font-brand-sans)]"
+            >
+              View Product
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </Link>
+          )}
         </div>
       </div>
     </>
   )
 }
 
-export function ProductMediaModal({ product, onClose }: ProductMediaModalProps) {
+export function ProductMediaModal({ product, onClose, showProductLink = true }: ProductMediaModalProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
@@ -200,7 +305,7 @@ export function ProductMediaModal({ product, onClose }: ProductMediaModalProps) 
 
   return createPortal(
     <div className="fixed inset-0 z-50 px-4">
-      <ModalContent product={product} onClose={onClose} />
+      <ModalContent product={product} onClose={onClose} showProductLink={showProductLink} />
     </div>,
     document.body,
   )

@@ -1435,6 +1435,7 @@ export type GrandSaleProduct = {
   description?: string | null
   price?: { msrp?: number | null; currency?: string | null } | null
   specifications?: Array<{ spec?: string | null; type?: string | null; details?: string | null }> | null
+  specificationJson?: Record<string, unknown> | null
   highlights?: Array<{ highlight?: string | null; description?: string | null }> | null
   variations?: Array<{
     name: string
@@ -1496,6 +1497,7 @@ export const getGrandPianoSaleProducts = unstable_cache(
           description: true,
           price: true,
           specifications: true,
+          specificationJson: true,
           highlights: true,
           variations: true,
           customMedia: true,
@@ -1515,6 +1517,10 @@ export const getGrandPianoSaleProducts = unstable_cache(
         description: doc.description ?? null,
         price: doc.price ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null } : null,
         specifications: Array.isArray(doc.specifications) ? doc.specifications : null,
+        specificationJson:
+          doc.specificationJson && typeof doc.specificationJson === 'object'
+            ? (doc.specificationJson as Record<string, unknown>)
+            : null,
         highlights: Array.isArray(doc.highlights) ? doc.highlights : null,
         variations: Array.isArray(doc.variations)
           ? doc.variations.map((v: any) => ({
@@ -1601,6 +1607,10 @@ export async function getUniversityEventProductsRich(models: string[]): Promise<
         description: doc.description ?? null,
         price: doc.price ? { msrp: doc.price.msrp ?? null, currency: doc.price.currency ?? null } : null,
         specifications: Array.isArray(doc.specifications) ? doc.specifications : null,
+        specificationJson:
+          doc.specificationJson && typeof doc.specificationJson === 'object'
+            ? (doc.specificationJson as Record<string, unknown>)
+            : null,
         highlights: Array.isArray(doc.highlights) ? doc.highlights : null,
         variations: Array.isArray(doc.variations)
           ? doc.variations.map((v: any) => ({
@@ -2438,6 +2448,7 @@ export const getProductsByModelPrefix = (prefix: string) =>
           imageUrl: true,
           price: true,
           specifications: true,
+          specificationJson: true,
           highlights: true,
           variations: true,
           description: true,

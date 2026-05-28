@@ -126,12 +126,6 @@ function ProductCard({
   const displaySpecs = specs.length >= 2 ? specs.slice(0, 3) : fallbackSpecs.slice(0, 3);
   const category = getPianoCategory(product);
 
-  const variation = product.variations?.[0];
-  const salePrice = variation?.price ?? null;
-  const compareAt = variation?.compareAtPrice ?? product.price?.msrp ?? null;
-  const savings =
-    compareAt && salePrice && compareAt > salePrice ? compareAt - salePrice : null;
-
   return (
     <motion.article variants={cardVariant} className="group flex flex-col bg-white">
       {/* ── Image stage ── */}
@@ -167,15 +161,9 @@ function ProductCard({
           {CATEGORY_LABELS[category]}
         </p>
 
-        {savings && savings > 0 ? (
-          <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#4D1979] text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
-            Save ${savings.toLocaleString()}
-          </span>
-        ) : (
-          <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#4D1979] text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
-            Event Pricing
-          </span>
-        )}
+        <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#4D1979] text-white text-[9px] tracking-[0.2em] uppercase font-semibold font-[family-name:var(--font-brand-sans)]">
+          Event Pricing
+        </span>
 
         {/* Purple reveal line on hover */}
         <div className="absolute inset-x-0 top-0 h-[2px] bg-[#4D1979] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
@@ -193,20 +181,6 @@ function ProductCard({
         >
           {product.name ?? product.model}
         </h3>
-
-        {/* Pricing */}
-        {salePrice && salePrice > 0 ? (
-          <div className="flex items-baseline gap-2 mb-4 flex-wrap">
-            <span className="text-xl font-bold" style={{ color: "#4D1979" }}>
-              ${salePrice.toLocaleString()}
-            </span>
-            {compareAt && compareAt > salePrice && (
-              <span className="text-sm line-through text-kawai-charcoal/40">
-                ${compareAt.toLocaleString()}
-              </span>
-            )}
-          </div>
-        ) : null}
 
         {displaySpecs.length > 0 && (
           <dl className="space-y-2 pt-4 border-t border-kawai-neutral/40 mb-5">
@@ -618,6 +592,7 @@ export function FeaturedDeals({ products, onOpenConsultation }: FeaturedDealsPro
         <ProductMediaModal
           product={modalProduct}
           onClose={() => setModalProduct(null)}
+          showProductLink={false}
         />
       )}
     </div>
