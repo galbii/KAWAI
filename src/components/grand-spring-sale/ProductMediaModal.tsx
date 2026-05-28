@@ -7,7 +7,7 @@ import NextImage from 'next/image'
 import type { GrandSaleProduct } from '@/lib/payload/queries'
 import { extractYouTubeId } from '@/lib/utils/youtube'
 import { cn } from '@/lib/utils'
-import { parseSpecificationJson } from '@/lib/utils/parse-specification-json'
+import { parseSpecificationJson, type ParsedSpecRow } from '@/lib/utils/parse-specification-json'
 
 interface ProductMediaModalProps {
   product: GrandSaleProduct
@@ -44,31 +44,7 @@ function CmsImage({ url, alt }: { url: string; alt?: string }) {
   )
 }
 
-type SpecRow = { label: string; value: string; subItems?: string[] }
-
-/**
- * Build spec rows for the modal. The site treats `specificationJson`
- * (Shopify custom.specification-json) as the source of truth — the technical
- * specs block defaults to dataSource: 'json' — so prefer it and fall back to
- * the structured `specifications` array only when JSON is absent.
- */
-function buildSpecRows(product: GrandSaleProduct): SpecRow[] {
-  if (product.specificationJson && typeof product.specificationJson === 'object') {
-    const rows = parseSpecificationJson(product.specificationJson)
-    if (rows.length > 0) {
-      return rows.map((r) => ({
-        label: r.label,
-        value: r.value,
-        ...(r.subItems && r.subItems.length > 0 ? { subItems: r.subItems } : {}),
-      }))
-    }
-  }
-  return (product.specifications ?? [])
-    .filter((s) => s.spec)
-    .map((s) => ({ label: s.spec ?? '', value: s.details ?? '' }))
-}
-
-function SpecsTable({ rows }: { rows: SpecRow[] }) {
+function SpecsTable({ rows }: { rows: ParsedSpecRow[] }) {
   return (
     <div className="p-6">
       <div className="grid grid-cols-[2fr_3fr] gap-4 pb-2.5 border-b-2 border-kawai-red mb-1">
@@ -80,31 +56,26 @@ function SpecsTable({ rows }: { rows: SpecRow[] }) {
         </span>
       </div>
       <dl className="divide-y divide-kawai-neutral/60">
-        {rows.map((row, i) => {
-          const valueLines = row.value.split('\n').map((l) => l.trim()).filter(Boolean)
-          const primary = valueLines[0] ?? '—'
-          const extra = [...valueLines.slice(1), ...(row.subItems ?? [])]
-          return (
-            <div key={i} className="grid grid-cols-[2fr_3fr] gap-4 py-3.5">
-              <dt className="text-sm text-kawai-charcoal/65 leading-relaxed font-[family-name:var(--font-brand-sans)]">
-                {row.label}
-              </dt>
-              <dd className="text-sm text-kawai-black">
-                <span className="font-mono font-semibold leading-relaxed">{primary}</span>
-                {extra.length > 0 && (
-                  <ul className="space-y-1 mt-1">
-                    {extra.map((line, j) => (
-                      <li key={j} className="flex items-start gap-2">
-                        <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/30 flex-shrink-0" />
-                        <span className="font-mono font-semibold leading-relaxed">{line}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </dd>
-            </div>
-          )
-        })}
+        {rows.map((row, i) => (
+          <div key={i} className="grid grid-cols-[2fr_3fr] gap-4 py-3.5">
+            <dt className="text-sm text-kawai-charcoal/65 leading-relaxed font-[family-name:var(--font-brand-sans)]">
+              {row.label}
+            </dt>
+            <dd className="text-sm text-kawai-black">
+              <span className="font-mono font-semibold leading-relaxed">{row.value || '—'}</span>
+              {row.subItems && row.subItems.length > 0 && (
+                <ul className="space-y-1 mt-1">
+                  {row.subItems.map((line, j) => (
+                    <li key={j} className="flex items-start gap-2">
+                      <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/30 flex-shrink-0" />
+                      <span className="font-mono font-semibold leading-relaxed">{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+          </div>
+        ))}
       </dl>
     </div>
   )
@@ -144,7 +115,10 @@ function ModalContent({ product, onClose, showProductLink = true }: ProductMedia
     items.push({ kind: 'shopify-image', url: product.imageUrl, ...(alt ? { alt } : {}) })
   }
 
-  const specRows = buildSpecRows(product)
+  const specRows: ParsedSpecRow[] =
+    product.specificationJson && typeof product.specificationJson === 'object'
+      ? parseSpecificationJson(product.specificationJson)
+      : []
   const hasSpecs = specRows.length > 0
 
   const [activeTab, setActiveTab] = useState<'media' | 'specs'>(

@@ -239,7 +239,7 @@ export const TCU_2025: UniversityEventConfig = {
     features: [
       { label: 'Digital Piano Rebates', description: 'All digital models' },
       { label: '36-Month 0% Financing', description: 'Zero interest\n36 months' },
-      { label: 'TCU Invitation Pricing', description: '8–10% Off MSRP' },
+      { label: 'TCU Invitation Pricing', description: 'Exclusive event pricing' },
     ],
     primaryCtaLabel: 'Book Appointment',
     secondaryCtaLabel: 'View Collection',
@@ -310,7 +310,7 @@ export const TCU_2025: UniversityEventConfig = {
       icon: 'shield',
       title: 'Exclusive TCU Invitation Pricing',
       description:
-        'TCU invitation pricing delivers 8–10% off MSRP on select instruments — available exclusively at this partnered event.',
+        'TCU invitation pricing on select instruments — available exclusively at this partnered event.',
     },
   ],
   valuePropsPhone: '(972) 379-2200',
