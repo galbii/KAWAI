@@ -451,14 +451,18 @@ function MobilePeekStrip({
 }) {
   const stripRef = useRef<HTMLDivElement>(null)
 
-  // Center the active thumb when the index changes
+  // Center the active thumb when the index changes.
+  // Scroll the strip horizontally only — scrollIntoView() would also scroll
+  // every ancestor (including the page), yanking the viewport to this block on mount.
   useEffect(() => {
     const strip = stripRef.current
     if (!strip) return
     const activeEl = strip.querySelector<HTMLElement>(`[data-strip-idx="${activeIdx}"]`)
-    if (activeEl) {
-      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
+    if (!activeEl) return
+    const stripRect = strip.getBoundingClientRect()
+    const elRect = activeEl.getBoundingClientRect()
+    const delta = elRect.left + elRect.width / 2 - (stripRect.left + stripRect.width / 2)
+    strip.scrollBy({ left: delta, behavior: 'smooth' })
   }, [activeIdx])
 
   return (
