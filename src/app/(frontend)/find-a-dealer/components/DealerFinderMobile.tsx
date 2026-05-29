@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Dealer } from '@/payload-types'
 import type { DealerWithDistance } from '../types'
@@ -35,6 +35,23 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
   const [countryFilter, setCountryFilter] = useState<CountryFilter>(defaultCountry)
   const [dealerSheetOpen, setDealerSheetOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<DealerWithDistance[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [navVisible, setNavVisible] = useState(false)
+
+  // The floating view toggle is position:fixed, so without this it would
+  // overlay the entire page. Only show it while the dealer finder is on screen.
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setNavVisible(entry.intersectionRatio >= 0.25)
+      },
+      { threshold: [0, 0.25, 0.5, 1] }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   // Calculate dealer type counts
   const dealerCounts = useMemo(() => {
@@ -150,6 +167,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
 
   return (
     <div
+      ref={containerRef}
       className="lg:hidden flex flex-col overflow-hidden"
       style={{ height: 'calc(100dvh - var(--header-bottom, 70px))' }}
     >
@@ -332,7 +350,12 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
       </div>
 
       {/* Floating Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 pb-safe">
+      <div
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-40 pb-safe transition-all duration-300',
+          navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        )}
+      >
         <div className="mx-4 mb-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-kawai-neutral/60 overflow-hidden backdrop-blur-xl">
             <div className="flex">
