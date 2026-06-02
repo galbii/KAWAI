@@ -2,6 +2,11 @@ import { Footer } from './footer'
 import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload/queries'
+import {
+  getSearchQuickLinks,
+  getResourcesNavConfig,
+  getActiveStorefrontsForNav,
+} from './header-dynamic'
 
 interface DealerLocationContactData {
   name: string
@@ -63,6 +68,7 @@ export async function FooterDynamic() {
     // handled client-side by NavigationContext via sessionStorage.
     const headersList = await headers()
     const pathname = headersList.get('x-pathname') || ''
+    const site = headersList.get('x-site') === 'cad' ? 'cad' : 'us'
 
     const isSignaturePage =
       pathname.endsWith('/signature') || pathname.endsWith('/signature/') ||
@@ -72,14 +78,25 @@ export async function FooterDynamic() {
     // Dealer slug from URL path only (no cookie fallback)
     const dealerSlug = pathname.startsWith('/store/') ? pathname.split('/')[2] : undefined
 
-    const locationContactData = dealerSlug
-      ? await getDealerLocationContactInfo(dealerSlug)
-      : null
+    // Fetch dealer contact + site index data in parallel. All four getters
+    // are unstable_cache'd and shared with the header, so within a single
+    // request these calls are deduped — no extra MongoDB roundtrips.
+    const [locationContactData, promotedLinks, resourceLinks, storeLocations] =
+      await Promise.all([
+        dealerSlug ? getDealerLocationContactInfo(dealerSlug) : Promise.resolve(null),
+        getSearchQuickLinks(),
+        getResourcesNavConfig(),
+        getActiveStorefrontsForNav(),
+      ])
 
     return (
       <Footer
         locationContactData={locationContactData}
         isSignaturePage={isSignaturePage}
+        promotedLinks={promotedLinks}
+        resourceLinks={resourceLinks}
+        storeLocations={storeLocations}
+        site={site}
       />
     )
   } catch (error) {

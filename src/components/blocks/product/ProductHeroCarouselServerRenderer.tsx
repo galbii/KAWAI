@@ -21,19 +21,30 @@ export async function ProductHeroCarouselServerRenderer(
   let slides: ProductHeroSlideData[] = []
 
   // ── Map homepage news items → ProductHeroSlideData ────────────────────────
+  // Media priority: YouTube URL → uploaded video (media library) → image.
+  // The schema enforces mutual exclusion between videoUrl and backgroundVideo via
+  // an admin condition, so checking videoUrl first is safe.
   if (newsItems && Array.isArray(newsItems)) {
-    slides = newsItems.map((item: any): ProductHeroSlideData => ({
-      mediaType: item.videoUrl ? 'youtube' : 'image',
-      image: item.image ?? null,
-      youtubeUrl: item.videoUrl ?? null,
-      youtubeZoom: item.youtubeZoom ?? null,
-      eyebrow: item.category ?? null,
-      title: item.title ?? null,
-      subtitle: item.description ?? null,
-      ctaText: item.ctaText ?? null,
-      ctaLink: item.link ?? null,
-      ctaStyle: 'white',
-    }))
+    slides = newsItems.map((item: any): ProductHeroSlideData => {
+      const mediaType: ProductHeroSlideData['mediaType'] = item.videoUrl
+        ? 'youtube'
+        : item.backgroundVideo
+          ? 'video'
+          : 'image'
+      return {
+        mediaType,
+        image: item.image ?? null,
+        videoFile: item.backgroundVideo ?? null,
+        youtubeUrl: item.videoUrl ?? null,
+        youtubeZoom: item.youtubeZoom ?? null,
+        eyebrow: item.category ?? null,
+        title: item.title ?? null,
+        subtitle: item.description ?? null,
+        ctaText: item.ctaText ?? null,
+        ctaLink: item.link ?? null,
+        ctaStyle: 'white',
+      }
+    })
   }
 
   // ── Append block-level slides (always additive) ───────────────────────────

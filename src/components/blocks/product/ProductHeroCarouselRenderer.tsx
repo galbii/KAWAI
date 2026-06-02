@@ -36,6 +36,11 @@ interface ProductHeroCarouselRendererProps {
   headingLevel?: 'h1' | 'h2'
 }
 
+// ── SLIDE EASING ───────────────────────────────────────────────────────────
+// Out-expo style curve — immediate response, smooth deceleration. The same
+// family of curve used by Linear/Vercel for that "instant" feel.
+const SLIDE_EASE = [0.32, 0.72, 0, 1] as const
+
 // ── HEIGHT CLASSES ─────────────────────────────────────────────────────────
 const heightClasses = {
   screen: 'h-screen min-h-[600px] max-h-[900px]',
@@ -95,7 +100,10 @@ export function ProductHeroCarouselRenderer({
   const enableKeyboardNav = settings?.enableKeyboardNav ?? true
   const enableTouchSwipe = settings?.enableTouchSwipe ?? true
   const showNavigationDots = settings?.showNavigationDots ?? true
-  const showArrows = settings?.showArrows ?? false
+  // Arrows are always shown when there's more than one slide. The legacy
+  // `showArrows` setting is intentionally ignored so older blocks where the
+  // value was persisted as `false` (when the prior default was off) still
+  // surface the arrows without requiring per-block re-saves.
   const showPlayPauseButton = settings?.showPlayPauseButton ?? true
   const enableKenBurnsEffect = settings?.enableKenBurnsEffect ?? true
 
@@ -106,6 +114,7 @@ export function ProductHeroCarouselRenderer({
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [direction, setDirection] = useState(1)
   const [isPlaying, setIsPlaying] = useState(enableAutoPlay)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
@@ -124,6 +133,7 @@ export function ProductHeroCarouselRenderer({
 
   // ── Navigation ────────────────────────────────────────────────────────────
   const goToPrevious = useCallback(() => {
+    setDirection(-1)
     setProgress(0)
     setCurrentIndex((prev) =>
       enableLoop
@@ -135,6 +145,7 @@ export function ProductHeroCarouselRenderer({
   }, [slides.length, enableLoop])
 
   const goToNext = useCallback(() => {
+    setDirection(1)
     setProgress(0)
     setCurrentIndex((prev) =>
       enableLoop
@@ -142,6 +153,20 @@ export function ProductHeroCarouselRenderer({
         : Math.min(prev + 1, slides.length - 1)
     )
   }, [slides.length, enableLoop])
+
+  const goToIndex = useCallback(
+    (target: number) => {
+      setDirection(target > currentIndex ? 1 : -1)
+      setProgress(0)
+      setCurrentIndex(target)
+    },
+    [currentIndex]
+  )
+
+  const pauseAutoPlayBriefly = useCallback(() => {
+    setIsPlaying(false)
+    setTimeout(() => setIsPlaying(enableAutoPlay), 2000)
+  }, [enableAutoPlay])
 
   // ── Auto-play + progress bar ───────────────────────────────────────────────
   useEffect(() => {
@@ -237,17 +262,36 @@ export function ProductHeroCarouselRenderer({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              duration: prefersReducedMotion ? 0 : 0.9,
-              ease: 'easeInOut',
+            custom={direction}
+            variants={{
+              enter: (dir: number) => ({
+                x: prefersReducedMotion ? 0 : dir > 0 ? '100%' : '-100%',
+                opacity: prefersReducedMotion ? 0 : 1,
+              }),
+              center: {
+                x: 0,
+                opacity: 1,
+                transition: {
+                  x: { duration: prefersReducedMotion ? 0 : 0.55, ease: SLIDE_EASE },
+                  opacity: { duration: prefersReducedMotion ? 0.2 : 0.3 },
+                },
+              },
+              exit: (dir: number) => ({
+                x: prefersReducedMotion ? 0 : dir > 0 ? '-100%' : '100%',
+                opacity: prefersReducedMotion ? 0 : 1,
+                transition: {
+                  x: { duration: prefersReducedMotion ? 0 : 0.55, ease: SLIDE_EASE },
+                  opacity: { duration: prefersReducedMotion ? 0.2 : 0.3 },
+                },
+              }),
             }}
-            className="absolute inset-0"
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 will-change-transform"
           >
             {/* ── MEDIA LAYER ─────────────────────────────────────────── */}
             {currentSlide.mediaType === 'youtube' && currentSlide.youtubeUrl ? (
@@ -403,46 +447,22 @@ export function ProductHeroCarouselRenderer({
         )}
 
         {/* ── LEFT / RIGHT ARROWS ───────────────────────────────────────── */}
-        {showArrows && slides.length > 1 && (
+        {slides.length > 1 && (
           <>
-            <button
+            <ArrowButton
+              dir="prev"
               onClick={() => {
                 goToPrevious()
-                setIsPlaying(false)
-                setTimeout(() => setIsPlaying(enableAutoPlay), 2000)
+                pauseAutoPlayBriefly()
               }}
-              className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full border border-white/25 bg-kawai-black/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
-              aria-label="Previous slide"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
+            />
+            <ArrowButton
+              dir="next"
               onClick={() => {
                 goToNext()
-                setIsPlaying(false)
-                setTimeout(() => setIsPlaying(enableAutoPlay), 2000)
+                pauseAutoPlayBriefly()
               }}
-              className="absolute right-5 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full border border-white/25 bg-kawai-black/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
-              aria-label="Next slide"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            />
           </>
         )}
 
@@ -453,10 +473,8 @@ export function ProductHeroCarouselRenderer({
               <button
                 key={index}
                 onClick={() => {
-                  setCurrentIndex(index)
-                  setProgress(0)
-                  setIsPlaying(false)
-                  setTimeout(() => setIsPlaying(enableAutoPlay), 2000)
+                  goToIndex(index)
+                  pauseAutoPlayBriefly()
                 }}
                 className={cn(
                   'relative h-[3px] rounded-full overflow-hidden transition-all duration-300',
@@ -513,6 +531,90 @@ export function ProductHeroCarouselRenderer({
 // ──────────────────────────────────────────────────────────────────────────────
 // SUB-COMPONENTS
 // ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * ArrowButton — vertical-center navigation arrow.
+ *
+ * Editorial-luxury treatment: hairline glass disc with a thin chevron, a small
+ * kawai-red accent thread that emerges on hover, and snappy spring feedback on
+ * press. `y: '-50%'` keeps vertical centering inside Framer's transform stack so
+ * it doesn't conflict with `whileHover` / `whileTap` scale.
+ */
+function ArrowButton({ dir, onClick }: { dir: 'prev' | 'next'; onClick: () => void }) {
+  const isPrev = dir === 'prev'
+  const path = isPrev ? 'M15 18l-6-6 6-6' : 'M9 6l6 6-6 6'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: isPrev ? -14 : 14, y: '-50%' }}
+      animate={{ opacity: 1, x: 0, y: '-50%' }}
+      transition={{ duration: 0.5, delay: 0.55, ease: 'easeOut' }}
+      className={cn(
+        'group absolute top-1/2 z-30',
+        isPrev ? 'left-3 sm:left-6 lg:left-8' : 'right-3 sm:right-6 lg:right-8'
+      )}
+    >
+      <motion.button
+        type="button"
+        onClick={onClick}
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+        className={cn(
+          'relative flex items-center justify-center',
+          'h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14',
+          'rounded-full',
+          'bg-kawai-black/25 backdrop-blur-md',
+          'border border-white/15',
+          'shadow-[0_10px_30px_-12px_rgba(0,0,0,0.55)]',
+          'text-white',
+          'transition-[background-color,border-color] duration-300',
+          'hover:bg-white/12 hover:border-white/45',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
+        )}
+        aria-label={isPrev ? 'Previous slide' : 'Next slide'}
+      >
+        {/* Expanding ring on hover — adds depth without saturating */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute inset-0 rounded-full',
+            'border border-white/0',
+            'transition-[border-color,transform] duration-500 ease-out',
+            'group-hover:border-white/30 group-hover:scale-[1.18]'
+          )}
+        />
+        {/* Kawai-red accent thread on the inner edge */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute top-1/2 -translate-y-1/2 h-px w-3',
+            'bg-kawai-red origin-center',
+            'transition-[transform,opacity] duration-400 ease-out',
+            'opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100',
+            isPrev ? 'right-0 translate-x-full origin-left' : 'left-0 -translate-x-full origin-right'
+          )}
+        />
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={cn(
+            'relative h-[18px] w-[18px] sm:h-5 sm:w-5',
+            'transition-transform duration-300 ease-out',
+            isPrev ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'
+          )}
+        >
+          <path d={path} />
+        </svg>
+      </motion.button>
+    </motion.div>
+  )
+}
 
 /**
  * YouTubeBackground

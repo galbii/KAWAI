@@ -221,7 +221,7 @@ export const ProductHeroCarousel: Block = {
         {
           name: 'showArrows',
           type: 'checkbox',
-          defaultValue: false,
+          defaultValue: true,
           admin: { description: 'Show left/right arrow navigation buttons' },
         },
         {

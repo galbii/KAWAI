@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { Button } from '@/components/ui/button'
 import { submitNewsletterSignup, type NewsletterSignupResult } from '@/lib/actions/newsletter-signup'
+import { ChevronRight } from 'lucide-react'
+import type { ResourceLink, StoreLocationNavItem, QuickLink } from './header-dynamic'
 
 function TikTokIcon({ className }: { className?: string }) {
   return (
@@ -75,9 +77,90 @@ interface DealerLocationContactData {
 interface FooterProps {
   locationContactData?: DealerLocationContactData | null
   isSignaturePage?: boolean
+  promotedLinks?: QuickLink[]
+  resourceLinks?: ResourceLink[]
+  storeLocations?: StoreLocationNavItem[]
+  site?: 'us' | 'cad'
 }
 
-export function Footer({ locationContactData, isSignaturePage = false }: FooterProps) {
+// Mirrors ProductsMegaMenu's SIDEBAR_CATEGORIES order so the footer stays
+// in lockstep with the header.
+const PIANO_COLUMN: Array<{ label: string; href: string }> = [
+  { label: 'Digital Pianos',   href: '/pianos/digital'  },
+  { label: 'Hybrid Pianos',    href: '/pianos/hybrid'   },
+  { label: 'Upright Pianos',   href: '/pianos/upright'  },
+  { label: 'Grand Pianos',     href: '/pianos/grand'    },
+  { label: 'Shigeru Kawai',    href: '/shigeru'         },
+  { label: 'Accessories',      href: '/accessories'     },
+]
+
+const EXPLORE_EXTRAS: Array<{ label: string; href: string }> = [
+  { label: 'News',    href: '/news'    },
+  { label: 'Artists', href: '/artists' },
+]
+
+const SHOWROOMS_VISIBLE = 6
+
+function isExternalHref(href: string): boolean {
+  return /^https?:\/\//i.test(href)
+}
+
+function displayStoreName(store: StoreLocationNavItem): string {
+  return store.locationName.replace(/^kawai\s+/i, '').trim() || store.locationName
+}
+
+function NavColumn({
+  title,
+  items,
+  footer,
+  className,
+}: {
+  title: string
+  items: Array<{ label: string; href: string; external?: boolean }>
+  footer?: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={className}>
+      <h3 className="text-kawai-pearl text-sm font-semibold uppercase tracking-wider mb-4">
+        {title}
+      </h3>
+      <ul className="space-y-2.5">
+        {items.map((item) => (
+          <li key={`${item.label}-${item.href}`}>
+            {item.external ? (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-kawai-neutral hover:text-kawai-red transition-colors text-sm leading-snug"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                href={item.href}
+                className="text-kawai-neutral hover:text-kawai-red transition-colors text-sm leading-snug"
+              >
+                {item.label}
+              </Link>
+            )}
+          </li>
+        ))}
+        {footer && <li>{footer}</li>}
+      </ul>
+    </div>
+  )
+}
+
+export function Footer({
+  locationContactData,
+  isSignaturePage = false,
+  promotedLinks = [],
+  resourceLinks = [],
+  storeLocations = [],
+  site = 'us',
+}: FooterProps) {
   const pathname = usePathname()
   const isUniversityPage = pathname.includes('/university')
   const [newsletterState, newsletterAction, newsletterPending] = useActionState<NewsletterSignupResult | null, FormData>(
@@ -111,10 +194,10 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
     <footer className="backdrop-blur-md bg-kawai-black/95 text-kawai-pearl border-t border-kawai-neutral/20">
       {/* Main Footer Content */}
       <div className="container mx-auto px-6 py-16">
-        <div className="max-w-4xl mx-auto">
-          {/* Company Info */}
-          <div className="text-center">
-            <div className="mb-6">
+        {isSignaturePage ? (
+          // Signature campaign pages: centered logo + heading + quote only
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="mb-6 flex justify-center">
               <KawaiLogo
                 size="sm"
                 animated={true}
@@ -128,85 +211,23 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
                 {locationContactData.locationName}
               </h2>
             )}
-            <p className="text-kawai-neutral mb-6 leading-relaxed">
+            <p className="text-kawai-neutral leading-relaxed">
               {locationDescription}
             </p>
-
-            {/* Contact Info - Only show when location data is available */}
-            {!isSignaturePage && locationContactData && (
-              <div className="space-y-3 flex flex-col items-center">
-                {locationContactData.phone && !isUniversityPage && (
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-kawai-red" />
-                    <span>{locationContactData.phone}</span>
-                  </div>
-                )}
-                {locationContactData.email && (
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-kawai-red" />
-                    <span>{locationContactData.email}</span>
-                  </div>
-                )}
-                {locationContactData.address && (
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-kawai-red" />
-                    <span>{locationContactData.address}</span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-
-          {/* Footer Links - All removed */}
-        </div>
-
-        {/* Newsletter & Values - Hidden on signature page */}
-        {!isSignaturePage && (
-          <div className="border-t border-kawai-neutral/20 mt-12 pt-8">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Stay Connected</h3>
-                <p className="text-kawai-neutral mb-4">
-                  Join our community for piano insights, artist stories, and exclusive events.
-                </p>
-                {newsletterState?.success ? (
-                  <p className="text-kawai-red font-medium">{newsletterState.message}</p>
-                ) : (
-                  <form action={newsletterAction} className="flex space-x-2">
-                    {locationContactData?.slug && (
-                      <input type="hidden" name="storefrontSlug" value={locationContactData.slug} />
-                    )}
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Enter your email"
-                      required
-                      className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={newsletterPending}
-                      className="px-6 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60"
-                    >
-                      {newsletterPending ? 'Subscribing...' : 'Subscribe'}
-                    </Button>
-                  </form>
-                )}
-                {newsletterState && !newsletterState.success && (
-                  <p className="text-red-400 text-sm mt-2">{newsletterState.message}</p>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg mb-4 text-kawai-pearl">Our Values</h3>
-                <div className="space-y-2 text-sm text-kawai-neutral">
-                  <div>• Uncompromising quality and craftsmanship</div>
-                  <div>• Innovation rooted in tradition</div>
-                  <div>• Making music accessible to everyone</div>
-                  <div>• Sustainable manufacturing practices</div>
-                </div>
-              </div>
-            </div>
-          </div>
+        ) : (
+          <UnifiedFooterGrid
+            locationContactData={locationContactData ?? null}
+            locationDescription={locationDescription}
+            promotedLinks={promotedLinks}
+            resourceLinks={resourceLinks}
+            storeLocations={storeLocations}
+            site={site}
+            isUniversityPage={isUniversityPage}
+            newsletterAction={newsletterAction}
+            newsletterState={newsletterState}
+            newsletterPending={newsletterPending}
+          />
         )}
       </div>
 
@@ -254,5 +275,192 @@ export function Footer({ locationContactData, isSignaturePage = false }: FooterP
         </div>
       </div>
     </footer>
+  )
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Unified main-section grid
+//
+// Layout strategy:
+//  - On mobile (default): intro block (logo + heading + quote + form) appears
+//    first as a single column, then a 2-col grid of nav columns below.
+//  - On md+: a single grid where intro sits in the rightmost (wider) column
+//    and 3–4 nav columns fill the left. `md:contents` makes the mobile
+//    2-col nav container disappear at md+ so nav columns become direct
+//    grid children at their explicit col-start positions.
+// ────────────────────────────────────────────────────────────────────────────
+
+interface UnifiedGridProps {
+  locationContactData: DealerLocationContactData | null
+  locationDescription: string
+  promotedLinks: QuickLink[]
+  resourceLinks: ResourceLink[]
+  storeLocations: StoreLocationNavItem[]
+  site: 'us' | 'cad'
+  isUniversityPage: boolean
+  newsletterAction: (payload: FormData) => void
+  newsletterState: NewsletterSignupResult | null
+  newsletterPending: boolean
+}
+
+function UnifiedFooterGrid({
+  locationContactData,
+  locationDescription,
+  promotedLinks,
+  resourceLinks,
+  storeLocations,
+  site,
+  isUniversityPage,
+  newsletterAction,
+  newsletterState,
+  newsletterPending,
+}: UnifiedGridProps) {
+  const showShowrooms = site !== 'cad' && storeLocations.length > 0
+  const visibleStores = storeLocations.slice(0, SHOWROOMS_VISIBLE)
+  const hasMoreStores = storeLocations.length > SHOWROOMS_VISIBLE
+
+  const exploreItems = [
+    ...promotedLinks.map((l) => ({ label: l.label, href: l.url })),
+    ...EXPLORE_EXTRAS,
+  ]
+
+  const resourceItems = resourceLinks
+    .filter((l) => l.enabled !== false)
+    .map((l) => ({
+      label: l.title,
+      href: l.href,
+      external: l.openInNewTab === true || isExternalHref(l.href),
+    }))
+
+  // Grid template: nav columns 1fr each, intro 2fr (wider). Intro is placed
+  // at the trailing column via col-start; nav columns claim col-start-1..N.
+  const gridColsClass = showShowrooms
+    ? 'md:grid-cols-[1fr_1fr_1fr_1fr_2fr]'
+    : 'md:grid-cols-[1fr_1fr_1fr_2fr]'
+  const introColStart = showShowrooms ? 'md:col-start-5' : 'md:col-start-4'
+
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-1 gap-12 md:gap-10 md:items-start',
+        gridColsClass,
+      )}
+    >
+      {/* Intro: logo + heading + quote + newsletter form.
+          Mobile: appears first (HTML order). Desktop: placed in trailing column. */}
+      <div className={cn('md:row-start-1', introColStart)}>
+        <div className="mb-5">
+          <KawaiLogo
+            size="sm"
+            animated={true}
+            theme="dark"
+            {...(locationContactData?.locationName && { dealerName: locationContactData.locationName })}
+          />
+        </div>
+        {locationContactData?.locationName && (
+          <h2 className="text-xl md:text-2xl font-semibold text-kawai-pearl mb-3 uppercase tracking-wide">
+            {locationContactData.locationName}
+          </h2>
+        )}
+        <p className="text-kawai-neutral text-sm leading-relaxed mb-5">
+          {locationDescription}
+        </p>
+
+        <h3 className="font-semibold text-base mb-2 text-kawai-pearl">Stay Connected</h3>
+        <p className="text-kawai-neutral text-xs mb-3 leading-relaxed">
+          Join our community for piano insights, artist stories, and exclusive events.
+        </p>
+        {newsletterState?.success ? (
+          <p className="text-kawai-red font-medium text-sm">{newsletterState.message}</p>
+        ) : (
+          <form action={newsletterAction} className="flex flex-col sm:flex-row gap-2">
+            {locationContactData?.slug && (
+              <input type="hidden" name="storefrontSlug" value={locationContactData.slug} />
+            )}
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              className="flex-1 min-w-0 px-3 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm text-sm"
+            />
+            <Button
+              type="submit"
+              disabled={newsletterPending}
+              className="px-4 py-2 bg-kawai-red hover:bg-kawai-red/90 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-60 text-sm whitespace-nowrap"
+            >
+              {newsletterPending ? 'Subscribing...' : 'Subscribe'}
+            </Button>
+          </form>
+        )}
+        {newsletterState && !newsletterState.success && (
+          <p className="text-red-400 text-xs mt-2">{newsletterState.message}</p>
+        )}
+
+        {/* Dealer contact info — lives within the intro column when present */}
+        {locationContactData && (
+          <div className="mt-6 space-y-2 text-sm">
+            {locationContactData.phone && !isUniversityPage && (
+              <div className="flex items-center space-x-2">
+                <Phone className="h-4 w-4 text-kawai-red shrink-0" />
+                <span className="text-kawai-neutral">{locationContactData.phone}</span>
+              </div>
+            )}
+            {locationContactData.email && (
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-kawai-red shrink-0" />
+                <span className="text-kawai-neutral">{locationContactData.email}</span>
+              </div>
+            )}
+            {locationContactData.address && (
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-kawai-red shrink-0" />
+                <span className="text-kawai-neutral">{locationContactData.address}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Nav columns container: 2-col grid on mobile, dissolves into parent grid on md+ */}
+      <div className="grid grid-cols-2 gap-8 md:contents">
+        <NavColumn
+          title="Pianos"
+          items={PIANO_COLUMN}
+          className="md:row-start-1 md:col-start-1"
+        />
+        <NavColumn
+          title="Explore"
+          items={exploreItems.map((i) => ({ ...i, external: isExternalHref(i.href) }))}
+          className="md:row-start-1 md:col-start-2"
+        />
+        <NavColumn
+          title="Resources"
+          items={resourceItems}
+          className="md:row-start-1 md:col-start-3"
+        />
+        {showShowrooms && (
+          <NavColumn
+            title="Showrooms"
+            items={visibleStores.map((s) => ({
+              label: displayStoreName(s),
+              href: `/store/${s.slug}`,
+            }))}
+            footer={
+              hasMoreStores ? (
+                <Link
+                  href="/find-a-dealer"
+                  className="inline-flex items-center gap-1 text-kawai-red hover:text-kawai-red/80 transition-colors text-sm font-medium"
+                >
+                  View all
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              ) : undefined
+            }
+            className="md:row-start-1 md:col-start-4"
+          />
+        )}
+      </div>
+    </div>
   )
 }

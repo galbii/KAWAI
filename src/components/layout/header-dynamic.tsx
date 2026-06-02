@@ -40,7 +40,7 @@ interface RegisterConfig {
   hubspotRegion?: string | null
 }
 
-interface QuickLink {
+export interface QuickLink {
   label: string
   url: string
 }
@@ -171,7 +171,7 @@ const DEFAULT_QUICK_LINKS: QuickLink[] = [
   { label: 'Kawai Exclusive Offers', url: '/explore' },
 ]
 
-const getSearchQuickLinks = unstable_cache(
+export const getSearchQuickLinks = unstable_cache(
   async (): Promise<QuickLink[]> => {
     try {
       const payload = await getPayloadClient()
@@ -222,7 +222,7 @@ const DEFAULT_RESOURCE_LINKS: ResourceLink[] = [
   },
 ]
 
-const getActiveStorefrontsForNav = unstable_cache(
+export const getActiveStorefrontsForNav = unstable_cache(
   async (): Promise<StoreLocationNavItem[]> => {
     try {
       const payload = await getPayloadClient()
@@ -248,7 +248,7 @@ const getActiveStorefrontsForNav = unstable_cache(
   { tags: ['storefronts'], revalidate: 3600 }
 )
 
-const getResourcesNavConfig = unstable_cache(
+export const getResourcesNavConfig = unstable_cache(
   async (): Promise<ResourceLink[]> => {
     try {
       const payload = await getPayloadClient()
