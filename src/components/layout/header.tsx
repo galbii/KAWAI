@@ -454,6 +454,13 @@ const defaultNavigation: NavigationItem[] = [
   // Resources has been moved to ResourcesMegaMenu - rendered separately below
 ]
 
+// Position-based scroll thresholds with hysteresis — see comment above the
+// useMotionValueEvent handler for the full state machine.
+const COMPACT_ENTER_Y = 60
+const COMPACT_EXIT_Y = 20
+const HIDE_ENTER_Y = 200
+const HIDE_EXIT_Y = 80
+
 export function Header({ navigation = defaultNavigation, locationData, isSignaturePage = false, hidePianoLinks = false, isFindADealerPage = false, newsItems = [], latestPosts = [], registerConfig, quickLinks = [], resourceLinks, storeLocations, site = 'us', autoMinimize = true }: HeaderProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
@@ -473,10 +480,11 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   const headerRef = useRef<HTMLDivElement>(null)
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoHideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const lastScrollY = useRef(0)
-  const lastScrollTime = useRef(0)
+  const lastScrollEventAt = useRef(0)
   const isScrolledRef = useRef(false)
   const isAutoHiddenRef = useRef(false)
+  const isBottomNavHoveredRef = useRef(false)
+  const menuOpenedAtY = useRef<number | null>(null)
 
   // Derive Shigeru collection thumbnail — same source as desktop BannerOnlyView
   const shigeruCol = (productsNavData?.allCollections ?? productsNavData?.collections ?? [])
@@ -523,17 +531,18 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   // Expose --header-bottom so sticky elements (e.g. artist grid header) can track
   // exactly where the header ends. When nav is hidden, only the 6px red line shows.
   useEffect(() => {
-    // Utility bar: always 64px (h-16)
-    // Bottom nav: 48px (scrolled) or 56px (top) when visible; 6px red line when hidden
-    // On mobile/tablet (< 1280px) the desktop bottom nav is `hidden xl:block` — only the
-    // 6px mobile red line renders, so navHeight is always 6 on mobile/tablet.
-    const isMobile = window.innerWidth < 1280
-    const navHeight = isMobile ? 6 : (isAutoHidden ? 6 : (isScrolled ? 48 : 56))
-    const totalPx = 64 + navHeight
-    document.documentElement.style.setProperty(
-      '--header-bottom',
-      `calc(${totalPx}px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))`
-    )
+    const updateHeaderBottom = () => {
+      const isMobile = window.innerWidth < 1280
+      const navHeight = isMobile ? 6 : (isAutoHidden ? 6 : (isScrolled ? 48 : 56))
+      const totalPx = 64 + navHeight
+      document.documentElement.style.setProperty(
+        '--header-bottom',
+        `calc(${totalPx}px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))`
+      )
+    }
+    updateHeaderBottom()
+    window.addEventListener('resize', updateHeaderBottom)
+    return () => window.removeEventListener('resize', updateHeaderBottom)
   }, [isScrolled, isAutoHidden])
 
   useEffect(() => {
@@ -552,13 +561,21 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     }
   }, [autoMinimize])
 
-  // Initialize scroll state based on initial scroll position
+  // Initialize scroll state based on initial scroll position.
+  // Important: if the page mounts already scrolled (back-nav, refresh on a deep page),
+  // we want the header to start in the correct state — not at "top" defaults.
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const initialScrollY = window.scrollY
-      const isAtTop = initialScrollY <= 50
-      setIsScrolled(!isAtTop)
+    if (typeof window === 'undefined') return
+    const initialY = window.scrollY
+    const initialScrolled = initialY > COMPACT_ENTER_Y
+    isScrolledRef.current = initialScrolled
+    setIsScrolled(initialScrolled)
+    if (autoMinimize) {
+      const initialHidden = initialY > HIDE_ENTER_Y
+      isAutoHiddenRef.current = initialHidden
+      setIsAutoHidden(initialHidden)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
   // Location data is server-driven: show banner only on /store/* pages.
@@ -636,62 +653,54 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   }, [isMenuOpen])
   
   // ============================================================================
-  // Scroll Detection Logic
+  // Scroll Detection Logic — position-based with hysteresis
   // ============================================================================
-  // Bottom nav ALWAYS auto-hides (even at top)
-  // Shows on: hover OR menu open
-  // Hidden by default with 2-second auto-hide timer (scroll-independent)
-  // Uses single 5px threshold to filter micro-jitter while staying responsive
+  // No direction tracking. Two booleans are derived from scrollY with two-value
+  // thresholds (hysteresis) so rubber-band oscillation around a single value can
+  // never flip the state. The gap between enter and exit absorbs trackpad jitter.
+  //
+  //   isScrolled  → compact nav (h-12 vs h-14) + mega menu top offset
+  //                 enters at 60px, exits at 20px
+  //   isAutoHidden → bottom nav collapses to a 6px red line
+  //                 enters at 200px, exits at 80px
+  //
+  // Open mega menus close only if the user scrolls > 250px from where they opened
+  // the menu (tracked in menuOpenedAtY). This replaces the old single-frame
+  // movement threshold that was easily tripped by one fling of the trackpad.
   // ============================================================================
 
   const { scrollY } = useScroll()
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = lastScrollY.current
-    lastScrollY.current = latest
+    lastScrollEventAt.current = Date.now()
 
-    // Only call setState when the value actually changes — prevents re-rendering
-    // the entire header on every scroll frame when already past the threshold
-    const nowScrolled = latest > 50
-    if (nowScrolled !== isScrolledRef.current) {
-      isScrolledRef.current = nowScrolled
-      setIsScrolled(nowScrolled)
+    // Compact state — symmetric hysteresis around the page-near-top region.
+    if (!isScrolledRef.current && latest > COMPACT_ENTER_Y) {
+      isScrolledRef.current = true
+      setIsScrolled(true)
+    } else if (isScrolledRef.current && latest < COMPACT_EXIT_Y) {
+      isScrolledRef.current = false
+      setIsScrolled(false)
     }
 
-    // Detect scroll movement (only if movement is significant enough)
-    const movement = latest - previous
-
-    if (Math.abs(movement) > 5) {
-      // Update last scroll time for menu prevention
-      lastScrollTime.current = Date.now()
-    }
-
-    // Auto-hide bottom nav based on scroll direction (desktop only, when autoMinimize is on).
-    // At the top: always show. Scrolling down: hide. Scrolling up: show.
-    if (autoMinimize && !isMenuOpen) {
-      if (latest <= 50) {
-        // Back at top — always show
-        if (isAutoHiddenRef.current) {
-          isAutoHiddenRef.current = false
-          setIsAutoHidden(false)
-        }
-      } else if (movement > 5 && !isAutoHiddenRef.current) {
-        // Intentional downward scroll — hide nav
+    // Auto-hidden state — gated by autoMinimize, menu-open, and active hover.
+    if (autoMinimize && !isMenuOpen && !isBottomNavHoveredRef.current) {
+      if (!isAutoHiddenRef.current && latest > HIDE_ENTER_Y) {
         isAutoHiddenRef.current = true
         setIsAutoHidden(true)
-      } else if (movement < -5 && isAutoHiddenRef.current) {
-        // Intentional upward scroll — reveal nav
+      } else if (isAutoHiddenRef.current && latest < HIDE_EXIT_Y) {
         isAutoHiddenRef.current = false
         setIsAutoHidden(false)
       }
     }
 
-    // Close menus only on intentional scrolling (120px+ movement) to prevent
-    // trackpad jitter and accidental closes when moving mouse toward a mega menu.
-    if (Math.abs(movement) > 120) {
-      if (activeMenu === 'products' || activeMenu === 'resources' || activeMenu === 'news' || activeMenu === 'shigeru') {
-        setActiveMenu(null)
-      }
+    // Close any open mega menu if the user has scrolled meaningfully away.
+    if (
+      activeMenu &&
+      menuOpenedAtY.current !== null &&
+      Math.abs(latest - menuOpenedAtY.current) > 250
+    ) {
+      setActiveMenu(null)
     }
   })
   
@@ -714,7 +723,8 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     setOpenMobileItems(new Set())
   }, [])
 
-  // Generic menu open helper
+  // Generic menu open helper. Tracks the scrollY at open time so the scroll
+  // handler can close the menu only if the user scrolls meaningfully away.
   const openMenu = useCallback((key: string) => {
     if (menuTimeoutRef.current) {
       clearTimeout(menuTimeoutRef.current)
@@ -724,15 +734,24 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
     }
+    menuOpenedAtY.current = scrollY.get()
     setIsAutoHidden(false)
     setActiveMenu(key)
-  }, [])
+  }, [scrollY])
 
   const closeMenu = useCallback(() => {
     menuTimeoutRef.current = setTimeout(() => {
+      menuOpenedAtY.current = null
       setActiveMenu(null)
     }, 500)
   }, [])
+
+  // If the mouse passes over a menu trigger within 200ms of a scroll event,
+  // skip opening — prevents accidental menu opens while the user is scrolling.
+  const isRecentlyScrolling = useCallback(
+    () => Date.now() - lastScrollEventAt.current < 200,
+    []
+  )
 
   // Desktop dropdown handlers (for generic nav items with dropdowns)
   const handleDropdownOpen = useCallback((itemLabel: string) => {
@@ -745,10 +764,9 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // Products menu handlers
   const handleProductsMenuOpen = useCallback(() => {
-    if (!isMounted) return
-    if (Date.now() - lastScrollTime.current < 200) return
+    if (!isMounted || isRecentlyScrolling()) return
     openMenu('products')
-  }, [isMounted, openMenu])
+  }, [isMounted, isRecentlyScrolling, openMenu])
 
   const handleProductsMenuClose = useCallback(() => {
     closeMenu()
@@ -756,10 +774,9 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // Resources menu handlers
   const handleResourcesMenuOpen = useCallback(() => {
-    if (!isMounted) return
-    if (Date.now() - lastScrollTime.current < 200) return
+    if (!isMounted || isRecentlyScrolling()) return
     openMenu('resources')
-  }, [isMounted, openMenu])
+  }, [isMounted, isRecentlyScrolling, openMenu])
 
   const handleResourcesMenuClose = useCallback(() => {
     closeMenu()
@@ -767,10 +784,9 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // News menu handlers
   const handleNewsMenuOpen = useCallback(() => {
-    if (!isMounted) return
-    if (Date.now() - lastScrollTime.current < 200) return
+    if (!isMounted || isRecentlyScrolling()) return
     openMenu('news')
-  }, [isMounted, openMenu])
+  }, [isMounted, isRecentlyScrolling, openMenu])
 
   const handleNewsMenuClose = useCallback(() => {
     closeMenu()
@@ -799,25 +815,32 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
   }, [])
 
 
-  // Bottom nav hover reveal handlers
+  // Bottom nav hover reveal handlers. `isBottomNavHoveredRef` gates the scroll
+  // handler so a scroll-down event while the user is hovering doesn't yank the
+  // nav out from under their cursor.
   const handleBottomNavMouseEnter = useCallback(() => {
     if (autoHideTimeoutRef.current) {
       clearTimeout(autoHideTimeoutRef.current)
       autoHideTimeoutRef.current = null
     }
-    setIsAutoHidden(false)
+    isBottomNavHoveredRef.current = true
+    if (isAutoHiddenRef.current) {
+      isAutoHiddenRef.current = false
+      setIsAutoHidden(false)
+    }
   }, [])
 
   const handleBottomNavMouseLeave = useCallback(() => {
-    // Nav was revealed on hover — re-hide only if the user has scrolled down
-    // (i.e., the scroll handler would have hidden it). At the top, leave it visible.
-    if (autoMinimize && lastScrollY.current > 50) {
+    isBottomNavHoveredRef.current = false
+    // Re-hide only if the user is scrolled past the hide threshold — otherwise
+    // leave the nav visible at the top of the page.
+    if (autoMinimize && scrollY.get() > HIDE_ENTER_Y) {
       autoHideTimeoutRef.current = setTimeout(() => {
         isAutoHiddenRef.current = true
         setIsAutoHidden(true)
-      }, 800)
+      }, 400)
     }
-  }, [autoMinimize])
+  }, [autoMinimize, scrollY])
 
   // Header hover handlers for bottom navigation reveal
   // Utility function to check if target is interactive
@@ -1131,11 +1154,15 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
           onMouseEnter={handleBottomNavMouseEnter}
           onMouseLeave={handleBottomNavMouseLeave}
         >
-          {/* Red separator line — visible when nav is hidden */}
-          <motion.div
+          {/* Red separator line — visible when nav is hidden. Uses the same CSS
+              transition (duration + easing) as the nav max-height below so the
+              two layers never desync mid-animation. */}
+          <div
             className="w-full bg-[#A01829] cursor-pointer"
-            animate={{ height: isAutoHidden ? 6 : 0 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            style={{
+              height: isAutoHidden ? '6px' : '0px',
+              transition: 'height 0.25s cubic-bezier(0.4,0,0.2,1)',
+            }}
           />
 
           {/* Nav — animates in/out using max-height (layout-safe, compositor-friendly) */}

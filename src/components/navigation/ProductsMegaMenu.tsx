@@ -1042,9 +1042,10 @@ export function ProductsMegaMenu({
     return pool.find((c) => c.handle === activeCollectionHandle) ?? null
   }, [selectedKey, activeCollectionHandle, allCollections, collections])
 
+  // Matches --header-bottom: 64px utility bar + 48px compact nav or 56px full nav.
   const topOffset = isHeaderScrolled
     ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
-    : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
+    : 'calc(120px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
 
   return (
     <AnimatePresence>

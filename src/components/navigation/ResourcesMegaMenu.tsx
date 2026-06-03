@@ -165,9 +165,10 @@ export function ResourcesMegaMenu({
             opacity: 1,
             scaleY: 1,
             y: 0,
+            // Matches --header-bottom: 64px utility bar + 48px compact nav or 56px full nav.
             top: isHeaderScrolled
               ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
-              : 'calc(128px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))',
+              : 'calc(120px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))',
           }}
           exit={{ opacity: 0, scaleY: 0.97, y: -8 }}
           transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
