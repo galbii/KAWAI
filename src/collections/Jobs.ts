@@ -2,14 +2,8 @@ import type { CollectionConfig } from 'payload'
 import {
   FixedToolbarFeature,
   HeadingFeature,
-  HorizontalRuleFeature,
   InlineToolbarFeature,
-  BoldFeature,
-  ItalicFeature,
-  UnderlineFeature,
-  LinkFeature,
-  UnorderedListFeature,
-  OrderedListFeature,
+  UploadFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import { slugField } from 'payload'
@@ -42,17 +36,12 @@ export const Jobs: CollectionConfig = {
       type: 'richText',
       required: true,
       editor: lexicalEditor({
-        features: () => [
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures,
           HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+          UploadFeature({ collections: { media: { fields: [] } } }),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
-          HorizontalRuleFeature(),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          LinkFeature(),
-          UnorderedListFeature(),
-          OrderedListFeature(),
         ],
       }),
     },

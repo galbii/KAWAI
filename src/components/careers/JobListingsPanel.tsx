@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import { MapPin, Clock, ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export interface JobListingItem {
   id: string
@@ -23,26 +23,42 @@ interface Props {
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
-const listVariants = {
+const gridVariants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
   },
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 14 },
+const cardVariants = {
+  hidden: { opacity: 0, y: 22 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: EASE },
+    transition: { duration: 0.65, ease: EASE },
   },
+}
+
+function formatType(type: string) {
+  return type.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function formatPostedDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function daysSince(date: string) {
+  const diff = Date.now() - new Date(date).getTime()
+  return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
 export function JobListingsPanel({ jobs }: Props) {
   const [activeDept, setActiveDept] = useState('All')
   const [activeType, setActiveType] = useState('All')
-  const [activeJob, setActiveJob] = useState<JobListingItem | null>(null)
 
   const departments = useMemo(
     () => ['All', ...Array.from(new Set(jobs.map((j) => j.department).filter(Boolean) as string[]))],
@@ -64,7 +80,7 @@ export function JobListingsPanel({ jobs }: Props) {
 
   return (
     <section id="openings" className="relative bg-kawai-pearl overflow-hidden">
-      {/* Radial gradient orb */}
+      {/* Ambient radial orb */}
       <div
         className="absolute pointer-events-none inset-0 z-0"
         style={{
@@ -74,7 +90,7 @@ export function JobListingsPanel({ jobs }: Props) {
       />
 
       {/* Sticky glass filter bar */}
-      <div className="relative z-10 px-8 md:px-16 lg:px-24 py-6 border-b border-kawai-neutral/30 bg-white/60 backdrop-blur-sm sticky top-0 z-10">
+      <div className="relative z-20 px-8 md:px-16 lg:px-24 py-6 border-b border-kawai-neutral/30 bg-white/60 backdrop-blur-sm sticky top-0">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] mr-2">
             Department
@@ -107,9 +123,7 @@ export function JobListingsPanel({ jobs }: Props) {
                     : 'border-kawai-neutral text-kawai-charcoal hover:border-kawai-charcoal hover:bg-white/80',
                 )}
               >
-                {type === 'All'
-                  ? 'All Types'
-                  : type.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                {type === 'All' ? 'All Types' : formatType(type)}
               </button>
             ))}
         </div>
@@ -121,18 +135,21 @@ export function JobListingsPanel({ jobs }: Props) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.7, ease: EASE }}
-        className="relative z-10 px-8 md:px-16 lg:px-24 pt-12 pb-4 flex items-baseline justify-between"
+        className="relative z-10 px-8 md:px-16 lg:px-24 pt-20 pb-12 flex items-end justify-between gap-6"
       >
-        <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-brand-luxury)] text-kawai-black">
-          Open Positions
-        </h2>
-        <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+        <div>
+          <div className="w-10 h-px bg-kawai-red mb-6" />
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight">
+            Open Positions
+          </h2>
+        </div>
+        <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] whitespace-nowrap pb-2">
           {filteredJobs.length} {filteredJobs.length === 1 ? 'role' : 'roles'}
         </span>
       </motion.div>
 
-      {/* Job list */}
-      <div className="relative z-10 px-8 md:px-16 lg:px-24 pb-20">
+      {/* Job cards grid */}
+      <div className="relative z-10 px-8 md:px-16 lg:px-24 pb-28">
         {filteredJobs.length === 0 ? (
           <div className="py-24 text-center">
             <p className="text-2xl font-[family-name:var(--font-brand-luxury)] text-kawai-charcoal/40 italic">
@@ -141,167 +158,118 @@ export function JobListingsPanel({ jobs }: Props) {
           </div>
         ) : (
           <motion.div
-            variants={listVariants}
+            variants={gridVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-5"
           >
-            <div className="h-px bg-kawai-neutral/40" />
-            {filteredJobs.map((job, i) => (
-              <motion.div key={job.id} variants={itemVariants}>
-                <button onClick={() => setActiveJob(job)} className="w-full text-left group">
-                  <div className="flex items-center gap-6 py-6 border-b border-kawai-neutral/40 hover:bg-white/70 hover:backdrop-blur-sm transition-all duration-150 px-3 -mx-3 rounded-xl">
-                    {/* Index */}
-                    <span className="text-sm font-mono text-kawai-red w-7 flex-shrink-0 font-[family-name:var(--font-brand-sans)]">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    {/* Title */}
-                    <span className="flex-1 text-xl md:text-2xl font-[family-name:var(--font-brand-luxury)] text-kawai-black group-hover:text-kawai-red transition-colors duration-200">
-                      {job.title}
-                    </span>
-                    {/* Meta (desktop) */}
-                    <div className="hidden md:flex items-center gap-6">
-                      {job.department && (
-                        <span className="text-[10px] uppercase tracking-[0.16em] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)]">
-                          {job.department}
-                        </span>
+            {filteredJobs.map((job, i) => {
+              const isNew = job.postedAt ? daysSince(job.postedAt) < 14 : false
+              return (
+                <motion.div key={job.id} variants={cardVariants}>
+                  <Link
+                    href={`/careers/${job.slug}`}
+                    className="group relative block h-full overflow-hidden rounded-2xl border border-kawai-neutral/25 bg-white/65 backdrop-blur-md shadow-brand-subtle hover:shadow-brand-medium hover:bg-white/90 hover:-translate-y-1 hover:border-kawai-neutral/40 transition-all duration-300"
+                  >
+                    {/* Vertical red accent — grows on hover */}
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-10 bottom-10 w-[2px] bg-kawai-red origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-500 ease-out"
+                    />
+
+                    {/* Faint corner glyph (decorative) */}
+                    <span
+                      aria-hidden
+                      className="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-kawai-red/0 group-hover:bg-kawai-red/[0.03] transition-colors duration-500 blur-2xl"
+                    />
+
+                    <div className="relative flex flex-col p-8 md:p-10 min-h-[440px]">
+                      {/* Top row: index + department + freshness */}
+                      <div className="flex items-start justify-between mb-12">
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs font-mono text-kawai-red font-[family-name:var(--font-brand-sans)]">
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          {job.department && (
+                            <>
+                              <span aria-hidden className="w-6 h-px bg-kawai-charcoal/20" />
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">
+                                {job.department}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        {isNew && (
+                          <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-kawai-red font-[family-name:var(--font-brand-sans)]">
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="absolute inline-flex h-full w-full rounded-full bg-kawai-red opacity-60 animate-ping" />
+                              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-kawai-red" />
+                            </span>
+                            Just Posted
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[1.1] tracking-tight mb-6 group-hover:text-kawai-red transition-colors duration-300">
+                        {job.title}
+                      </h3>
+
+                      {/* Snippet */}
+                      {job.descriptionSnippet && (
+                        <p className="text-[15px] text-kawai-charcoal/65 font-[family-name:var(--font-brand-sans)] leading-relaxed line-clamp-3 mb-10">
+                          {job.descriptionSnippet}
+                        </p>
                       )}
-                      {job.type && (
-                        <span className="text-[10px] uppercase tracking-[0.16em] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)]">
-                          {job.type.replace('-', ' ')}
-                        </span>
+
+                      {/* Spacer to push meta + footer to bottom */}
+                      <div className="flex-1" />
+
+                      {/* Meta row: type + location */}
+                      {(job.type || job.location) && (
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6">
+                          {job.type && (
+                            <span className="inline-flex items-center gap-2 text-[13px] text-kawai-charcoal font-[family-name:var(--font-brand-sans)]">
+                              <Clock size={13} strokeWidth={1.5} className="text-kawai-charcoal/40" />
+                              {formatType(job.type)}
+                            </span>
+                          )}
+                          {job.location && (
+                            <span className="inline-flex items-center gap-2 text-[13px] text-kawai-charcoal font-[family-name:var(--font-brand-sans)]">
+                              <MapPin size={13} strokeWidth={1.5} className="text-kawai-charcoal/40" />
+                              {job.location}
+                            </span>
+                          )}
+                        </div>
                       )}
-                      {job.location && (
-                        <span className="text-[10px] uppercase tracking-[0.16em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
-                          {job.location}
+
+                      {/* Footer: posted date + CTA */}
+                      <div className="flex items-center justify-between pt-5 border-t border-kawai-neutral/30">
+                        {job.postedAt ? (
+                          <span className="text-[10px] uppercase tracking-[0.16em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+                            Posted {formatPostedDate(job.postedAt)}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-kawai-black font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red transition-colors duration-300">
+                          View Role
+                          <ArrowUpRight
+                            size={14}
+                            strokeWidth={1.6}
+                            className="transform transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          />
                         </span>
-                      )}
+                      </div>
                     </div>
-                    {/* Arrow */}
-                    <span className="text-kawai-charcoal/30 group-hover:text-kawai-black transition-colors duration-200 flex-shrink-0">
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path
-                          d="M4 10h12M10 4l6 6-6 6"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </button>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              )
+            })}
           </motion.div>
         )}
       </div>
-
-      {/* Job Detail Drawer */}
-      <AnimatePresence>
-        {activeJob && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[200] bg-black/30 backdrop-blur-[2px]"
-              onClick={() => setActiveJob(null)}
-            />
-
-            {/* Frosted glass drawer panel */}
-            <motion.div
-              key="drawer"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-[201] w-full max-w-md md:max-w-lg bg-white/85 backdrop-blur-xl overflow-y-auto flex flex-col shadow-2xl border-l border-white/60"
-            >
-              {/* Top bar */}
-              <div className="flex items-center justify-between px-8 py-6 border-b border-kawai-neutral/30 flex-shrink-0">
-                {activeJob.department && (
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-red font-[family-name:var(--font-brand-sans)]">
-                    {activeJob.department}
-                  </span>
-                )}
-                <button
-                  onClick={() => setActiveJob(null)}
-                  className="ml-auto p-2 text-kawai-charcoal/50 hover:text-kawai-black transition-colors"
-                  aria-label="Close"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 px-8 py-10">
-                {/* Title */}
-                <h3 className="text-4xl md:text-5xl font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight mb-6">
-                  {activeJob.title}
-                </h3>
-
-                {/* Metadata chips */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {activeJob.department && (
-                    <span className="inline-flex items-center px-3 py-1.5 bg-kawai-black text-white text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
-                      {activeJob.department}
-                    </span>
-                  )}
-                  {activeJob.type && (
-                    <span className="inline-flex items-center px-3 py-1.5 border border-kawai-neutral/50 bg-white/50 text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
-                      {activeJob.type.replace('-', ' ')}
-                    </span>
-                  )}
-                  {activeJob.location && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-kawai-neutral/50 bg-white/50 text-kawai-charcoal text-xs uppercase tracking-[0.12em] font-[family-name:var(--font-brand-sans)] rounded-md">
-                      <svg width="10" height="12" viewBox="0 0 10 12" fill="none" aria-hidden="true">
-                        <path d="M5 0C2.79 0 1 1.79 1 4c0 2.5 4 8 4 8s4-5.5 4-8c0-2.21-1.79-4-4-4Z" fill="currentColor" fillOpacity="0.5"/>
-                        <circle cx="5" cy="4" r="1.5" fill="currentColor"/>
-                      </svg>
-                      {activeJob.location}
-                    </span>
-                  )}
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-kawai-neutral/30 mb-8" />
-
-                {/* Description snippet */}
-                {activeJob.descriptionSnippet ? (
-                  <p className="text-sm text-kawai-charcoal/70 font-[family-name:var(--font-brand-sans)] leading-relaxed">
-                    {activeJob.descriptionSnippet}
-                  </p>
-                ) : (
-                  <p className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] leading-relaxed italic">
-                    View the full role description on the position page.
-                  </p>
-                )}
-
-                {/* Posted date */}
-                {activeJob.postedAt && (
-                  <p className="mt-6 text-[11px] uppercase tracking-[0.14em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
-                    Posted {new Date(activeJob.postedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  </p>
-                )}
-              </div>
-
-              {/* CTA Footer */}
-              <div className="flex-shrink-0 px-8 py-6 border-t border-kawai-neutral/25 bg-white/70 backdrop-blur-sm">
-                <Link
-                  href={`/careers/${activeJob.slug}#apply`}
-                  className="block w-full py-4 text-center bg-kawai-red text-white text-sm font-medium tracking-[0.06em] uppercase font-[family-name:var(--font-brand-sans)] rounded-xl hover:bg-kawai-black transition-colors duration-200"
-                >
-                  Apply Now
-                </Link>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </section>
   )
 }

@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getJobBySlug, getAllJobSlugs } from '@/lib/payload/queries'
-import { TallyEmbed } from '@/components/careers/TallyEmbed'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 
 export const revalidate = 3600
@@ -62,17 +61,6 @@ export default async function JobDetailPage(props: Props) {
           </div>
         </div>
       )}
-
-      {/* Application form */}
-      <div id="apply" className="px-8 md:px-16 lg:px-24 py-16 border-t border-kawai-neutral/60">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-[family-name:var(--font-brand-luxury)] text-kawai-black mb-8">
-            Apply Now
-          </h2>
-          <div className="h-px bg-kawai-neutral/60 mb-10" />
-          <TallyEmbed />
-        </div>
-      </div>
     </main>
   )
 }
