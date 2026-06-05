@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown, ArrowUpRight } from 'lucide-react'
+import { ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -13,7 +13,7 @@ function scrollToTarget(targetId: string) {
   if (typeof window === 'undefined') return
   const el = document.getElementById(targetId)
   if (!el) return
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 export function JobApplyButton({ variant = 'primary', label = 'Apply Now', targetId = 'apply' }: Props) {
@@ -51,10 +51,10 @@ export function JobApplyButton({ variant = 'primary', label = 'Apply Now', targe
       )}
     >
       {label}
-      <ArrowUpRight
+      <ArrowDown
         size={16}
         strokeWidth={1.8}
-        className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        className="transition-transform duration-200 group-hover:translate-y-0.5"
       />
     </a>
   )

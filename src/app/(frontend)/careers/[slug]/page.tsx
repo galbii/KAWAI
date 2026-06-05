@@ -1,12 +1,10 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import { getJobBySlug, getAllJobSlugs, getRecentJobs } from '@/lib/payload/queries'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { JobDetailHero } from '@/components/careers/JobDetailHero'
 import { JobDetailSidebar } from '@/components/careers/JobDetailSidebar'
 import { JobDetailFooter } from '@/components/careers/JobDetailFooter'
-import { ApplicationForm } from '@/components/careers/ApplicationForm'
 import { MobileApplyBar } from '@/components/careers/MobileApplyBar'
 
 export const revalidate = 3600
@@ -93,6 +91,9 @@ export default async function JobDetailPage(props: Props) {
                 <RichText data={job.description} />
               </div>
             )}
+            {/* Apply Now buttons scroll here — the end of the description, where the editor
+                will have written the application instructions (email, URL, etc.). */}
+            <div id="apply" className="scroll-mt-[40vh]" aria-hidden />
           </article>
 
           {/* Sidebar */}
@@ -110,47 +111,10 @@ export default async function JobDetailPage(props: Props) {
         </div>
       </section>
 
-      {/* Apply form — inline, scroll target for the Apply Now buttons */}
-      <section
-        id="apply"
-        className="relative bg-kawai-pearl border-t border-kawai-neutral/50 scroll-mt-24"
-      >
-        <div
-          aria-hidden
-          className="absolute pointer-events-none inset-0 z-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 55% 60% at 20% 30%, rgba(225,25,34,0.04) 0%, transparent 60%)',
-          }}
-        />
-        <div className="relative z-10 px-8 md:px-16 lg:px-24 py-16 md:py-24">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-4 mb-6 justify-center">
-              <span aria-hidden className="w-10 h-px bg-kawai-red" />
-              <span className="text-[10px] uppercase tracking-[0.22em] text-kawai-red font-[family-name:var(--font-brand-sans)]">
-                Apply
-              </span>
-              <span aria-hidden className="w-10 h-px bg-kawai-red" />
-            </div>
-            <h2 className="text-center text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-tight mb-3">
-              Apply for this role
-            </h2>
-            <p className="text-center text-kawai-charcoal/70 font-[family-name:var(--font-brand-sans)] leading-relaxed mb-12">
-              Tell us a little about yourself. We reply to every applicant within ~5 business days.
-            </p>
-            <div className="bg-white/80 backdrop-blur-md border border-kawai-neutral/40 rounded-2xl shadow-brand-subtle p-6 md:p-10">
-              <ApplicationForm jobId={String(job.id)} jobTitle={job.title ?? ''} />
-            </div>
-          </div>
-        </div>
-      </section>
-
       <JobDetailFooter />
 
       {/* Persistent mobile apply CTA — scrolls to #apply */}
-      <Suspense fallback={null}>
-        <MobileApplyBar jobTitle={job.title ?? ''} />
-      </Suspense>
+      <MobileApplyBar jobTitle={job.title ?? ''} />
     </main>
   )
 }
