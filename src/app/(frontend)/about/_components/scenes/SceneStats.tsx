@@ -38,7 +38,7 @@ function StatColumn({
       {index > 0 && (
         <motion.span
           aria-hidden
-          style={reduce ? undefined : { scaleY: dividerScale, originY: 0.5 }}
+          {...(reduce ? {} : { style: { scaleY: dividerScale, originY: 0.5 } })}
           className="absolute left-0 top-1/2 hidden h-20 w-px -translate-y-1/2 bg-white/15 md:block"
         />
       )}
@@ -53,7 +53,7 @@ function StatColumn({
         />
       </div>
       <motion.div
-        style={reduce ? undefined : { opacity: labelOpacity }}
+        {...(reduce ? {} : { style: { opacity: labelOpacity } })}
         className="mt-4 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.28em] text-white/65"
       >
         {stat.label}

@@ -23,7 +23,7 @@ export default function SceneHeritage({ progress, reduce }: Props) {
       <div id="story" className="container mx-auto px-6">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-12 lg:gap-16">
           <motion.div
-            style={reduce ? undefined : { opacity: plateOpacity, y: plateY }}
+            {...(reduce ? {} : { style: { opacity: plateOpacity, y: plateY } })}
             className="lg:col-span-5"
           >
             <div className="inline-flex items-baseline gap-4 border-l-2 border-kawai-red pl-5">

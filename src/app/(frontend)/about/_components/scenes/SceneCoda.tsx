@@ -19,7 +19,7 @@ function HeadlineWord({ progress, reduce, word, riseStart, riseEnd }: WordProps)
   const y = useTransform(progress, [riseStart, riseEnd], ['110%', '0%'])
   return (
     <span className="inline-block overflow-hidden pb-[0.06em]">
-      <motion.span style={reduce ? undefined : { y }} className="inline-block pr-[0.25em]">
+      <motion.span {...(reduce ? {} : { style: { y } })} className="inline-block pr-[0.25em]">
         {word}
       </motion.span>
     </span>
@@ -65,14 +65,14 @@ export default function SceneCoda({ progress, reduce }: Props) {
           </h2>
 
           <motion.p
-            style={reduce ? undefined : { opacity: bodyOpacity }}
+            {...(reduce ? {} : { style: { opacity: bodyOpacity } })}
             className="mx-auto mb-10 max-w-xl font-[family-name:var(--font-brand-sans)] text-base leading-relaxed text-white/78 sm:text-lg"
           >
             {codaCopy.body}
           </motion.p>
 
           <motion.div
-            style={reduce ? undefined : { opacity: ctaOpacity }}
+            {...(reduce ? {} : { style: { opacity: ctaOpacity } })}
             className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4"
           >
             <BrandCTA href={codaCopy.primaryCta.href} variant="red">

@@ -318,3 +318,49 @@ $ next dev --turbo
  GET /favicon.ico 500 in 12ms
  ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
  GET /favicon.ico?favicon.e40cf652.ico 500 in 10ms
+[Middleware] Failed to fetch redirects: Error: fetch failed
+    at context.fetch (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/web/sandbox/context.js:321:60)
+    at getRedirects (/Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/[root-of-the-server]__dc15d093._.js:46:27)
+    at middleware (/Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/[root-of-the-server]__dc15d093._.js:105:29)
+    at /Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/_04af6b2e._.js:12103:26
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at /Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/_04af6b2e._.js:7940:655
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:65:14)
+    at /Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/_04af6b2e._.js:7940:325
+    at async adapter (/Users/chance/DEV/git/KAWAI/.next/server/edge/chunks/_04af6b2e._.js:7891:16)
+    at async /Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/web/sandbox/sandbox.js:109:26
+    at async runWithTaggedErrors (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/web/sandbox/sandbox.js:106:9)
+    at async DevServer.runMiddleware (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/next-server.js:1265:22)
+    at async DevServer.runMiddleware (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/dev/next-dev-server.js:296:28)
+    at async NextNodeServer.handleCatchallMiddlewareRequest (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/next-server.js:447:26)
+    at async DevServer.handleRequestImpl (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/base-server.js:931:28)
+    at async /Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/dev/next-dev-server.js:398:20
+    at async Span.traceAsyncFn (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/dev/next-dev-server.js:394:24)
+    at async handleRoute (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/lib/router-utils/resolve-routes.js:324:33)
+    at async resolveRoutes (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/lib/router-utils/resolve-routes.js:595:28)
+    at async handleRequest (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/lib/router-server.js:287:96)
+    at async requestHandlerImpl (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/lib/router-server.js:464:13)
+    at async Server.requestListener (/Users/chance/DEV/git/KAWAI/node_modules/next/dist/server/lib/start-server.js:218:13) {
+  
+}
+ ○ Compiling /company/awards ...
+ ✓ Compiled /company/awards in 505ms
+ GET /company/awards 200 in 571ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 22ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 15ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 11ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 12ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 8ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 9ms
+[?25h

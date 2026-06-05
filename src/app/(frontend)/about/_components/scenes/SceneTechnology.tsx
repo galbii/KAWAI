@@ -27,7 +27,7 @@ export default function SceneTechnology({ progress, reduce }: Props) {
           </div>
 
           <motion.h2
-            style={reduce ? undefined : { y: headlineY }}
+            {...(reduce ? {} : { style: { y: headlineY } })}
             transition={{ ease: EASE_OUT_EXPO }}
             className="mb-7 font-[family-name:var(--font-brand-serif)] text-[clamp(2.5rem,5.5vw,4.25rem)] font-light leading-[1.04] tracking-tight text-white"
           >

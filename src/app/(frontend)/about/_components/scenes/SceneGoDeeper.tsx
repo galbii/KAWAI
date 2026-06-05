@@ -30,12 +30,12 @@ function Card({ progress, reduce, card, start, span, delayOffset }: CardProps) {
 
   return (
     <motion.article
-      style={reduce ? undefined : { clipPath: clip }}
+      {...(reduce ? {} : { style: { clipPath: clip } })}
       className="group relative h-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.04] p-9 backdrop-blur-sm transition-colors duration-300 hover:border-kawai-red/60"
     >
       <motion.span
         aria-hidden
-        style={reduce ? undefined : { scaleX: shutter, originX: 0 }}
+        {...(reduce ? {} : { style: { scaleX: shutter, originX: 0 } })}
         className="absolute left-0 top-0 h-px w-full bg-kawai-red"
       />
       <span

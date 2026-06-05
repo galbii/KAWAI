@@ -94,8 +94,8 @@ export function BrandCTA({
 type BrandArrowLinkProps = {
   href: string
   children: ReactNode
-  /** 'light' for dark backgrounds (white→red), 'muted' for secondary links. */
-  tone?: 'light' | 'muted'
+  /** 'light' for dark backgrounds (white→red), 'muted' for secondary links, 'red' for light backgrounds. */
+  tone?: 'light' | 'muted' | 'red'
   className?: string
 }
 
@@ -112,6 +112,7 @@ export function BrandArrowLink({
         'group inline-flex items-center gap-2 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] transition-colors duration-200',
         tone === 'light' && 'text-white hover:text-kawai-red',
         tone === 'muted' && 'text-white/55 hover:text-white',
+        tone === 'red' && 'text-kawai-red hover:text-kawai-red/75',
         className,
       )}
     >

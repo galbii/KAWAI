@@ -19,7 +19,7 @@ function ManifestoWord({ progress, reduce, word, riseStart, riseEnd }: WordProps
   const opacity = useTransform(progress, [riseStart, riseEnd], [0, 1])
   const y = useTransform(progress, [riseStart, riseEnd], [10, 0])
   return (
-    <motion.span style={reduce ? undefined : { opacity, y }} className="inline-block">
+    <motion.span {...(reduce ? {} : { style: { opacity, y } })} className="inline-block">
       {word}
     </motion.span>
   )
@@ -44,7 +44,7 @@ export default function SceneManifesto({ progress, reduce }: Props) {
         <div className="mx-auto max-w-4xl text-center">
           <motion.span
             aria-hidden
-            style={reduce ? undefined : { scale: glyphScale, filter: glyphFilter }}
+            {...(reduce ? {} : { style: { scale: glyphScale, filter: glyphFilter } })}
             className="mb-3 block font-[family-name:var(--font-brand-serif)] text-7xl leading-none text-kawai-red md:text-8xl"
           >
             &ldquo;
@@ -70,7 +70,7 @@ export default function SceneManifesto({ progress, reduce }: Props) {
           </blockquote>
 
           <motion.div
-            style={reduce ? undefined : { scaleX: ruleScale, originX: 0.5 }}
+            {...(reduce ? {} : { style: { scaleX: ruleScale, originX: 0.5 } })}
             transition={{ ease: EASE_OUT_EXPO }}
             className="mx-auto mt-10 h-px w-16 bg-kawai-red"
           />

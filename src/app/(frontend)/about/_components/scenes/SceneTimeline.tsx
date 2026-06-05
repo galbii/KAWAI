@@ -35,19 +35,19 @@ function TimelineEvent({ progress, reduce, event, crossAt, windowSpan }: Timelin
 
   return (
     <motion.li
-      style={reduce ? undefined : { y: translateY }}
+      {...(reduce ? {} : { style: { y: translateY } })}
       className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-6"
     >
       <div className="container mx-auto">
         <div className="mx-auto grid max-w-5xl items-baseline gap-8 md:grid-cols-12">
           <motion.div
-            style={reduce ? undefined : { color: colorMix }}
+            {...(reduce ? {} : { style: { color: colorMix } })}
             className="col-span-3 font-[family-name:var(--font-brand-serif)] text-[clamp(3rem,7vw,5.5rem)] font-light leading-none tracking-tight"
           >
             {event.year}
           </motion.div>
           <motion.div
-            style={reduce ? undefined : { opacity: copyOpacity }}
+            {...(reduce ? {} : { style: { opacity: copyOpacity } })}
             className="col-span-9"
           >
             <h3 className="mb-3 font-[family-name:var(--font-brand-serif)] text-xl font-light leading-tight tracking-tight text-white md:text-2xl lg:text-3xl">
@@ -83,7 +83,7 @@ export default function SceneTimeline({ progress, reduce }: Props) {
         <Playhead progress={progress} window={SCENE_WINDOWS.timeline} />
 
         <motion.div
-          style={reduce ? undefined : { opacity: headingOpacity }}
+          {...(reduce ? {} : { style: { opacity: headingOpacity } })}
           className="absolute inset-x-0 top-[22vh] z-20 text-center"
         >
           <div className="mb-4 inline-block">
