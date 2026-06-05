@@ -1,13 +1,6 @@
 import type { Metadata } from 'next'
 import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
-import AboutHero from './_components/AboutHero'
-import AboutManifesto from './_components/AboutManifesto'
-import AboutStats from './_components/AboutStats'
-import HeritageFeature from './_components/HeritageFeature'
-import AboutTimeline from './_components/AboutTimeline'
-import TechnologyFeature from './_components/TechnologyFeature'
-import AccessGrid from './_components/AccessGrid'
-import AboutCTA from './_components/AboutCTA'
+import AboutScroll from './_components/AboutScroll'
 
 export const revalidate = 3600
 
@@ -48,16 +41,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AboutPage() {
-  return (
-    <>
-      <AboutHero />
-      <AboutManifesto />
-      <AboutStats />
-      <HeritageFeature />
-      <AboutTimeline />
-      <TechnologyFeature />
-      <AccessGrid />
-      <AboutCTA />
-    </>
-  )
+  return <AboutScroll />
 }

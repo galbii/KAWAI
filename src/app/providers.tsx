@@ -13,7 +13,7 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
         ...(process.env.NEXT_PUBLIC_POSTHOG_HOST && { api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST }),
         person_profiles: 'identified_only',
-        capture_pageview: false, // Disable automatic pageview capture, as we capture manually
+        capture_pageview: true,
         capture_pageleave: true,
         opt_out_capturing_by_default: true,
         // Session recording starts disabled and is enabled only after the first

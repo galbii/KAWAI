@@ -1,0 +1,320 @@
+$ next dev --turbo
+ ⚠ Port 3000 is in use by process 6841, using available port 3001 instead.
+   ▲ Next.js 15.4.11 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://10.64.1.166:3001
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Compiled middleware in 67ms
+ ✓ Ready in 932ms
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbopack
+
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ ○ Compiling /about ...
+(node:7301) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Compiled /about in 2.3s
+(node:7194) [MONGOOSE] Warning: `collection` is a reserved schema pathname and may break some functionality. You are allowed to use it, but use at your own risk. To disable this warning pass `suppressReservedKeysWarning` as a schema option.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7194) [MONGOOSE] Warning: `collection` is a reserved schema pathname and may break some functionality. You are allowed to use it, but use at your own risk. To disable this warning pass `suppressReservedKeysWarning` as a schema option.
+(node:7194) [MONGOOSE] Warning: `collection` is a reserved schema pathname and may break some functionality. You are allowed to use it, but use at your own risk. To disable this warning pass `suppressReservedKeysWarning` as a schema option.
+ GET /about 200 in 3564ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 205ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+{"level":40,"time":1780613415859,"pid":7194,"hostname":"SUMIO.kawaius.net","msg":"No email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview."}
+ ○ Compiling /api/search-quick-links ...
+ ✓ Compiled /api/search-quick-links in 648ms
+ GET /api/search-quick-links 200 in 1896ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 500ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 578ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 10ms
+ POST /about 200 in 2757ms
+ ✓ Compiled in 205ms
+ ✓ Compiled in 142ms
+ ✓ Compiled in 139ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 634ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /api/search-quick-links 200 in 117ms
+ POST /about 200 in 347ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 18ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 10ms
+ ✓ Compiled in 177ms
+ ✓ Compiled in 148ms
+ ✓ Compiled in 178ms
+ ✓ Compiled in 160ms
+ ✓ Compiled in 153ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ ○ Compiling /distinguished-owners ...
+ ✓ Compiled /distinguished-owners in 725ms
+ GET /distinguished-owners 200 in 776ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 42ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 30ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 14ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 22ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 17ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 9ms
+ ✓ Compiled in 168ms
+ ✓ Compiled in 231ms
+ ✓ Compiled in 177ms
+ ✓ Compiled in 148ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ ✓ Compiled in 144ms
+ GET /about 200 in 614ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /api/search-quick-links 200 in 108ms
+ POST /about 200 in 347ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 13ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 9ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 166ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 26ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 20ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ POST /about 200 in 22ms
+ GET /api/search-quick-links 200 in 98ms
+ ✓ Compiled in 156ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 605ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /api/search-quick-links 200 in 117ms
+ POST /about 200 in 367ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 13ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 10ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 9ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 172ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 27ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 32ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ POST /about 200 in 23ms
+ GET /api/search-quick-links 200 in 102ms
+ ✓ Compiled in 108ms
+ ✓ Compiled in 154ms
+ ✓ Compiled in 141ms
+ ✓ Compiled in 169ms
+ ✓ Compiled in 188ms
+ ✓ Compiled in 166ms
+ ✓ Compiled in 137ms
+ ✓ Compiled in 167ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /about 200 in 432ms
+[Middleware] Failed to fetch redirects: Error: HTTP 404
+    at getRedirects (src/middleware.ts:27:23)
+    at async middleware (src/middleware.ts:78:20)
+  25 |       cache: 'no-store',
+  26 |     })
+> 27 |     if (!res.ok) throw new Error(`HTTP ${res.status}`)
+     |                       ^
+  28 |     _cache = await res.json()
+  29 |     _cacheTime = now
+  30 |     return _cache ?? [] {
+  
+}
+ GET /api/search-quick-links 200 in 157ms
+ POST /about 200 in 768ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 19ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico 500 in 12ms
+ ⨯ A conflicting public file and page file was found for path /favicon.ico https://nextjs.org/docs/messages/conflicting-public-file-page
+ GET /favicon.ico?favicon.e40cf652.ico 500 in 10ms
