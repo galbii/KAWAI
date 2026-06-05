@@ -45,11 +45,11 @@ export function ShigeruContactBox() {
                 General Inquiries
               </p>
               <a
-                href="mailto:info@shigerukawai.com"
+                href="mailto:technical@shigerukawai.com"
                 className="text-white/70 hover:text-kawai-gold transition-colors duration-300 text-base"
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               >
-                info@shigerukawai.com
+                technical@shigerukawai.com
               </a>
             </div>
 
