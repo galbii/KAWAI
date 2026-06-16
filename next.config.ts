@@ -91,6 +91,25 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Legacy top-level category URLs from the pre-migration platform.
+      // /digital-pianos is handled via CMS-managed redirect seed data; the other
+      // three were missed during migration and were soft-404ing, dropping years
+      // of accumulated rankings and backlinks.
+      {
+        source: '/grand-pianos',
+        destination: '/pianos/grand',
+        permanent: true,
+      },
+      {
+        source: '/upright-pianos',
+        destination: '/pianos/upright',
+        permanent: true,
+      },
+      {
+        source: '/hybrid-pianos',
+        destination: '/pianos/hybrid',
+        permanent: true,
+      },
       // Redirect old nested category URLs to flat collection URLs for SEO
       // e.g. /pianos/grand-pianos/gx-blak → /pianos/gx-blak
       {

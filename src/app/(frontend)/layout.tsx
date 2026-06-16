@@ -94,17 +94,22 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
   // so the server render is always the non-dealer default regardless.
   const initialOrigin: NavigationOrigin = { basePath: '/', isDealerLocation: false }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com';
+  // Domain-aware schema: kawaius.com → "Kawai America", ca.kawaius.com → "Kawai Canada".
+  // generateMetadata above already awaits getSite(), so the layout is already
+  // dynamic — adding another await here doesn't change rendering behavior.
+  const site = await getSite()
+  const siteUrl = getSiteUrl(site)
+  const siteName = getSiteName(site)
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "Kawai Piano Gallery",
+    "name": siteName,
     "url": siteUrl,
     "description": "Official authorized Kawai Piano dealer. Explore grand pianos, digital pianos, upright pianos, and exclusive Shigeru Kawai concert grands.",
     "publisher": {
       "@type": "Organization",
-      "name": "Kawai Piano Gallery"
+      "name": siteName
     },
     "potentialAction": {
       "@type": "SearchAction",

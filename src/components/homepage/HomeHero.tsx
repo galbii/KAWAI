@@ -113,6 +113,8 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
       
       {/* Content - Center Aligned with better mobile padding */}
       <div className="container-brand max-w-8xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative z-20 flex flex-col items-center text-center">
+        {/* Single semantic page heading for SEO/a11y; design has no visible title here */}
+        <h1 className="sr-only">Kawai America — Grand, Upright, Hybrid &amp; Digital Pianos</h1>
         {/* Centered Est. 1927 */}
         {heroData.establishedText && (
           <motion.div 
@@ -134,7 +136,7 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
         )}
 
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
-          <motion.h1
+          <motion.p
             className="text-brand-sophisticated text-kawai-pearl/80 mb-12 lg:mb-16 max-w-2xl text-lg md:text-xl leading-relaxed font-light text-center mx-auto"
             variants={contentReveal}
             custom={1.6}
@@ -142,7 +144,7 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
             animate={isInView ? "visible" : "hidden"}
           >
             {heroData.description}
-          </motion.h1>
+          </motion.p>
         </div>
 
         {/* CTA Buttons - Side by side */}
