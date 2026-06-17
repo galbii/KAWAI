@@ -7,6 +7,7 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
 import { Hero as PageHero } from '@/components/Hero'
 import { RenderBlocks } from '@/components/RenderBlocks'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import type { Post, Page } from '@/payload-types'
 
 export const revalidate = 300
@@ -203,6 +204,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   if (page) {
     return (
       <>
+        <AdminBarDoc
+          collection="pages"
+          id={String(page.id)}
+          collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+        />
         {schemas}
         {page.hero && <PageHero hero={page.hero} />}
         {page.layout?.length ? <RenderBlocks blocks={page.layout} /> : null}

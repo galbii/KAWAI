@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useInView, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import type { Artist, Media } from '@/payload-types'
 
@@ -34,10 +34,94 @@ const INSTRUMENT_LABELS: Record<string, string> = {
   multiple: 'Multiple Instruments',
 }
 
+const INSTRUMENT_LABELS_SHORT: Record<string, string> = {
+  grand: 'Grand',
+  upright: 'Upright',
+  digital: 'Digital',
+  hybrid: 'Hybrid',
+  multiple: 'Multiple',
+}
+
+const PLATFORM_LABELS: Record<string, string> = {
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  facebook: 'Facebook',
+  twitter: 'X',
+  spotify: 'Spotify',
+  'apple-music': 'Apple Music',
+  soundcloud: 'SoundCloud',
+  website: 'Website',
+  other: '',
+}
+
 const PAGE_SIZE = 12
 
 // Easing matching the brand's elegant curve
 const ease = [0.25, 0.46, 0.45, 0.94] as const
+
+type RecentWorkItem = NonNullable<Artist['recentWork']>[number]
+
+/** Extract a 4-digit year from a recent-work date, or null if unparseable. */
+function workYear(date?: string | null): string | null {
+  if (!date) return null
+  const d = new Date(date)
+  return Number.isNaN(d.getTime()) ? null : String(d.getFullYear())
+}
+
+/** Top recent-work entries — featured first, then most recent. */
+function topRecentWork(artist: Artist, max = 3): RecentWorkItem[] {
+  const items = artist.recentWork ?? []
+  return [...items]
+    .sort((a, b) => {
+      const af = a.featured ? 1 : 0
+      const bf = b.featured ? 1 : 0
+      if (af !== bf) return bf - af
+      const ad = a.date ? new Date(a.date).getTime() : 0
+      const bd = b.date ? new Date(b.date).getTime() : 0
+      return bd - ad
+    })
+    .slice(0, max)
+}
+
+/** Tag chips for the expanded panel: instrument, region, up to two genres. */
+function buildChips(artist: Artist): string[] {
+  const chips: string[] = []
+  if (artist.instrument && INSTRUMENT_LABELS_SHORT[artist.instrument]) {
+    chips.push(INSTRUMENT_LABELS_SHORT[artist.instrument]!)
+  }
+  if (artist.region) chips.push(artist.region)
+  if (artist.genre) {
+    artist.genre
+      .split(',')
+      .map((g) => g.trim())
+      .filter(Boolean)
+      .slice(0, 2)
+      .forEach((g) => chips.push(g))
+  }
+  return chips
+}
+
+/**
+ * Resolve whether the device can hover (desktop pointer) vs. touch.
+ * Returns `null` until mounted so SSR + first client render match (both collapsed),
+ * avoiding a hydration mismatch.
+ */
+function useCanHover(): boolean | null {
+  const [canHover, setCanHover] = useState<boolean | null>(null)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+      setCanHover(true)
+      return
+    }
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)')
+    setCanHover(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setCanHover(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return canHover
+}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -188,90 +272,159 @@ interface AlphaRowProps {
   /** Position within current load batch — used for stagger timing */
   batchIndex: number
   legacy?: boolean
+  /** true = hover-capable pointer, false = touch, null = not yet resolved */
+  canHover: boolean | null
+  /** Honour prefers-reduced-motion */
+  reduce: boolean
 }
 
-function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
+function AlphaRow({ artist, index, batchIndex, legacy, canHover, reduce }: AlphaRowProps) {
   const imageUrl = getArtistImage(artist)
   const rowDelay = (batchIndex % PAGE_SIZE) * 0.038
 
+  const ref = useRef<HTMLDivElement>(null)
+  // Spotlight band — the row counts as "in view" only while it crosses the
+  // central ~20% of the viewport. Drives expansion on touch devices.
+  const inView = useInView(ref, { margin: '-40% 0px -40% 0px' })
+  const [hovered, setHovered] = useState(false)
+
+  // Hover-capable pointers → hover drives expansion. Touch → scroll position does.
+  // While canHover is unresolved (null, first paint) stay collapsed to match SSR.
+  const expanded = canHover === null ? false : canHover ? hovered : inView
+  const isTouch = canHover === false
+
+  const recent = topRecentWork(artist)
+  const chips = buildChips(artist)
+  const hasPanel = chips.length > 0 || recent.length > 0
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      ref={ref}
+      initial={reduce ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.42, delay: rowDelay, ease }}
+      transition={{ duration: reduce ? 0 : 0.42, delay: reduce ? 0 : rowDelay, ease }}
     >
       <Link
         href={`/artists/${artist.slug}`}
-        className="group relative flex items-center gap-6 sm:gap-10 px-6 sm:px-12 lg:px-16 py-8 sm:py-10 lg:py-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={() => setHovered(true)}
+        onBlur={() => setHovered(false)}
+        className={cn(
+          'group relative flex items-center gap-6 sm:gap-10 px-6 sm:px-12 lg:px-16 py-8 sm:py-10 lg:py-12',
+          'transition-opacity duration-500',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset',
+          // Spotlight dimming — only on touch, only when this row isn't the active one
+          isTouch && !expanded && 'opacity-50',
+        )}
         aria-label={`View profile: ${artist.name}`}
       >
-        {/* Vertical red accent bar — grows full-height on hover */}
+        {/* Vertical red accent bar — grows full-height when expanded */}
         <div
-          className="absolute left-0 top-0 w-[3px] bg-kawai-red h-0 group-hover:h-full transition-[height] duration-500 ease-out"
+          className={cn(
+            'absolute left-0 top-0 w-[3px] bg-kawai-red transition-[height] duration-500 ease-out',
+            expanded ? 'h-full' : 'h-0',
+          )}
           aria-hidden="true"
         />
 
         {/* Bottom divider */}
         <div
-          className="absolute bottom-0 left-6 sm:left-12 lg:left-16 right-6 sm:right-12 lg:right-16 h-px bg-white/[0.05] group-hover:bg-white/[0.09] transition-colors duration-300"
+          className={cn(
+            'absolute bottom-0 left-6 sm:left-12 lg:left-16 right-6 sm:right-12 lg:right-16 h-px transition-colors duration-300',
+            expanded ? 'bg-white/[0.09]' : 'bg-white/[0.05]',
+          )}
           aria-hidden="true"
         />
 
         {/* Index number */}
         <span
           className={cn(
-            'flex-shrink-0 w-9 text-right text-xs tabular-nums leading-none',
-            'text-white/[0.12] group-hover:text-white/30 transition-colors duration-300',
+            'flex-shrink-0 w-9 text-right text-xs tabular-nums leading-none transition-colors duration-300',
+            expanded ? 'text-white/30' : 'text-white/[0.12]',
             'font-[family-name:var(--font-brand-sans)]',
           )}
         >
           {String(index).padStart(2, '0')}
         </span>
 
-        {/* Artist name */}
+        {/* Artist name + expanding detail panel */}
         <div className="flex-1 min-w-0">
           <span
             className={cn(
-              'block text-xl sm:text-2xl lg:text-3xl font-light leading-tight',
-              'text-white/85 group-hover:text-white',
-              'transition-colors duration-300',
+              'block text-xl sm:text-2xl lg:text-3xl font-light leading-tight transition-colors duration-300',
+              expanded ? 'text-white' : 'text-white/85',
               'font-[family-name:var(--font-brand-serif)]',
               'line-clamp-2 break-words',
             )}
           >
             {artist.name}
           </span>
-        </div>
 
-        {/* Instrument + region metadata */}
-        <div className="hidden sm:flex items-center gap-4 flex-shrink-0">
-          {artist.instrument && INSTRUMENT_LABELS[artist.instrument] && (
-            <span
-              className={cn(
-                'text-[11px] tracking-[0.18em] uppercase',
-                'text-white/25 group-hover:text-kawai-red/70',
-                'transition-colors duration-300',
-                'font-[family-name:var(--font-brand-sans)]',
-              )}
-            >
-              {INSTRUMENT_LABELS[artist.instrument]}
-            </span>
-          )}
-          {artist.instrument && artist.region && (
-            <span className="text-white/[0.12] text-xs" aria-hidden="true">·</span>
-          )}
-          {artist.region && (
-            <span
-              className={cn(
-                'text-[11px] tracking-[0.12em] uppercase',
-                'text-white/[0.18] group-hover:text-white/40',
-                'transition-colors duration-300',
-                'font-[family-name:var(--font-brand-sans)]',
-              )}
-            >
-              {artist.region}
-            </span>
-          )}
+          <AnimatePresence initial={false}>
+            {expanded && hasPanel && (
+              <motion.div
+                key="panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: reduce ? 0 : 0.4, ease }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4 sm:pt-5 flex flex-col gap-3.5">
+                  {/* Tag chips */}
+                  {chips.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {chips.map((chip) => (
+                        <span
+                          key={chip}
+                          className={cn(
+                            'inline-flex items-center rounded-full px-2.5 py-1',
+                            'text-[10px] tracking-[0.14em] uppercase',
+                            'border border-white/10 bg-white/[0.04] text-white/45',
+                            'font-[family-name:var(--font-brand-sans)]',
+                          )}
+                        >
+                          {chip}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Recent work */}
+                  {recent.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[9px] tracking-[0.26em] uppercase text-kawai-red/50 font-[family-name:var(--font-brand-sans)]">
+                        Recent Work
+                      </span>
+                      <ul className="flex flex-col gap-1 max-w-xl">
+                        {recent.map((work, i) => (
+                          <li
+                            key={work.id ?? i}
+                            className="flex items-baseline gap-2.5 min-w-0 font-[family-name:var(--font-brand-sans)]"
+                          >
+                            <span className="text-sm font-light text-white/75 truncate min-w-0">
+                              {work.title}
+                            </span>
+                            {work.platform && PLATFORM_LABELS[work.platform] && (
+                              <span className="flex-shrink-0 text-[11px] tracking-wide text-white/25">
+                                {PLATFORM_LABELS[work.platform]}
+                              </span>
+                            )}
+                            {workYear(work.date) && (
+                              <span className="ml-auto flex-shrink-0 text-[11px] tabular-nums text-white/25">
+                                {workYear(work.date)}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Featured / Legacy badge */}
@@ -279,9 +432,8 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
           <span
             className={cn(
               'hidden lg:block flex-shrink-0',
-              'text-[10px] tracking-[0.22em] uppercase font-medium',
-              'text-kawai-gold/30 group-hover:text-kawai-gold/55',
-              'transition-colors duration-300',
+              'text-[10px] tracking-[0.22em] uppercase font-medium transition-colors duration-300',
+              expanded ? 'text-kawai-gold/55' : 'text-kawai-gold/30',
               'font-[family-name:var(--font-brand-sans)]',
             )}
           >
@@ -291,9 +443,8 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
           <span
             className={cn(
               'hidden lg:block flex-shrink-0',
-              'text-[10px] tracking-[0.22em] uppercase font-medium',
-              'text-kawai-gold/40 group-hover:text-kawai-gold/70',
-              'transition-colors duration-300',
+              'text-[10px] tracking-[0.22em] uppercase font-medium transition-colors duration-300',
+              expanded ? 'text-kawai-gold/70' : 'text-kawai-gold/40',
               'font-[family-name:var(--font-brand-sans)]',
             )}
           >
@@ -305,32 +456,37 @@ function AlphaRow({ artist, index, batchIndex, legacy }: AlphaRowProps) {
         <div
           className={cn(
             'relative flex-shrink-0 w-36 h-36 sm:w-52 sm:h-52 lg:w-64 lg:h-64 rounded-full overflow-hidden',
-            'border border-white/[0.08] group-hover:border-white/20',
-            'ring-0 group-hover:ring-1 group-hover:ring-kawai-red/20 group-hover:ring-offset-0',
             'transition-all duration-500',
+            expanded
+              ? 'border border-white/20 ring-1 ring-kawai-red/20'
+              : 'border border-white/[0.08] ring-0',
           )}
         >
           <Image
             src={imageUrl}
             alt=""
             fill
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            className={cn(
+              'object-cover transition-transform duration-700 ease-out',
+              expanded && 'scale-110',
+            )}
             sizes="(max-width: 640px) 144px, (max-width: 1024px) 208px, 256px"
             aria-hidden="true"
           />
           <div
-            className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500"
+            className={cn(
+              'absolute inset-0 transition-colors duration-500',
+              expanded ? 'bg-black/0' : 'bg-black/20',
+            )}
             aria-hidden="true"
           />
         </div>
 
-        {/* Chevron — slides in on hover */}
+        {/* Chevron — slides in when expanded */}
         <svg
           className={cn(
-            'flex-shrink-0 w-4 h-4',
-            'text-transparent group-hover:text-white/30',
-            '-translate-x-2 group-hover:translate-x-0',
-            'transition-all duration-300',
+            'flex-shrink-0 w-4 h-4 transition-all duration-300',
+            expanded ? 'text-white/30 translate-x-0' : 'text-transparent -translate-x-2',
           )}
           fill="none"
           viewBox="0 0 24 24"
@@ -358,6 +514,19 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
   const [sortMode, setSortMode] = useState<SortMode>('recent')
   const [viewMode, setViewMode] = useState<ViewMode>('current')
   const [searchFocused, setSearchFocused] = useState(false)
+
+  const canHover = useCanHover()
+  const reduce = useReducedMotion() ?? false
+
+  // On touch devices, default to the A–Z list view (rows expand on scroll).
+  // Applied once after the pointer type resolves; users can still toggle to grid.
+  const touchDefaultApplied = useRef(false)
+  useEffect(() => {
+    if (canHover === false && !touchDefaultApplied.current) {
+      touchDefaultApplied.current = true
+      setSortMode('alpha')
+    }
+  }, [canHover])
 
   // Hide *current* artists with no featured image (no upload AND no URL fallback).
   // Legacy is an archival view — show them all regardless, so the toggle stays accessible
@@ -666,6 +835,8 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
                           index={globalIndex}
                           batchIndex={batchIndex}
                           legacy={isLegacyView}
+                          canHover={canHover}
+                          reduce={reduce}
                         />
                       ))}
                     </div>

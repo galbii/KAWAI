@@ -25,6 +25,7 @@ interface NewsItem {
   title: string
   description: string
   image?: Media | string | null
+  backgroundVideo?: Media | string | null
   category: string
   link?: string
 }
@@ -301,6 +302,7 @@ const getHomePageNewsItems = unstable_cache(
           description: item.description,
           image: item.image ?? null,
           category: item.category,
+          ...(item.backgroundVideo && { backgroundVideo: item.backgroundVideo }),
           ...(item.link && { link: item.link }),
           ...(item.videoUrl && { videoUrl: item.videoUrl }),
         }))

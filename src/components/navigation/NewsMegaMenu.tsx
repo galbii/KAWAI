@@ -63,12 +63,16 @@ interface NewsArticle {
   image: string
   link: string
   videoUrl?: string | null
+  /** Self-hosted (R2) video URL — direct webm/mp4 file, played as a background <video>. */
+  videoFileUrl?: string | null
+  videoMimeType?: string | null
 }
 
 export interface NewsItem {
   title: string
   description: string
   image?: Media | string | null
+  backgroundVideo?: Media | string | null
   category: string
   link?: string
   videoUrl?: string | null
@@ -96,6 +100,19 @@ function transformNewsItem(item: NewsItem, index: number): NewsArticle {
       imageUrl = item.image.url
     }
   }
+
+  // Self-hosted video (R2 upload) — mirrors the homepage news-carousel "direct" branch.
+  let videoFileUrl: string | null = null
+  let videoMimeType: string | null = null
+  if (item.backgroundVideo) {
+    if (typeof item.backgroundVideo === 'string') {
+      videoFileUrl = item.backgroundVideo
+    } else if (item.backgroundVideo.url) {
+      videoFileUrl = item.backgroundVideo.url
+      videoMimeType = item.backgroundVideo.mimeType ?? null
+    }
+  }
+
   return {
     id: `news-${index}`,
     title: item.title,
@@ -104,6 +121,8 @@ function transformNewsItem(item: NewsItem, index: number): NewsArticle {
     image: imageUrl,
     link: item.link || '/blog',
     videoUrl: item.videoUrl ?? null,
+    videoFileUrl,
+    videoMimeType,
   }
 }
 
@@ -214,7 +233,18 @@ export function NewsMegaMenu({
                   >
                     {/* Image */}
                     <div className="absolute inset-0">
-                      {current.videoUrl ? (
+                      {current.videoFileUrl ? (
+                        /* Self-hosted (R2) video — autoplay, muted, looped background */
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        >
+                          <source src={current.videoFileUrl} type={current.videoMimeType ?? 'video/webm'} />
+                        </video>
+                      ) : current.videoUrl ? (
                         /* YouTube thumbnail — static, no autoplay */
                         <>
                           <Image

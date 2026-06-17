@@ -5,6 +5,7 @@ import type { Artist, Page } from '@/payload-types'
 import ArtistsHeroWrapper from '@/components/artists/ArtistsHeroWrapper'
 import { ArtistsGrid } from '@/components/artists/ArtistsGrid'
 import { RenderBlocks } from '@/components/RenderBlocks'
+import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import { getSite, localeFromSite } from '@/lib/site-context'
 
@@ -83,6 +84,11 @@ export default async function ArtistsPage() {
   if (cmsPage) {
     return (
       <div className="min-h-screen">
+        <AdminBarDoc
+          collection="pages"
+          id={String(cmsPage.id)}
+          collectionLabels={{ singular: 'Page', plural: 'Pages' }}
+        />
         <RenderBlocks blocks={cmsPage.layout} />
       </div>
     )

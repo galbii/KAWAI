@@ -395,6 +395,7 @@ interface NewsItem {
   title: string
   description: string
   image?: any
+  backgroundVideo?: any
   category: string
   link?: string
 }
