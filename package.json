@@ -26,6 +26,8 @@
     "migrate:artists:publish:v2:dry-run": "tsx scripts/migrate-artists-publish-v2.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
+    "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",
+    "migrate:product-featured:dry-run": "tsx scripts/migrate-product-featured.ts --dry-run",
     "test:s3": "tsx scripts/test-s3-connection.ts"
   },
   "dependencies": {

@@ -2099,7 +2099,7 @@ export interface Product {
       }[]
     | null;
   /**
-   * Mark this product as featured to display in homepage piano collection block
+   * Feature this product prominently — floats it to the top of the navigation mega menu and raises its sitemap priority.
    */
   featured?: boolean | null;
   /**
@@ -2488,10 +2488,6 @@ export interface Product {
    * Product visibility and display settings
    */
   visibility?: {
-    /**
-     * Feature this product prominently
-     */
-    featured?: boolean | null;
     /**
      * Show in product catalog/listings
      */
@@ -12475,7 +12471,6 @@ export interface ProductsSelect<T extends boolean = true> {
   visibility?:
     | T
     | {
-        featured?: T;
         showInCatalog?: T;
         allowReviews?: T;
         sortOrder?: T;

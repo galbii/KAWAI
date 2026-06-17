@@ -144,6 +144,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/company/our-philosophy', { changeFrequency: 'monthly', priority: 0.6 })
     add('/company/koichi-kawai', { changeFrequency: 'monthly', priority: 0.6 })
     add('/about', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/brand', { changeFrequency: 'monthly', priority: 0.65 })
 
     // ==========================================
     // STATIC ROUTES — Institutions
@@ -220,20 +221,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'products',
         where: { status: { equals: 'active' } },
         limit: 1000,
-        select: { slug: true, updatedAt: true, visibility: true },
+        select: { slug: true, updatedAt: true, featured: true, visibility: true },
         depth: 0,
       })
 
       for (const p of productsResult.docs as Array<{
         slug?: string
         updatedAt: string
-        visibility?: { showInCatalog?: boolean; featured?: boolean }
+        featured?: boolean
+        visibility?: { showInCatalog?: boolean }
       }>) {
         if (!p.slug) continue
         if (p.visibility?.showInCatalog === false) continue
         add(`/products/${p.slug}`, {
           changeFrequency: 'weekly',
-          priority: p.visibility?.featured ? 0.9 : 0.7,
+          priority: p.featured ? 0.9 : 0.7,
           lastModified: new Date(p.updatedAt),
         })
       }

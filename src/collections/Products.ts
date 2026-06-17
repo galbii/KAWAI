@@ -449,7 +449,7 @@ export const Products: CollectionConfig = {
               type: 'checkbox',
               defaultValue: false,
               admin: {
-                description: 'Mark this product as featured to display in homepage piano collection block',
+                description: 'Feature this product prominently — floats it to the top of the navigation mega menu and raises its sitemap priority.',
                 position: 'sidebar',
               }
             },
@@ -1012,14 +1012,6 @@ export const Products: CollectionConfig = {
               name: 'visibility',
               type: 'group',
               fields: [
-                {
-                  name: 'featured',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: {
-                    description: 'Feature this product prominently'
-                  }
-                },
                 {
                   name: 'showInCatalog',
                   type: 'checkbox',

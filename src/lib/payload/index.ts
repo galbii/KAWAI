@@ -26,7 +26,6 @@ export {
   // Piano Models
   getPianoModels,
   getPianoModelBySlug,
-  getFeaturedPianoModels,
 
   // Products
   getProducts,
@@ -83,7 +82,6 @@ export {
 //     getProductlinesDirect,
 //     getProductsDirect,
 //     getProductBySlugDirect,
-//     getActiveProductsDirect,
 //     getStorefrontBySlugDirect,
 //     getActiveStorefrontsDirect,
 //   } from '@/lib/payload/queries'

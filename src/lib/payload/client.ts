@@ -135,25 +135,6 @@ export async function getPianoModelBySlug(slug: string): Promise<Product | null>
   return response.docs[0] || null
 }
 
-// Fetch featured piano models
-export async function getFeaturedPianoModels(category?: string): Promise<Product[]> {
-  const queryParams = new URLSearchParams()
-  queryParams.append('where[featured][equals]', 'true')
-
-  if (category) {
-    queryParams.append('where[productline.category][equals]', category)
-  }
-
-  queryParams.append('sort', 'sortOrder,name')
-  queryParams.append('limit', '10')
-  queryParams.append('depth', '2') // Populate productline relationship
-
-  const endpoint = `/piano-models?${queryParams.toString()}`
-  const response = await payloadFetch<PianoModelsResponse>(endpoint)
-
-  return response.docs
-}
-
 // Product API Functions
 
 // Fetch all products with optional filtering by category

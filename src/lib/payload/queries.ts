@@ -685,59 +685,6 @@ export async function getUniversityEventProducts(models: string[]): Promise<Prod
 }
 
 /**
- * Get active products using direct Payload access
- * @param category - Optional category filter (e.g., 'digital', 'grand', 'upright', 'hybrid')
- * @param options - Additional query options
- * @param options.limit - Maximum number of products to return (default: 100)
- * @param options.featured - If true, only return featured products
- * @returns Array of active Product objects
- */
-export async function getActiveProductsDirect(
-  category?: string,
-  options?: { limit?: number; featured?: boolean }
-): Promise<Product[]> {
-  try {
-    const payload = await getPayloadClient()
-
-    const whereClause: any = {
-      status: { equals: 'active' }
-    }
-
-    if (category) {
-      whereClause.category = { equals: category }
-    }
-
-    if (options?.featured) {
-      whereClause['visibility.featured'] = { equals: true }
-    }
-
-    const result = await payload.find({
-      collection: 'products',
-      where: whereClause,
-      select: {
-        name: true,
-        slug: true,
-        status: true,
-        category: true,
-        type: true,
-        description: true,
-        imageUrl: true,
-        model: true,
-        visibility: true,
-      },
-      sort: 'visibility.sortOrder,name',
-      limit: options?.limit || 100,
-      depth: 2
-    })
-
-    return result.docs as unknown as Product[]
-  } catch (error) {
-    console.error('Error fetching active products with direct Payload access:', error)
-    return []
-  }
-}
-
-/**
  * Get all catalog-visible products for the /pianos browse page.
  * Returns a lightweight shape — only the fields needed for product cards.
  * Cached for 1 hour; invalidated by the 'products' tag.

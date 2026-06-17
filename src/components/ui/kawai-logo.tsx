@@ -132,7 +132,7 @@ export function KawaiLogo({
   const LogoContent = () => (
     <>
       <Image
-        src={`/images/logos/kawai-logo-red-${size === 'sm' ? '1x' : size === 'md' ? '2x' : '3x'}.png`}
+        src="/images/logos/kawai-logo-new-red.png"
         alt="Kawai Piano"
         width={width}
         height={height}

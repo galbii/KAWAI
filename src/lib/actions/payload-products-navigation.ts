@@ -52,7 +52,7 @@ const getCachedProductsNavigation = unstable_cache(
         }, -Infinity)
 
       const sorted = [...typeNav.products].sort((a, b) => {
-        // 1. Product-flagged featured (product.featured OR visibility.featured) leads
+        // 1. Product-flagged featured (product.featured) leads
         if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1
         // 2. Then by featured-collection priority (highest first)
         const diff = score(b) - score(a)

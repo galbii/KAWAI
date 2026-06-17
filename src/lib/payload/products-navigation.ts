@@ -307,7 +307,6 @@ export async function getProductTypesWithProducts(options?: {
         // Sorting
         visibility: {
           sortOrder: true,
-          featured: true // Settings tab featured flag
         },
 
         // Collection membership — returned as IDs at depth:0, used for featured-collection prioritization
@@ -369,7 +368,7 @@ export async function getProductTypesWithProducts(options?: {
         category: product.category ?? null,
         model: product.model || null,
         available: product.inventory?.inStock !== false,
-        isFeatured: product.featured === true || product.visibility?.featured === true,
+        isFeatured: product.featured === true,
         collectionIds,
         youtubeUrl,
         price: priceInfo,
@@ -471,7 +470,6 @@ export async function getProductsByTypeForNav(
         },
         visibility: {
           sortOrder: true,
-          featured: true
         }
       },
       sort: '-featured,visibility.sortOrder,-updatedAt,name',
@@ -503,7 +501,7 @@ export async function getProductsByTypeForNav(
         category: product.category ?? null,
         model: product.model || null,
         available: product.inventory?.inStock !== false,
-        isFeatured: product.featured === true || product.visibility?.featured === true,
+        isFeatured: product.featured === true,
         collectionIds,
         youtubeUrl,
         price: priceInfo,
