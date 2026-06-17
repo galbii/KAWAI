@@ -812,7 +812,7 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
 
         {/* Content area — grid view or A-Z list view */}
         {filteredArtists.length > 0 ? (
-          <>
+          <div className="relative">
             <AnimatePresence mode="wait">
               {sortMode === 'alpha' ? (
                 /* ── A-Z list view ── */
@@ -863,7 +863,11 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
               )}
             </AnimatePresence>
 
-            {/* Load More — shared between both views */}
+            {/*
+              Load More — floats over the bottom of the grid rather than occupying
+              its own band. Absolute + pointer-events-none so artists behind stay
+              clickable; only the button itself captures pointer events.
+            */}
             <AnimatePresence>
               {hasMore && (
                 <motion.div
@@ -872,47 +876,76 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.4, ease }}
-                  className="flex flex-col items-center gap-4 py-14"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-4 px-6 pb-8 pt-28"
                 >
                   <button
                     type="button"
                     onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
                     className={cn(
-                      'group relative inline-flex items-center gap-3 overflow-hidden',
-                      'rounded-full px-8 py-3.5',
-                      'text-xs font-semibold tracking-[0.14em] uppercase',
+                      'group pointer-events-auto relative inline-flex items-center gap-3 overflow-hidden',
+                      'rounded-full pl-8 pr-5 py-4',
+                      'text-xs font-semibold tracking-[0.16em] uppercase',
                       'font-[family-name:var(--font-brand-sans)]',
-                      'border border-white/15 text-white/50',
-                      'hover:border-white/35 hover:text-white',
-                      'backdrop-blur-sm bg-white/[0.03]',
-                      'transition-all duration-300',
+                      'text-white/70 hover:text-white',
+                      'bg-white/[0.07] hover:bg-white/[0.11]',
+                      'border border-white/12 hover:border-white/25',
+                      'backdrop-blur-xl',
+                      // Elevation — the button floats above the surface and lifts on hover
+                      'shadow-[0_10px_30px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]',
+                      'hover:shadow-[0_20px_46px_-10px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.14)]',
+                      'hover:-translate-y-0.5 active:translate-y-0',
+                      'transition-all duration-300 ease-out',
                     )}
                   >
-                    <span className="absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+                    {/* Shimmer sweep */}
+                    <span className="absolute inset-0 -translate-x-full skew-x-12 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+
                     <span className="relative">Load More</span>
-                    <span className="relative text-white/20 font-normal tabular-nums">
+
+                    {/* Remaining-count chip — pops red on hover */}
+                    <span
+                      className={cn(
+                        'relative inline-flex items-center justify-center rounded-full px-2.5 py-0.5',
+                        'text-[10px] font-medium tabular-nums tracking-normal',
+                        'bg-white/10 text-white/55',
+                        'group-hover:bg-kawai-red group-hover:text-white',
+                        'transition-colors duration-300',
+                      )}
+                    >
                       +{filteredArtists.length - visibleCount}
                     </span>
+
+                    {/* Downward cue */}
+                    <svg
+                      className="relative w-3.5 h-3.5 text-white/40 group-hover:text-white/80 group-hover:translate-y-0.5 transition-all duration-300"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
 
-                  {/* Progress indicator */}
-                  <div className="flex items-center gap-3" aria-hidden="true">
-                    <div className="h-px bg-white/[0.08] rounded-full overflow-hidden w-24">
+                  {/* Progress indicator — single clean bar */}
+                  <div className="relative flex flex-col items-center gap-2" aria-hidden="true">
+                    <div className="relative h-[3px] w-44 rounded-full bg-white/[0.08] overflow-hidden">
                       <motion.div
-                        className="h-full bg-white/25 rounded-full"
+                        className="absolute inset-y-0 left-0 rounded-full bg-white/30"
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPct}%` }}
                         transition={{ duration: 0.5, ease }}
                       />
                     </div>
-                    <span className="text-[10px] text-white/20 tabular-nums font-[family-name:var(--font-brand-sans)]">
-                      {visibleCount} / {filteredArtists.length}
+                    <span className="text-[10px] tracking-wide text-white/25 tabular-nums font-[family-name:var(--font-brand-sans)]">
+                      {visibleCount} of {filteredArtists.length}
                     </span>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </>
+          </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
@@ -951,6 +984,9 @@ export function ArtistsGrid({ artists, legacyArtists = [], title = 'Our Artists'
             </button>
           </motion.div>
         )}
+
+        {/* Divider — separates the grid from the section below */}
+        <div className="h-px w-full bg-kawai-red" aria-hidden="true" />
     </section>
   )
 }
