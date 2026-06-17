@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       images: [{ url: seo.ogImage }],
     },
     alternates: {
-      canonical: `https://www.kawaius.com/store/${storeslug}/university`,
+      canonical: `https://kawaius.com/store/${storeslug}/university`,
     },
   };
 }

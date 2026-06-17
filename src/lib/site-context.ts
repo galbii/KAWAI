@@ -5,7 +5,7 @@ export type Site = 'us' | 'cad'
 export type Locale = 'en-US' | 'en-CA'
 
 export const SITE_URLS = {
-  us: 'https://www.kawaius.com',
+  us: 'https://kawaius.com',
   cad: 'https://ca.kawaius.com',
 } as const
 

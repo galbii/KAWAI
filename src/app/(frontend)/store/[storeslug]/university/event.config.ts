@@ -521,7 +521,7 @@ export const TCU_2025: UniversityEventConfig = {
 
   structuredData: {
     businessName: 'KAWAI Piano Sales – TCU Partnership Event',
-    businessUrl: 'https://www.kawaius.com',
+    businessUrl: 'https://kawaius.com',
     businessAddress: {
       street: '601 W. Plano Parkway, Suite 153',
       city: 'Plano',

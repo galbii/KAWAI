@@ -4,7 +4,7 @@ import type { Product } from '@/payload-types'
 
 export const revalidate = 3600
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kawaius.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
 
 // Google product category IDs
 // https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
