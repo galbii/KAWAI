@@ -28,11 +28,12 @@ function ManifestoWord({ progress, reduce, word, riseStart, riseEnd }: WordProps
 export default function SceneManifesto({ progress, reduce }: Props) {
   const [start, end] = SCENE_WINDOWS.manifesto
   const span = end - start
-  const mid = start + span * 0.35
-  const glyphScale = useTransform(progress, [start, mid], [0.7, 1])
-  const glyphBlur = useTransform(progress, [start, mid], ['8px', '0px'])
+  const glyphEnd = start + span * 0.2
+  const glyphScale = useTransform(progress, [start, glyphEnd], [0.7, 1])
+  const glyphBlur = useTransform(progress, [start, glyphEnd], ['8px', '0px'])
   const glyphFilter = useTransform(glyphBlur, (b: string) => `blur(${b})`)
-  const ruleScale = useTransform(progress, [mid, mid + 0.04], [0, 1])
+  // Rule wipes in just after the last word lands (~0.5 of the window).
+  const ruleScale = useTransform(progress, [start + span * 0.5, start + span * 0.55], [0, 1])
 
   const tokens = manifestoCopy.split(/(\s+)/)
   const wordCount = tokens.filter((t) => !/^\s+$/.test(t)).length
@@ -54,8 +55,8 @@ export default function SceneManifesto({ progress, reduce }: Props) {
             {tokens.map((token, i) => {
               if (/^\s+$/.test(token)) return <span key={i}>{token}</span>
               wordIndex++
-              const wordStart = start + span * (0.18 + (wordIndex / wordCount) * 0.55)
-              const wordEnd = wordStart + span * 0.06
+              const wordStart = start + span * (0.1 + (wordIndex / wordCount) * 0.35)
+              const wordEnd = wordStart + span * 0.05
               return (
                 <ManifestoWord
                   key={i}

@@ -28,8 +28,8 @@ function StatColumn({
   stat,
   isLast,
 }: StatColumnProps) {
-  const dividerScale = useTransform(progress, [dividerStart, dividerStart + 0.025], [0, 1])
-  const labelOpacity = useTransform(progress, [tickStart + 0.01, tickEnd], [0, 1])
+  const dividerScale = useTransform(progress, [dividerStart, dividerStart + 0.02], [0, 1])
+  const labelOpacity = useTransform(progress, [tickStart, tickEnd], [0, 1])
 
   return (
     <div
@@ -71,9 +71,11 @@ export default function SceneStats({ progress, reduce }: Props) {
       <div className="container mx-auto px-6">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
           {stats.map((stat, i) => {
-            const tickStart = start + span * (0.2 + i * 0.08)
-            const tickEnd = tickStart + span * 0.28
-            const dividerStart = start + span * (0.25 + i * 0.07)
+            // Front-loaded: every column lands within the first ~third of the
+            // window, then holds. The number itself fires on enter (timed).
+            const tickStart = start + span * (0.12 + i * 0.05)
+            const tickEnd = tickStart + span * 0.12
+            const dividerStart = start + span * (0.1 + i * 0.05)
             return (
               <StatColumn
                 key={stat.label}

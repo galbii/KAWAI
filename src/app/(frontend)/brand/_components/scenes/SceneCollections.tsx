@@ -4,8 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useTransform, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
-import { BrandArrowLink, BrandEyebrow } from '../brand-ui'
-import { SCENE_WINDOWS } from '../scenes'
+import { BrandCTA, BrandEyebrow } from '../brand-ui'
+import { ClaimDiscountCTA } from '../ClaimDiscountCTA'
+import { GET_DISCOUNTED_PRODUCTS_LABEL, SCENE_WINDOWS, exploreProductsCta } from '../scenes'
 import {
   CATEGORY_LABELS,
   collectionsCopy,
@@ -32,12 +33,12 @@ type CardProps = {
 function CollectionCard({ progress, reduce, collection, start, span, delayOffset }: CardProps) {
   const clip = useTransform(
     progress,
-    [start + span * (0.22 + delayOffset), start + span * (0.5 + delayOffset)],
+    [start + span * (0.14 + delayOffset), start + span * (0.34 + delayOffset)],
     ['inset(0 0 100% 0)', 'inset(0 0 0% 0)'],
   )
   const rule = useTransform(
     progress,
-    [start + span * (0.2 + delayOffset), start + span * (0.32 + delayOffset)],
+    [start + span * (0.12 + delayOffset), start + span * (0.22 + delayOffset)],
     [0, 1],
   )
 
@@ -103,18 +104,13 @@ export default function SceneCollections({ progress, reduce }: Props) {
     >
       <div className="container mx-auto px-6">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="mb-4">
-                <BrandEyebrow>{collectionsCopy.eyebrow}</BrandEyebrow>
-              </div>
-              <h2 className="font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,4.5vw,3.25rem)] font-light leading-[1.04] tracking-tight text-white">
-                {collectionsCopy.headline}
-              </h2>
+          <div className="mb-7">
+            <div className="mb-4">
+              <BrandEyebrow>{collectionsCopy.eyebrow}</BrandEyebrow>
             </div>
-            <BrandArrowLink href={collectionsCopy.cta.href} className="flex-shrink-0">
-              {collectionsCopy.cta.label}
-            </BrandArrowLink>
+            <h2 className="font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,4.5vw,3.25rem)] font-light leading-[1.04] tracking-tight text-white">
+              {collectionsCopy.headline}
+            </h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
@@ -126,9 +122,17 @@ export default function SceneCollections({ progress, reduce }: Props) {
                 collection={collection}
                 start={start}
                 span={span}
-                delayOffset={(i % 3) * 0.05}
+                delayOffset={(i % 3) * 0.04}
               />
             ))}
+          </div>
+
+          {/* CTAs */}
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <ClaimDiscountCTA variant="red">{GET_DISCOUNTED_PRODUCTS_LABEL}</ClaimDiscountCTA>
+            <BrandCTA href={exploreProductsCta.href} variant="outline">
+              {exploreProductsCta.label}
+            </BrandCTA>
           </div>
         </div>
       </div>

@@ -227,6 +227,35 @@ export const CUSTOMER_UPDATE = `
 `
 
 /**
+ * Update a customer's email marketing consent.
+ *
+ * Shopify does NOT allow setting emailMarketingConsent via customerUpdate on an
+ * EXISTING customer — it returns:
+ *   "To update emailMarketingConsent, please use the
+ *    customerEmailMarketingConsentUpdate Mutation instead"
+ * (It is only accepted inline in customerCreate.) Use this mutation to apply
+ * consent to customers that already exist.
+ */
+export const CUSTOMER_EMAIL_MARKETING_CONSENT_UPDATE = `
+  mutation customerEmailMarketingConsentUpdate($input: CustomerEmailMarketingConsentUpdateInput!) {
+    customerEmailMarketingConsentUpdate(input: $input) {
+      customer {
+        id
+        email
+        emailMarketingConsent {
+          marketingState
+          marketingOptInLevel
+        }
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`
+
+/**
  * Create or update a customer in a single mutation
  *
  * ⚠️ WARNING: This mutation is ONLY available in API version 2025-07+

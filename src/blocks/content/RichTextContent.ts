@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import {
   BlocksFeature,
+  EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
   HeadingFeature,
   HorizontalRuleFeature,
@@ -29,6 +30,8 @@ export const RichTextContent: Block = {
           HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
           // Reference globally registered blocks by slug
           BlocksFeature({ blocks: ['content-banner', 'content-code'] }),
+          // Inline tables within article prose (insert/edit via toolbar)
+          EXPERIMENTAL_TableFeature(),
           UploadFeature({ collections: { media: { fields: [] } } }),
           MediaManagerUploadFeature(),
           HorizontalRuleFeature(),

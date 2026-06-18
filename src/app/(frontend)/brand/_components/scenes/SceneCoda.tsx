@@ -3,7 +3,8 @@
 import { motion, useTransform, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import { BrandCTA, BrandEyebrow } from '../brand-ui'
-import { SCENE_WINDOWS, codaCopy } from '../scenes'
+import { ClaimDiscountCTA } from '../ClaimDiscountCTA'
+import { CLAIM_DISCOUNT_LABEL, SCENE_WINDOWS, codaCopy } from '../scenes'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
@@ -29,8 +30,8 @@ function HeadlineWord({ progress, reduce, word, riseStart, riseEnd }: WordProps)
 export default function SceneCoda({ progress, reduce }: Props) {
   const [start, end] = SCENE_WINDOWS.coda
   const span = end - start
-  const bodyOpacity = useTransform(progress, [start, start + span * 0.35], [0, 1])
-  const ctaOpacity = useTransform(progress, [start + span * 0.25, start + span * 0.6], [0, 1])
+  const bodyOpacity = useTransform(progress, [start + span * 0.05, start + span * 0.25], [0, 1])
+  const ctaOpacity = useTransform(progress, [start + span * 0.2, start + span * 0.4], [0, 1])
 
   const words = codaCopy.headline.split(' ')
 
@@ -49,8 +50,8 @@ export default function SceneCoda({ progress, reduce }: Props) {
 
           <h2 className="mb-6 font-[family-name:var(--font-brand-serif)] text-[clamp(2.5rem,6vw,4.5rem)] font-light leading-[1.04] tracking-tight text-white">
             {words.map((word, i) => {
-              const riseStart = start + span * (0.05 + i * 0.05)
-              const riseEnd = riseStart + span * 0.25
+              const riseStart = start + span * (0.04 + i * 0.03)
+              const riseEnd = riseStart + span * 0.18
               return (
                 <HeadlineWord
                   key={i}
@@ -75,11 +76,9 @@ export default function SceneCoda({ progress, reduce }: Props) {
             {...(reduce ? {} : { style: { opacity: ctaOpacity } })}
             className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4"
           >
-            <BrandCTA href={codaCopy.primaryCta.href} variant="red">
+            <ClaimDiscountCTA variant="red">{CLAIM_DISCOUNT_LABEL}</ClaimDiscountCTA>
+            <BrandCTA href={codaCopy.primaryCta.href} variant="outline">
               {codaCopy.primaryCta.label}
-            </BrandCTA>
-            <BrandCTA href={codaCopy.secondaryCta.href} variant="outline">
-              {codaCopy.secondaryCta.label}
             </BrandCTA>
           </motion.div>
         </div>

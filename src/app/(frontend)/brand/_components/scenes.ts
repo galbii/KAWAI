@@ -1,7 +1,8 @@
 export const heroCopy = {
-  eyebrow: 'Since 1927',
+  eyebrow: 'Kawai America Corporation',
+  sinceLabel: 'Since 1927',
   headline: ['Crafting', 'Inspiration'],
-  sub: 'Three generations. Nearly a century of innovation. One uncompromising standard.',
+  sub: 'Visit an Authorized Dealer or Official Kawai location for best prices and other rebate offers.',
   primaryCta: { label: 'Our Story', href: '#story' },
   secondaryCta: { label: 'Explore Pianos', href: '/pianos' },
 }
@@ -111,19 +112,45 @@ export const codaCopy = {
   secondaryCta: { label: 'Find a Dealer', href: '/find-a-dealer' },
 }
 
+/** Shared label for every "claim your discount" CTA that opens the lead funnel. */
+export const CLAIM_DISCOUNT_LABEL = 'Claim Your Discount'
+
+/** Label for the funnel-opening CTA on the Featured Collections scene. */
+export const GET_DISCOUNTED_PRODUCTS_LABEL = 'Get Discounted Products'
+
+/** Secondary "browse the full catalog" CTA on the Featured Collections scene. */
+export const exploreProductsCta = { label: 'Explore All Products', href: '/pianos' } as const
+
+export const showroomsCopy = {
+  eyebrow: 'Where to Play',
+  headline: 'Four Official Showrooms',
+  body: 'Experience Kawai in person at our flagship galleries — then find one of more than 200 authorized dealers near you.',
+  showrooms: [
+    { city: 'Denver', href: '/store/denver' },
+    { city: 'Dallas', href: '/store/dallas' },
+    { city: 'Houston', href: '/store/houston' },
+    { city: 'St. Louis', href: '/store/st-louis' },
+  ],
+  disclaimer: 'Sign up today and claim your discount at any of these valid locations.',
+  dealerStat: { numeric: 200, suffix: '+', label: 'Authorized Dealers Nationwide' },
+  secondaryCta: { label: 'Find a Dealer', href: '/find-a-dealer' },
+} as const
+
 /**
- * Nine scene windows on master scroll progress (0 → 1).
- * Tuned so each scene gets ~11% of scroll plus a ~2% crossfade overlap.
- * Timeline keeps the longest run; collections sits between goDeeper and coda.
+ * Ten scene windows on master scroll progress (0 → 1).
+ * Tuned so each scene gets ~10–15% of scroll plus a ~1.5% crossfade overlap.
+ * Order: hero → stats → showrooms → collections → manifesto → heritage →
+ * timeline → technology → goDeeper → coda. Timeline keeps the longest run.
  */
 export const SCENE_WINDOWS = {
-  hero: [0.0, 0.11] as const,
-  manifesto: [0.09, 0.22] as const,
-  stats: [0.2, 0.32] as const,
-  heritage: [0.3, 0.45] as const,
-  timeline: [0.43, 0.62] as const,
-  technology: [0.6, 0.71] as const,
-  goDeeper: [0.69, 0.81] as const,
-  collections: [0.79, 0.92] as const,
-  coda: [0.9, 1.0] as const,
+  hero: [0.0, 0.1] as const,
+  stats: [0.085, 0.2] as const,
+  showrooms: [0.185, 0.3] as const,
+  collections: [0.285, 0.4] as const,
+  manifesto: [0.385, 0.48] as const,
+  heritage: [0.465, 0.58] as const,
+  timeline: [0.565, 0.7] as const,
+  technology: [0.685, 0.78] as const,
+  goDeeper: [0.765, 0.86] as const,
+  coda: [0.845, 1.0] as const,
 }

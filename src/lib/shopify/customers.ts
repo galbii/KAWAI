@@ -23,6 +23,7 @@ import { shopifyAdminClient } from './admin-client'
 import {
   CUSTOMER_CREATE,
   CUSTOMER_UPDATE,
+  CUSTOMER_EMAIL_MARKETING_CONSENT_UPDATE,
   CUSTOMER_SET,
   GET_CUSTOMER,
   SEARCH_CUSTOMER_BY_EMAIL,
@@ -116,7 +117,10 @@ export async function upsertCustomer(
       const newTags = input.tags || []
       const mergedTags = [...new Set([...existingTags, ...newTags])]
 
-      // Update customer with merged data
+      // Update customer with merged data.
+      // NOTE: emailMarketingConsent is intentionally omitted here — Shopify
+      // rejects it on customerUpdate for existing customers and requires the
+      // dedicated customerEmailMarketingConsentUpdate mutation (applied below).
       const response = await shopifyAdminClient.mutate<CustomerUpdateResponse>(
         CUSTOMER_UPDATE,
         {
@@ -126,7 +130,6 @@ export async function upsertCustomer(
             lastName: input.lastName,
             phone: input.phone,
             tags: mergedTags,
-            emailMarketingConsent: input.emailMarketingConsent,
             note: input.note,
             taxExempt: input.taxExempt,
             addresses: input.addresses
@@ -138,6 +141,19 @@ export async function upsertCustomer(
 
       if (!response.customerUpdate.customer) {
         throw new CustomerError('Customer update failed: No customer data returned')
+      }
+
+      // Apply marketing consent via the dedicated mutation (required for
+      // existing customers). Only when consent was explicitly provided.
+      if (input.emailMarketingConsent?.marketingState) {
+        const updatedCustomer = await updateEmailMarketingConsent(
+          existingCustomer.id,
+          input.emailMarketingConsent,
+        )
+        if (updatedCustomer) {
+          response.customerUpdate.customer.emailMarketingConsent =
+            updatedCustomer.emailMarketingConsent
+        }
       }
 
       console.log('[Shopify Admin] Customer updated:', {
@@ -183,6 +199,56 @@ export async function upsertCustomer(
       `Failed to upsert customer: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
   }
+}
+
+// ============================================================================
+// Email Marketing Consent (existing customers)
+// ============================================================================
+
+interface ConsentUpdateResponse {
+  customerEmailMarketingConsentUpdate: {
+    customer: Pick<Customer, 'id' | 'email' | 'emailMarketingConsent'> | null
+    userErrors: CustomerUserError[]
+  }
+}
+
+/**
+ * Update an existing customer's email marketing consent via the dedicated
+ * Shopify mutation. Required because customerUpdate rejects emailMarketingConsent
+ * for existing customers.
+ *
+ * @param customerId - Shopify customer GID (e.g. "gid://shopify/Customer/123")
+ * @param consent - Marketing state + opt-in level
+ * @returns The updated customer (id/email/consent), or null on failure
+ * @throws {CustomerError} If the mutation returns user errors
+ */
+export async function updateEmailMarketingConsent(
+  customerId: string,
+  consent: CustomerInput['emailMarketingConsent'],
+): Promise<Pick<Customer, 'id' | 'email' | 'emailMarketingConsent'> | null> {
+  if (!consent?.marketingState) return null
+
+  const response = await shopifyAdminClient.mutate<ConsentUpdateResponse>(
+    CUSTOMER_EMAIL_MARKETING_CONSENT_UPDATE,
+    {
+      input: {
+        customerId,
+        emailMarketingConsent: {
+          marketingState: consent.marketingState,
+          ...(consent.marketingOptInLevel
+            ? { marketingOptInLevel: consent.marketingOptInLevel }
+            : {}),
+        },
+      },
+    },
+  )
+
+  checkUserErrors(
+    response.customerEmailMarketingConsentUpdate.userErrors,
+    'Email marketing consent update',
+  )
+
+  return response.customerEmailMarketingConsentUpdate.customer
 }
 
 // ============================================================================

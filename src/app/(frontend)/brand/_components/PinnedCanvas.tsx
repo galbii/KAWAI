@@ -24,8 +24,8 @@ const MID = {
 
 const SOUNDBOARD_STOPS = [
   MID.hero,
-  MID.manifesto,
   MID.stats,
+  MID.manifesto,
   MID.heritage,
   MID.timeline,
   MID.technology,
@@ -69,6 +69,18 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
   const luxeScale = useTransform(progress, [SCENE_WINDOWS.coda[0], MID.coda, 1], [1.03, 1.05, 1.1])
   const luxeY = useTransform(progress, [SCENE_WINDOWS.coda[0], 1], ['0%', '-3%'])
 
+  // Featured collections location shot: slow push-in across its window
+  const collectionsScale = useTransform(
+    progress,
+    [SCENE_WINDOWS.collections[0], MID.collections, SCENE_WINDOWS.collections[1]],
+    [1.06, 1.1, 1.14],
+  )
+  const collectionsX = useTransform(
+    progress,
+    [SCENE_WINDOWS.collections[0], SCENE_WINDOWS.collections[1]],
+    ['0%', '-3%'],
+  )
+
   // — Image opacity windows —
   // Warm pianist: full at hero, fades out as the soundboard takes over
   const warmOpacity = useTransform(progress, [0, 0.09, 0.14], [1, 1, 0])
@@ -90,6 +102,18 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
       SCENE_WINDOWS.heritage[0] + 0.025,
       SCENE_WINDOWS.heritage[1] - 0.025,
       SCENE_WINDOWS.heritage[1],
+    ],
+    [0, 1, 1, 0],
+  )
+
+  // Collections location shot: emerges over the soundboard for the collections scene
+  const collectionsOpacity = useTransform(
+    progress,
+    [
+      SCENE_WINDOWS.collections[0],
+      SCENE_WINDOWS.collections[0] + 0.02,
+      SCENE_WINDOWS.collections[1] - 0.02,
+      SCENE_WINDOWS.collections[1],
     ],
     [0, 1, 1, 0],
   )
@@ -140,13 +164,13 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-kawai-black">
-      {/* Warm pianist — hero + go-deeper */}
+      {/* Hero background — hero only */}
       <motion.div
         className="absolute inset-0 will-change-[opacity,transform]"
         style={{ opacity: warmOpacity, scale: warmScale, x: warmX, filter: sharedFilter }}
       >
         <Image
-          src={aboutImages.warmPianist}
+          src={aboutImages.heroBg}
           alt=""
           fill
           priority
@@ -174,6 +198,26 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
           fill
           priority
           quality={90}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </motion.div>
+
+      {/* Featured collections location shot — collections scene */}
+      <motion.div
+        className="absolute inset-0 will-change-[opacity,transform]"
+        style={{
+          opacity: collectionsOpacity,
+          scale: collectionsScale,
+          x: collectionsX,
+          filter: sharedFilter,
+        }}
+      >
+        <Image
+          src={aboutImages.collectionsBg}
+          alt=""
+          fill
+          quality={88}
           sizes="100vw"
           className="object-cover object-center"
         />

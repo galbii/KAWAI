@@ -42,7 +42,7 @@ export function RichTextContentBlock({ content }: ContentRichTextBlock) {
   if (!content) return null
 
   return (
-    <div className="prose prose-lg prose-headings:font-[family-name:var(--font-brand-serif)] prose-headings:text-kawai-black prose-p:text-kawai-charcoal prose-p:leading-relaxed prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline prose-strong:text-kawai-black prose-blockquote:border-l-kawai-red prose-blockquote:text-kawai-charcoal prose-li:text-kawai-charcoal prose-li:leading-relaxed max-w-none">
+    <div className="prose prose-lg prose-headings:font-[family-name:var(--font-brand-serif)] prose-headings:text-kawai-black prose-p:text-kawai-charcoal prose-p:leading-relaxed prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline prose-strong:text-kawai-black prose-blockquote:border-l-kawai-red prose-blockquote:text-kawai-charcoal prose-li:text-kawai-charcoal prose-li:leading-relaxed prose-table:border prose-table:border-kawai-neutral prose-th:bg-kawai-pearl prose-th:text-kawai-black prose-th:font-semibold prose-th:border prose-th:border-kawai-neutral prose-th:px-4 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-kawai-neutral prose-td:text-kawai-charcoal prose-td:px-4 prose-td:py-2 max-w-none">
       <RichText converters={converters} data={content} />
     </div>
   )

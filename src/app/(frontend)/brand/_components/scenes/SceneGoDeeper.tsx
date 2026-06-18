@@ -19,12 +19,12 @@ type CardProps = {
 function Card({ progress, reduce, card, start, span, delayOffset }: CardProps) {
   const shutter = useTransform(
     progress,
-    [start + span * (0.25 + delayOffset), start + span * (0.35 + delayOffset)],
+    [start + span * (0.12 + delayOffset), start + span * (0.2 + delayOffset)],
     [0, 1],
   )
   const clip = useTransform(
     progress,
-    [start + span * (0.3 + delayOffset), start + span * (0.55 + delayOffset)],
+    [start + span * (0.16 + delayOffset), start + span * (0.38 + delayOffset)],
     ['inset(0 0 100% 0)', 'inset(0 0 0% 0)'],
   )
 
@@ -94,7 +94,7 @@ export default function SceneGoDeeper({ progress, reduce }: Props) {
                 card={card}
                 start={start}
                 span={span}
-                delayOffset={i * 0.08}
+                delayOffset={i * 0.06}
               />
             ))}
           </div>

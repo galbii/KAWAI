@@ -8,12 +8,13 @@ type Props = { progress: MotionValue<number> }
 const order: { key: keyof typeof SCENE_WINDOWS; label: string }[] = [
   { key: 'hero', label: 'Inspiration' },
   { key: 'manifesto', label: 'Manifesto' },
+  { key: 'showrooms', label: 'Showrooms' },
+  { key: 'collections', label: 'Collections' },
   { key: 'stats', label: 'By the Numbers' },
   { key: 'heritage', label: 'Heritage' },
   { key: 'timeline', label: 'Legacy of Innovation' },
   { key: 'technology', label: 'Engineered by Science' },
   { key: 'goDeeper', label: 'Go Deeper' },
-  { key: 'collections', label: 'Collections' },
   { key: 'coda', label: '97 Years' },
 ]
 
