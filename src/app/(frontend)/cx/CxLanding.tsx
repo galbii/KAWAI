@@ -18,8 +18,6 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 const HERO_START = 21
 const HERO_END = 32
-const LISTEN_START = 63
-const LISTEN_END = 136
 
 type CxTab = 'cx202' | 'cx102'
 
@@ -142,17 +140,17 @@ export function CxLanding() {
       })
 
       listenPlayer = new w.YT.Player('cxListenPlayer', {
-        videoId: 'PmBB9HhRAjE',
+        videoId: '-J6DZQtLo1Q',
         playerVars: {
           autoplay: 0, controls: 1, disablekb: 0, fs: 1,
           iv_load_policy: 3, modestbranding: 1, playsinline: 1,
-          rel: 0, start: LISTEN_START, end: LISTEN_END,
+          rel: 0,
         },
         events: {
           onReady: () => { listenReady = true },
           onStateChange: (e: { data: number }) => {
             if (e.data === w.YT?.PlayerState.ENDED) {
-              listenPlayer?.seekTo(LISTEN_START, true)
+              listenPlayer?.seekTo(0, true)
               listenPlayer?.playVideo()
             }
           },
@@ -162,13 +160,6 @@ export function CxLanding() {
       poll = setInterval(() => {
         if (heroPlayer?.getCurrentTime && heroPlayer.getCurrentTime() >= HERO_END - 0.15) {
           heroPlayer.seekTo(HERO_START, true)
-        }
-        if (
-          listenPlayer?.getCurrentTime &&
-          listenPlayer.getPlayerState?.() === 1 &&
-          listenPlayer.getCurrentTime() >= LISTEN_END - 0.2
-        ) {
-          listenPlayer.seekTo(LISTEN_START, true)
         }
       }, 200)
     }
@@ -189,7 +180,7 @@ export function CxLanding() {
     const poster = document.getElementById('cxListenPoster')
     const onPosterClick = () => {
       if (listenReady && listenPlayer) {
-        listenPlayer.seekTo(LISTEN_START, true)
+        listenPlayer.seekTo(0, true)
         listenPlayer.playVideo()
         if (poster) poster.style.display = 'none'
       }
@@ -762,7 +753,7 @@ export function CxLanding() {
                 <CxRow label="Output Power" value="22 W (11 W × 2)" num />
                 <CxRow label="Connectivity" value="USB · Bluetooth MIDI" />
               </dl>
-              <a href="/products/kawai-cx102" className="btn-ghost block text-center mt-10">Try the CX102</a>
+              <a href="/products/kawai-cx-102" className="btn-ghost block text-center mt-10">Try the CX102</a>
             </div>
 
             <div
