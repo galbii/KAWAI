@@ -1,41 +1,39 @@
 'use client'
 
-import { motion, useTransform, type MotionValue } from 'framer-motion'
+import { motion, type MotionValue, type Variants } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import { BrandArrowLink, BrandEyebrow } from '../brand-ui'
+import { useSceneActive } from '../useSceneActive'
 import { SCENE_WINDOWS, goDeeperCopy } from '../scenes'
+import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
-type CardProps = {
-  progress: MotionValue<number>
-  reduce: boolean
-  card: (typeof goDeeperCopy.cards)[number]
-  start: number
-  span: number
-  delayOffset: number
+const gridV: Variants = {
+  hide: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
 }
 
-function Card({ progress, reduce, card, start, span, delayOffset }: CardProps) {
-  const shutter = useTransform(
-    progress,
-    [start + span * (0.12 + delayOffset), start + span * (0.2 + delayOffset)],
-    [0, 1],
-  )
-  const clip = useTransform(
-    progress,
-    [start + span * (0.16 + delayOffset), start + span * (0.38 + delayOffset)],
-    ['inset(0 0 100% 0)', 'inset(0 0 0% 0)'],
-  )
+const cardV: Variants = {
+  hide: { clipPath: 'inset(0 0 100% 0)' },
+  show: { clipPath: 'inset(0 0 0% 0)', transition: { duration: 0.7, ease: EASE_OUT_EXPO } },
+}
 
+const shutterV: Variants = {
+  hide: { scaleX: 0 },
+  show: { scaleX: 1, transition: { duration: 0.5, ease: EASE_OUT_EXPO } },
+}
+
+function Card({ card }: { card: (typeof goDeeperCopy.cards)[number] }) {
   return (
     <motion.article
-      {...(reduce ? {} : { style: { clipPath: clip } })}
+      variants={cardV}
       className="group relative h-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.04] p-9 backdrop-blur-sm transition-colors duration-300 hover:border-kawai-red/60"
     >
       <motion.span
         aria-hidden
-        {...(reduce ? {} : { style: { scaleX: shutter, originX: 0 } })}
+        variants={shutterV}
+        style={{ originX: 0 }}
         className="absolute left-0 top-0 h-px w-full bg-kawai-red"
       />
       <span
@@ -52,11 +50,7 @@ function Card({ progress, reduce, card, start, span, delayOffset }: CardProps) {
       </p>
       <div className="flex flex-col gap-3">
         {card.links.map((link) => (
-          <BrandArrowLink
-            key={link.href}
-            href={link.href}
-            tone={link.primary ? 'light' : 'muted'}
-          >
+          <BrandArrowLink key={link.href} href={link.href} tone={link.primary ? 'light' : 'muted'}>
             {link.label}
           </BrandArrowLink>
         ))}
@@ -66,8 +60,8 @@ function Card({ progress, reduce, card, start, span, delayOffset }: CardProps) {
 }
 
 export default function SceneGoDeeper({ progress, reduce }: Props) {
-  const [start, end] = SCENE_WINDOWS.goDeeper
-  const span = end - start
+  const active = useSceneActive(progress, SCENE_WINDOWS.goDeeper)
+  const state = reduce ? 'show' : active ? 'show' : 'hide'
 
   return (
     <SceneLayer
@@ -85,19 +79,16 @@ export default function SceneGoDeeper({ progress, reduce }: Props) {
             {goDeeperCopy.headline}
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {goDeeperCopy.cards.map((card, i) => (
-              <Card
-                key={card.title}
-                progress={progress}
-                reduce={reduce}
-                card={card}
-                start={start}
-                span={span}
-                delayOffset={i * 0.06}
-              />
+          <motion.div
+            variants={gridV}
+            initial={reduce ? false : 'hide'}
+            animate={state}
+            className="grid gap-6 md:grid-cols-2"
+          >
+            {goDeeperCopy.cards.map((card) => (
+              <Card key={card.title} card={card} />
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </SceneLayer>

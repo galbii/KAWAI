@@ -2,45 +2,47 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useTransform, type MotionValue } from 'framer-motion'
+import { motion, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import NumberStrike from '../NumberStrike'
 import { BrandCTA, BrandEyebrow } from '../brand-ui'
 import { ClaimDiscountCTA } from '../ClaimDiscountCTA'
+import { useSceneActive } from '../useSceneActive'
 import { CLAIM_DISCOUNT_LABEL, SCENE_WINDOWS, showroomsCopy } from '../scenes'
+import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
 type CityProps = {
-  progress: MotionValue<number>
+  active: boolean
   reduce: boolean
   city: string
   href: string
   index: number
-  start: number
-  span: number
 }
 
 /**
- * A single showroom city. Reveals with a quick rise + a hairline divider that
- * scales in from the left, echoing the divider motion in the Stats scene so
- * the two number-led scenes share a vocabulary.
+ * A single showroom city. Rises and fades in on a timer once the scene is
+ * active, with a hairline divider scaling in from center — so it always
+ * completes regardless of scroll.
  */
-function CityLink({ progress, reduce, city, href, index, start, span }: CityProps) {
-  const appearStart = start + span * (0.2 + index * 0.04)
-  const opacity = useTransform(progress, [appearStart, appearStart + span * 0.1], [0, 1])
-  const y = useTransform(progress, [appearStart, appearStart + span * 0.1], [14, 0])
-  const dividerScale = useTransform(progress, [appearStart, appearStart + span * 0.08], [0, 1])
+function CityLink({ active, reduce, city, href, index }: CityProps) {
+  const delay = 0.2 + index * 0.08
 
   return (
     <motion.div
-      {...(reduce ? {} : { style: { opacity, y } })}
+      initial={reduce ? false : { opacity: 0, y: 14 }}
+      animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 14 }}
+      transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay }}
       className="relative px-5 text-center sm:px-7"
     >
       {index > 0 && (
         <motion.span
           aria-hidden
-          {...(reduce ? {} : { style: { scaleY: dividerScale, originY: 0.5 } })}
+          initial={reduce ? false : { scaleY: 0 }}
+          animate={reduce ? {} : { scaleY: active ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay }}
+          style={{ originY: 0.5 }}
           className="absolute left-0 top-1/2 hidden h-9 w-px -translate-y-1/2 bg-white/15 sm:block"
         />
       )}
@@ -59,24 +61,18 @@ function CityLink({ progress, reduce, city, href, index, start, span }: CityProp
 }
 
 export default function SceneShowrooms({ progress, reduce }: Props) {
-  const [start, end] = SCENE_WINDOWS.showrooms
-  const span = end - start
-
-  // Front-loaded: logo, headline, cities and the dealer count all land within
-  // the first half of the window, then hold. The number itself fires on enter.
-  const logoOpacity = useTransform(progress, [start + span * 0.06, start + span * 0.18], [0, 1])
-  const logoY = useTransform(progress, [start + span * 0.06, start + span * 0.18], [18, 0])
-  const headlineOpacity = useTransform(progress, [start + span * 0.12, start + span * 0.24], [0, 1])
-  const headlineY = useTransform(progress, [start + span * 0.12, start + span * 0.24], [20, 0])
-  const statOpacity = useTransform(progress, [start + span * 0.4, start + span * 0.52], [0, 1])
-  const statY = useTransform(progress, [start + span * 0.4, start + span * 0.52], [20, 0])
+  const active = useSceneActive(progress, SCENE_WINDOWS.showrooms)
 
   return (
     <SceneLayer progress={progress} window={SCENE_WINDOWS.showrooms} className="items-center">
       <div className="container mx-auto px-6">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           {/* Kawai logo */}
-          <motion.div {...(reduce ? {} : { style: { opacity: logoOpacity, y: logoY } })}>
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 18 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 18 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}
+          >
             <Image
               src="/images/logos/kawai-logo-new-red.png"
               alt="Kawai"
@@ -92,7 +88,9 @@ export default function SceneShowrooms({ progress, reduce }: Props) {
 
           {/* Headline */}
           <motion.h2
-            {...(reduce ? {} : { style: { opacity: headlineOpacity, y: headlineY } })}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 20 }}
+            transition={{ duration: 0.6, ease: EASE_OUT_EXPO, delay: 0.1 }}
             className="mt-4 font-[family-name:var(--font-brand-serif)] text-[clamp(2.25rem,5vw,3.75rem)] font-light leading-[1.04] tracking-tight text-white"
           >
             {showroomsCopy.headline}
@@ -103,20 +101,20 @@ export default function SceneShowrooms({ progress, reduce }: Props) {
             {showroomsCopy.showrooms.map((s, i) => (
               <CityLink
                 key={s.city}
-                progress={progress}
+                active={active}
                 reduce={reduce}
                 city={s.city}
                 href={s.href}
                 index={i}
-                start={start}
-                span={span}
               />
             ))}
           </div>
 
           {/* Disclaimer */}
           <motion.p
-            {...(reduce ? {} : { style: { opacity: statOpacity } })}
+            initial={reduce ? false : { opacity: 0 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.4 }}
             className="mt-7 max-w-md font-[family-name:var(--font-brand-sans)] text-sm leading-relaxed text-white/55"
           >
             {showroomsCopy.disclaimer}
@@ -124,16 +122,18 @@ export default function SceneShowrooms({ progress, reduce }: Props) {
 
           {/* Dealer stat */}
           <motion.div
-            {...(reduce ? {} : { style: { opacity: statOpacity, y: statY } })}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 20 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.45 }}
             className="mt-12 flex flex-col items-center"
           >
             <div className="font-[family-name:var(--font-brand-serif)] text-6xl font-light leading-none tracking-tight text-white md:text-7xl">
               <NumberStrike
-                progress={progress}
-                window={[start + span * 0.4, start + span * 0.52]}
+                active={active}
                 target={showroomsCopy.dealerStat.numeric}
                 suffix={showroomsCopy.dealerStat.suffix}
                 reduce={reduce}
+                delay={0.5}
               />
             </div>
             <div className="mt-4 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.28em] text-white/65">

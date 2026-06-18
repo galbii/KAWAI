@@ -1,59 +1,51 @@
 'use client'
 
-import { motion, useTransform, type MotionValue } from 'framer-motion'
+import { motion, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import NumberStrike from '../NumberStrike'
+import { useSceneActive } from '../useSceneActive'
 import { SCENE_WINDOWS, stats } from '../scenes'
+import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
 type StatColumnProps = {
-  progress: MotionValue<number>
+  active: boolean
   reduce: boolean
   index: number
-  tickStart: number
-  tickEnd: number
-  dividerStart: number
   stat: (typeof stats)[number]
   isLast: boolean
 }
 
-function StatColumn({
-  progress,
-  reduce,
-  index,
-  tickStart,
-  tickEnd,
-  dividerStart,
-  stat,
-  isLast,
-}: StatColumnProps) {
-  const dividerScale = useTransform(progress, [dividerStart, dividerStart + 0.02], [0, 1])
-  const labelOpacity = useTransform(progress, [tickStart, tickEnd], [0, 1])
+function StatColumn({ active, reduce, index, stat, isLast }: StatColumnProps) {
+  const delay = index * 0.1
 
   return (
-    <div
-      className={`relative px-6 text-center ${isLast ? 'col-span-2 md:col-span-1' : ''}`}
-    >
+    <div className={`relative px-6 text-center ${isLast ? 'col-span-2 md:col-span-1' : ''}`}>
       {index > 0 && (
         <motion.span
           aria-hidden
-          {...(reduce ? {} : { style: { scaleY: dividerScale, originY: 0.5 } })}
+          initial={reduce ? false : { scaleY: 0 }}
+          animate={reduce ? {} : { scaleY: active ? 1 : 0 }}
+          transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay }}
+          style={{ originY: 0.5 }}
           className="absolute left-0 top-1/2 hidden h-20 w-px -translate-y-1/2 bg-white/15 md:block"
         />
       )}
       <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-light leading-none tracking-tight text-white md:text-6xl lg:text-7xl">
         <NumberStrike
-          progress={progress}
-          window={[tickStart, tickEnd]}
+          active={active}
           target={stat.numeric}
           suffix={stat.suffix}
           decimals={'decimals' in stat ? (stat.decimals as number) : 0}
           reduce={reduce}
+          delay={delay}
         />
       </div>
       <motion.div
-        {...(reduce ? {} : { style: { opacity: labelOpacity } })}
+        initial={reduce ? false : { opacity: 0, y: 8 }}
+        animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 8 }}
+        transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: delay + 0.15 }}
         className="mt-4 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.28em] text-white/65"
       >
         {stat.label}
@@ -63,33 +55,22 @@ function StatColumn({
 }
 
 export default function SceneStats({ progress, reduce }: Props) {
-  const [start, end] = SCENE_WINDOWS.stats
-  const span = end - start
+  const active = useSceneActive(progress, SCENE_WINDOWS.stats)
 
   return (
     <SceneLayer progress={progress} window={SCENE_WINDOWS.stats} className="items-center">
       <div className="container mx-auto px-6">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
-          {stats.map((stat, i) => {
-            // Front-loaded: every column lands within the first ~third of the
-            // window, then holds. The number itself fires on enter (timed).
-            const tickStart = start + span * (0.12 + i * 0.05)
-            const tickEnd = tickStart + span * 0.12
-            const dividerStart = start + span * (0.1 + i * 0.05)
-            return (
-              <StatColumn
-                key={stat.label}
-                progress={progress}
-                reduce={reduce}
-                index={i}
-                stat={stat}
-                tickStart={tickStart}
-                tickEnd={tickEnd}
-                dividerStart={dividerStart}
-                isLast={i === stats.length - 1}
-              />
-            )
-          })}
+          {stats.map((stat, i) => (
+            <StatColumn
+              key={stat.label}
+              active={active}
+              reduce={reduce}
+              index={i}
+              stat={stat}
+              isLast={i === stats.length - 1}
+            />
+          ))}
         </div>
       </div>
     </SceneLayer>

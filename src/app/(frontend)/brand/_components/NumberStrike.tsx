@@ -1,25 +1,21 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { animate, useMotionValueEvent, type MotionValue } from 'framer-motion'
+import { animate } from 'framer-motion'
 import { EASE_OUT_EXPO } from './motion'
 
 type Props = {
-  progress: MotionValue<number>
-  /**
-   * Master-scroll range for the stat. Only the start (`window[0]`) matters:
-   * it is the trigger point at which the count fires. The count then plays
-   * to completion on a timer, so it always finishes even if the user stops
-   * scrolling mid-scene.
-   */
-  window: readonly [number, number]
+  /** When true, the count fires and plays to completion on a timer. */
+  active: boolean
   target: number
   suffix?: string
   decimals?: number
   reduce: boolean
   className?: string
-  /** Seconds the count-up takes once triggered. */
+  /** Seconds the count-up takes. */
   duration?: number
+  /** Seconds to wait before counting (for time-based stagger across a row). */
+  delay?: number
 }
 
 function format(n: number, decimals: number): string {
@@ -30,67 +26,47 @@ function format(n: number, decimals: number): string {
 }
 
 /**
- * A stat counter that *fires on enter* rather than scrubbing to scroll.
- *
- * Once the scroll position reaches the trigger point (`window[0]`), the number
- * counts up to its target on a fixed timer and holds there — so it never
- * freezes at a half-finished value when the user pauses scrolling. Scrolling
- * back above the trigger resets it so the count replays on the next pass.
+ * A stat counter that counts up on a *timer* once its scene is active — never
+ * scrubbed to scroll. It always reaches its target (and holds) regardless of
+ * where the user stops scrolling, and resets when the scene is left so it can
+ * replay on re-entry.
  */
 export default function NumberStrike({
-  progress,
-  window: w,
+  active,
   target,
   suffix = '',
   decimals = 0,
   reduce,
   className,
-  duration = 1.1,
+  duration = 1.2,
+  delay = 0,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null)
-  const playing = useRef(false)
   const controls = useRef<ReturnType<typeof animate> | null>(null)
-  const trigger = w[0]
 
   const write = (n: number) => {
     if (ref.current) ref.current.textContent = format(n, decimals) + suffix
   }
 
-  const fire = () => {
-    if (playing.current) return
-    playing.current = true
-    controls.current?.stop()
-    controls.current = animate(0, target, {
-      duration,
-      ease: EASE_OUT_EXPO,
-      onUpdate: write,
-    })
-  }
-
-  const reset = () => {
-    if (!playing.current) return
-    playing.current = false
-    controls.current?.stop()
-    write(0)
-  }
-
-  // Initial paint + fire-if-already-past (covers deep links / refresh mid-page).
   useEffect(() => {
     if (reduce) {
       write(target)
       return
     }
-    write(0)
-    if (progress.get() >= trigger) fire()
+    controls.current?.stop()
+    if (active) {
+      controls.current = animate(0, target, {
+        duration,
+        delay,
+        ease: EASE_OUT_EXPO,
+        onUpdate: write,
+      })
+    } else {
+      write(0)
+    }
     return () => controls.current?.stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduce, target, decimals, suffix])
-
-  useMotionValueEvent(progress, 'change', (p) => {
-    if (reduce) return
-    if (p >= trigger) fire()
-    else reset()
-  })
+  }, [active, reduce, target, decimals, suffix, duration, delay])
 
   return <span ref={ref} className={className} />
 }

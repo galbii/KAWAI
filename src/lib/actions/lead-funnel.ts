@@ -107,6 +107,52 @@ export async function submitLeadContact(formData: FormData): Promise<LeadContact
   }
 }
 
+// ─── 1b. Partial save: email only (step 1, phase A "Next") ───────────────────
+
+const emailOnlySchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  /** Comma-separated source tags from the funnel config. */
+  customTags: z.string().optional(),
+})
+
+export interface LeadEmailResult {
+  success: boolean
+  message: string
+}
+
+/**
+ * Bank the lead the moment the visitor clicks "Next" on the email screen, so we
+ * keep it even if they abandon the details screen. Intentionally upserts WITHOUT
+ * marketing consent — consent is captured on the final step and applied by
+ * submitLeadContact. A lead that only ever reaches here is identifiable as
+ * "has the 'lead-funnel' tag but NOT 'newsletter'".
+ */
+export async function submitLeadEmail(
+  email: string,
+  customTags?: string,
+): Promise<LeadEmailResult> {
+  const parsed = emailOnlySchema.safeParse({ email, customTags })
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? 'Invalid email address.' }
+  }
+
+  if (!isShopifyConfigured()) {
+    console.error('[Lead Funnel] Shopify Admin API not configured')
+    return { success: false, message: 'Service unavailable. Please try again later.' }
+  }
+
+  const tags = ['lead-funnel', ...parseTags(parsed.data.customTags)]
+
+  try {
+    await upsertCustomer({ email: parsed.data.email, tags })
+    console.log('[Lead Funnel] Partial lead captured (email only):', parsed.data.email, { tags })
+    return { success: true, message: '' }
+  } catch (err) {
+    console.error('[Lead Funnel] Partial email upsert error:', err)
+    return { success: false, message: 'Something went wrong. Please try again.' }
+  }
+}
+
 // ─── 2. Find nearest dealers (step 2) ────────────────────────────────────────
 
 /**

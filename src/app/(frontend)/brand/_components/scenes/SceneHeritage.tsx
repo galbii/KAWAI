@@ -1,17 +1,16 @@
 'use client'
 
-import { motion, useTransform, type MotionValue } from 'framer-motion'
+import { motion, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import { BrandArrowLink, BrandEyebrow } from '../brand-ui'
+import { useSceneActive } from '../useSceneActive'
 import { SCENE_WINDOWS, heritageCopy } from '../scenes'
+import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
 export default function SceneHeritage({ progress, reduce }: Props) {
-  const [start, end] = SCENE_WINDOWS.heritage
-  const span = end - start
-  const plateY = useTransform(progress, [start, start + span * 0.18], ['24px', '0px'])
-  const plateOpacity = useTransform(progress, [start, start + span * 0.2], [0, 1])
+  const active = useSceneActive(progress, SCENE_WINDOWS.heritage)
 
   return (
     <SceneLayer
@@ -23,7 +22,9 @@ export default function SceneHeritage({ progress, reduce }: Props) {
       <div id="story" className="container mx-auto px-6">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-12 lg:gap-16">
           <motion.div
-            {...(reduce ? {} : { style: { opacity: plateOpacity, y: plateY } })}
+            initial={reduce ? false : { opacity: 0, y: 24 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 24 }}
+            transition={{ duration: 0.6, ease: EASE_OUT_EXPO }}
             className="lg:col-span-5"
           >
             <div className="inline-flex items-baseline gap-4 border-l-2 border-kawai-red pl-5">
