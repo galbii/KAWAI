@@ -381,7 +381,7 @@ export function CxLanding() {
                   zIndex: 2,
                   cursor: 'pointer',
                   background: '#000 center/cover no-repeat',
-                  backgroundImage: "url('/images/cx/youtubeThumbs.jpg')",
+                  backgroundImage: "url('https://img.youtube.com/vi/-J6DZQtLo1Q/maxresdefault.jpg')",
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
