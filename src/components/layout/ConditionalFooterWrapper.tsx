@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 // Paths where the site footer should be hidden (full-screen app-like pages)
 const FOOTERLESS_PATHS = ['/find-a-dealer']
 // Path prefixes where the footer should be hidden (have their own layout)
-const FOOTERLESS_PREFIXES = ['/namm-2026']
+const FOOTERLESS_PREFIXES = ['/namm-2026', '/cx']
 
 interface Props {
   children: React.ReactNode

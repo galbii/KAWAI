@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 
 /**
  * Client wrapper that hides the site header, announcement bar, and layout
- * spacer on NAMM 2026 pages (which have their own full-page layout).
+ * spacer on full-page campaign routes (NAMM 2026 and the CX Line landing
+ * page) which ship their own header/footer chrome.
  *
  * Uses usePathname() instead of reading headers() on the server so the
  * frontend layout can be statically pre-rendered with PPR. The children
@@ -23,12 +24,12 @@ export function NammAwareShell({
   children: ReactNode
 }) {
   const pathname = usePathname()
-  const isNAMM = pathname.startsWith('/namm-2026')
+  const isFullPageCampaign = pathname.startsWith('/namm-2026') || pathname.startsWith('/cx')
   return (
     <>
-      {!isNAMM && announcementBar}
-      {!isNAMM && header}
-      {!isNAMM && layoutSpacer}
+      {!isFullPageCampaign && announcementBar}
+      {!isFullPageCampaign && header}
+      {!isFullPageCampaign && layoutSpacer}
       {children}
     </>
   )

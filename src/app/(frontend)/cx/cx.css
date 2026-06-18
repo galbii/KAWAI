@@ -1,0 +1,171 @@
+/*
+ * CX Line landing page styles.
+ *
+ * Tailwind v4 compiles each CSS file independently, so this file needs its own
+ * `@import "tailwindcss"` to resolve any utility classes used in cx components
+ * (see CLAUDE.md — "Tailwind v4 CSS file isolation").
+ *
+ * The CX campaign uses a self-contained "ebony + copper" theme that is distinct
+ * from the global Kawai pearl/red palette. These tokens are scoped to `.cx-page`
+ * so they never leak into the rest of the site.
+ */
+@import "tailwindcss";
+
+.cx-page {
+  --ebony: #0b0b0e;
+  --ebony-soft: #15141a;
+  --ebony-line: #26242e;
+  --ivory: #f2ede2;
+  --ivory-dim: #a39c8d;
+  --copper: #c88a4b;
+  --copper-bright: #e5ac6b;
+  --brand-red: #e11922;
+  --brand-red-dark: #b81019;
+
+  background: var(--ebony);
+  color: var(--ivory);
+  font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.cx-page .font-display {
+  font-family: Didot, "Bodoni MT", "Playfair Display", "Times New Roman", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.cx-page .font-num {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.cx-page .text-ivory { color: var(--ivory); }
+.cx-page .text-dim { color: var(--ivory-dim); }
+.cx-page .text-copper { color: var(--copper); }
+.cx-page .text-red { color: var(--brand-red); }
+.cx-page .bg-ebony-soft { background: var(--ebony-soft); }
+.cx-page .border-line { border-color: var(--ebony-line); }
+
+.cx-page .eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+  font-weight: 500;
+}
+
+.cx-page .btn-copper {
+  display: inline-block;
+  background: var(--copper);
+  color: #100d08;
+  padding: 16px 40px;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.3s;
+}
+.cx-page .btn-copper:hover { background: var(--copper-bright); transform: translateY(-2px); }
+
+.cx-page .btn-red {
+  display: inline-block;
+  background: var(--brand-red);
+  color: #fff;
+  padding: 16px 40px;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+.cx-page .btn-red:hover { background: var(--brand-red-dark); transform: translateY(-2px); }
+
+.cx-page .btn-ghost {
+  display: inline-block;
+  border: 1px solid var(--ebony-line);
+  color: var(--ivory);
+  padding: 15px 40px;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: border-color 0.3s, color 0.3s;
+}
+.cx-page .btn-ghost:hover { border-color: var(--copper); color: var(--copper-bright); }
+
+/* ---- Hero strings (copper bass strings) ---- */
+.cx-page .string {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--copper) 18%,
+    var(--copper-bright) 50%,
+    var(--copper) 82%,
+    transparent 100%
+  );
+  opacity: 0.5;
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+/* ---- Reveal defaults (GSAP overrides) ---- */
+.cx-page [data-reveal] { opacity: 0; transform: translateY(36px); }
+
+/* ---- Story year ---- */
+.cx-page .year-giant {
+  font-size: clamp(120px, 24vw, 340px);
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 5px var(--ebony-line);
+  user-select: none;
+}
+.cx-page .year-giant span { color: var(--copper); -webkit-text-stroke: 0; }
+
+/* ---- Spec table ---- */
+.cx-page .spec-row { border-bottom: 1px solid var(--ebony-line); }
+.cx-page .spec-row:last-child { border-bottom: 0; }
+
+.cx-page .badge-pop {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--brand-red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  white-space: nowrap;
+}
+
+.cx-page .hairline { height: 1px; background: var(--ebony-line); }
+
+.cx-page a:focus-visible,
+.cx-page button:focus-visible,
+.cx-page input:focus-visible {
+  outline: 2px solid var(--copper-bright);
+  outline-offset: 2px;
+}
+
+/* ---- Product detail tabs ---- */
+.cx-page .pd-tab {
+  border-bottom: 2px solid transparent;
+  color: var(--ivory-dim);
+  transition: color 0.25s, border-color 0.25s;
+}
+.cx-page .pd-tab.active {
+  color: var(--copper);
+  border-bottom-color: var(--copper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-page [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .cx-page .string { transform: scaleX(1) !important; opacity: 0.4 !important; }
+  .cx-page { scroll-behavior: auto; }
+}
