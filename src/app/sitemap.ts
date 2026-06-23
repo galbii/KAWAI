@@ -144,7 +144,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/company/our-philosophy', { changeFrequency: 'monthly', priority: 0.6 })
     add('/company/koichi-kawai', { changeFrequency: 'monthly', priority: 0.6 })
     add('/about', { changeFrequency: 'monthly', priority: 0.65 })
-    add('/brand', { changeFrequency: 'monthly', priority: 0.65 })
 
     // ==========================================
     // STATIC ROUTES — Institutions

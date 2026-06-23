@@ -1,7 +1,8 @@
 export const heroCopy = {
-  eyebrow: 'Since 1927',
+  eyebrow: 'Kawai America Corporation',
+  sinceLabel: 'Since 1927',
   headline: ['Crafting', 'Inspiration'],
-  sub: 'Three generations. Nearly a century of innovation. One uncompromising standard.',
+  sub: 'Visit an Authorized Dealer or Official Kawai location for best prices and other rebate offers.',
   primaryCta: { label: 'Our Story', href: '#story' },
   secondaryCta: { label: 'Explore Pianos', href: '/pianos' },
 }
@@ -111,17 +112,32 @@ export const codaCopy = {
   secondaryCta: { label: 'Find a Dealer', href: '/find-a-dealer' },
 }
 
+/** Primary "browse the full catalog" CTA on the Featured Collections scene. */
+export const exploreProductsCta = { label: 'Explore All Products', href: '/pianos' } as const
+
+export const showroomsCopy = {
+  eyebrow: 'Where to Play',
+  headline: 'Experience Kawai in Person',
+  body: 'Play our pianos in person and get expert guidance from an authorized Kawai dealer near you.',
+  dealerStat: { numeric: 200, suffix: '+', label: 'Authorized Dealers Nationwide' },
+  secondaryCta: { label: 'Find a Dealer', href: '/find-a-dealer' },
+} as const
+
 /**
- * Eight scene windows on master scroll progress (0 → 1).
- * Tuned so each scene gets ~12% of scroll plus a 4% crossfade overlap.
+ * Ten scene windows on master scroll progress (0 → 1).
+ * Tuned so each scene gets ~10–15% of scroll plus a ~1.5% crossfade overlap.
+ * Order: hero → stats → showrooms → collections → manifesto → heritage →
+ * timeline → technology → goDeeper → coda. Timeline keeps the longest run.
  */
 export const SCENE_WINDOWS = {
-  hero: [0.0, 0.12] as const,
-  manifesto: [0.1, 0.24] as const,
-  stats: [0.22, 0.36] as const,
-  heritage: [0.34, 0.5] as const,
-  timeline: [0.48, 0.74] as const,
-  technology: [0.72, 0.84] as const,
-  goDeeper: [0.82, 0.94] as const,
-  coda: [0.92, 1.0] as const,
+  hero: [0.0, 0.1] as const,
+  stats: [0.085, 0.2] as const,
+  showrooms: [0.185, 0.3] as const,
+  collections: [0.285, 0.4] as const,
+  manifesto: [0.385, 0.48] as const,
+  heritage: [0.465, 0.58] as const,
+  timeline: [0.565, 0.7] as const,
+  technology: [0.685, 0.78] as const,
+  goDeeper: [0.765, 0.86] as const,
+  coda: [0.845, 1.0] as const,
 }

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
 import { FeaturedCollectionsCarousel } from '@/components/piano/featured-collections-carousel'
 import type { NavCollection } from '@/lib/payload/products-navigation'
+import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
 
 export interface CatalogProduct {
   id: string
@@ -570,6 +571,12 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
     return (found as CollectionForBrowser | undefined) ?? null
   }, [activeCollection, visibleCollections])
 
+  // Map of collection handle → priority for featured collections (used by default sort)
+  const featuredPriorityMap = useMemo(
+    () => buildFeaturedMap(collections ?? []),
+    [collections],
+  )
+
   const featuredCollections = useMemo((): NavCollection[] => {
     return (collections ?? [])
       .filter((c) => c.featured)
@@ -615,6 +622,11 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
     }
 
     switch (sort) {
+      case 'default':
+        // Products in a featured collection float up (even at default priority 0),
+        // then sort by the highest collectionPriority among their featured collections.
+        items.sort((a, b) => compareByFeatured(a, b, featuredPriorityMap))
+        break
       case 'name-asc':
         items.sort((a, b) => (a.model ?? '').localeCompare(b.model ?? ''))
         break
@@ -645,7 +657,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
     }
 
     return items
-  }, [products, search, activeCollection, sort, showLegacy])
+  }, [products, search, activeCollection, sort, showLegacy, site, featuredPriorityMap])
 
   const hasFilters = search.trim() !== '' || activeCollection !== 'All' || showLegacy
 

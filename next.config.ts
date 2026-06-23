@@ -131,6 +131,14 @@ const nextConfig: NextConfig = {
         destination: '/about',
         permanent: true,
       },
+      // The cinematic brand experience was consolidated onto the canonical /about
+      // URL. /brand was briefly live (and in the sitemap), so 301 it to avoid
+      // dropping any accumulated signals or serving a 404.
+      {
+        source: '/brand',
+        destination: '/about',
+        permanent: true,
+      },
     ]
   },
   async rewrites() {

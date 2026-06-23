@@ -33,7 +33,7 @@ export function BrandEyebrow({ children, centered = false, className }: BrandEye
   )
 }
 
-type CTAVariant = 'red' | 'white' | 'outline'
+type CTAVariant = 'red' | 'white' | 'outline' | 'dark-outline'
 
 type BrandCTAProps = {
   href: string
@@ -50,6 +50,9 @@ const CTA_VARIANTS: Record<CTAVariant, string> = {
     'bg-white text-kawai-black hover:bg-kawai-pearl hover:shadow-[0_8px_28px_rgba(0,0,0,0.28)]',
   outline:
     'border border-white/60 text-white hover:bg-white hover:text-kawai-black hover:border-transparent',
+  // Outline for use on light backgrounds (e.g. the reduced-motion fallback's pearl sections).
+  'dark-outline':
+    'border border-kawai-black/30 text-kawai-black hover:bg-kawai-black hover:text-white hover:border-transparent',
 }
 
 export function BrandCTA({

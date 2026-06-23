@@ -18,17 +18,19 @@ const MID = {
   timeline: (SCENE_WINDOWS.timeline[0] + SCENE_WINDOWS.timeline[1]) / 2,
   technology: (SCENE_WINDOWS.technology[0] + SCENE_WINDOWS.technology[1]) / 2,
   goDeeper: (SCENE_WINDOWS.goDeeper[0] + SCENE_WINDOWS.goDeeper[1]) / 2,
+  collections: (SCENE_WINDOWS.collections[0] + SCENE_WINDOWS.collections[1]) / 2,
   coda: 0.96,
 }
 
 const SOUNDBOARD_STOPS = [
   MID.hero,
-  MID.manifesto,
   MID.stats,
+  MID.manifesto,
   MID.heritage,
   MID.timeline,
   MID.technology,
   MID.goDeeper,
+  MID.collections,
   MID.coda,
 ]
 
@@ -42,18 +44,18 @@ const SOUNDBOARD_STOPS = [
 export default function PinnedCanvas({ progress, reduce }: Props) {
   // — Camera transforms (soundboard gets the cinematic move) —
   const sbScale = useTransform(progress, SOUNDBOARD_STOPS, [
-    1.05, 1.15, 1.3, 1.4, 1.6, 1.5, 1.35, 1.3,
+    1.05, 1.15, 1.3, 1.4, 1.6, 1.5, 1.35, 1.32, 1.3,
   ])
   const sbX = useTransform(progress, SOUNDBOARD_STOPS, [
-    '0%', '4%', '8%', '6%', '12%', '8%', '5%', '2%',
+    '0%', '4%', '8%', '6%', '12%', '8%', '5%', '3%', '2%',
   ])
   const sbY = useTransform(progress, SOUNDBOARD_STOPS, [
-    '0%', '-2%', '-4%', '-3%', '-7%', '-4%', '-2%', '0%',
+    '0%', '-2%', '-4%', '-3%', '-7%', '-4%', '-2%', '-1%', '0%',
   ])
 
-  // Subtle breath on the other images
-  const warmScale = useTransform(progress, [0, 0.12, 0.85, 0.95], [1.04, 1.1, 1.05, 1.1])
-  const warmX = useTransform(progress, [0, 0.12, 0.85, 0.95], ['0%', '3%', '0%', '4%'])
+  // Subtle breath on the warm pianist — hero only
+  const warmScale = useTransform(progress, [0, 0.12], [1.04, 1.1])
+  const warmX = useTransform(progress, [0, 0.12], ['0%', '3%'])
   const uprightScale = useTransform(
     progress,
     [SCENE_WINDOWS.heritage[0], MID.heritage, SCENE_WINDOWS.heritage[1]],
@@ -67,19 +69,54 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
   const luxeScale = useTransform(progress, [SCENE_WINDOWS.coda[0], MID.coda, 1], [1.03, 1.05, 1.1])
   const luxeY = useTransform(progress, [SCENE_WINDOWS.coda[0], 1], ['0%', '-3%'])
 
-  // — Image opacity windows —
-  // Warm pianist: full at hero, fade out before manifesto, return for go-deeper
-  const warmOpacity = useTransform(
+  // Featured collections location shot: slow push-in across its window
+  const collectionsScale = useTransform(
     progress,
-    [0, 0.1, 0.16, 0.82, 0.86, 0.92, 0.94],
-    [1, 1, 0, 0, 1, 1, 0],
+    [SCENE_WINDOWS.collections[0], MID.collections, SCENE_WINDOWS.collections[1]],
+    [1.06, 1.1, 1.14],
+  )
+  const collectionsX = useTransform(
+    progress,
+    [SCENE_WINDOWS.collections[0], SCENE_WINDOWS.collections[1]],
+    ['0%', '-3%'],
   )
 
-  // Soundboard: appears after the hero, holds for manifesto → technology
+  // Warm pianist (human/dealer): a slow continuous push spanning showrooms →
+  // go-deeper, gated by opacity so it only reads during those two scenes.
+  const warmPianistScale = useTransform(
+    progress,
+    [SCENE_WINDOWS.showrooms[0], SCENE_WINDOWS.goDeeper[1]],
+    [1.05, 1.12],
+  )
+  const warmPianistX = useTransform(
+    progress,
+    [SCENE_WINDOWS.showrooms[0], SCENE_WINDOWS.goDeeper[1]],
+    ['0%', '-3%'],
+  )
+
+  // Hero shot returns as a callback behind the innovation timeline
+  const timelineScale = useTransform(
+    progress,
+    [SCENE_WINDOWS.timeline[0], SCENE_WINDOWS.timeline[1]],
+    [1.08, 1.16],
+  )
+  const timelineY = useTransform(
+    progress,
+    [SCENE_WINDOWS.timeline[0], SCENE_WINDOWS.timeline[1]],
+    ['0%', '-4%'],
+  )
+
+  // — Image opacity windows —
+  // Warm pianist: full at hero, fades out as the soundboard takes over
+  const warmOpacity = useTransform(progress, [0, 0.09, 0.14], [1, 1, 0])
+
+  // Soundboard: the lens for the body of the page — holds from manifesto
+  // straight through the featured collections, then yields to the luxe coda.
+  // The upright draws on top during heritage, so no mid-scene dip is needed.
   const soundboardOpacity = useTransform(
     progress,
-    [0.1, 0.16, SCENE_WINDOWS.heritage[0] + 0.01, MID.heritage, SCENE_WINDOWS.heritage[1] - 0.01, 0.86, 0.92],
-    [0, 1, 1, 0, 1, 1, 0],
+    [0.09, 0.15, 0.88, 0.92],
+    [0, 1, 1, 0],
   )
 
   // Upright (drawing room): heritage only — emerges over the soundboard
@@ -94,8 +131,48 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
     [0, 1, 1, 0],
   )
 
+  // Collections location shot: emerges over the soundboard for the collections scene
+  const collectionsOpacity = useTransform(
+    progress,
+    [
+      SCENE_WINDOWS.collections[0],
+      SCENE_WINDOWS.collections[0] + 0.02,
+      SCENE_WINDOWS.collections[1] - 0.02,
+      SCENE_WINDOWS.collections[1],
+    ],
+    [0, 1, 1, 0],
+  )
+
+  // Warm pianist overlay: showrooms (dealers) and go-deeper, drawn over the soundboard
+  const warmPianistOpacity = useTransform(
+    progress,
+    [
+      SCENE_WINDOWS.showrooms[0],
+      SCENE_WINDOWS.showrooms[0] + 0.02,
+      SCENE_WINDOWS.showrooms[1] - 0.02,
+      SCENE_WINDOWS.showrooms[1],
+      SCENE_WINDOWS.goDeeper[0],
+      SCENE_WINDOWS.goDeeper[0] + 0.02,
+      SCENE_WINDOWS.goDeeper[1] - 0.02,
+      SCENE_WINDOWS.goDeeper[1],
+    ],
+    [0, 1, 1, 0, 0, 1, 1, 0],
+  )
+
+  // Hero shot callback: emerges over the soundboard for the timeline scene
+  const timelineOpacity = useTransform(
+    progress,
+    [
+      SCENE_WINDOWS.timeline[0],
+      SCENE_WINDOWS.timeline[0] + 0.02,
+      SCENE_WINDOWS.timeline[1] - 0.02,
+      SCENE_WINDOWS.timeline[1],
+    ],
+    [0, 1, 1, 0],
+  )
+
   // Luxe interior: peaks during coda and stays visible at the end
-  const luxeOpacity = useTransform(progress, [0.9, 0.94, 1], [0, 1, 1])
+  const luxeOpacity = useTransform(progress, [0.88, 0.93, 1], [0, 1, 1])
 
   // Wordmark — extremely subtle, manifesto only
   const wordmarkOpacity = useTransform(
@@ -140,13 +217,13 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-kawai-black">
-      {/* Warm pianist — hero + go-deeper */}
+      {/* Hero background — hero only */}
       <motion.div
         className="absolute inset-0 will-change-[opacity,transform]"
         style={{ opacity: warmOpacity, scale: warmScale, x: warmX, filter: sharedFilter }}
       >
         <Image
-          src={aboutImages.warmPianist}
+          src={aboutImages.heroBg}
           alt=""
           fill
           priority
@@ -174,6 +251,66 @@ export default function PinnedCanvas({ progress, reduce }: Props) {
           fill
           priority
           quality={90}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </motion.div>
+
+      {/* Warm pianist — showrooms (dealers) and go-deeper */}
+      <motion.div
+        className="absolute inset-0 will-change-[opacity,transform]"
+        style={{
+          opacity: warmPianistOpacity,
+          scale: warmPianistScale,
+          x: warmPianistX,
+          filter: sharedFilter,
+        }}
+      >
+        <Image
+          src={aboutImages.warmPianist}
+          alt=""
+          fill
+          quality={88}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </motion.div>
+
+      {/* Hero shot callback — innovation timeline */}
+      <motion.div
+        className="absolute inset-0 will-change-[opacity,transform]"
+        style={{
+          opacity: timelineOpacity,
+          scale: timelineScale,
+          y: timelineY,
+          filter: sharedFilter,
+        }}
+      >
+        <Image
+          src={aboutImages.heroBg}
+          alt=""
+          fill
+          quality={86}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </motion.div>
+
+      {/* Featured collections location shot — collections scene */}
+      <motion.div
+        className="absolute inset-0 will-change-[opacity,transform]"
+        style={{
+          opacity: collectionsOpacity,
+          scale: collectionsScale,
+          x: collectionsX,
+          filter: sharedFilter,
+        }}
+      >
+        <Image
+          src={aboutImages.collectionsBg}
+          alt=""
+          fill
+          quality={88}
           sizes="100vw"
           className="object-cover object-center"
         />

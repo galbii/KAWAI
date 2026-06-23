@@ -8,6 +8,7 @@ import { Search, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
 import { FeaturedCollectionsCarousel } from '@/components/piano/featured-collections-carousel'
+import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
 import type { NavCollection } from '@/lib/payload/products-navigation'
 
 export interface CatalogProduct {
@@ -686,13 +687,10 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
   }, [collectionsForBrowser])
 
   // Map of collection handle → priority for featured collections (used by default sort)
-  const featuredPriorityMap = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const c of collectionsForBrowser ?? []) {
-      if (c.featured) map.set(c.handle, c.collectionPriority ?? 0)
-    }
-    return map
-  }, [collectionsForBrowser])
+  const featuredPriorityMap = useMemo(
+    () => buildFeaturedMap(collectionsForBrowser ?? []),
+    [collectionsForBrowser],
+  )
 
   const filtered = useMemo(() => {
     let items = [...products]
@@ -723,15 +721,14 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
 
     switch (sort) {
       case 'default': {
-        // Accessories always sort after pianos in the "All" view.
-        // Within pianos: sort by the highest collectionPriority among featured collections.
+        // Accessories always sort after pianos in the "All" view. Within pianos,
+        // products in a featured collection float up (even at default priority 0),
+        // then sort by the highest collectionPriority among their featured collections.
         items.sort((a, b) => {
           const aIsAccessory = (a.type ?? '').toLowerCase() === 'accessory'
           const bIsAccessory = (b.type ?? '').toLowerCase() === 'accessory'
           if (aIsAccessory !== bIsAccessory) return aIsAccessory ? 1 : -1
-          const aMax = Math.max(0, ...(a.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
-          const bMax = Math.max(0, ...(b.shopifyCollections ?? []).map((c) => featuredPriorityMap.get(c.handle) ?? 0))
-          return bMax - aMax
+          return compareByFeatured(a, b, featuredPriorityMap)
         })
         break
       }

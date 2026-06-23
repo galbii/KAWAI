@@ -21,8 +21,10 @@ import {
   getCollectionByHandle,
   getAllCollectionHandles,
   getProductsByCollectionHandle,
+  getFeaturedCollections,
   getPayloadClient,
 } from '@/lib/payload/queries'
+import { buildFeaturedMap, featuredRank, sortByFeatured } from '@/lib/piano/featured-sort'
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
@@ -228,6 +230,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
                 imageUrl: true,
                 description: true,
                 visibility: true,
+                shopifyCollections: true,
               },
               depth: 0,
               sort: 'visibility.sortOrder',
@@ -241,9 +244,14 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
 
       const products = await getCategoryProducts(category)
 
+      // Float products whose collection is featured (then by collectionPriority).
+      // Stable, so visibility.sortOrder is preserved as the tiebreak within a tier.
+      const featuredMap = buildFeaturedMap(await getFeaturedCollections())
+      const sortedProducts = sortByFeatured(products, featuredMap)
+
       const seriesMap = new Map<string, any>()
 
-      products.forEach((product) => {
+      sortedProducts.forEach((product) => {
         const seriesName = product.model?.match(/^[A-Z]+/)?.[0] || categoryConfig!.name || 'Other'
 
         if (!seriesMap.has(seriesName)) {
@@ -251,11 +259,20 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
             name: `${seriesName} Series`,
             description: categoryConfig!.shortDescription,
             pianos: [],
-            slides: []
+            slides: [],
+            // Track the best featured rank across this series' products so the
+            // series tabs themselves order featured-first, by priority.
+            _rank: { boosted: false, priority: 0 },
           })
         }
 
-        seriesMap.get(seriesName)!.pianos.push({
+        const entry = seriesMap.get(seriesName)!
+        const rank = featuredRank(product, featuredMap)
+        if (rank.boosted && (!entry._rank.boosted || rank.priority > entry._rank.priority)) {
+          entry._rank = rank
+        }
+
+        entry.pianos.push({
           slug: product.slug,
           name: product.name,
           series: `${seriesName} Series`,
@@ -268,7 +285,10 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
         })
       })
 
-      series = Array.from(seriesMap.values())
+      series = Array.from(seriesMap.values()).sort((a, b) => {
+        if (a._rank.boosted !== b._rank.boosted) return a._rank.boosted ? -1 : 1
+        return b._rank.priority - a._rank.priority
+      })
     } catch (err) {
       console.error(`Failed to fetch ${category} category data:`, err)
       error = `Failed to load ${categoryConfig!.name.toLowerCase()} piano data`

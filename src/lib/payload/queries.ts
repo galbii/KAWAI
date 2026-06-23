@@ -6,6 +6,7 @@ import config from '@/payload.config'
 import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
+import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
 import type {
   Product,
   PianosPage,
@@ -1185,6 +1186,43 @@ export const getCollectionsForBrowser = unstable_cache(
   { tags: ['collections'], revalidate: 3600 },
 )
 
+export interface FeaturedCollection {
+  handle: string
+  featured?: boolean | null
+  collectionPriority?: number | null
+}
+
+/**
+ * Lean query of every collection's featured flag + priority, keyed by handle.
+ * Shared by the category and collection product pages to apply the featured
+ * boost (see src/lib/piano/featured-sort.ts). Cached for 1 hour; invalidated by
+ * the 'collections' tag.
+ */
+export const getFeaturedCollections = unstable_cache(
+  async (): Promise<FeaturedCollection[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'collections',
+        where: { featured: { equals: true } },
+        select: { handle: true, featured: true, collectionPriority: true },
+        depth: 0,
+        limit: 500,
+      })
+      return result.docs.map((d) => ({
+        handle: d.handle,
+        featured: (d.featured as boolean | null | undefined) ?? null,
+        collectionPriority: (d.collectionPriority as number | null | undefined) ?? null,
+      }))
+    } catch (error) {
+      console.error('Error fetching featured collections:', error)
+      return []
+    }
+  },
+  ['featured-collections'],
+  { tags: ['collections'], revalidate: 3600 },
+)
+
 /**
  * Get all catalog-visible products that belong to a specific collection.
  * Queries via the shopifyCollections.handle array field on products.
@@ -1251,12 +1289,21 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
         visibility: true,
         variations: true,
         shopify: true,
+        shopifyCollections: true,
         customMedia: true,
       },
       sort: '-price.msrp',
       depth: 1,
       limit: 100,
     })
+
+    // Float products that also belong to a featured collection (then by priority).
+    // Stable over the -price.msrp order above. On a single-collection page this only
+    // reorders products with cross-membership in another, higher-priority featured collection.
+    const featuredMap = buildFeaturedMap(await getFeaturedCollections())
+    if (featuredMap.size > 0) {
+      result.docs = sortByFeatured(result.docs as Array<{ shopifyCollections?: { handle?: string | null }[] | null }>, featuredMap) as typeof result.docs
+    }
 
     // Enrich each product with live Shopify variant prices in parallel
     const shopifyPriceMap = new Map<string, Map<string, { price: number; compareAtPrice: number | null }>>()

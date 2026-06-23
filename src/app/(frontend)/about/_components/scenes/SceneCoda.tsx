@@ -1,79 +1,66 @@
 'use client'
 
-import { motion, useTransform, type MotionValue } from 'framer-motion'
+import { motion, type MotionValue, type Variants } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import { BrandCTA, BrandEyebrow } from '../brand-ui'
+import { useSceneActive } from '../useSceneActive'
 import { SCENE_WINDOWS, codaCopy } from '../scenes'
+import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
 
-type WordProps = {
-  progress: MotionValue<number>
-  reduce: boolean
-  word: string
-  riseStart: number
-  riseEnd: number
+const headlineV: Variants = {
+  hide: {},
+  show: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
 }
 
-function HeadlineWord({ progress, reduce, word, riseStart, riseEnd }: WordProps) {
-  const y = useTransform(progress, [riseStart, riseEnd], ['110%', '0%'])
-  return (
-    <span className="inline-block overflow-hidden pb-[0.06em]">
-      <motion.span {...(reduce ? {} : { style: { y } })} className="inline-block pr-[0.25em]">
-        {word}
-      </motion.span>
-    </span>
-  )
+const wordRise: Variants = {
+  hide: { y: '110%' },
+  show: { y: '0%', transition: { duration: 0.6, ease: EASE_OUT_EXPO } },
 }
 
 export default function SceneCoda({ progress, reduce }: Props) {
-  const [start, end] = SCENE_WINDOWS.coda
-  const span = end - start
-  const bodyOpacity = useTransform(progress, [start, start + span * 0.35], [0, 1])
-  const ctaOpacity = useTransform(progress, [start + span * 0.25, start + span * 0.6], [0, 1])
-
+  const active = useSceneActive(progress, SCENE_WINDOWS.coda)
   const words = codaCopy.headline.split(' ')
+  const state = reduce ? 'show' : active ? 'show' : 'hide'
 
   return (
-    <SceneLayer
-      progress={progress}
-      window={SCENE_WINDOWS.coda}
-      endVisible
-      className="items-center"
-    >
+    <SceneLayer progress={progress} window={SCENE_WINDOWS.coda} endVisible className="items-center">
       <div className="container mx-auto px-6">
         <div className="mx-auto max-w-3xl text-center">
           <div className="mb-6 inline-block">
             <BrandEyebrow centered>{codaCopy.eyebrow}</BrandEyebrow>
           </div>
 
-          <h2 className="mb-6 font-[family-name:var(--font-brand-serif)] text-[clamp(2.5rem,6vw,4.5rem)] font-light leading-[1.04] tracking-tight text-white">
-            {words.map((word, i) => {
-              const riseStart = start + span * (0.05 + i * 0.05)
-              const riseEnd = riseStart + span * 0.25
-              return (
-                <HeadlineWord
-                  key={i}
-                  progress={progress}
-                  reduce={reduce}
-                  word={word}
-                  riseStart={riseStart}
-                  riseEnd={riseEnd}
-                />
-              )
-            })}
-          </h2>
+          <motion.h2
+            variants={headlineV}
+            initial={reduce ? false : 'hide'}
+            animate={state}
+            className="mb-6 font-[family-name:var(--font-brand-serif)] text-[clamp(2.5rem,6vw,4.5rem)] font-light leading-[1.04] tracking-tight text-white"
+          >
+            {words.map((word, i) => (
+              <span key={i} className="inline-block overflow-hidden pb-[0.06em]">
+                <motion.span variants={wordRise} className="inline-block pr-[0.25em]">
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h2>
 
           <motion.p
-            {...(reduce ? {} : { style: { opacity: bodyOpacity } })}
+            initial={reduce ? false : { opacity: 0 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0 }}
+            transition={{ duration: 0.6, ease: EASE_OUT_EXPO, delay: 0.4 }}
             className="mx-auto mb-10 max-w-xl font-[family-name:var(--font-brand-sans)] text-base leading-relaxed text-white/78 sm:text-lg"
           >
             {codaCopy.body}
           </motion.p>
 
           <motion.div
-            {...(reduce ? {} : { style: { opacity: ctaOpacity } })}
-            className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4"
+            initial={reduce ? false : { opacity: 0, y: 8 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 8 }}
+            transition={{ duration: 0.6, ease: EASE_OUT_EXPO, delay: 0.55 }}
+            className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
           >
             <BrandCTA href={codaCopy.primaryCta.href} variant="red">
               {codaCopy.primaryCta.label}
