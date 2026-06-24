@@ -1,11 +1,43 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { RichText, LinkJSXConverter } from '@payloadcms/richtext-lexical/react'
+import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
+import type { DefaultNodeTypes, SerializedLinkNode } from '@payloadcms/richtext-lexical'
 import { getAllFaqSlugs, getFaqBySlug } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
 
 export const revalidate = 3600
+
+// Resolve internal-document links to real hrefs. Without this, Payload's default
+// converter renders internal links as a dead `href="#"` and logs a console error.
+const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }): string => {
+  const doc = linkNode.fields.doc
+  if (!doc) return '#'
+  const { relationTo, value } = doc
+  const slug =
+    typeof value === 'object' && value !== null
+      ? (value as { slug?: string }).slug
+      : undefined
+  if (!slug) return '#'
+  switch (relationTo) {
+    case 'products':
+      return `/products/${slug}`
+    case 'posts':
+      return `/blog/${slug}`
+    case 'faqs':
+      return `/faq/${slug}`
+    default:
+      return `/${slug}`
+  }
+}
+
+// Keep Payload's default rendering, but wire in internal-link resolution so links
+// authored via the Lexical editor render as working anchors.
+const answerConverters: JSXConvertersFunction<DefaultNodeTypes> = ({ defaultConverters }) => ({
+  ...defaultConverters,
+  ...LinkJSXConverter({ internalDocToHref }),
+})
 
 export async function generateStaticParams() {
   const slugs = await getAllFaqSlugs()
@@ -149,7 +181,7 @@ export default async function FaqDetailPage({
             <div className="bg-white rounded-2xl shadow-sm border border-kawai-neutral p-8 md:p-10">
               {faqData.answer ? (
                 <div className="prose prose-lg max-w-none prose-headings:text-kawai-charcoal prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline">
-                  <RichText data={faqData.answer} />
+                  <RichText converters={answerConverters} data={faqData.answer} />
                 </div>
               ) : (
                 <p className="text-kawai-charcoal/60">No answer content available.</p>
