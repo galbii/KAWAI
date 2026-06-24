@@ -210,7 +210,7 @@ export function FeaturedCollectionsCarousel({
 
   const collection = active[Math.min(idx, active.length - 1)]!
   const imageUrl = videoId ? null : getStaticImageUrl(collection)
-  const displayTitle = collection.heading || collection.title
+  const displayTitle = collection.title || collection.heading || 'Piano Collection'
   const collectionHref = `/pianos/${collection.handle}`
 const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
   const totalDisplay = String(total).padStart(2, '0')
