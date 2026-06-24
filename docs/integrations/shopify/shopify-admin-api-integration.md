@@ -127,7 +127,8 @@ Add these to `.env.local`:
 SHOPIFY_APP_API_KEY=your-client-id-here
 SHOPIFY_APP_CLIENT_SECRET=shpss_your-client-secret-here
 SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
-SHOPIFY_API_VERSION=2025-01
+# Use 2025-10 or newer — required for the UNLISTED product status (see Migration Notes)
+SHOPIFY_API_VERSION=2025-10
 ```
 
 **Security Checklist:**
@@ -769,6 +770,12 @@ Enable verbose logging in development:
 ---
 
 ## Migration Notes
+
+### API Version 2025-10 Changes (UNLISTED product status)
+
+The Admin API exposes the `UNLISTED` value of the `ProductStatus` enum **only from version 2025-10 onwards**. An unlisted product is *active but accessible only by direct link* (hidden from search, collections, and recommendations).
+
+On older versions (e.g. `2025-01`), the enum value doesn't exist, so an unlisted product's `status` reads as `ACTIVE` and the sync stores `shopify.shopifyStatus = 'ACTIVE'` instead of `'UNLISTED'`. Set `SHOPIFY_API_VERSION=2025-10` (or newer) so unlisted products sync correctly. The codebase already handles all four status values end-to-end. See the [Product Status Sync](./shopify-integration-v2.md#product-status-sync) section in the v2 guide.
 
 ### API Version 2025-01 Changes (December 2024)
 

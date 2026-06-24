@@ -219,7 +219,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
               where: {
                 and: [
                   { status: { equals: 'active' } },
-                  { 'visibility.showInCatalog': { equals: true } },
+                  { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
                   { type: { equals: cat } },
                 ],
               },

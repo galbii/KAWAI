@@ -18,6 +18,7 @@ export interface CatalogProduct {
   name?: string | null
   slug: string
   status?: string | null
+  shopifyStatus?: string | null
   type?: string | null
   category?: string | null
   imageUrl?: string | null
@@ -35,6 +36,16 @@ export interface CatalogProduct {
     imageUrl: string | null
     available: boolean
   }> | null
+}
+
+/**
+ * Legacy products are de-emphasized in the grid: hidden unless the user opts in,
+ * greyed out, badged "Legacy", and sorted last. A product is legacy when it is
+ * discontinued (Shopify ARCHIVED → Payload status) OR Shopify-UNLISTED (hidden
+ * from Shopify search/collections but still reachable via direct link).
+ */
+function isLegacyProduct(product: Pick<CatalogProduct, 'status' | 'shopifyStatus'>): boolean {
+  return product.status === 'discontinued' || product.shopifyStatus === 'UNLISTED'
 }
 
 interface Props {
@@ -602,7 +613,7 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
 
     // Filter out legacy/discontinued unless user opted in
     if (!showLegacy) {
-      items = items.filter((p) => p.status !== 'discontinued')
+      items = items.filter((p) => !isLegacyProduct(p))
     }
 
     if (activeCollection !== 'All') {
@@ -650,8 +661,8 @@ export default function PianoPagesBrowser({ products, collections, heading, cate
     // Legacy/discontinued products always sort to the bottom
     if (showLegacy) {
       items.sort((a, b) => {
-        const aLegacy = a.status === 'discontinued' ? 1 : 0
-        const bLegacy = b.status === 'discontinued' ? 1 : 0
+        const aLegacy = isLegacyProduct(a) ? 1 : 0
+        const bLegacy = isLegacyProduct(b) ? 1 : 0
         return aLegacy - bLegacy
       })
     }
@@ -1095,7 +1106,7 @@ function normalizeCategory(product: CatalogProduct): string {
 function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct; index: number; site?: 'us' | 'cad' }) {
   const [activeVariantIdx, setActiveVariantIdx] = useState(0)
   const category = normalizeCategory(product)
-  const isLegacy = product.status === 'discontinued'
+  const isLegacy = isLegacyProduct(product)
 
   const variants = product.variations ?? []
   const hasVariants = variants.length >= 2

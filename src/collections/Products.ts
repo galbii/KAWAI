@@ -1013,22 +1013,6 @@ export const Products: CollectionConfig = {
               type: 'group',
               fields: [
                 {
-                  name: 'showInCatalog',
-                  type: 'checkbox',
-                  defaultValue: true,
-                  admin: {
-                    description: 'Show in product catalog/listings'
-                  }
-                },
-                {
-                  name: 'allowReviews',
-                  type: 'checkbox',
-                  defaultValue: true,
-                  admin: {
-                    description: 'Allow customer reviews for this product'
-                  }
-                },
-                {
                   name: 'sortOrder',
                   type: 'number',
                   admin: {

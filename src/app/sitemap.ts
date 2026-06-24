@@ -220,7 +220,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'products',
         where: { status: { equals: 'active' } },
         limit: 1000,
-        select: { slug: true, updatedAt: true, featured: true, visibility: true },
+        select: { slug: true, updatedAt: true, featured: true, shopify: true },
         depth: 0,
       })
 
@@ -228,10 +228,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         slug?: string
         updatedAt: string
         featured?: boolean
-        visibility?: { showInCatalog?: boolean }
+        shopify?: { shopifyStatus?: string }
       }>) {
         if (!p.slug) continue
-        if (p.visibility?.showInCatalog === false) continue
+        if (p.shopify?.shopifyStatus === 'UNLISTED') continue
         add(`/products/${p.slug}`, {
           changeFrequency: 'weekly',
           priority: p.featured ? 0.9 : 0.7,

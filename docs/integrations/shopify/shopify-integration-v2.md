@@ -57,7 +57,7 @@ The Shopify integration library is a **production-ready, type-safe bridge** betw
       ┌───────────┴──┐    ┌───┴──────────────┐
       │ Storefront   │    │  Admin API       │
       │ API (Public) │    │  (OAuth 2.0)     │
-      │ 2024-01      │    │  2025-01         │
+      │ 2024-01      │    │  2025-10         │
       └──────┬───────┘    └───┬──────────────┘
              │                │
       ┌──────┴────────────────┴────────────┐
@@ -201,6 +201,27 @@ if (product.ownersManualUrl) {
 
 ---
 
+## Product Status Sync
+
+Shopify's native `ProductStatus` enum has **four** values. They map to Payload's `status` field as follows during sync (`src/lib/shopify/sync-to-payload.ts`, `src/collections/Products.ts`):
+
+| Shopify `status` | Meaning | Effect on Payload `status` | Stored in `shopify.shopifyStatus` |
+|------------------|---------|----------------------------|-----------------------------------|
+| `ACTIVE` | Ready to sell | _unchanged_ — editors own active/draft | `ACTIVE` |
+| `DRAFT` | Not ready, hidden from channels | _unchanged_ — editors own active/draft | `DRAFT` |
+| `ARCHIVED` | No longer sold | → `discontinued` (only status that auto-propagates) | `ARCHIVED` |
+| `UNLISTED` | Active but **accessible only by direct link** — hidden from search, collections, and recommendations | _unchanged_ — editors own active/draft | `UNLISTED` |
+
+**Design note:** Only `ARCHIVED → discontinued` propagates to the editable Payload `status`. Editors control `active`/`draft` independently; the raw Shopify value is always mirrored into the read-only `shopify.shopifyStatus` field for reference.
+
+### ⚠️ `UNLISTED` requires Admin API 2025-10+
+
+The `UNLISTED` status is **only returned by the Shopify Admin API from version 2025-10 onwards**. On older versions (e.g. `2025-01`) the enum value does not exist, so an unlisted product reports its base status — `ACTIVE` — and `shopify.shopifyStatus` will read `ACTIVE` instead of `UNLISTED`.
+
+If unlisted products are syncing as `ACTIVE`, check that `SHOPIFY_API_VERSION` is `2025-10` or newer (it overrides the code default in `src/lib/shopify/admin-client.ts`). This is a read-only concern for the sync — `UNLISTED` cannot be *set* via the API on older versions, but the sync only reads `status`.
+
+---
+
 ## Environment Setup
 
 ### Required Environment Variables
@@ -229,7 +250,10 @@ SHOPIFY_APP_CLIENT_SECRET=shpss_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
 
 # API Version (Optional - defaults shown)
-SHOPIFY_API_VERSION=2025-01
+# Must be 2025-10 or newer — the UNLISTED product status is only returned
+# by the Admin API from version 2025-10 onwards. On older versions an
+# unlisted product reports its base status (ACTIVE) instead of UNLISTED.
+SHOPIFY_API_VERSION=2025-10
 ```
 
 ### Environment Variable Explanation
@@ -848,7 +872,7 @@ interface ShopifyProductData {
   vendor: string
   productType: string
   tags: string[]
-  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'UNLISTED'
   price: {
     min: string
     max: string
@@ -3145,7 +3169,7 @@ const refreshCart = useCallback(async () => {
 
 2. **API Versions**
    - ❌ Old: 2024-01 for both APIs
-   - ✅ New: Storefront 2024-01, Admin 2025-01
+   - ✅ New: Storefront 2024-01, Admin 2025-10 (2025-10+ required for the `UNLISTED` product status)
 
 3. **Function Names**
    - ❌ Old: `getAllProducts()`
@@ -3370,5 +3394,5 @@ function ProductHeroBlock({ site = 'us', shopifyProduct, ... }) {
 ---
 
 **Document Version:** 2.0
-**Last Updated:** May 2026
-**Integration Version:** 2025-01 (Admin API), 2024-01 (Storefront API)
+**Last Updated:** June 2026
+**Integration Version:** 2025-10 (Admin API), 2024-01 (Storefront API)

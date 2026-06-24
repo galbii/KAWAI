@@ -59,10 +59,10 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? (ogImageRaw as { url: string }).url
       : product.imageUrl || null
 
-  // Noindex discontinued, draft, and catalog-hidden products
+  // Noindex discontinued, draft, and unlisted (Shopify-hidden) products
   const isDiscontinued = product.status === 'discontinued'
   const isDraft = product.status === 'draft'
-  const isHidden = product.visibility?.showInCatalog === false
+  const isHidden = product.shopify?.shopifyStatus === 'UNLISTED'
 
   return {
     title,
@@ -191,13 +191,13 @@ export async function generateStaticParams() {
       limit: 500, // Adjust based on product catalog size
       select: {
         slug: true,
-        visibility: true,
+        shopify: true,
       },
     })
 
-    // Filter out products that shouldn't be in catalog
+    // Filter out products unlisted in Shopify
     const visibleProducts = products.docs.filter((product: any) => {
-      return product.visibility?.showInCatalog !== false
+      return product.shopify?.shopifyStatus !== 'UNLISTED'
     })
 
     return visibleProducts.map((product: any) => ({

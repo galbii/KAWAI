@@ -697,6 +697,8 @@ type CatalogProduct = {
   name?: string | null
   slug: string
   status?: string | null
+  /** Shopify product status (ACTIVE | DRAFT | ARCHIVED | UNLISTED). UNLISTED is treated as legacy in the browser. */
+  shopifyStatus?: string | null
   type?: string | null
   category?: string | null
   imageUrl?: string | null
@@ -731,8 +733,9 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
     const result = await payload.find({
       collection: 'products',
       where: {
+        // UNLISTED products are intentionally included so the browser can surface
+        // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
         status: { not_equals: 'draft' },
-        'visibility.showInCatalog': { equals: true },
       },
       select: {
         model: true,
@@ -740,6 +743,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
         name: true,
         slug: true,
         status: true,
+        shopify: true,
         type: true,
         category: true,
         imageUrl: true,
@@ -759,6 +763,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
       model: doc.model,
       modelLabel: (doc as any).modelLabel ?? null,
       status: doc.status ?? null,
+      shopifyStatus: (doc as any).shopify?.shopifyStatus ?? null,
       name: doc.name ?? null,
       slug: doc.slug ?? '',
       type: doc.type ?? null,
@@ -1275,7 +1280,7 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
       where: {
         'shopifyCollections.handle': { equals: handle },
         status: { equals: 'active' },
-        'visibility.showInCatalog': { equals: true },
+        'shopify.shopifyStatus': { not_equals: 'UNLISTED' },
       },
       select: {
         model: true,
@@ -2113,8 +2118,9 @@ export function getCatalogProductsByCategory(
         collection: 'products',
         where: {
           and: [
+            // UNLISTED products are intentionally included so the browser can surface
+            // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
             { status: { not_equals: 'draft' } },
-            { 'visibility.showInCatalog': { equals: true } },
             { or: orConditions as Where[] },
           ],
         },
@@ -2123,6 +2129,7 @@ export function getCatalogProductsByCategory(
           name: true,
           slug: true,
           status: true,
+          shopify: true,
           type: true,
           category: true,
           imageUrl: true,
@@ -2143,6 +2150,7 @@ export function getCatalogProductsByCategory(
         name: doc.name ?? null,
         slug: doc.slug ?? '',
         status: doc.status ?? null,
+        shopifyStatus: (doc as any).shopify?.shopifyStatus ?? null,
         type: doc.type ?? null,
         category: doc.category ?? null,
         imageUrl: doc.imageUrl ?? null,
@@ -2316,7 +2324,7 @@ export const getCatalogPianoProducts = unstable_cache(
         where: {
           and: [
             { status: { equals: 'active' } },
-            { 'visibility.showInCatalog': { equals: true } },
+            { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             { type: { not_equals: 'accessory' } },
           ],
         },
@@ -2431,7 +2439,7 @@ export const getProductsByModelPrefix = (prefix: string) =>
         where: {
           and: [
             { status: { equals: 'active' } },
-            { 'visibility.showInCatalog': { equals: true } },
+            { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             { model: { contains: prefix } },
           ],
         },

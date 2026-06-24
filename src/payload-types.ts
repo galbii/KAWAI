@@ -2489,14 +2489,6 @@ export interface Product {
    */
   visibility?: {
     /**
-     * Show in product catalog/listings
-     */
-    showInCatalog?: boolean | null;
-    /**
-     * Allow customer reviews for this product
-     */
-    allowReviews?: boolean | null;
-    /**
      * Sort order (lower numbers appear first)
      */
     sortOrder?: number | null;
@@ -12471,8 +12463,6 @@ export interface ProductsSelect<T extends boolean = true> {
   visibility?:
     | T
     | {
-        showInCatalog?: T;
-        allowReviews?: T;
         sortOrder?: T;
       };
   inventory?:
