@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { useScroll, useSpring, useReducedMotion } from 'framer-motion'
 import PinnedCanvas from './PinnedCanvas'
 import SceneHero from './scenes/SceneHero'
@@ -11,6 +11,10 @@ import SceneShowrooms from './scenes/SceneShowrooms'
 import SceneCoda from './scenes/SceneCoda'
 import AboutStaticFallback from './AboutStaticFallback'
 import { OfferModalProvider } from './OfferModalContext'
+import { SCENE_WINDOWS } from './scenes'
+
+/** Scroll target for the Featured Collections scene — midway through its window, fully in view. */
+const COLLECTIONS_TARGET = (SCENE_WINDOWS.collections[0] + SCENE_WINDOWS.collections[1]) / 2
 
 /**
  * Orchestrator for the cinematic /signup scroll experience.
@@ -36,6 +40,17 @@ export default function SignupScroll() {
     restDelta: 0.0005,
   })
 
+  // Smooth-scroll the page to a given master-progress fraction (0–1) within the
+  // pinned scroll track. Lets a scene jump the user to another scene's window.
+  const scrollToProgress = useCallback((p: number) => {
+    const el = ref.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY
+    const scrollable = el.offsetHeight - window.innerHeight
+    const clamped = Math.min(1, Math.max(0, p))
+    window.scrollTo({ top: top + clamped * scrollable, behavior: 'smooth' })
+  }, [])
+
   if (reduce)
     return (
       <OfferModalProvider>
@@ -60,7 +75,11 @@ export default function SignupScroll() {
           <PinnedCanvas progress={progress} reduce={reduce} />
           <div className="absolute inset-0 z-10">
             <SceneHero progress={progress} reduce={reduce} />
-            <SceneStats progress={progress} reduce={reduce} />
+            <SceneStats
+              progress={progress}
+              reduce={reduce}
+              onExploreCollections={() => scrollToProgress(COLLECTIONS_TARGET)}
+            />
             <SceneShowrooms progress={progress} reduce={reduce} />
             <SceneCollections progress={progress} reduce={reduce} />
             <SceneTimeline progress={progress} reduce={reduce} />

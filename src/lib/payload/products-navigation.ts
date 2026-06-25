@@ -561,7 +561,11 @@ async function _getNavCollections(
     // spread produces a complex discriminated union that conflicts with Payload's
     // exactOptionalPropertyTypes overloads.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const conditions: any[] = [{ productCount: { greater_than: 0 } }]
+    const conditions: any[] = [
+      { productCount: { greater_than: 0 } },
+      // Legacy collections never appear in the product menu dropdown
+      { legacy: { not_equals: true } },
+    ]
     if (featuredOnly) conditions.push({ featured: { equals: true } })
     if (categoryFilter) conditions.push({ pianoCategories: { contains: categoryFilter } })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

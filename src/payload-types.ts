@@ -3222,6 +3222,10 @@ export interface Collection {
    */
   featured?: boolean | null;
   /**
+   * Mark as a legacy collection. Legacy collections are hidden from the product menu dropdown (featured carousel, footer strip, and category tabs).
+   */
+  legacy?: boolean | null;
+  /**
    * Higher value = shown first in the nav collection footer. Default 0.
    */
   collectionPriority?: number | null;
@@ -12518,6 +12522,7 @@ export interface CollectionsSelect<T extends boolean = true> {
   headingSize?: T;
   fontFamily?: T;
   featured?: T;
+  legacy?: T;
   collectionPriority?: T;
   pianoCategories?: T;
   shopify?:

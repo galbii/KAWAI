@@ -3,13 +3,18 @@
 import { motion, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import NumberStrike from '../NumberStrike'
-import { BrandCTA, BrandCTAButton } from '../brand-ui'
+import { BrandCTAButton } from '../brand-ui'
 import { useOfferModal } from '../OfferModalContext'
 import { useSceneActive } from '../useSceneActive'
 import { SCENE_WINDOWS, stats, offerCopy, heroCopy } from '../scenes'
 import { EASE_OUT_EXPO } from '../motion'
 
-type Props = { progress: MotionValue<number>; reduce: boolean }
+type Props = {
+  progress: MotionValue<number>
+  reduce: boolean
+  /** Smooth-scroll the page to the Featured Collections scene. */
+  onExploreCollections?: () => void
+}
 
 type StatColumnProps = {
   active: boolean
@@ -56,7 +61,7 @@ function StatColumn({ active, reduce, index, stat, isLast }: StatColumnProps) {
   )
 }
 
-export default function SceneStats({ progress, reduce }: Props) {
+export default function SceneStats({ progress, reduce, onExploreCollections }: Props) {
   const active = useSceneActive(progress, SCENE_WINDOWS.stats)
   const offer = useOfferModal()
 
@@ -89,9 +94,13 @@ export default function SceneStats({ progress, reduce }: Props) {
             <BrandCTAButton onClick={offer.open} variant="red">
               {offerCopy.cta.stats}
             </BrandCTAButton>
-            <BrandCTA href={heroCopy.secondaryCta.href} variant="outline" showArrow={false}>
+            <BrandCTAButton
+              onClick={() => onExploreCollections?.()}
+              variant="outline"
+              showArrow={false}
+            >
               {heroCopy.secondaryCta.label}
-            </BrandCTA>
+            </BrandCTAButton>
           </motion.div>
         </div>
       </div>

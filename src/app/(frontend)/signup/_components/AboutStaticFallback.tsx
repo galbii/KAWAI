@@ -113,7 +113,7 @@ export default function AboutStaticFallback() {
             <BrandCTAButton onClick={offer.open} variant="red">
               {offerCopy.cta.stats}
             </BrandCTAButton>
-            <BrandCTA href={heroCopy.secondaryCta.href} variant="outline" showArrow={false}>
+            <BrandCTA href="#featured-collections" variant="outline" showArrow={false}>
               {heroCopy.secondaryCta.label}
             </BrandCTA>
           </div>
@@ -164,7 +164,7 @@ export default function AboutStaticFallback() {
       </section>
 
       {/* Featured Collections */}
-      <section className="bg-kawai-black py-24 text-white">
+      <section id="featured-collections" className="scroll-mt-24 bg-kawai-black py-24 text-white">
         <div className="container mx-auto max-w-5xl px-6">
           <div className="mb-10">
             <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-gold">

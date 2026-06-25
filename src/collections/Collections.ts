@@ -220,6 +220,18 @@ export const Collections: CollectionConfig = {
       },
     },
 
+    // Legacy flag — hides the collection from the product menu dropdown entirely
+    {
+      name: 'legacy',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'Mark as a legacy collection. Legacy collections are hidden from the product menu dropdown (featured carousel, footer strip, and category tabs).',
+        position: 'sidebar',
+      },
+    },
+
     // Priority — controls sort order in the nav footer collection strip
     {
       name: 'collectionPriority',
@@ -372,6 +384,10 @@ export const Collections: CollectionConfig = {
         try {
           const { revalidateTag } = await import('next/cache')
           revalidateTag('products-navigation')
+          // getNavCollections (footer strip + featured carousel) is tagged 'collections',
+          // not 'products-navigation' — bust it too so featured/legacy/priority changes
+          // reflect immediately instead of waiting out the 5-min TTL.
+          revalidateTag('collections')
         } catch {
           // next/cache unavailable outside Next.js runtime (e.g. in seed scripts) — ignore
         }
