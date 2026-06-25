@@ -78,6 +78,12 @@ export const showroomsCopy = {
 } as const
 
 /**
+ * HubSpot share-link form embedded in the hero card via the two-step prefill
+ * flow. Replace the token if the form changes; prefill rides on query params.
+ */
+export const signupFormSrc = 'https://share.hsforms.com/1akDfa9M5QTyPYtboMk85WQd39hb'
+
+/**
  * Dealer discount offer. Copy shared by the three offer CTAs (Hero, Showrooms,
  * Coda) and the OfferModal they open. Prototype only — the form is not yet
  * wired to a backend; see OfferModal for the stubbed submit flow.
@@ -89,6 +95,7 @@ export const offerCopy = {
   /** CTA button labels per placement. */
   cta: {
     hero: 'Unlock 20–30% Off',
+    stats: 'Sign Up Now',
     showrooms: 'Get Your Discount',
     coda: 'Claim 20–30% Off',
   },

@@ -11,9 +11,11 @@ import {
   heroCopy,
   offerCopy,
   showroomsCopy,
+  signupFormSrc,
   stats,
   timelineCopy,
 } from './scenes'
+import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { CATEGORY_LABELS, collectionsCopy, featuredCollections } from './featuredCollections'
 
 /**
@@ -26,7 +28,7 @@ export default function AboutStaticFallback() {
   return (
     <>
       {/* Hero */}
-      <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-kawai-black text-white">
+      <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-kawai-black py-20 text-white">
         <Image
           src={aboutImages.soundboard}
           alt=""
@@ -36,59 +38,85 @@ export default function AboutStaticFallback() {
           className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/70" />
-        <div className="container relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
-          <h1 className="sr-only">Kawai — Crafting Inspiration Since 1927</h1>
-          <p className="mb-7 inline-flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] text-kawai-gold">
-            <span className="h-px w-10 bg-kawai-gold" />
-            {heroCopy.eyebrow}
-            <span className="h-px w-10 bg-kawai-gold" />
-          </p>
-          <div
-            aria-hidden
-            className="relative mb-4 h-[clamp(5.5rem,15vw,11rem)] w-full max-w-[640px]"
-          >
-            <Image
-              src={aboutImages.wordmark}
-              alt=""
-              fill
-              priority
-              sizes="(max-width: 768px) 80vw, 640px"
-              className="object-contain object-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]"
-            />
-          </div>
-          <p className="mb-9 text-sm font-semibold uppercase tracking-[0.32em] text-white/70">
-            {heroCopy.sinceLabel}
-          </p>
-          <p className="mb-9 max-w-xl text-lg leading-relaxed text-white/80 md:text-xl">
-            {heroCopy.sub}
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <BrandCTAButton onClick={offer.open} variant="red">
-              {offerCopy.cta.hero}
-            </BrandCTAButton>
+        <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-6 lg:grid-cols-2 lg:gap-14">
+          {/* Left column — brand storytelling */}
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+            <h1 className="sr-only">Kawai — Crafting Inspiration Since 1927</h1>
+            <p className="mb-7 inline-flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.3em] text-kawai-gold">
+              <span className="h-px w-10 bg-kawai-gold" />
+              {heroCopy.eyebrow}
+            </p>
+            <div
+              aria-hidden
+              className="relative mb-4 h-[clamp(4.5rem,11vw,8.5rem)] w-full max-w-[520px]"
+            >
+              <Image
+                src={aboutImages.wordmark}
+                alt=""
+                fill
+                priority
+                sizes="(max-width: 768px) 80vw, 520px"
+                className="object-contain object-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] lg:object-left"
+              />
+            </div>
+            <p className="mb-7 text-sm font-semibold uppercase tracking-[0.32em] text-white/70">
+              {heroCopy.sinceLabel}
+            </p>
+            <p className="mb-8 max-w-xl text-lg leading-relaxed text-white/80 md:text-xl">
+              {heroCopy.sub}
+            </p>
             <BrandCTA href={heroCopy.secondaryCta.href} variant="outline" showArrow={false}>
               {heroCopy.secondaryCta.label}
             </BrandCTA>
+          </div>
+
+          {/* Right column — the sign-up card */}
+          <div className="mx-auto w-full max-w-md rounded-2xl bg-kawai-pearl p-6 text-kawai-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-black/5 sm:p-8">
+            <p className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-red">
+              <span className="h-px w-8 bg-kawai-red" />
+              {offerCopy.eyebrow}
+            </p>
+            <h2 className="mt-4 font-[family-name:var(--font-brand-serif)] text-[clamp(1.5rem,3vw,2rem)] font-light leading-[1.1] tracking-tight text-kawai-black">
+              {offerCopy.headline}
+            </h2>
+            <p className="mt-3 mb-6 text-sm leading-relaxed text-kawai-charcoal">{offerCopy.body}</p>
+
+            <TwoStepHubSpotForm formSrc={signupFormSrc} submitLabel={offerCopy.submitLabel} />
+
+            <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
+              By signing up you agree to be contacted by your local Authorized Kawai dealer.
+            </p>
           </div>
         </div>
       </section>
 
       {/* Stats */}
       <section className="bg-kawai-black py-20 text-white md:py-24">
-        <div className="container mx-auto grid max-w-6xl grid-cols-2 gap-y-12 px-6 md:grid-cols-5 md:gap-y-0">
-          {stats.map((s, i) => (
-            <div
-              key={s.label}
-              className={`px-4 text-center md:border-l md:border-white/10 ${i === 0 ? 'md:border-l-0' : ''} ${i === stats.length - 1 ? 'col-span-2 md:col-span-1' : ''}`}
-            >
-              <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-medium leading-none md:text-6xl">
-                {s.value}
+        <div className="container mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={`px-4 text-center md:border-l md:border-white/10 ${i === 0 ? 'md:border-l-0' : ''} ${i === stats.length - 1 ? 'col-span-2 md:col-span-1' : ''}`}
+              >
+                <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-medium leading-none md:text-6xl">
+                  {s.value}
+                </div>
+                <div className="mt-4 text-[11px] uppercase tracking-[0.25em] text-kawai-gold/80">
+                  {s.label}
+                </div>
               </div>
-              <div className="mt-4 text-[11px] uppercase tracking-[0.25em] text-kawai-gold/80">
-                {s.label}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="mt-14 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <BrandCTAButton onClick={offer.open} variant="red">
+              {offerCopy.cta.stats}
+            </BrandCTAButton>
+            <BrandCTA href={heroCopy.secondaryCta.href} variant="outline" showArrow={false}>
+              {heroCopy.secondaryCta.label}
+            </BrandCTA>
+          </div>
         </div>
       </section>
 

@@ -3,8 +3,10 @@
 import { motion, type MotionValue } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
 import NumberStrike from '../NumberStrike'
+import { BrandCTA, BrandCTAButton } from '../brand-ui'
+import { useOfferModal } from '../OfferModalContext'
 import { useSceneActive } from '../useSceneActive'
-import { SCENE_WINDOWS, stats } from '../scenes'
+import { SCENE_WINDOWS, stats, offerCopy, heroCopy } from '../scenes'
 import { EASE_OUT_EXPO } from '../motion'
 
 type Props = { progress: MotionValue<number>; reduce: boolean }
@@ -56,21 +58,41 @@ function StatColumn({ active, reduce, index, stat, isLast }: StatColumnProps) {
 
 export default function SceneStats({ progress, reduce }: Props) {
   const active = useSceneActive(progress, SCENE_WINDOWS.stats)
+  const offer = useOfferModal()
+
+  // Land the CTAs just after the last stat column has struck in.
+  const ctaDelay = stats.length * 0.1 + 0.2
 
   return (
     <SceneLayer progress={progress} window={SCENE_WINDOWS.stats} className="items-center">
       <div className="container mx-auto px-6">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
-          {stats.map((stat, i) => (
-            <StatColumn
-              key={stat.label}
-              active={active}
-              reduce={reduce}
-              index={i}
-              stat={stat}
-              isLast={i === stats.length - 1}
-            />
-          ))}
+        <div className="mx-auto flex max-w-6xl flex-col items-center">
+          <div className="grid w-full grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
+            {stats.map((stat, i) => (
+              <StatColumn
+                key={stat.label}
+                active={active}
+                reduce={reduce}
+                index={i}
+                stat={stat}
+                isLast={i === stats.length - 1}
+              />
+            ))}
+          </div>
+
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={reduce ? {} : { opacity: active ? 1 : 0, y: active ? 0 : 16 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: ctaDelay }}
+            className="mt-16 flex flex-col items-center gap-3 sm:flex-row sm:gap-4"
+          >
+            <BrandCTAButton onClick={offer.open} variant="red">
+              {offerCopy.cta.stats}
+            </BrandCTAButton>
+            <BrandCTA href={heroCopy.secondaryCta.href} variant="outline" showArrow={false}>
+              {heroCopy.secondaryCta.label}
+            </BrandCTA>
+          </motion.div>
         </div>
       </div>
     </SceneLayer>

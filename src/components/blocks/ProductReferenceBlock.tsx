@@ -45,6 +45,21 @@ interface NormalisedVariant {
   price: number
   compareAtPrice: number | null
   available: boolean
+  image: string | null // Per-variant (finish/color) image URL, when available
+}
+
+// Resolve a CMS variation's image: populated Media object → synced imageUrl → none.
+// Mirrors ProductHeroBlock.getDisplayImage(): a bare string `image` is an unpopulated
+// Media ID (not a URL), so only an object with a real `url` counts.
+function resolveVariationImage(v: NonNullable<Product['variations']>[number]): string | null {
+  const img = v.image
+  if (img && typeof img === 'object' && 'url' in img && typeof img.url === 'string' && img.url.trim() !== '') {
+    return img.url
+  }
+  if (typeof v.imageUrl === 'string' && v.imageUrl.trim() !== '') {
+    return v.imageUrl
+  }
+  return null
 }
 
 function getVariants(
@@ -59,6 +74,7 @@ function getVariants(
       price: v.price,
       compareAtPrice: v.compareAtPrice ?? null,
       available: v.available ?? true,
+      image: v.image?.url ?? null,
     }))
   }
 
@@ -71,6 +87,7 @@ function getVariants(
       price: v.price ?? 0,
       compareAtPrice: v.compareAtPrice ?? null,
       available: v.available ?? true,
+      image: resolveVariationImage(v),
     }))
     .filter((v) => v.id !== '')
 }
@@ -188,7 +205,9 @@ export function ProductReferenceBlock({
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(defaultVariantId)
   const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null
 
-  const imageSrc = shopifyProduct?.image?.url ?? product?.imageUrl ?? null
+  // Per-variant image first (swaps when the user changes finish/color), then
+  // product-level fallbacks — mirrors ProductHeroBlock.getDisplayImage() priority.
+  const imageSrc = selectedVariant?.image ?? shopifyProduct?.image?.url ?? product?.imageUrl ?? null
   const hasShopify  = shopifyProduct !== null && shopifyProduct !== undefined
   const hasVariants = variants.length > 0
   // Can transact when: not Canada, has variant IDs (either from Shopify or CMS sync)
