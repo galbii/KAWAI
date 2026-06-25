@@ -215,17 +215,17 @@ export function StoryChapter({ chapter, index }: { chapter: Chapter; index: numb
         className={cn(
           'absolute inset-0',
           left
-            ? 'bg-gradient-to-r from-black via-black/75 to-black/20'
-            : 'bg-gradient-to-l from-black via-black/75 to-black/20',
+            ? 'bg-gradient-to-r from-black/95 via-black/45 to-transparent'
+            : 'bg-gradient-to-l from-black/95 via-black/45 to-transparent',
         )}
       />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent" />
 
       {/* Giant watermark year */}
       <span
         aria-hidden
         className={cn(
-          'pointer-events-none absolute bottom-[6%] z-[1] font-[family-name:var(--font-brand-serif)] font-light leading-none text-white/[0.06] text-[34vw] md:text-[22vw]',
+          'pointer-events-none absolute bottom-[6%] z-[1] font-[family-name:var(--font-brand-serif)] font-light leading-none text-white/15 text-[34vw] md:text-[22vw]',
           left ? 'right-[3%]' : 'left-[3%]',
         )}
       >
@@ -400,9 +400,9 @@ export function SpiritosoFilm() {
         alt=""
         fill
         sizes="100vw"
-        className="object-cover object-center opacity-20"
+        className="object-cover object-center opacity-30"
       />
-      <div aria-hidden className="absolute inset-0 bg-kawai-black/70" />
+      <div aria-hidden className="absolute inset-0 bg-kawai-black/55" />
 
       <div className="container relative z-10 mx-auto max-w-4xl px-6 text-center text-white">
         <motion.div
