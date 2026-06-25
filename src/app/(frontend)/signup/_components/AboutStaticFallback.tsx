@@ -8,23 +8,18 @@ import { aboutImages } from './images'
 import {
   codaCopy,
   exploreProductsCta,
-  goDeeperCopy,
-  heritageCopy,
   heroCopy,
-  manifestoCopy,
   offerCopy,
   showroomsCopy,
   stats,
-  technologyCopy,
   timelineCopy,
 } from './scenes'
 import { CATEGORY_LABELS, collectionsCopy, featuredCollections } from './featuredCollections'
 
 /**
  * Reduced-motion fallback. Same copy, same DOM order as the cinematic version,
- * no scroll coupling — ten stacked sections, each fully visible at rest.
- * Order: hero → manifesto → showrooms → collections → stats → heritage →
- * timeline → technology → goDeeper → coda.
+ * no scroll coupling — six stacked sections, each fully visible at rest.
+ * Order: hero → stats → showrooms → collections → timeline → coda.
  */
 export default function AboutStaticFallback() {
   const offer = useOfferModal()
@@ -191,55 +186,6 @@ export default function AboutStaticFallback() {
         </div>
       </section>
 
-      {/* Manifesto */}
-      <section className="bg-kawai-pearl py-24 md:py-32">
-        <div className="container mx-auto px-6 text-center">
-          <span
-            aria-hidden
-            className="mb-2 block font-[family-name:var(--font-brand-serif)] text-7xl leading-none text-kawai-gold md:text-8xl"
-          >
-            &ldquo;
-          </span>
-          <blockquote className="mx-auto max-w-4xl font-[family-name:var(--font-brand-serif)] text-[clamp(1.6rem,3.4vw,2.75rem)] italic leading-[1.3] text-kawai-black">
-            {manifestoCopy}
-          </blockquote>
-          <div className="mx-auto mt-10 h-px w-16 bg-kawai-gold" />
-        </div>
-      </section>
-
-      {/* Heritage */}
-      <section id="story" className="bg-kawai-pearl py-24">
-        <div className="container mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <div className="inline-flex items-baseline gap-4 border-l-2 border-kawai-gold-on-light pl-5">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-kawai-gold-on-light">
-                {heritageCopy.plate.kicker}
-              </span>
-              <span className="font-[family-name:var(--font-brand-serif)] text-4xl text-kawai-black">
-                {heritageCopy.plate.year}
-              </span>
-            </div>
-          </div>
-          <div className="lg:col-span-7">
-            <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-red">
-              <span className="h-px w-8 bg-kawai-red" />
-              {heritageCopy.eyebrow}
-            </p>
-            <h2 className="mb-6 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,4vw,3rem)] leading-tight text-kawai-black">
-              {heritageCopy.headline}
-            </h2>
-            <p className="mb-7 leading-relaxed text-kawai-charcoal">{heritageCopy.body}</p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-              {heritageCopy.links.map((l, i) => (
-                <BrandCTA key={l.href} href={l.href} variant={i === 0 ? 'red' : 'dark-outline'}>
-                  {l.label}
-                </BrandCTA>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Timeline */}
       <section className="bg-kawai-black py-24 text-white">
         <div className="container mx-auto max-w-3xl px-6">
@@ -265,62 +211,6 @@ export default function AboutStaticFallback() {
               </li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      {/* Technology */}
-      <section className="bg-kawai-black py-24 text-white">
-        <div className="container mx-auto max-w-3xl px-6">
-          <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-gold">
-            <span className="h-px w-8 bg-kawai-gold" />
-            {technologyCopy.eyebrow}
-          </p>
-          <h2 className="mb-7 font-[family-name:var(--font-brand-serif)] text-[clamp(2.2rem,5vw,3.5rem)] leading-tight">
-            {technologyCopy.headline}
-          </h2>
-          <p className="mb-8 leading-relaxed text-white/80">{technologyCopy.body}</p>
-          <BrandCTA href={technologyCopy.link.href} variant="red">
-            {technologyCopy.link.label}
-          </BrandCTA>
-        </div>
-      </section>
-
-      {/* Go Deeper */}
-      <section className="bg-kawai-pearl py-24">
-        <div className="container mx-auto max-w-5xl px-6">
-          <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-red">
-            <span className="h-px w-8 bg-kawai-red" />
-            {goDeeperCopy.eyebrow}
-          </p>
-          <h2 className="mb-12 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,5vw,3.25rem)] leading-tight text-kawai-black">
-            {goDeeperCopy.headline}
-          </h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {goDeeperCopy.cards.map((c) => (
-              <article
-                key={c.title}
-                className="rounded-lg border border-kawai-neutral bg-white p-9"
-              >
-                <h3 className="mb-3 font-[family-name:var(--font-brand-serif)] text-2xl text-kawai-black">
-                  {c.title}
-                </h3>
-                <p className="mb-6 max-w-sm text-sm leading-relaxed text-kawai-charcoal">
-                  {c.body}
-                </p>
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                  {c.links.map((l) => (
-                    <BrandCTA
-                      key={l.href}
-                      href={l.href}
-                      variant={l.primary ? 'red' : 'dark-outline'}
-                    >
-                      {l.label}
-                    </BrandCTA>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 

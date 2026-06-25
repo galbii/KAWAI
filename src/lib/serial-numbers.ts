@@ -9,9 +9,15 @@ export interface LookupResult {
   country: ProductionCountry
   year: number
   yearEnd: number | null
-  isKxAmbiguous: boolean
-  kxYear: number | null
-  kxYearEnd: number | null
+  /**
+   * True when a no-prefix numeric serial falls in the range shared by two
+   * distinct Kawai numbering series (a vintage grand vs. a separate, later
+   * Japanese series). When true, `altYear`/`altYearEnd` hold the alternate
+   * interpretation.
+   */
+  isAmbiguous: boolean
+  altYear: number | null
+  altYearEnd: number | null
   serialNormalized: string
 }
 
@@ -20,9 +26,24 @@ export interface LookupError {
   message: string
 }
 
-// All values are the approximate first serial number produced for that year.
-// Source: Kawai Musical Instruments Mfg. Co., Ltd. official FAQ
+/*
+ * Serial → production-year reference tables.
+ *
+ * The pre-1987 Japan grand figures are the approximate first serial produced
+ * each year, per Kawai Musical Instruments Mfg. Co., Ltd.'s official FAQ. Every
+ * other table (the lettered series A/B/C/E/F/S/R, the 1987+ Japan figures, and
+ * the secondary numeric series) is derived from Kawai's master production
+ * database (1.55M dated records, 1987–2026).
+ *
+ * Convention: `serialStart` is the lowest serial mapped to that year. For the
+ * database-derived rows it is `previousYearMaxSerial + 1`, which makes the
+ * boundaries strictly increasing and lets `findYear` resolve a serial to the
+ * earliest year whose production reached it. Real per-year ranges overlap, so
+ * a serial within an overlap zone can be off by ~1 year — dates are approximate.
+ */
 
+// ── Japan, main numeric series (grands & uprights) ──
+// 1927–2024 from Kawai's official FAQ chart; 2025–2026 extended from the master database.
 const JAPAN: SerialEntry[] = [
   { year: 1927, serialStart: 4200 },
   { year: 1930, serialStart: 6000 },
@@ -102,74 +123,208 @@ const JAPAN: SerialEntry[] = [
   { year: 2022, serialStart: 2770000 },
   { year: 2023, serialStart: 2780000 },
   { year: 2024, serialStart: 2790000 },
+  // 2025–2026 extended from the master database (FAQ chart stops at 2024)
+  { year: 2025, serialStart: 2796800 },
+  { year: 2026, serialStart: 2804707 },
 ]
 
-// Stored as raw numeric values (strip the leading 'A' before comparing)
+// ── Japan, secondary numeric series (no prefix, ~22k–126k) ──
+// A separate counter that overlaps the 1960s grand serial range, so a bare
+// number in this band is ambiguous. Derived from the master database.
+const JAPAN_SECONDARY: SerialEntry[] = [
+  { year: 1987, serialStart: 38947 },
+  { year: 1988, serialStart: 106384 },
+  { year: 1989, serialStart: 108250 },
+  { year: 1990, serialStart: 110060 },
+  { year: 1991, serialStart: 112168 },
+  { year: 1992, serialStart: 113639 },
+  { year: 1993, serialStart: 115387 },
+  { year: 1994, serialStart: 116877 },
+  { year: 1995, serialStart: 118139 },
+  { year: 1996, serialStart: 119199 },
+  { year: 1997, serialStart: 119940 },
+  { year: 1998, serialStart: 120859 },
+  { year: 1999, serialStart: 121557 },
+  { year: 2000, serialStart: 122150 },
+  { year: 2001, serialStart: 122641 },
+  { year: 2002, serialStart: 123167 },
+  { year: 2003, serialStart: 123622 },
+  { year: 2004, serialStart: 123783 },
+  { year: 2005, serialStart: 124024 },
+  { year: 2006, serialStart: 124209 },
+  { year: 2007, serialStart: 124545 },
+  { year: 2008, serialStart: 124865 },
+  { year: 2009, serialStart: 125081 },
+  { year: 2010, serialStart: 125304 },
+  { year: 2011, serialStart: 125518 },
+  { year: 2012, serialStart: 125649 },
+  { year: 2013, serialStart: 125808 },
+  { year: 2014, serialStart: 125945 },
+  { year: 2015, serialStart: 126073 },
+  { year: 2016, serialStart: 126128 },
+  { year: 2017, serialStart: 126193 },
+  { year: 2018, serialStart: 126240 },
+  { year: 2019, serialStart: 126261 },
+  { year: 2020, serialStart: 126318 },
+  { year: 2021, serialStart: 126345 },
+  { year: 2022, serialStart: 126365 },
+  { year: 2023, serialStart: 126403 },
+  { year: 2024, serialStart: 126435 },
+  { year: 2025, serialStart: 126445 },
+  { year: 2026, serialStart: 126462 },
+]
+const SECONDARY_MIN = 38947
+const SECONDARY_MAX = 126463
+
+// ── USA (prefix A), Lincolnton, NC — production ended 2004 ──
+// 1988–1989 from FAQ; 1990–2004 from the master database.
 const USA: SerialEntry[] = [
   { year: 1988, serialStart: 6904 },
   { year: 1989, serialStart: 7500 },
-  { year: 1990, serialStart: 10200 },
-  { year: 1991, serialStart: 21300 },
-  { year: 1992, serialStart: 30515 },
-  { year: 1993, serialStart: 39267 },
-  { year: 1994, serialStart: 49071 },
-  { year: 1995, serialStart: 56689 },
-  { year: 1996, serialStart: 64000 },
-  { year: 1997, serialStart: 74000 },
-  { year: 1998, serialStart: 81000 },
-  { year: 1999, serialStart: 90000 },
-  { year: 2000, serialStart: 96000 },
-  { year: 2001, serialStart: 100000 },
-  { year: 2002, serialStart: 104000 },
-  { year: 2003, serialStart: 111000 },
-  { year: 2004, serialStart: 115300 },
+  { year: 1990, serialStart: 13725 },
+  { year: 1991, serialStart: 23428 },
+  { year: 1992, serialStart: 32067 },
+  { year: 1993, serialStart: 40976 },
+  { year: 1994, serialStart: 51275 },
+  { year: 1995, serialStart: 59498 },
+  { year: 1996, serialStart: 69416 },
+  { year: 1997, serialStart: 76604 },
+  { year: 1998, serialStart: 85348 },
+  { year: 1999, serialStart: 93808 },
+  { year: 2000, serialStart: 97018 },
+  { year: 2001, serialStart: 102080 },
+  { year: 2002, serialStart: 108618 },
+  { year: 2003, serialStart: 109966 },
+  { year: 2004, serialStart: 115063 },
 ]
 
-// Stored as raw numeric values (strip the leading 'F' before comparing)
+// ── Indonesia (prefix F), Surabaya ──  master database, 2002–2026
 const INDONESIA: SerialEntry[] = [
-  { year: 2003, serialStart: 200 },
-  { year: 2004, serialStart: 2200 },
-  { year: 2005, serialStart: 4700 },
-  { year: 2006, serialStart: 10600 },
-  { year: 2007, serialStart: 18700 },
-  { year: 2008, serialStart: 30500 },
-  { year: 2009, serialStart: 40085 },
-  { year: 2010, serialStart: 49000 },
-  { year: 2011, serialStart: 57700 },
-  { year: 2012, serialStart: 67900 },
-  { year: 2013, serialStart: 80000 },
-  { year: 2014, serialStart: 92000 },
-  { year: 2015, serialStart: 102000 },
-  { year: 2016, serialStart: 112000 },
-  { year: 2017, serialStart: 122000 },
-  { year: 2018, serialStart: 132000 },
-  { year: 2019, serialStart: 142000 },
-  { year: 2020, serialStart: 155000 },
-  { year: 2021, serialStart: 165000 },
-  { year: 2022, serialStart: 180000 },
-  { year: 2023, serialStart: 190000 },
-  { year: 2024, serialStart: 200000 },
+  { year: 2002, serialStart: 11 },
+  { year: 2003, serialStart: 165 },
+  { year: 2004, serialStart: 2352 },
+  { year: 2005, serialStart: 5385 },
+  { year: 2006, serialStart: 11004 },
+  { year: 2007, serialStart: 19538 },
+  { year: 2008, serialStart: 31432 },
+  { year: 2009, serialStart: 41446 },
+  { year: 2010, serialStart: 49590 },
+  { year: 2011, serialStart: 59459 },
+  { year: 2012, serialStart: 71160 },
+  { year: 2013, serialStart: 82386 },
+  { year: 2014, serialStart: 93060 },
+  { year: 2015, serialStart: 103196 },
+  { year: 2016, serialStart: 113832 },
+  { year: 2017, serialStart: 124637 },
+  { year: 2018, serialStart: 134744 },
+  { year: 2019, serialStart: 145615 },
+  { year: 2020, serialStart: 157335 },
+  { year: 2021, serialStart: 166678 },
+  { year: 2022, serialStart: 179415 },
+  { year: 2023, serialStart: 193585 },
+  { year: 2024, serialStart: 202463 },
+  { year: 2025, serialStart: 210335 },
+  { year: 2026, serialStart: 218032 },
 ]
 
-// KX models use a separate serial series that numerically overlaps with Japan production
-const KX: SerialEntry[] = [
-  { year: 2001, serialStart: 20000 },
-  { year: 2002, serialStart: 21000 },
-  { year: 2003, serialStart: 23000 },
-  { year: 2004, serialStart: 26000 },
-  { year: 2005, serialStart: 30000 },
-  { year: 2006, serialStart: 32000 },
-  { year: 2007, serialStart: 34000 },
-  { year: 2008, serialStart: 36800 },
-  { year: 2009, serialStart: 37900 },
-  { year: 2010, serialStart: 38900 },
-  { year: 2011, serialStart: 40000 },
-  { year: 2012, serialStart: 41000 },
-  { year: 2013, serialStart: 42000 },
+// ── Japan, prefix B ──  master database, 1991–2026
+const B_SERIES: SerialEntry[] = [
+  { year: 1991, serialStart: 103091 },
+  { year: 1992, serialStart: 103501 },
+  { year: 1993, serialStart: 105465 },
+  { year: 1994, serialStart: 108146 },
+  { year: 1995, serialStart: 110209 },
+  { year: 1996, serialStart: 112723 },
+  { year: 1997, serialStart: 115987 },
+  { year: 1998, serialStart: 120412 },
+  { year: 1999, serialStart: 125741 },
+  { year: 2000, serialStart: 131790 },
+  { year: 2001, serialStart: 138196 },
+  { year: 2002, serialStart: 140951 },
+  { year: 2003, serialStart: 144844 },
+  { year: 2004, serialStart: 148044 },
+  { year: 2005, serialStart: 152436 },
+  { year: 2006, serialStart: 156491 },
+  { year: 2007, serialStart: 159799 },
+  { year: 2008, serialStart: 163057 },
+  { year: 2009, serialStart: 166744 },
+  { year: 2010, serialStart: 168953 },
+  { year: 2011, serialStart: 171527 },
+  { year: 2012, serialStart: 173953 },
+  { year: 2013, serialStart: 176587 },
+  { year: 2014, serialStart: 179298 },
+  { year: 2015, serialStart: 182546 },
+  { year: 2016, serialStart: 185837 },
+  { year: 2017, serialStart: 188688 },
+  { year: 2018, serialStart: 192056 },
+  { year: 2019, serialStart: 196115 },
+  { year: 2020, serialStart: 200444 },
+  { year: 2021, serialStart: 203071 },
+  { year: 2022, serialStart: 206685 },
+  { year: 2023, serialStart: 210516 },
+  { year: 2024, serialStart: 214280 },
+  { year: 2025, serialStart: 216222 },
+  { year: 2026, serialStart: 217893 },
 ]
 
-const KX_MIN = KX[0]!.serialStart
-const KX_MAX = KX[KX.length - 1]!.serialStart + 5000
+// ── Japan, prefix C ──  master database, 1999–2003 (discontinued)
+const C_SERIES: SerialEntry[] = [
+  { year: 1999, serialStart: 10001 },
+  { year: 2000, serialStart: 10071 },
+  { year: 2001, serialStart: 10511 },
+  { year: 2002, serialStart: 10793 },
+  { year: 2003, serialStart: 11127 },
+]
+
+// ── Japan, prefix E ──  master database, 1995–2002 (discontinued)
+const E_SERIES: SerialEntry[] = [
+  { year: 1995, serialStart: 10001 },
+  { year: 1996, serialStart: 12770 },
+  { year: 1997, serialStart: 13957 },
+  { year: 1998, serialStart: 15241 },
+  { year: 1999, serialStart: 16813 },
+  { year: 2000, serialStart: 17023 },
+  { year: 2001, serialStart: 17163 },
+  { year: 2002, serialStart: 17313 },
+]
+
+// ── Japan, prefix S ──  master database, 1987–1997 (discontinued)
+const S_SERIES: SerialEntry[] = [
+  { year: 1987, serialStart: 128917 },
+  { year: 1988, serialStart: 130038 },
+  { year: 1989, serialStart: 130376 },
+  { year: 1990, serialStart: 131782 },
+  { year: 1991, serialStart: 132362 },
+  { year: 1992, serialStart: 133222 },
+  { year: 1993, serialStart: 133302 },
+  { year: 1994, serialStart: 133447 },
+  { year: 1995, serialStart: 133502 },
+  { year: 1996, serialStart: 133512 },
+  { year: 1997, serialStart: 133552 },
+]
+
+// ── Japan, prefix R ──  master database, single known record
+const R_SERIES: SerialEntry[] = [{ year: 2013, serialStart: 90789 }]
+
+interface Series {
+  country: ProductionCountry
+  table: SerialEntry[]
+  /** Highest known serial in this series; above it → out-of-range-high. Omit for ongoing series. */
+  ceiling?: number
+  /** Last production year, used in the out-of-range-high message. */
+  endYear?: number
+}
+
+// Lettered prefixes mapped to their series. Ongoing series (B, F) omit a ceiling.
+const PREFIX_SERIES: Record<string, Series> = {
+  A: { country: 'USA', table: USA, ceiling: 116125, endYear: 2004 },
+  F: { country: 'Indonesia', table: INDONESIA },
+  B: { country: 'Japan', table: B_SERIES },
+  C: { country: 'Japan', table: C_SERIES, ceiling: 11347, endYear: 2003 },
+  E: { country: 'Japan', table: E_SERIES, ceiling: 17357, endYear: 2002 },
+  S: { country: 'Japan', table: S_SERIES, ceiling: 133557, endYear: 1997 },
+  R: { country: 'Japan', table: R_SERIES },
+}
 
 function findYear(table: SerialEntry[], num: number): { year: number; yearEnd: number | null } | null {
   if (num < (table[0]?.serialStart ?? Infinity)) return null
@@ -191,77 +346,75 @@ export function lookupSerialNumber(raw: string): LookupResult | LookupError {
     return { type: 'invalid', message: 'Please enter a serial number.' }
   }
 
-  // Detect production series by prefix
-  if (input.startsWith('F')) {
-    const numStr = input.slice(1)
+  // Known lettered series (A, B, C, E, F, R, S)
+  const prefix = input[0]!
+  const series = /[A-Z]/.test(prefix) ? PREFIX_SERIES[prefix] : undefined
+
+  if (series) {
+    const numStr = input.slice(1).replace(/\D/g, '')
     const num = parseInt(numStr, 10)
-    if (isNaN(num) || numStr === '') {
-      return { type: 'invalid', message: 'Invalid serial number format. Expected F followed by digits (e.g. F049000).' }
+    if (numStr === '' || isNaN(num)) {
+      return {
+        type: 'invalid',
+        message: `Invalid serial number format. Expected ${prefix} followed by digits (e.g. ${prefix}049000).`,
+      }
     }
-    const result = findYear(INDONESIA, num)
-    if (!result) {
-      return { type: 'out-of-range-low', message: 'Serial number is below the earliest known Indonesia production record (F000200, 2003).' }
+
+    const first = series.table[0]!
+    if (num < first.serialStart) {
+      return {
+        type: 'out-of-range-low',
+        message: `Serial number is below the earliest known ${series.country} record for the ${prefix} series (${prefix}${String(first.serialStart).padStart(6, '0')}, ${first.year}).`,
+      }
     }
+    if (series.ceiling !== undefined && num > series.ceiling) {
+      return {
+        type: 'out-of-range-high',
+        message: `The ${prefix} series ended in ${series.endYear}. Serial numbers above ${prefix}${String(series.ceiling).padStart(6, '0')} are outside the known range.`,
+      }
+    }
+
+    const result = findYear(series.table, num)!
     return {
-      country: 'Indonesia',
+      country: series.country,
       year: result.year,
       yearEnd: result.yearEnd,
-      isKxAmbiguous: false,
-      kxYear: null,
-      kxYearEnd: null,
-      serialNormalized: `F${numStr.padStart(6, '0')}`,
+      isAmbiguous: false,
+      altYear: null,
+      altYearEnd: null,
+      serialNormalized: `${prefix}${String(num).padStart(6, '0')}`,
     }
   }
 
-  if (input.startsWith('A')) {
-    const numStr = input.slice(1)
-    const num = parseInt(numStr, 10)
-    if (isNaN(num) || numStr === '') {
-      return { type: 'invalid', message: 'Invalid serial number format. Expected A followed by digits (e.g. A49071).' }
-    }
-    const result = findYear(USA, num)
-    if (!result) {
-      return { type: 'out-of-range-low', message: 'Serial number is below the earliest known U.S. production record (A6904, 1988).' }
-    }
-    if (num > 120000) {
-      return { type: 'out-of-range-high', message: 'U.S. production ended in 2004. Serial numbers above A115300 may be outside the known range.' }
-    }
-    return {
-      country: 'USA',
-      year: result.year,
-      yearEnd: result.yearEnd,
-      isKxAmbiguous: false,
-      kxYear: null,
-      kxYearEnd: null,
-      serialNormalized: `A${num}`,
-    }
-  }
-
-  // Strip any other leading letter (per official source: disregard letters other than A or F)
-  const cleaned = input.replace(/^[B-EG-Z]+/, '')
+  // No recognized prefix → treat as a numeric serial. Disregard any stray
+  // leading letter (per Kawai guidance for unlabeled/atypical serials).
+  const cleaned = input.replace(/\D/g, '')
   const num = parseInt(cleaned, 10)
 
-  if (isNaN(num) || cleaned === '') {
+  if (cleaned === '' || isNaN(num)) {
     return { type: 'invalid', message: 'Invalid serial number. Please enter a valid Kawai serial number.' }
   }
 
   const japanResult = findYear(JAPAN, num)
-
   if (!japanResult) {
-    return { type: 'out-of-range-low', message: 'Serial number is below the earliest Kawai production record. Very early pianos (pre-1927) may not be in our reference data.' }
+    return {
+      type: 'out-of-range-low',
+      message: 'Serial number is below the earliest Kawai production record. Very early pianos (pre-1927) may not be in our reference data.',
+    }
   }
 
-  // Check for KX ambiguity — KX models use a separate numeric series
-  // that overlaps with 1950s–1960s Japan production numbers
-  const isKxAmbiguous = num >= KX_MIN && num <= KX_MAX
-  let kxYear: number | null = null
-  let kxYearEnd: number | null = null
+  // A bare number in the secondary-series band could be either a vintage grand
+  // or a later non-grand model that shares this numeric range.
+  let isAmbiguous = false
+  let altYear: number | null = null
+  let altYearEnd: number | null = null
 
-  if (isKxAmbiguous) {
-    const kxResult = findYear(KX, num)
-    if (kxResult) {
-      kxYear = kxResult.year
-      kxYearEnd = kxResult.yearEnd
+  if (num >= SECONDARY_MIN && num <= SECONDARY_MAX) {
+    const altResult = findYear(JAPAN_SECONDARY, num)
+    if (altResult && altResult.year !== japanResult.year) {
+      isAmbiguous = true
+      altYear = altResult.year
+      altYearEnd = altResult.yearEnd
     }
   }
 
@@ -269,9 +422,9 @@ export function lookupSerialNumber(raw: string): LookupResult | LookupError {
     country: 'Japan',
     year: japanResult.year,
     yearEnd: japanResult.yearEnd,
-    isKxAmbiguous,
-    kxYear,
-    kxYearEnd,
+    isAmbiguous,
+    altYear,
+    altYearEnd,
     serialNormalized: String(num),
   }
 }

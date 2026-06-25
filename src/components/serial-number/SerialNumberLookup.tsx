@@ -8,186 +8,174 @@ import { cn } from '@/lib/utils'
 /* ─── Data ─────────────────────────────────────────────────────────── */
 
 const COUNTRY = {
-  Japan:     { code: 'JP', label: 'Japan Production',      location: 'Hamamatsu, Japan'           },
-  USA:       { code: 'US', label: 'U.S. Production',       location: 'Lincolnton, North Carolina' },
-  Indonesia: { code: 'ID', label: 'Indonesia Production',  location: 'Surabaya, Indonesia'        },
+  Japan:     { code: 'JP', location: 'Hamamatsu, Japan'           },
+  USA:       { code: 'US', location: 'Lincolnton, North Carolina' },
+  Indonesia: { code: 'ID', location: 'Surabaya, Indonesia'        },
 } as const
 
-const EXAMPLES = ['1856250', 'A49071', 'F049000', '303686']
+const EXAMPLES = ['1856250', 'A49071', 'F049000', 'B151616']
 
 const TIMELINE_START = 1927
-const TIMELINE_END   = 2025
+const TIMELINE_END   = 2026
 
-const ERA_MARKS = [
-  { year: 1927, label: '1927' },
-  { year: 1950, label: '1950' },
-  { year: 1975, label: '1975' },
-  { year: 2000, label: '2000' },
-  { year: 2024, label: '2024' },
-]
+const ERA_MARKS = [1927, 1950, 1975, 2000, 2026]
 
 function pct(year: number) {
-  return ((year - TIMELINE_START) / (TIMELINE_END - TIMELINE_START)) * 100
-}
-
-/* ─── Country code badge ─────────────────────────────────────────────── */
-
-function CountryCode({ code }: { code: string }) {
-  return (
-    <span className="inline-flex items-center justify-center font-mono text-xs font-bold text-kawai-charcoal bg-kawai-pearl border border-kawai-neutral rounded px-1.5 py-0.5 tracking-wider">
-      {code}
-    </span>
-  )
+  const clamped = Math.min(Math.max(year, TIMELINE_START), TIMELINE_END)
+  return ((clamped - TIMELINE_START) / (TIMELINE_END - TIMELINE_START)) * 100
 }
 
 /* ─── Timeline ───────────────────────────────────────────────────────── */
+/* The 1927–2026 production span as a single track; the result year sits on it
+   as a marker, with a muted second marker for the alternate (ambiguous) year. */
 
-function Timeline({ year }: { year: number }) {
+function Timeline({ year, altYear }: { year: number; altYear?: number | null }) {
   const pos = pct(year)
-  return (
-    <div className="px-8 pb-8 pt-4">
-      {/* Era labels row */}
-      <div className="relative h-6 mb-1">
-        {ERA_MARKS.map(m => (
-          <div
-            key={m.year}
-            className="absolute flex flex-col items-center"
-            style={{ left: `${pct(m.year)}%`, transform: 'translateX(-50%)' }}
-          >
-            <span className="text-xs font-mono text-kawai-charcoal/65">{m.label}</span>
-          </div>
-        ))}
-      </div>
+  const altPos = altYear != null ? pct(altYear) : null
 
+  return (
+    <div className="px-6 sm:px-8 pt-8 pb-7">
       {/* Track */}
-      <div className="relative h-5">
-        <div className="absolute top-2 left-0 right-0 h-[2px] bg-kawai-neutral rounded-full" />
+      <div className="relative h-3.5">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-kawai-neutral" />
+        {/* Progress fill to the result year */}
         <div
-          className="absolute top-2 left-0 h-[2px] bg-kawai-red/40 rounded-full"
-          style={{ width: `${pos}%` }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-px bg-kawai-red/40 origin-left"
+          style={{ width: `${pos}%`, animation: 'growX 0.5s cubic-bezier(0.4,0,0.2,1) both' }}
         />
-        {/* Tick marks */}
+        {/* Era ticks */}
         {ERA_MARKS.map(m => (
-          <div
-            key={m.year}
-            className="absolute top-0 w-px h-2 bg-kawai-neutral/80"
-            style={{ left: `${pct(m.year)}%`, transform: 'translateX(-50%)' }}
+          <span
+            key={m}
+            className="absolute top-1/2 -translate-y-1/2 w-px h-2 bg-kawai-neutral"
+            style={{ left: `${pct(m)}%` }}
           />
         ))}
-        {/* Active dot */}
-        <div
-          className="absolute w-4 h-4 rounded-full bg-kawai-red"
+        {/* Alternate-year marker (muted) */}
+        {altPos != null && (
+          <span
+            className="absolute top-1/2 z-10 h-2.5 w-2.5 rounded-full border border-kawai-charcoal/40 bg-white"
+            style={{ left: `${altPos}%`, transform: 'translate(-50%,-50%)' }}
+          />
+        )}
+        {/* Primary marker */}
+        <span
+          className="absolute top-1/2 z-20 h-3.5 w-3.5 rounded-full bg-kawai-red"
           style={{
             left: `${pos}%`,
-            top: '2px',
-            transform: 'translateX(-50%) translateY(-25%)',
-            boxShadow: '0 0 0 3px white, 0 0 0 5px rgba(225,25,34,0.25)',
-            animation: 'dotBounce 0.55s cubic-bezier(0.34,1.56,0.64,1) both',
+            transform: 'translate(-50%,-50%)',
+            boxShadow: '0 0 0 3px white, 0 0 0 5px rgba(225,25,34,0.2)',
+            animation: 'dotPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
           }}
         />
       </div>
 
-      <p className="text-center text-xs text-kawai-charcoal/65 tracking-widest uppercase mt-3">
-        Kawai Production Timeline
-      </p>
+      {/* Era scale */}
+      <div className="relative mt-4 h-4">
+        {ERA_MARKS.map(m => (
+          <span
+            key={m}
+            className="absolute font-mono text-[11px] text-kawai-charcoal/55 tabular-nums"
+            style={{
+              left: `${pct(m)}%`,
+              transform:
+                m === TIMELINE_START ? 'translateX(0)' : m === TIMELINE_END ? 'translateX(-100%)' : 'translateX(-50%)',
+            }}
+          >
+            {m}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
 
-/* ─── Success card ───────────────────────────────────────────────────── */
+/* ─── Result readout ─────────────────────────────────────────────────── */
+
+function ReadoutField({
+  label,
+  value,
+  sub,
+  big,
+}: {
+  label: string
+  value: string
+  sub?: string | undefined
+  big?: boolean
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 px-6 sm:px-8 py-5">
+      <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-charcoal/55">
+        {label}
+      </span>
+      <span
+        className={cn(
+          'font-mono text-kawai-black tabular-nums leading-none',
+          big ? 'text-5xl sm:text-6xl font-medium tracking-tight' : 'text-2xl sm:text-3xl',
+        )}
+      >
+        {value}
+      </span>
+      {sub && <span className="text-sm text-kawai-charcoal/70 leading-snug">{sub}</span>}
+    </div>
+  )
+}
 
 function SuccessCard({ result }: { result: LookupResult }) {
   const c = COUNTRY[result.country]
   const age = getApproximateAge(result.year)
 
   return (
-    <div style={{ animation: 'cardReveal 0.45s cubic-bezier(0.22,1,0.36,1) both' }}>
-      <div className="bg-white rounded-2xl border border-kawai-neutral overflow-hidden shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
-
-        {/* Animated top line */}
-        <div
-          className="h-[2px] bg-kawai-red origin-left"
-          style={{ animation: 'lineGrow 0.5s cubic-bezier(0.4,0,0.2,1) 0.1s both' }}
-        />
-
-        <div className="px-8 pt-8 pb-6 flex flex-col items-center text-center gap-5">
-
-          {/* Country display — no emoji, two-line label */}
-          <div
-            className="inline-flex flex-col items-center gap-1 px-6 py-3 rounded-xl border border-kawai-neutral bg-kawai-pearl/60"
-            style={{ animation: 'fadeUp 0.4s ease 0.15s both' }}
-          >
-            <span className="text-xs tracking-[0.18em] uppercase font-bold text-kawai-black">
-              {c.label}
-            </span>
-            <span className="text-sm text-kawai-charcoal">
-              {c.location}
-            </span>
-          </div>
-
-          {/* Year — the centrepiece */}
-          <div style={{ animation: 'yearStamp 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s both' }}>
-            <div
-              className="text-kawai-black tabular-nums leading-none"
-              style={{
-                fontFamily: 'var(--font-family-cormorant)',
-                fontSize: 'clamp(5.5rem, 20vw, 9.5rem)',
-                fontWeight: 700,
-                letterSpacing: '-0.03em',
-              }}
-            >
-              {result.year}
-            </div>
-            {!result.isKxAmbiguous && result.yearEnd && (
-              <div className="text-sm text-kawai-charcoal/70 mt-1">
-                through {result.yearEnd}
-              </div>
-            )}
-          </div>
-
-          {/* Age */}
-          <div
-            className="flex items-center gap-3"
-            style={{ animation: 'fadeUp 0.4s ease 0.25s both' }}
-          >
-            <div className="h-px w-8 bg-kawai-neutral" />
-            <span className="text-base text-kawai-charcoal">
-              Approximately <strong className="text-kawai-black font-semibold">{age} years old</strong>
-            </span>
-            <div className="h-px w-8 bg-kawai-neutral" />
-          </div>
-        </div>
-
-        {/* Timeline */}
-        <Timeline year={result.year} />
-
-        {/* Disclaimer */}
-        <div className="border-t border-kawai-neutral px-8 py-4 bg-kawai-pearl/50">
-          <p className="text-center text-xs text-kawai-charcoal/70 leading-relaxed">
-            Dates are approximate. Serial numbers reflect the first produced for each year and may vary by model.
-          </p>
-        </div>
+    <div style={{ animation: 'revealUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}>
+      {/* Echo the dated serial — confirms what was looked up */}
+      <div className="flex items-center gap-2 px-6 sm:px-8 pt-5 pb-1">
+        <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-charcoal/55">
+          Serial
+        </span>
+        <span className="font-mono text-sm text-kawai-charcoal tracking-[0.12em]">
+          {result.serialNormalized}
+        </span>
       </div>
 
-      {/* KX notice */}
-      {result.isKxAmbiguous && result.kxYear && (
-        <div
-          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-6 py-5"
-          style={{ animation: 'fadeUp 0.4s ease 0.3s both' }}
-        >
-          <p className="text-xs font-bold tracking-[0.15em] uppercase text-amber-800 mb-2">
-            KX Model also possible
-          </p>
-          <p className="text-sm text-amber-800 leading-relaxed">
-            KX upright models share this serial range with a separate sequence. If yours is a KX,
-            the production year would be{' '}
-            <strong className="font-semibold">
-              {result.kxYear}{result.kxYearEnd ? `–${result.kxYearEnd}` : ''}
-            </strong>.{' '}
-            Check the model name on your piano's fallboard.
+      {/* Readout: year / origin / age */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_0.8fr] sm:divide-x divide-kawai-neutral/70">
+        <ReadoutField
+          label="Production Year"
+          value={String(result.year)}
+          sub={!result.isAmbiguous && result.yearEnd ? `through ${result.yearEnd}` : undefined}
+          big
+        />
+        <ReadoutField label="Origin" value={result.country} sub={c.location} />
+        <ReadoutField label="Age" value={String(age)} sub={age === 1 ? 'year' : 'years'} />
+      </div>
+
+      {/* Timeline */}
+      <div className="border-t border-kawai-neutral/70">
+        <Timeline year={result.year} altYear={result.isAmbiguous ? result.altYear : null} />
+      </div>
+
+      {/* Ambiguity note — quiet, in-system */}
+      {result.isAmbiguous && result.altYear && (
+        <div className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-4 flex gap-3">
+          <span className="mt-0.5 h-3 w-3 shrink-0 rotate-45 bg-kawai-charcoal/45" aria-hidden="true" />
+          <p className="text-sm text-kawai-charcoal/80 leading-relaxed">
+            This number is shared by two Kawai series. Shown is the vintage grand reading; a later
+            (non-grand) model would date to{' '}
+            <span className="font-mono font-medium text-kawai-black">
+              {result.altYear}
+              {result.altYearEnd ? `–${result.altYearEnd}` : ''}
+            </span>
+            . Check the model name on the fallboard to confirm.
           </p>
         </div>
       )}
+
+      {/* Disclaimer */}
+      <div className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-3.5 bg-kawai-pearl/50">
+        <p className="text-xs text-kawai-charcoal/65 leading-relaxed">
+          Dates are approximate — serial figures mark the first unit built each year and vary by model.
+        </p>
+      </div>
     </div>
   )
 }
@@ -213,169 +201,175 @@ export function SerialNumberLookup() {
   return (
     <>
       <style>{`
-        @keyframes yearStamp {
-          0%   { opacity: 0; transform: scale(0.82) translateY(12px); }
-          65%  { opacity: 1; transform: scale(1.03) translateY(0);    }
-          100% { opacity: 1; transform: scale(1)    translateY(0);    }
-        }
-        @keyframes lineGrow {
+        @keyframes growX {
           from { transform: scaleX(0); }
           to   { transform: scaleX(1); }
         }
-        @keyframes dotBounce {
-          0%   { opacity: 0; transform: translateX(-50%) translateY(-25%) scale(0);    }
-          65%  { opacity: 1; transform: translateX(-50%) translateY(-25%) scale(1.35); }
-          100% { opacity: 1; transform: translateX(-50%) translateY(-25%) scale(1);    }
+        @keyframes dotPop {
+          0%   { opacity: 0; transform: translate(-50%,-50%) scale(0);    }
+          70%  { opacity: 1; transform: translate(-50%,-50%) scale(1.25); }
+          100% { opacity: 1; transform: translate(-50%,-50%) scale(1);    }
         }
-        @keyframes cardReveal {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0);    }
-        }
-        @keyframes fadeUp {
+        @keyframes revealUp {
           from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0);    }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
-      <div className="min-h-screen bg-white relative overflow-hidden font-[family-name:var(--font-brand-sans)]">
+      <div className="min-h-screen bg-kawai-pearl font-[family-name:var(--font-brand-sans)]">
+        {/* Brand rule */}
+        <div className="h-[3px] bg-kawai-red w-full" />
 
-        {/* Dot-grid texture */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #DBDBDB 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            opacity: 0.45,
-          }}
-        />
+        <div className="max-w-5xl mx-auto px-5 sm:px-6 pt-12 sm:pt-16 pb-24">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 lg:gap-12 items-start">
 
-        {/* Top red rule */}
-        <div className="relative h-[2px] bg-kawai-red w-full" />
-
-        <div className="relative max-w-xl mx-auto px-6 pt-14 pb-24 space-y-10">
+            {/* ── Main column ── */}
+            <div className="min-w-0">
 
           {/* ── Header ── */}
-          <header className="text-center space-y-4">
-            <p className="text-xs tracking-[0.28em] uppercase font-semibold text-kawai-red">
-              Kawai Piano
-            </p>
+          <header className="mb-9">
+            <img
+              src="/images/logos/kawai-logo-new-red.png"
+              alt="Kawai"
+              className="h-6 w-auto mb-4"
+            />
             <h1
-              className="text-kawai-black leading-[1.05]"
-              style={{
-                fontFamily: 'var(--font-brand-serif)',
-                fontSize: 'clamp(2rem, 6vw, 3.25rem)',
-                fontWeight: 600,
-              }}
+              className="text-kawai-black leading-[1.04] tracking-[-0.02em] font-semibold"
+              style={{ fontSize: 'clamp(2rem, 6vw, 3rem)' }}
             >
               Serial Number Lookup
             </h1>
-            <p className="text-base text-kawai-charcoal leading-relaxed max-w-sm mx-auto">
-              Enter the serial number from your Kawai acoustic piano to discover when and where it was crafted.
+            <p className="mt-4 text-base sm:text-lg text-kawai-charcoal leading-relaxed max-w-lg">
+              Find when and where your piano was built. Enter the serial number stamped on the
+              iron plate or printed on the fallboard.
             </p>
-            <div className="flex justify-center pt-1">
-              <div className="w-10 h-[2px] bg-kawai-red" />
-            </div>
           </header>
 
-          {/* ── Input card ── */}
-          <div className="bg-white rounded-2xl border border-kawai-neutral shadow-[0_2px_20px_rgba(0,0,0,0.06)] p-6 space-y-4">
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value.toUpperCase())}
-              onKeyDown={e => e.key === 'Enter' && submit()}
-              placeholder="e.g. 1856250 or A49071"
-              maxLength={12}
-              autoComplete="off"
-              spellCheck={false}
-              className={cn(
-                'w-full font-mono text-xl md:text-2xl text-kawai-black',
-                'placeholder:text-kawai-charcoal/40 placeholder:font-sans',
-                'bg-kawai-pearl/70 rounded-xl px-5 py-4',
-                'border border-kawai-neutral',
-                'focus:outline-none focus:ring-2 focus:ring-kawai-red/25 focus:border-kawai-red focus:bg-white',
-                'transition-all duration-200',
-              )}
-            />
+          {/* ── Instrument sheet ── */}
+          <div className="bg-white rounded-lg border border-kawai-neutral shadow-[0_1px_2px_rgba(0,0,0,0.04),0_18px_40px_-24px_rgba(30,27,22,0.35)] overflow-hidden">
 
-            <div className="flex items-center justify-between gap-3">
-              <button
-                onClick={() => submit()}
-                disabled={!input.trim()}
-                className={cn(
-                  'flex items-center gap-2 px-6 py-3 rounded-xl',
-                  'text-sm font-semibold tracking-[0.08em] uppercase text-white bg-kawai-red',
-                  'shadow-[0_2px_14px_rgba(225,25,34,0.28)]',
-                  'hover:bg-kawai-red-700 hover:shadow-[0_4px_22px_rgba(225,25,34,0.4)]',
-                  'active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed',
-                  'transition-all duration-150',
-                )}
+            {/* Input zone */}
+            <div className="p-6 sm:p-8">
+              <label
+                htmlFor="serial-input"
+                className="block font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-charcoal/55 mb-2.5"
               >
-                Look Up
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
+                Serial Number
+              </label>
 
-              <div className="flex gap-1.5 flex-wrap justify-end">
+              <div className="flex flex-col sm:flex-row rounded-md border border-kawai-neutral bg-kawai-pearl/60 focus-within:border-kawai-red focus-within:bg-white focus-within:ring-2 focus-within:ring-kawai-red/20 transition-all duration-200">
+                <input
+                  id="serial-input"
+                  type="text"
+                  inputMode="text"
+                  value={input}
+                  onChange={e => setInput(e.target.value.toUpperCase())}
+                  onKeyDown={e => e.key === 'Enter' && submit()}
+                  placeholder="1856250"
+                  maxLength={12}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="flex-1 min-w-0 bg-transparent font-mono text-2xl sm:text-3xl tracking-[0.14em] text-kawai-black placeholder:text-kawai-charcoal/30 px-5 py-4 focus:outline-none"
+                />
+                <button
+                  onClick={() => submit()}
+                  disabled={!input.trim()}
+                  className={cn(
+                    'group flex items-center justify-center gap-2 px-7 py-4 shrink-0',
+                    'border-t sm:border-t-0 sm:border-l border-kawai-neutral',
+                    'text-sm font-semibold tracking-[0.08em] uppercase text-white bg-kawai-red',
+                    'hover:bg-kawai-red-700 active:bg-kawai-red-700',
+                    'disabled:bg-kawai-neutral disabled:text-white/80 disabled:cursor-not-allowed',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red/40 focus-visible:ring-offset-2',
+                    'transition-colors duration-150',
+                  )}
+                >
+                  Look up
+                  <svg className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Examples */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-charcoal/45 mr-1">
+                  Try
+                </span>
                 {EXAMPLES.map(s => (
                   <button
                     key={s}
                     onClick={() => submit(s)}
-                    className="text-xs font-mono px-2.5 py-1.5 rounded-lg border border-kawai-charcoal/30 text-kawai-charcoal hover:border-kawai-red/60 hover:text-kawai-red hover:bg-kawai-red/5 transition-all"
+                    className="font-mono text-xs tracking-[0.06em] px-2.5 py-1.5 rounded border border-kawai-neutral text-kawai-charcoal hover:border-kawai-red/50 hover:text-kawai-red focus:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red/30 transition-colors"
                   >
                     {s}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* ── Error ── */}
-          {error && (
-            <div
-              key={`err-${animKey}`}
-              className="bg-white border border-kawai-neutral rounded-xl px-6 py-4"
-              style={{ animation: 'fadeUp 0.3s ease both' }}
-            >
-              <p className="text-sm text-kawai-charcoal leading-relaxed">{error.message}</p>
-            </div>
-          )}
-
-          {/* ── Result ── */}
-          {success && (
-            <div key={`res-${animKey}`}>
-              <SuccessCard result={success} />
-            </div>
-          )}
-
-          {/* ── Reference guide ── */}
-          <div className="space-y-3">
-            <p className="text-xs tracking-[0.22em] uppercase font-semibold text-kawai-charcoal">
-              Serial Number Format
-            </p>
-            <div className="bg-white rounded-xl border border-kawai-neutral overflow-hidden">
-              {[
-                { code: 'JP', prefix: 'No letter',  country: 'Japan',      range: '1927–present' },
-                { code: 'US', prefix: 'Starts A',   country: 'USA',        range: '1988–2004'    },
-                { code: 'ID', prefix: 'Starts F',   country: 'Indonesia',  range: '2003–present' },
-              ].map((row, i) => (
-                <div
-                  key={row.prefix}
-                  className={cn('flex items-center gap-4 px-5 py-4', i > 0 && 'border-t border-kawai-neutral')}
-                >
-                  <CountryCode code={row.code} />
-                  <code className="font-mono text-xs text-kawai-charcoal/75 w-16 shrink-0">{row.prefix}</code>
-                  <span className="text-sm text-kawai-black font-semibold flex-1">{row.country}</span>
-                  <span className="font-mono text-xs text-kawai-charcoal/65">{row.range}</span>
+            {/* Error */}
+            {error && (
+              <div
+                key={`err-${animKey}`}
+                className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-5 flex gap-3.5"
+                style={{ animation: 'revealUp 0.3s ease both' }}
+              >
+                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-kawai-red" aria-hidden="true" />
+                <div>
+                  <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-red mb-1">
+                    No match
+                  </p>
+                  <p className="text-sm text-kawai-charcoal leading-relaxed">{error.message}</p>
                 </div>
-              ))}
-            </div>
-            <p className="text-xs text-kawai-charcoal/65 leading-relaxed">
-              Any letter other than A or F at the start of a serial number should be disregarded when looking up the date.
-            </p>
+              </div>
+            )}
+
+            {/* Result */}
+            {success && (
+              <div key={`res-${animKey}`} className="border-t border-kawai-neutral/70">
+                <SuccessCard result={success} />
+              </div>
+            )}
           </div>
 
+            </div>{/* /main column */}
+
+            {/* ── Serial formats sidebar ── */}
+            <aside>
+              <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-kawai-charcoal/55 mb-3">
+                Serial Formats
+              </p>
+              <div className="rounded-lg border border-kawai-neutral bg-white overflow-hidden">
+                {[
+                  { code: 'JP', prefix: 'No letter',     country: 'Japan',      range: '1927–present' },
+                  { code: 'JP', prefix: 'B / C / E / S', country: 'Japan',      range: '1987–present' },
+                  { code: 'US', prefix: 'A',             country: 'USA',        range: '1988–2004'    },
+                  { code: 'ID', prefix: 'F',             country: 'Indonesia',  range: '2002–present' },
+                ].map((row, i) => (
+                  <div
+                    key={row.prefix}
+                    className={cn('flex items-center gap-3 px-4 py-3.5', i > 0 && 'border-t border-kawai-neutral/70')}
+                  >
+                    <span className="font-mono text-[10px] font-bold tracking-[0.1em] text-kawai-charcoal/70 bg-kawai-pearl border border-kawai-neutral rounded px-1.5 py-1 w-9 text-center shrink-0">
+                      {row.code}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-kawai-black leading-tight">{row.country}</div>
+                      <div className="font-mono text-[11px] text-kawai-charcoal/60 mt-0.5">
+                        {row.prefix} · {row.range}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-kawai-charcoal/60 leading-relaxed">
+                Enter the serial exactly as it appears, including any leading letter. An unfamiliar
+                leading letter is disregarded and the number is dated as a Japan serial.
+              </p>
+            </aside>
+
+          </div>{/* /grid */}
         </div>
       </div>
     </>
