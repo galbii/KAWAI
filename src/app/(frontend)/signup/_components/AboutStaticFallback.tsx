@@ -11,11 +11,10 @@ import {
   heroCopy,
   offerCopy,
   showroomsCopy,
-  signupFormSrc,
   stats,
   timelineCopy,
 } from './scenes'
-import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
+import { OfferSignupForm } from './OfferSignupForm'
 import { CATEGORY_LABELS, collectionsCopy, featuredCollections } from './featuredCollections'
 
 /**
@@ -72,20 +71,7 @@ export default function AboutStaticFallback() {
 
           {/* Right column — the sign-up card */}
           <div className="mx-auto w-full max-w-md rounded-2xl bg-kawai-pearl p-6 text-kawai-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-black/5 sm:p-8">
-            <p className="inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-red">
-              <span className="h-px w-8 bg-kawai-red" />
-              {offerCopy.eyebrow}
-            </p>
-            <h2 className="mt-4 font-[family-name:var(--font-brand-serif)] text-[clamp(1.5rem,3vw,2rem)] font-light leading-[1.1] tracking-tight text-kawai-black">
-              {offerCopy.headline}
-            </h2>
-            <p className="mt-3 mb-6 text-sm leading-relaxed text-kawai-charcoal">{offerCopy.body}</p>
-
-            <TwoStepHubSpotForm formSrc={signupFormSrc} submitLabel={offerCopy.submitLabel} />
-
-            <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
-              By signing up you agree to be contacted by your local Authorized Kawai dealer.
-            </p>
+            <OfferSignupForm />
           </div>
         </div>
       </section>

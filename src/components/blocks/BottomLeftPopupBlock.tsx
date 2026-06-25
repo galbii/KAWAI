@@ -114,7 +114,6 @@ const DESKTOP_WIDTHS = { compact: '276px', medium: '316px', large: '356px' } as 
 
 export function BottomLeftPopupBlock({
   enabled = true,
-  icon,
   featuredImage,
   featuredImageHeight = 'medium',
   title = 'Announcement',
@@ -204,7 +203,6 @@ export function BottomLeftPopupBlock({
 
   if (!shouldRender || state === 'dismissed') return null
 
-  const iconUrl = typeof icon === 'object' && icon !== null && 'url' in icon ? icon.url : null
   const featuredImageUrl =
     typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage
       ? featuredImage.url
@@ -333,95 +331,54 @@ export function BottomLeftPopupBlock({
             </div>
           )}
 
-          {/* Dismiss button */}
+          {/* Dismiss button — overlays the top-right of the image when present
+              (frosted circle so it reads over any photo); otherwise sits subtly
+              in the card's top-right corner. */}
           {dismissible && (
             <button
               onClick={handleDismiss}
               className="kawai-popup-dismiss"
               style={{
                 position: 'absolute',
-                top: featuredImageUrl ? imgH + (isMobile ? 20 : 14) : isMobile ? 22 : 14,
-                right: isMobile ? 20 : 14,
-                width: 28,
-                height: 28,
+                top: featuredImageUrl ? (isMobile ? 16 : 13) : isMobile ? 22 : 14,
+                right: featuredImageUrl ? (isMobile ? 16 : 13) : isMobile ? 20 : 14,
+                width: featuredImageUrl ? 30 : 28,
+                height: featuredImageUrl ? 30 : 28,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 6,
+                borderRadius: featuredImageUrl ? '50%' : 6,
                 border: 'none',
-                background: 'transparent',
+                background: featuredImageUrl ? 'rgba(0,0,0,0.40)' : 'transparent',
+                backdropFilter: featuredImageUrl ? 'blur(6px)' : undefined,
+                WebkitBackdropFilter: featuredImageUrl ? 'blur(6px)' : undefined,
                 cursor: 'pointer',
-                color: t.dismissFg,
+                color: featuredImageUrl ? 'rgba(255,255,255,0.92)' : t.dismissFg,
                 transition: 'background 0.15s ease, color 0.15s ease',
                 flexShrink: 0,
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLButtonElement
-                el.style.background = t.dismissHoverBg
-                el.style.color = t.titleColor
+                el.style.background = featuredImageUrl ? 'rgba(0,0,0,0.60)' : t.dismissHoverBg
+                el.style.color = featuredImageUrl ? '#FFFFFF' : t.titleColor
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLButtonElement
-                el.style.background = 'transparent'
-                el.style.color = t.dismissFg
+                el.style.background = featuredImageUrl ? 'rgba(0,0,0,0.40)' : 'transparent'
+                el.style.color = featuredImageUrl ? 'rgba(255,255,255,0.92)' : t.dismissFg
               }}
               aria-label="Dismiss"
             >
-              <X size={13} strokeWidth={2.2} />
+              <X size={featuredImageUrl ? 15 : 13} strokeWidth={2.2} />
             </button>
           )}
 
           {/* Content */}
           <div
             style={{
-              padding: isMobile ? '16px 24px 36px' : '18px 20px 22px',
+              padding: isMobile ? '20px 24px 36px' : '20px 20px 22px',
             }}
           >
-            {/* Eyebrow row */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              {iconUrl && (
-                <div
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 5,
-                    overflow: 'hidden',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Image
-                    src={iconUrl}
-                    alt=""
-                    width={22}
-                    height={22}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </div>
-              )}
-              <span
-                style={{
-                  fontFamily: 'var(--font-brand-sans, system-ui)',
-                  fontSize: 9.5,
-                  fontWeight: 700,
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase' as const,
-                  color: t.eyebrowColor,
-                }}
-              >
-                KAWAI
-              </span>
-            </div>
-
-            {/* Thin divider */}
-            <div style={{ height: 1, background: t.divider, marginBottom: 16 }} />
-
             {/* Title */}
             <h3
               id="kawai-popup-title"
