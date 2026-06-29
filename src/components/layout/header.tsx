@@ -959,7 +959,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                 <ContextAwareLink
                   href="/"
                   className="flex-shrink-0 p-2 text-kawai-charcoal hover:text-kawai-black hover:bg-kawai-pearl transition-colors rounded-md"
-                  aria-label="Home"
+                  aria-label="Kawai — Home"
                 >
                   <Home className="h-5 w-5" />
                 </ContextAwareLink>
