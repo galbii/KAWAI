@@ -96,12 +96,17 @@ export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) 
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="group"
               >
-                <div className="block cursor-pointer" onClick={() => {
-                  const modelGrid = document.getElementById('model-grid')
-                  if (modelGrid) {
-                    modelGrid.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }
-                }}>
+                <button
+                  type="button"
+                  aria-label="Scroll to model grid"
+                  className="block cursor-pointer bg-transparent border-0 p-0 text-left w-full"
+                  onClick={() => {
+                    const modelGrid = document.getElementById('model-grid')
+                    if (modelGrid) {
+                      modelGrid.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }
+                  }}
+                >
                   {/* Model Card */}
                   <div className="space-y-4">
                     {/* Product Image */}
@@ -151,7 +156,7 @@ export default function ConcertArtistModels({ data }: ConcertArtistModelsProps) 
                     </div>
                   </div>
                 </div>
-              </div>
+              </button>
             </motion.div>
           )})}
         </div>

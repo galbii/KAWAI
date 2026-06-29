@@ -301,7 +301,10 @@ function ConfigPanel({
                           'relative flex items-center gap-5 px-8 py-6 cursor-pointer group transition-all duration-150',
                           accessory ? 'bg-white/[0.04] hover:bg-white/[0.07]' : 'hover:bg-white/[0.04]',
                         )}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => onToggleSlot(slotDef.key)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggleSlot(slotDef.key) } }}
                         whileHover={{ x: 2, transition: { duration: 0.15 } }}
                       >
                         <div className={cn('absolute left-0 top-0 bottom-0 w-[3px] transition-all duration-200', accessory ? 'bg-kawai-red opacity-40' : 'opacity-0')} />
@@ -491,7 +494,10 @@ function PickerList({
           return (
             <motion.div key={accessory.id} variants={pickerItemVariants}>
               <div
+                role="button"
+                tabIndex={0}
                 onClick={() => handleClick(accessory)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(accessory) } }}
                 className={cn('flex items-center gap-5 px-8 py-6 cursor-pointer transition-colors duration-150', isSelected ? 'bg-white/[0.09]' : isExpanded ? 'bg-white/[0.05]' : 'hover:bg-white/[0.05]')}
               >
                 <div className="relative flex-shrink-0 w-[96px] h-[96px] bg-white/[0.07] overflow-hidden">
@@ -1198,7 +1204,13 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.15 + i * 0.05, duration: 0.28, ease }}
                                   >
-                                    <div className={cn('flex items-center gap-4 px-5 py-4 cursor-pointer transition-colors', activeSlot === slotDef.key ? 'bg-white/[0.08]' : accessory ? 'bg-white/[0.04]' : 'active:bg-white/[0.04]')} onClick={() => setActiveSlot(activeSlot === slotDef.key ? null : slotDef.key)}>
+                                    <div
+                                      role="button"
+                                      tabIndex={0}
+                                      className={cn('flex items-center gap-4 px-5 py-4 cursor-pointer transition-colors', activeSlot === slotDef.key ? 'bg-white/[0.08]' : accessory ? 'bg-white/[0.04]' : 'active:bg-white/[0.04]')}
+                                      onClick={() => setActiveSlot(activeSlot === slotDef.key ? null : slotDef.key)}
+                                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSlot(activeSlot === slotDef.key ? null : slotDef.key) } }}
+                                    >
                                       <div className={cn('flex-shrink-0 w-[52px] h-[52px] flex items-center justify-center overflow-hidden', accessory ? 'bg-white/[0.08] relative' : 'text-white/25')}>
                                         {accessory && imageUrl ? <div className="relative w-full h-full"><Image src={imageUrl} alt={accessory.name ?? accessory.model} fill className="object-contain p-1" sizes="52px" /></div> : <Icon className="w-5 h-5" />}
                                       </div>
