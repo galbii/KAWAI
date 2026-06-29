@@ -74,7 +74,6 @@ function LibraryRow({
     <button
       type="button"
       onClick={onClick}
-      aria-label={`Play: ${video.title}`}
       aria-current={isActive ? 'true' : undefined}
       className={cn(
         'group relative flex gap-3 text-left w-full p-2 rounded-md transition-all duration-300',
@@ -84,6 +83,7 @@ function LibraryRow({
           : 'hover:bg-white/[0.035]',
       )}
     >
+      <span className="sr-only">Play </span>
       {/* Active red bar */}
       <span
         aria-hidden="true"
@@ -518,7 +518,6 @@ function MobilePeekStrip({
               data-strip-idx={i}
               type="button"
               onClick={() => onSelect(i)}
-              aria-label={`Play: ${video.title}`}
               aria-current={isActive ? 'true' : undefined}
               className="relative shrink-0 rounded-[3px] overflow-hidden focus-visible:outline-none transition-all duration-200"
               style={{
@@ -527,6 +526,7 @@ function MobilePeekStrip({
                 scrollSnapAlign: 'center',
               }}
             >
+              <span className="sr-only">Play {video.title}</span>
               <Image
                 src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
                 alt=""
