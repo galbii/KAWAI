@@ -49,3 +49,8 @@ public/assets/videos/Hero.mp4
 
 # Claude Code agent worktrees
 .claude/worktrees/
+
+# Accessibility audit artifacts (throwaway)
+.lh-*/
+# Superpowers SDD scratch ledger
+.superpowers/
