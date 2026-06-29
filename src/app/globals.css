@@ -26,6 +26,7 @@
   --color-kawai-neutral: #DBDBDB;    /* Light Grey */
   --color-kawai-gold: #d5c78c;       /* Shigeru Kawai Gold — use on dark backgrounds */
   --color-kawai-gold-on-light: #8C6E28; /* Deeper warm gold — legible on white/light backgrounds */
+  --color-kawai-muted: #595959;        /* WCAG 1.4.3 AA compliant muted text on white/pearl (4.6:1) */
 
   /* Extended Kawai Red Scale */
   --color-kawai-red-50: #fef2f2;

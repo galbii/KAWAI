@@ -8,7 +8,7 @@ export function CallToAction() {
           <span className="text-kawai-red">Kawai</span>
         </h2>
         
-        <div className="mt-24 text-white/40 text-lg font-light">
+        <div className="mt-24 text-white/70 text-lg font-light">
           Since 1927
         </div>
         

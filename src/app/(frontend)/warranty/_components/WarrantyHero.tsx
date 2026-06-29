@@ -19,12 +19,12 @@ export function WarrantyHero({
       <section className="bg-kawai-pearl pt-14 pb-2">
         <div className="container mx-auto px-6 max-w-2xl">
           {breadcrumb && (
-            <nav aria-label="Breadcrumb" className="mb-3 text-[12px] text-kawai-charcoal/40">
+            <nav aria-label="Breadcrumb" className="mb-3 text-[12px] text-kawai-muted">
               <Link href={breadcrumb.href} className="hover:text-kawai-charcoal transition-colors">
                 {breadcrumb.label}
               </Link>
               <span className="mx-1.5">/</span>
-              <span className="text-kawai-charcoal/60">{title}</span>
+              <span className="text-kawai-muted">{title}</span>
             </nav>
           )}
           <p className="text-[12px] font-semibold uppercase tracking-widest text-kawai-red mb-2">

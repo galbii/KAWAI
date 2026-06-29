@@ -60,7 +60,7 @@ export function FindDealerCta() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.25 }}
-            className="text-white/40 font-light leading-relaxed mb-12"
+            className="text-white/70 font-light leading-relaxed mb-12"
             style={{ fontFamily: 'var(--font-brand-sans)', fontSize: '1.0rem' }}
           >
             Visit your nearest authorized Kawai dealer before June 30, 2026 to take advantage of instant savings on CN, CA, DG, ES, CX, and MP Series digital pianos.

@@ -48,7 +48,7 @@ export default function ContactPage() {
         />
         <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
           <p
-            className="text-kawai-charcoal/30 text-[11px] tracking-[0.55em] uppercase mb-14"
+            className="text-kawai-muted text-[11px] tracking-[0.55em] uppercase mb-14"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Shigeru Kawai
@@ -65,7 +65,7 @@ export default function ContactPage() {
           </h1>
           <span className="block h-px w-14 bg-kawai-gold mb-10" style={{ opacity: 0.4 }} />
           <p
-            className="text-kawai-charcoal/45 text-sm"
+            className="text-kawai-muted text-sm"
             style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.04em' }}
           >
             We welcome your inquiry and respond within one business day

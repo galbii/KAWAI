@@ -184,7 +184,7 @@ export default function TechnologyPage() {
           </h1>
 
           <p
-            className="text-white/40 text-sm leading-relaxed max-w-xl mx-auto"
+            className="text-white/70 text-sm leading-relaxed max-w-xl mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             A noble covenant — to build the finest piano the world has ever heard. These twelve
@@ -197,7 +197,7 @@ export default function TechnologyPage() {
       <section className="bg-kawai-pearl px-6 py-36">
         <div className="max-w-6xl mx-auto">
           <p
-            className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase mb-20 text-center"
+            className="text-kawai-muted text-[10px] tracking-[0.45em] uppercase mb-20 text-center"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             The Foundation
@@ -220,7 +220,7 @@ export default function TechnologyPage() {
                 </h2>
                 <span className="block w-8 h-px bg-kawai-gold/40 mb-6" />
                 <p
-                  className="text-kawai-charcoal/65 text-sm leading-relaxed"
+                  className="text-kawai-muted text-sm leading-relaxed"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {pillar.body}
@@ -318,7 +318,7 @@ export default function TechnologyPage() {
 
                           {/* Description */}
                           <p
-                            className="text-white/40 text-sm leading-relaxed"
+                            className="text-white/70 text-sm leading-relaxed"
                             style={{ fontFamily: 'var(--font-brand-sans)' }}
                           >
                             {tech.description}
@@ -338,7 +338,7 @@ export default function TechnologyPage() {
       <section className="bg-kawai-pearl px-6 py-36">
         <div className="max-w-4xl mx-auto text-center">
           <p
-            className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase mb-6"
+            className="text-kawai-muted text-[10px] tracking-[0.45em] uppercase mb-6"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Continue the Journey
@@ -353,7 +353,7 @@ export default function TechnologyPage() {
             Hear the Difference
           </h2>
           <p
-            className="text-kawai-charcoal/50 text-sm leading-relaxed max-w-md mx-auto mb-16"
+            className="text-kawai-muted text-sm leading-relaxed max-w-md mx-auto mb-16"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             These technologies exist to serve one purpose: the most transcendent musical

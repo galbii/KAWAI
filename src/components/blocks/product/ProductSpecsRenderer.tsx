@@ -52,7 +52,7 @@ function TableCategory({
               spec.highlight && 'bg-kawai-red/5 border-l-2 border-l-kawai-red'
             )}
           >
-            <span className="text-sm text-kawai-charcoal/65 font-medium leading-relaxed">
+            <span className="text-sm text-kawai-muted font-medium leading-relaxed">
               {spec.label}
             </span>
             <div className="flex items-baseline gap-2 flex-wrap">
@@ -60,7 +60,7 @@ function TableCategory({
                 {spec.value}
               </span>
               {spec.note && (
-                <span className="font-mono text-xs text-kawai-charcoal/40 italic">
+                <span className="font-mono text-xs text-kawai-muted italic">
                   {spec.note}
                 </span>
               )}
@@ -123,13 +123,13 @@ function CardsCategory({ category }: { category: CategoryItem }) {
               spec.highlight && 'bg-kawai-red/5 border-l-2 border-l-kawai-red'
             )}
           >
-            <dt className="font-mono text-[10px] uppercase tracking-[0.1em] text-kawai-charcoal/45 dark:text-gray-400 mb-1">
+            <dt className="font-mono text-[10px] uppercase tracking-[0.1em] text-kawai-muted dark:text-gray-400 mb-1">
               {spec.label}
             </dt>
             <dd className="font-mono text-sm font-semibold text-kawai-charcoal dark:text-white">
               {spec.value}
               {spec.note && (
-                <span className="ml-2 text-xs font-normal text-kawai-charcoal/40 italic">
+                <span className="ml-2 text-xs font-normal text-kawai-muted italic">
                   {spec.note}
                 </span>
               )}
@@ -179,13 +179,13 @@ function ListCategory({ category }: { category: CategoryItem }) {
               spec.highlight && 'bg-kawai-red/5 -mx-4 px-4'
             )}
           >
-            <dt className="text-sm font-medium text-kawai-charcoal/65 dark:text-gray-300 flex-1">
+            <dt className="text-sm font-medium text-kawai-muted dark:text-gray-300 flex-1">
               {spec.label}
             </dt>
             <dd className="font-mono text-sm font-semibold text-kawai-charcoal dark:text-white text-right flex-shrink-0">
               {spec.value}
               {spec.note && (
-                <span className="ml-2 text-xs font-normal text-kawai-charcoal/40">
+                <span className="ml-2 text-xs font-normal text-kawai-muted">
                   {spec.note}
                 </span>
               )}
@@ -237,7 +237,7 @@ export function ProductSpecsRenderer({
               </>
             )}
             {header?.description && (
-              <p className="mt-4 text-base text-kawai-charcoal/60 dark:text-gray-400 max-w-2xl">
+              <p className="mt-4 text-base text-kawai-muted dark:text-gray-400 max-w-2xl">
                 {header.description}
               </p>
             )}

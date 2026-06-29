@@ -75,7 +75,7 @@ export default async function ShigeruDealersPage() {
       <section className="bg-white px-6 pt-36 pb-12">
         <div className="max-w-6xl mx-auto">
           <p
-            className="text-kawai-charcoal/40 text-[10px] tracking-[0.45em] uppercase mb-6"
+            className="text-kawai-muted text-[10px] tracking-[0.45em] uppercase mb-6"
             style={{ fontFamily: 'var(--font-oswald)' }}
           >
             Shigeru Kawai · North America

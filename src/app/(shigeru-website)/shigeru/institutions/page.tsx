@@ -194,7 +194,7 @@ export default function InstitutionsPage() {
       <section className="bg-kawai-pearl px-6 py-28">
         <div className="max-w-6xl mx-auto">
           <p
-            className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase text-center mb-16"
+            className="text-kawai-muted text-[10px] tracking-[0.45em] uppercase text-center mb-16"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Artist Partners
@@ -229,7 +229,7 @@ export default function InstitutionsPage() {
                 </p>
                 <span className="block w-8 h-px bg-kawai-neutral mb-4" />
                 <p
-                  className="text-kawai-charcoal/45 text-[9px] tracking-[0.3em] uppercase"
+                  className="text-kawai-muted text-[9px] tracking-[0.3em] uppercase"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   Shigeru Kawai Artist Partner
@@ -349,7 +349,7 @@ export default function InstitutionsPage() {
       <section className="bg-kawai-pearl px-6 py-28">
         <div className="max-w-3xl mx-auto text-center">
           <p
-            className="text-kawai-charcoal/35 text-[10px] tracking-[0.45em] uppercase mb-6"
+            className="text-kawai-muted text-[10px] tracking-[0.45em] uppercase mb-6"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Institutional Programs
@@ -367,7 +367,7 @@ export default function InstitutionsPage() {
           <span className="block w-10 h-px bg-kawai-gold/40 mx-auto mb-8" />
 
           <p
-            className="text-kawai-charcoal/65 text-sm leading-relaxed mb-6"
+            className="text-kawai-muted text-sm leading-relaxed mb-6"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Our team specializes in institutional placement, including faculty consultation, space
@@ -375,7 +375,7 @@ export default function InstitutionsPage() {
           </p>
 
           <p
-            className="text-kawai-charcoal/50 text-sm leading-relaxed mb-14"
+            className="text-kawai-muted text-sm leading-relaxed mb-14"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Every Shigeru Kawai institutional purchase includes a complimentary visit from a Master

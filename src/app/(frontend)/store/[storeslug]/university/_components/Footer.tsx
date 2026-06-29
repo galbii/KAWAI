@@ -45,7 +45,7 @@ export function Footer({ businessLocation }: FooterProps) {
                 className="h-10 w-auto"
               />
             </div>
-            <p className="text-white/40 mb-6 leading-relaxed text-sm">
+            <p className="text-white/70 mb-6 leading-relaxed text-sm">
               Crafting exceptional pianos for over 95 years. Experience the harmony of
               traditional Japanese craftsmanship and innovative technology.
             </p>
@@ -62,7 +62,7 @@ export function Footer({ businessLocation }: FooterProps) {
             >
               Stay Connected
             </h3>
-            <p className="text-white/40 mb-4 text-sm leading-relaxed">
+            <p className="text-white/70 mb-4 text-sm leading-relaxed">
               Join our community for piano insights, artist stories, and exclusive events.
             </p>
             <form
