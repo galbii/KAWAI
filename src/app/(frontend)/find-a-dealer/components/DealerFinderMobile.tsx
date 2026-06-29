@@ -563,7 +563,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
               </span>
             </Link>
           ) : (
-            <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
+            <h2 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
               <Link
                 href={`/find-a-dealer/${dealer.slug}`}
                 onClick={(e) => e.stopPropagation()}
@@ -571,7 +571,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
               >
                 {dealer.dealerName}
               </Link>
-            </h3>
+            </h2>
           )}
           {dealer.address && (
             <div className="flex items-center gap-1.5 text-xs text-kawai-charcoal/60">

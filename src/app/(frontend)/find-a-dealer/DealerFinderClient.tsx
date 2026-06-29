@@ -205,7 +205,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
                       ? 'bg-kawai-charcoal text-white border-kawai-charcoal'
                       : 'bg-kawai-pearl border-kawai-neutral hover:border-kawai-charcoal/40 hover:bg-white text-kawai-charcoal'
                   )}
-                  aria-label={`Change search radius, currently ${selectedRadius} miles`}
+                  aria-label={`Within ${selectedRadius} mi — change search radius`}
                 >
                   <MapPin className="w-3.5 h-3.5 opacity-60" strokeWidth={2} />
                   <span>Within {selectedRadius} mi</span>
