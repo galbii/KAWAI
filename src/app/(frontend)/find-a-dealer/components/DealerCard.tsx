@@ -101,7 +101,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             </span>
           </Link>
         ) : (
-          <h3
+          <h2
             className={cn(
               'text-[15px] font-semibold leading-snug mb-1.5 font-[family-name:var(--font-brand-serif)]',
               isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
@@ -114,7 +114,7 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             >
               {dealer.dealerName}
             </Link>
-          </h3>
+          </h2>
         )}
 
         {/* Location */}
@@ -131,17 +131,17 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
         {(hasShigeru || hasAcoustic || hasDigital) && (
           <div className="flex flex-wrap items-center gap-1.5 mb-4">
             {hasShigeru && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-gold/10 border border-kawai-gold/25 text-[#A07800]">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-gold/10 border border-kawai-gold/25 text-kawai-gold-on-light">
                 Shigeru Kawai
               </span>
             )}
             {hasAcoustic && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-charcoal/[0.06] border border-kawai-charcoal/[0.12] text-kawai-charcoal/65">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-charcoal/[0.06] border border-kawai-charcoal/[0.12] text-kawai-charcoal/85">
                 Acoustic
               </span>
             )}
             {hasDigital && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-red/[0.06] border border-kawai-red/[0.12] text-kawai-red/75">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-kawai-red/[0.06] border border-kawai-red/[0.12] text-kawai-red-700">
                 Digital
               </span>
             )}
