@@ -29,12 +29,12 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect, searchLabe
       <div className="flex items-center justify-center h-full p-8">
         <div className="text-center max-w-xs">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-kawai-neutral/40 flex items-center justify-center">
-            <MapPin className="w-7 h-7 text-kawai-charcoal/30" strokeWidth={1.5} />
+            <MapPin className="w-7 h-7 text-kawai-muted" strokeWidth={1.5} />
           </div>
           <h3 className="text-sm font-semibold text-kawai-charcoal mb-1.5">
             No dealers found
           </h3>
-          <p className="text-kawai-charcoal/55 text-xs leading-relaxed">
+          <p className="text-kawai-muted text-xs leading-relaxed">
             Try expanding your search radius or adjusting your filters.
           </p>
         </div>
@@ -46,11 +46,11 @@ export function DealerList({ dealers, selectedDealer, onDealerSelect, searchLabe
     <div className="flex flex-col h-full">
       {/* List header */}
       <div className="px-5 py-3 border-b border-kawai-neutral/60 bg-white flex-shrink-0">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-kawai-charcoal/50">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-kawai-muted">
           {dealers.length} {dealers.length === 1 ? 'Dealer' : 'Dealers'}
         </p>
         {searchLabel && (
-          <p className="text-[11px] text-kawai-charcoal/40 mt-0.5 truncate">Near {searchLabel}</p>
+          <p className="text-[11px] text-kawai-muted mt-0.5 truncate">Near {searchLabel}</p>
         )}
       </div>
 

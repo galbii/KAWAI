@@ -54,7 +54,7 @@ function IconRow({ icon, children }: { icon: 'pin' | 'phone'; children: React.Re
         )}
       </div>
       <span
-        className="text-kawai-charcoal/60 leading-snug font-[family-name:var(--font-brand-sans)]"
+        className="text-kawai-muted leading-snug font-[family-name:var(--font-brand-sans)]"
         style={{ fontSize: '0.72rem' }}
       >
         {children}
@@ -163,7 +163,7 @@ export function StoresMapClient({ pins, selectedId, onStoreSelect }: Props) {
               className="h-5 w-auto"
             />
             <span
-              className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/40 tabular-nums"
+              className="font-[family-name:var(--font-brand-sans)] text-kawai-muted tabular-nums"
               style={{ fontSize: '0.68rem' }}
             >
               {filteredPins.length} {filteredPins.length === 1 ? 'location' : 'locations'}
@@ -269,7 +269,7 @@ export function StoresMapClient({ pins, selectedId, onStoreSelect }: Props) {
                           {city}
                         </h3>
                         {pin.distance !== undefined && (
-                          <span className="text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)] tabular-nums flex-shrink-0" style={{ fontSize: '0.65rem' }}>
+                          <span className="text-kawai-muted font-[family-name:var(--font-brand-sans)] tabular-nums flex-shrink-0" style={{ fontSize: '0.65rem' }}>
                             {pin.distance.toFixed(0)} mi
                           </span>
                         )}

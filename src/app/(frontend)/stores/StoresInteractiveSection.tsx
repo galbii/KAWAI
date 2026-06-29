@@ -81,7 +81,7 @@ function GridCard({
         <div className="space-y-1.5 mb-5 flex-1">
           {storefront.showroomInfo?.address && (
             <p
-              className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/55 leading-relaxed"
+              className="font-[family-name:var(--font-brand-sans)] text-kawai-muted leading-relaxed"
               style={{ fontSize: '0.73rem' }}
             >
               {storefront.showroomInfo.address}
@@ -89,7 +89,7 @@ function GridCard({
           )}
           {storefront.showroomInfo?.phone && (
             <p
-              className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/45"
+              className="font-[family-name:var(--font-brand-sans)] text-kawai-muted"
               style={{ fontSize: '0.73rem' }}
             >
               {storefront.showroomInfo.phone}
@@ -275,7 +275,7 @@ export function StoresInteractiveSection({ storefronts, pins }: Props) {
               No official showroom near you?
             </p>
             <p
-              className="font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/50 leading-relaxed max-w-sm"
+              className="font-[family-name:var(--font-brand-sans)] text-kawai-muted leading-relaxed max-w-sm"
               style={{ fontSize: '0.78rem' }}
             >
               Kawai's network of authorized dealers spans the country. Find a certified dealer near you for the same world-class instruments and expert guidance.

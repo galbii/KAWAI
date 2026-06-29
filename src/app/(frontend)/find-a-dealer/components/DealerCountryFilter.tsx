@@ -40,14 +40,14 @@ export function DealerCountryFilter({ selected, onChange, counts }: Props) {
               'focus-visible:outline-2 focus-visible:outline-kawai-red',
               isSelected
                 ? 'bg-kawai-charcoal text-white shadow-sm'
-                : 'text-kawai-charcoal/50 hover:text-kawai-black',
+                : 'text-kawai-muted hover:text-kawai-black',
             )}
           >
             <span>{label}</span>
             <span
               className={cn(
                 'text-[10px] font-semibold tabular-nums',
-                isSelected ? 'text-white/60' : 'text-kawai-charcoal/30',
+                isSelected ? 'text-white/60' : 'text-kawai-muted',
               )}
             >
               {counts[value]}

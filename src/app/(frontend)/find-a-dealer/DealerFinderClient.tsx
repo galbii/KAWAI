@@ -256,7 +256,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
               counts={dealerCounts}
             />
             <div className="flex-1" />
-            <span className="text-xs text-kawai-charcoal/35 font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums mr-4">
+            <span className="text-xs text-kawai-muted font-[family-name:var(--font-brand-sans)] whitespace-nowrap tabular-nums mr-4">
               {filteredDealers.length} {filteredDealers.length === 1 ? 'dealer' : 'dealers'}
             </span>
 
@@ -284,7 +284,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
                     'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150',
                     desktopLayout === value
                       ? 'bg-kawai-charcoal text-white shadow-sm'
-                      : 'text-kawai-charcoal/50 hover:text-kawai-black'
+                      : 'text-kawai-muted hover:text-kawai-black'
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -313,7 +313,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
                   </span>
                   <button
                     onClick={handleClearSearch}
-                    className="flex-shrink-0 flex items-center gap-1 text-[11px] font-medium text-kawai-charcoal/50 hover:text-kawai-black transition-colors ml-2"
+                    className="flex-shrink-0 flex items-center gap-1 text-[11px] font-medium text-kawai-muted hover:text-kawai-black transition-colors ml-2"
                   >
                     <X className="w-3 h-3" strokeWidth={2} />
                     Clear
@@ -423,12 +423,12 @@ function EmptyState({ hasLocation, selectedRadius, typeLabel, canExpandRadius, n
     <div className="flex items-center justify-center h-full p-8">
       <div className="text-center max-w-xs">
         <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-kawai-neutral/40 flex items-center justify-center empty-state-float">
-          <MapPin className="w-7 h-7 text-kawai-charcoal/25" strokeWidth={1.5} />
+          <MapPin className="w-7 h-7 text-kawai-muted" strokeWidth={1.5} />
         </div>
         <h3 className="text-sm font-semibold text-kawai-charcoal mb-2">
           {typeLabel ? `No ${typeLabel} dealers found` : 'No dealers found'}
         </h3>
-        <p className="text-kawai-charcoal/55 leading-relaxed mb-5 text-xs">
+        <p className="text-kawai-muted leading-relaxed mb-5 text-xs">
           {hasLocation && canExpandRadius
             ? `No results within ${selectedRadius} miles. Try expanding your search area.`
             : 'Try adjusting your filters or searching a different location.'}
