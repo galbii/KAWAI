@@ -56,7 +56,7 @@ export function DealerTypeFilter({ selected, onChange, counts }: Props) {
                 <span
                   className={cn(
                     'ml-2 text-xs font-semibold tabular-nums',
-                    isSelected ? 'text-kawai-pearl/60' : 'text-kawai-charcoal/40',
+                    isSelected ? 'text-kawai-pearl/90' : 'text-kawai-muted',
                   )}
                 >
                   {counts[opt.value]}
