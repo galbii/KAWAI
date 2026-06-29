@@ -168,7 +168,7 @@ function ShowMoreButton({
         className={cn(
           'group flex items-center gap-2 px-5 py-2.5 rounded-full',
           'border border-kawai-charcoal/12 hover:border-kawai-red/35',
-          'text-xs text-kawai-charcoal/50 hover:text-kawai-red',
+          'text-xs text-kawai-muted hover:text-kawai-red',
           'bg-white hover:bg-kawai-red/[0.025]',
           'shadow-sm hover:shadow-md',
           'transition-all duration-200',
@@ -320,7 +320,7 @@ function SpecificationRow({
         spec.highlight && 'bg-kawai-red/[0.04] border-l-2 border-l-kawai-red pl-3',
       )}
     >
-      <span className="text-sm text-kawai-charcoal/62 leading-relaxed">
+      <span className="text-sm text-kawai-muted leading-relaxed">
         <Highlight text={spec.label} query={query} />
       </span>
       <div className="flex flex-col gap-1.5">
@@ -354,7 +354,7 @@ function SpecificationRow({
           )
         })()}
         {spec.note && (
-          <span className="text-xs text-kawai-charcoal/45 italic leading-relaxed">{spec.note}</span>
+          <span className="text-xs text-kawai-muted italic leading-relaxed">{spec.note}</span>
         )}
       </div>
       <div className="absolute left-0 top-0 h-full w-[2px] bg-kawai-red opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
@@ -386,7 +386,7 @@ function JsonSpecRow({
       }}
       className="spec-row group relative grid grid-cols-[2fr_3fr] gap-6 md:gap-10 py-4 border-b border-kawai-charcoal/[0.07] hover:bg-kawai-red/[0.025] transition-colors duration-150"
     >
-      <span className="text-sm text-kawai-charcoal/62 leading-relaxed">
+      <span className="text-sm text-kawai-muted leading-relaxed">
         <Highlight text={row.label} query={query} />
       </span>
       <div className="flex flex-col gap-1.5">
@@ -398,7 +398,7 @@ function JsonSpecRow({
             {row.subItems.map((item, i) => (
               <li key={i} className="flex items-start gap-2">
                 <span className="mt-[7px] w-1 h-1 rounded-full bg-kawai-charcoal/28 flex-shrink-0" />
-                <span className="text-xs text-kawai-charcoal/50 leading-relaxed">
+                <span className="text-xs text-kawai-muted leading-relaxed">
                   <Highlight text={item} query={query} />
                 </span>
               </li>
@@ -461,7 +461,7 @@ function JsonSpecsSection({ rows, query }: { rows: ParsedSpecRow[]; query: strin
 
   if (rows.length === 0) {
     return isSearching ? null : (
-      <div className="text-center py-12 text-kawai-charcoal/30">
+      <div className="text-center py-12 text-kawai-muted">
         <p className="text-sm">No specification data available.</p>
       </div>
     )
@@ -527,7 +527,7 @@ function SpecificationCategory({ category, query }: { category: SpecCategory; qu
             {category.categoryName}
           </h3>
           {isSearching && specs.length > 0 && (
-            <span className="text-xs text-kawai-charcoal/35 tabular-nums">
+            <span className="text-xs text-kawai-muted tabular-nums">
               {specs.length} match{specs.length !== 1 ? 'es' : ''}
             </span>
           )}
@@ -537,7 +537,7 @@ function SpecificationCategory({ category, query }: { category: SpecCategory; qu
             animate={{ rotate: effectiveExpanded ? 180 : 0 }}
             transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
           >
-            <ChevronDownIcon className="w-5 h-5 text-kawai-charcoal/30 group-hover:text-kawai-red transition-colors" />
+            <ChevronDownIcon className="w-5 h-5 text-kawai-muted group-hover:text-kawai-red transition-colors" />
           </motion.div>
         )}
       </button>
@@ -762,9 +762,9 @@ export function ProductTechnicalSpecsRenderer({
           className="text-center py-14 flex flex-col items-center gap-3"
         >
           <MagnifyingGlassIcon className="w-8 h-8 text-kawai-charcoal/18" />
-          <p className="text-sm text-kawai-charcoal/40">
+          <p className="text-sm text-kawai-muted">
             No specifications match{' '}
-            <span className="text-kawai-charcoal/60 font-medium">"{query}"</span>
+            <span className="text-kawai-muted font-medium">"{query}"</span>
           </p>
           <button
             onClick={() => setQuery('')}
@@ -776,7 +776,7 @@ export function ProductTechnicalSpecsRenderer({
       )}
 
       {!hasSpecs && (
-        <div className="text-center py-12 text-kawai-charcoal/30">
+        <div className="text-center py-12 text-kawai-muted">
           <p className="text-sm">
             No specifications available. Add a product with specifications or switch to Manual mode.
           </p>
@@ -812,7 +812,7 @@ export function ProductTechnicalSpecsRenderer({
                   {header?.title || 'Technical Specifications'}
                 </h2>
                 {header?.subtitle && (
-                  <p className="text-base md:text-lg text-kawai-charcoal/55 font-light leading-relaxed max-w-2xl">
+                  <p className="text-base md:text-lg text-kawai-muted font-light leading-relaxed max-w-2xl">
                     {header.subtitle}
                   </p>
                 )}
@@ -838,7 +838,7 @@ export function ProductTechnicalSpecsRenderer({
                   )}
                 </div>
                 {blueprintCaption && (
-                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-charcoal/40 text-center">
+                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-muted text-center">
                     {blueprintCaption}
                   </p>
                 )}
@@ -859,7 +859,7 @@ export function ProductTechnicalSpecsRenderer({
                   {header?.title || 'Technical Specifications'}
                 </h2>
                 {header?.subtitle && (
-                  <p className="text-base text-kawai-charcoal/55 font-light leading-relaxed">
+                  <p className="text-base text-kawai-muted font-light leading-relaxed">
                     {header.subtitle}
                   </p>
                 )}
@@ -891,7 +891,7 @@ export function ProductTechnicalSpecsRenderer({
                   )}
                 </div>
                 {blueprintCaption && (
-                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-charcoal/40 text-center">
+                  <p className="mt-3 text-xs uppercase tracking-wider text-kawai-muted text-center">
                     {blueprintCaption}
                   </p>
                 )}
@@ -910,7 +910,7 @@ export function ProductTechnicalSpecsRenderer({
                 {header?.title || 'Technical Specifications'}
               </h2>
               {header?.subtitle && (
-                <p className="text-base md:text-lg text-kawai-charcoal/55 font-light leading-relaxed max-w-2xl">
+                <p className="text-base md:text-lg text-kawai-muted font-light leading-relaxed max-w-2xl">
                   {header.subtitle}
                 </p>
               )}

@@ -881,7 +881,7 @@ export function ProductHeroBlock({
                 ) : (
                   <div className="w-full flex flex-col gap-2">
                     {isOutOfStock && (
-                      <p className="text-xs text-gray-400 text-center tracking-wide">
+                      <p className="text-xs text-kawai-muted text-center tracking-wide">
                         Out of stock. Contact an Authorized Dealer.
                       </p>
                     )}
@@ -939,7 +939,7 @@ export function ProductHeroBlock({
                   <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
-                    <p className="text-[9px] text-kawai-charcoal/50 mt-1 leading-tight">Ships in 1–3 business days</p>
+                    <p className="text-[9px] text-kawai-muted mt-1 leading-tight">Ships in 1–3 business days</p>
                   </div>
                 </div>
 
@@ -973,7 +973,7 @@ export function ProductHeroBlock({
               </div>
 
               {/* Subscription nudge */}
-              <p className="text-center text-[10px] text-kawai-charcoal/40 mt-2">
+              <p className="text-center text-[10px] text-kawai-muted mt-2">
                 <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-kawai-neutral hover:decoration-kawai-red">
                   3 Month Subscription with your Product Registration
                 </Link>

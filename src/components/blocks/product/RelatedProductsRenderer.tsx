@@ -214,9 +214,9 @@ function renderSection({
   const isDark = theme === 'dark'
   const sectionBg = isDark ? 'bg-kawai-black' : 'bg-kawai-pearl'
   const headingColor = isDark ? 'text-white' : 'text-kawai-black'
-  const subColor = isDark ? 'text-white/50' : 'text-kawai-charcoal/55'
+  const subColor = isDark ? 'text-white/50' : 'text-kawai-muted'
   const dividerColor = isDark ? 'bg-white/10' : 'bg-kawai-neutral'
-  const countColor = isDark ? 'text-white/30' : 'text-kawai-charcoal/35'
+  const countColor = isDark ? 'text-white/30' : 'text-kawai-muted'
 
   const count = allProducts.length
 
