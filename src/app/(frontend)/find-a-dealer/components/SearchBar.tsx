@@ -185,18 +185,33 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
         }
 
       } else {
-        // CITY / NAME search — local filter
+        // CITY / NAME search — local filter.
+        // Official storefronts are branded by city only ("Houston"), so a brand query
+        // like "kawai" would never match them by name — treat all storefronts as a match.
+        const brandQuery = lowerQuery.includes('kawai')
+
         const cityMatches = dealers.filter(dealer => {
           const city = dealer.address?.city?.toLowerCase() || ''
           const name = dealer.dealerName?.toLowerCase() || ''
-          return city.includes(lowerQuery) || name.includes(lowerQuery)
+          return city.includes(lowerQuery) || name.includes(lowerQuery) ||
+            (brandQuery && dealer.source === 'storefront')
         })
 
-        onSearch(sortDealers(cityMatches))
+        // For a brand query, float the official storefronts to the top.
+        const sortedCity = brandQuery
+          ? cityMatches.sort((a, b) => {
+              const aSf = a.source === 'storefront' ? 0 : 1
+              const bSf = b.source === 'storefront' ? 0 : 1
+              if (aSf !== bSf) return aSf - bSf
+              return (a.dealerName || '').localeCompare(b.dealerName || '')
+            })
+          : sortDealers(cityMatches)
+        onSearch(sortedCity)
 
-        // Name-only matches go into the popup results
+        // Name matches (plus storefronts on a brand query) go into the popup results
         const nameMatches = dealers
-          .filter(d => d.dealerName?.toLowerCase().includes(lowerQuery))
+          .filter(d => d.dealerName?.toLowerCase().includes(lowerQuery) ||
+            (brandQuery && d.source === 'storefront'))
           .slice(0, 6)
         setDealerResults(nameMatches.map(toDealerResult))
         if (nameMatches.length > 0) setShowDropdown(true)

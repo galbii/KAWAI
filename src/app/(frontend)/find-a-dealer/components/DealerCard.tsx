@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { DealerWithDistance } from '../types'
 import { MapPin, Phone, ExternalLink, ArrowRight, ChevronDown, Navigation, Star } from 'lucide-react'
@@ -18,6 +19,9 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const formatDay = (day: string) => day.charAt(0).toUpperCase() + day.slice(1, 3)
+
+  const isStorefront = dealer.source === 'storefront'
+  const detailHref = isStorefront ? `/store/${dealer.slug}` : `/find-a-dealer/${dealer.slug}`
 
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
@@ -78,21 +82,40 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
           />
         </div>
 
-        {/* Dealer Name */}
-        <h3
-          className={cn(
-            'text-[15px] font-semibold leading-snug mb-1.5 font-[family-name:var(--font-brand-serif)]',
-            isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
-          )}
-        >
+        {/* Dealer Name — official storefronts render as [KAWAI logo] CITY */}
+        {isStorefront ? (
           <Link
-            href={`/find-a-dealer/${dealer.slug}`}
+            href={detailHref}
             onClick={(e) => e.stopPropagation()}
-            className="hover:text-kawai-red transition-colors"
+            className="group/name inline-flex items-center gap-2 mb-1.5"
           >
-            {dealer.dealerName}
+            <Image
+              src="/images/Kawai (Red).png"
+              alt="KAWAI"
+              width={72}
+              height={22}
+              className="h-3.5 w-auto"
+            />
+            <span className="text-[15px] font-semibold uppercase tracking-[0.08em] text-kawai-charcoal group-hover/name:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]">
+              {dealer.dealerName}
+            </span>
           </Link>
-        </h3>
+        ) : (
+          <h3
+            className={cn(
+              'text-[15px] font-semibold leading-snug mb-1.5 font-[family-name:var(--font-brand-serif)]',
+              isSelected ? 'text-kawai-black' : 'text-kawai-charcoal'
+            )}
+          >
+            <Link
+              href={detailHref}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:text-kawai-red transition-colors"
+            >
+              {dealer.dealerName}
+            </Link>
+          </h3>
+        )}
 
         {/* Location */}
         {(dealer.address?.city || dealer.address?.state) && (
@@ -141,19 +164,19 @@ export function DealerCard({ dealer, isSelected, onSelect }: Props) {
             </a>
           )}
           <Link
-            href={`/find-a-dealer/${dealer.slug}`}
+            href={detailHref}
             onClick={(e) => {
               e.stopPropagation()
               trackCTAClick({
                 blockType: 'find-a-dealer-page',
                 blockData: {},
                 ctaText: dealer.dealerName || 'View Details',
-                destination: `/find-a-dealer/${dealer.slug}`,
+                destination: detailHref,
               })
             }}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[12px] font-semibold rounded-full transition-all duration-200 group/btn bg-kawai-red hover:bg-kawai-red-700 text-white shadow-[0_2px_8px_rgba(225,25,34,0.25)] hover:shadow-[0_2px_16px_rgba(225,25,34,0.4)]"
           >
-            View Details
+            {isStorefront ? 'View Showroom' : 'View Details'}
             <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" strokeWidth={2.5} />
           </Link>
         </div>

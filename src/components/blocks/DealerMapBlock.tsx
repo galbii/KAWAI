@@ -4,6 +4,11 @@ import { unstable_cache } from 'next/cache'
 import { DealerFinderClient } from '@/app/(frontend)/find-a-dealer/DealerFinderClient'
 import type { DealerWithDistance } from '@/app/(frontend)/find-a-dealer/types'
 import { getSite } from '@/lib/site-context'
+import { extractStateAbbrev } from '@/lib/utils/us-states'
+import { calculateDistance } from '@/lib/utils/dealer-search'
+
+/** A dealer within this many miles of an official storefront is treated as the same location. */
+const DEDUP_RADIUS_MILES = 0.6
 
 interface Props {
   heading?: string | null
@@ -20,13 +25,16 @@ function storefrontToDealer(storefront: Storefront): DealerWithDistance {
     isActive: storefront.isActive ?? true,
     isFeatured: false,
     source: 'storefront' as const,
-    contactInfo: storefront.showroomInfo?.phone
-      ? { phone: storefront.showroomInfo.phone }
-      : {},
+    contactInfo: {
+      ...(storefront.showroomInfo?.phone ? { phone: storefront.showroomInfo.phone } : {}),
+      ...(storefront.showroomInfo?.email ? { email: storefront.showroomInfo.email } : {}),
+    },
     address: {
       street: storefront.address?.street ?? '',
       city: storefront.address?.city ?? '',
-      state: storefront.address?.state ?? '',
+      // Map Address state is often blank; fall back to parsing the full showroom address
+      // so storefronts surface in state searches.
+      state: storefront.address?.state || extractStateAbbrev(storefront.showroomInfo?.address) || '',
       zipCode: storefront.address?.zipCode ?? '',
       country: storefront.address?.country ?? 'USA',
     },
@@ -35,8 +43,12 @@ function storefrontToDealer(storefront: Storefront): DealerWithDistance {
       longitude: longitude ?? 0,
     },
     dealerType: 'dealer' as const,
+    // Kawai-owned showrooms carry the full product line, so they surface under every type filter
+    shigeruKawaiDealer: true,
     acousticPianoDealer: true,
-    description: storefront.showroomDescription,
+    digitalPianoDealer: true,
+    professionalProductDealer: true,
+    description: `Kawai's official ${storefront.locationName} location.`,
     updatedAt: storefront.updatedAt,
     createdAt: storefront.createdAt,
   }
@@ -104,8 +116,24 @@ export async function DealerMapBlock({ heading }: Props) {
     )
     .map(storefrontToDealer)
 
+  // Some official storefronts also exist in the dealers collection as "Kawai Piano Gallery …".
+  // Drop the dealer copy when it sits on top of a storefront so we show one branded card.
+  const storefrontCoords = transformedStorefronts
+    .map(sf => sf.coordinates)
+    .filter((c): c is { latitude: number; longitude: number } =>
+      Boolean(c?.latitude && c?.longitude))
+
+  const dedupedDealers = dealers.filter(dealer => {
+    const lat = dealer.coordinates?.latitude
+    const lng = dealer.coordinates?.longitude
+    if (!lat || !lng) return true
+    return !storefrontCoords.some(
+      sc => calculateDistance(lat, lng, sc.latitude, sc.longitude) <= DEDUP_RADIUS_MILES,
+    )
+  })
+
   const unifiedDealers: DealerWithDistance[] = [
-    ...dealers.map(d => ({ ...d, source: 'dealer' as const })),
+    ...dedupedDealers.map(d => ({ ...d, source: 'dealer' as const })),
     ...transformedStorefronts,
   ]
 

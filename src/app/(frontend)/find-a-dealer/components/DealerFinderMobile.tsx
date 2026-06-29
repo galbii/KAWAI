@@ -14,6 +14,7 @@ import { calculateDistance } from '@/lib/utils/dealer-search'
 import { classifyDealerCountry } from '@/lib/utils/dealer-country'
 import { MapPin, SlidersHorizontal, Map, List, Piano, Briefcase, Star, X, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Props {
   dealers: DealerWithDistance[]
@@ -420,9 +421,24 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
               className="fixed bottom-0 left-0 right-0 z-[60] bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto"
             >
               <div className="sticky top-0 bg-white border-b border-kawai-neutral px-6 py-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-kawai-charcoal">
-                  {selectedDealerData.dealerName}
-                </h3>
+                {selectedDealerData.source === 'storefront' ? (
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/images/Kawai (Red).png"
+                      alt="KAWAI"
+                      width={84}
+                      height={25}
+                      className="h-4 w-auto"
+                    />
+                    <span className="text-lg font-semibold uppercase tracking-[0.06em] text-kawai-charcoal">
+                      {selectedDealerData.dealerName}
+                    </span>
+                  </div>
+                ) : (
+                  <h3 className="text-lg font-semibold text-kawai-charcoal">
+                    {selectedDealerData.dealerName}
+                  </h3>
+                )}
                 <button
                   onClick={() => setDealerSheetOpen(false)}
                   className="p-2 hover:bg-kawai-pearl rounded-full transition-colors active:scale-95"
@@ -470,10 +486,14 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                       </a>
                     )}
                     <Link
-                      href={`/find-a-dealer/${selectedDealerData.slug}`}
+                      href={
+                        selectedDealerData.source === 'storefront'
+                          ? `/store/${selectedDealerData.slug}`
+                          : `/find-a-dealer/${selectedDealerData.slug}`
+                      }
                       className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-white border border-kawai-neutral text-kawai-charcoal rounded-xl font-medium text-sm active:scale-95 transition-transform hover:bg-kawai-pearl"
                     >
-                      <span>View Dealer Details</span>
+                      <span>{selectedDealerData.source === 'storefront' ? 'View Showroom' : 'View Dealer Details'}</span>
                       <ArrowRight className="w-4 h-4" strokeWidth={2} />
                     </Link>
                   </div>
@@ -525,15 +545,34 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
+          {dealer.source === 'storefront' ? (
             <Link
-              href={`/find-a-dealer/${dealer.slug}`}
+              href={`/store/${dealer.slug}`}
               onClick={(e) => e.stopPropagation()}
-              className="hover:text-kawai-red transition-colors"
+              className="group/name inline-flex items-center gap-2 mb-1"
             >
-              {dealer.dealerName}
+              <Image
+                src="/images/Kawai (Red).png"
+                alt="KAWAI"
+                width={72}
+                height={22}
+                className="h-3.5 w-auto"
+              />
+              <span className="text-base font-semibold uppercase tracking-[0.06em] text-kawai-charcoal group-hover/name:text-kawai-red transition-colors leading-tight">
+                {dealer.dealerName}
+              </span>
             </Link>
-          </h3>
+          ) : (
+            <h3 className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
+              <Link
+                href={`/find-a-dealer/${dealer.slug}`}
+                onClick={(e) => e.stopPropagation()}
+                className="hover:text-kawai-red transition-colors"
+              >
+                {dealer.dealerName}
+              </Link>
+            </h3>
+          )}
           {dealer.address && (
             <div className="flex items-center gap-1.5 text-xs text-kawai-charcoal/60">
               <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
