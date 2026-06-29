@@ -219,13 +219,13 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                     "focus-visible:outline-2 focus-visible:outline-kawai-red",
                     isSelected
                       ? "text-kawai-black border-b-2 border-kawai-black -mb-px"
-                      : "text-kawai-charcoal/60 border-b-2 border-transparent -mb-px hover:text-kawai-black"
+                      : "text-kawai-muted border-b-2 border-transparent -mb-px hover:text-kawai-black"
                   )}
                 >
                   {option.label}
                   <span className={cn(
                     "text-[10px] font-semibold tabular-nums",
-                    isSelected ? "text-kawai-black/50" : "text-kawai-charcoal/30"
+                    isSelected ? "text-kawai-black/50" : "text-kawai-muted"
                   )}>
                     {option.count}
                   </span>
@@ -242,7 +242,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
           transition={{ duration: 0.3, delay: 0.2 }}
           className="flex items-center justify-between px-4 py-2.5 bg-kawai-pearl/30 border-t border-kawai-neutral/40"
         >
-          <div className="text-sm text-kawai-charcoal/60">
+          <div className="text-sm text-kawai-muted">
             <span className="font-semibold text-kawai-charcoal">{filteredDealers.length}</span>
             {' '}{filteredDealers.length === 1 ? 'dealer' : 'dealers'}
           </div>
@@ -328,7 +328,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                 <h3 className="text-lg font-semibold text-kawai-charcoal mb-2">
                   No dealers found
                 </h3>
-                <p className="text-kawai-charcoal/60 text-sm mb-6">
+                <p className="text-kawai-muted text-sm mb-6">
                   Try adjusting your filters or searching a different area.
                 </p>
                 <button
@@ -366,7 +366,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                   "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
                   viewMode === 'list'
                     ? "bg-kawai-charcoal text-white"
-                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
+                    : "bg-white text-kawai-muted active:bg-kawai-pearl/30"
                 )}
               >
                 <List className="w-5 h-5" strokeWidth={2.5} />
@@ -381,7 +381,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                   "flex-1 flex items-center justify-center gap-2 py-4 font-semibold text-sm transition-all duration-200",
                   viewMode === 'map'
                     ? "bg-kawai-charcoal text-white"
-                    : "bg-white text-kawai-charcoal/60 active:bg-kawai-pearl/30"
+                    : "bg-white text-kawai-muted active:bg-kawai-pearl/30"
                 )}
               >
                 <Map className="w-5 h-5" strokeWidth={2.5} />
@@ -450,7 +450,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
               <div className="p-6 space-y-6">
                 {selectedDealerData.address && (
                   <div>
-                    <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
+                    <h4 className="text-xs font-semibold text-kawai-muted uppercase tracking-wide mb-2">
                       Address
                     </h4>
                     <address className="text-sm text-kawai-charcoal/75 not-italic leading-relaxed">
@@ -461,7 +461,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                 )}
 
                 <div>
-                  <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-3">
+                  <h4 className="text-xs font-semibold text-kawai-muted uppercase tracking-wide mb-3">
                     Contact
                   </h4>
                   <div className="space-y-3">
@@ -501,7 +501,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
 
                 {selectedDealerData.description && (
                   <div>
-                    <h4 className="text-xs font-semibold text-kawai-charcoal/40 uppercase tracking-wide mb-2">
+                    <h4 className="text-xs font-semibold text-kawai-muted uppercase tracking-wide mb-2">
                       About
                     </h4>
                     <p className="text-sm text-kawai-charcoal/75 leading-relaxed">
@@ -574,7 +574,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
             </h2>
           )}
           {dealer.address && (
-            <div className="flex items-center gap-1.5 text-xs text-kawai-charcoal/60">
+            <div className="flex items-center gap-1.5 text-xs text-kawai-muted">
               <MapPin className="w-3.5 h-3.5 text-kawai-charcoal/35 flex-shrink-0" strokeWidth={2} />
               <span>{dealer.address.city}, {dealer.address.state}</span>
             </div>
@@ -591,19 +591,19 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
       {/* Dealer Type Badges */}
       <div className="flex flex-wrap gap-1.5 mb-3">
         {hasShigeru && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-gold/10 text-xs font-medium rounded-full border border-kawai-gold/25" style={{ color: '#A07800' }}>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-gold/10 text-kawai-gold-on-light text-xs font-medium rounded-full border border-kawai-gold/25">
             <Star className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
             <span>Shigeru Kawai</span>
           </div>
         )}
         {hasAcoustic && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
             <Piano className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
             <span>Acoustic</span>
           </div>
         )}
         {hasDigital && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/60 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
             <Briefcase className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
             <span>Digital</span>
           </div>
