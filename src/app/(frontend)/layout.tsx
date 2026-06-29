@@ -153,6 +153,12 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       />
       <PageHistoryProvider>
       <DealerPageLayoutWrapper>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-kawai-black focus:px-4 focus:py-2 focus:text-white"
+        >
+          Skip to main content
+        </a>
         <NammAwareShell
           announcementBar={
             <Suspense fallback={null}>
@@ -166,7 +172,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
           }
           layoutSpacer={<LayoutSpacer />}
         >
-          <main className="flex-1 m-0 p-0">
+          <main id="main-content" className="flex-1 m-0 p-0">
             <PageTransition>
               {children}
             </PageTransition>
