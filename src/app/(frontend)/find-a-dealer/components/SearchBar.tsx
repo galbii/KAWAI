@@ -376,6 +376,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
             <input
               ref={inputRef}
               type="text"
+              aria-label="Search dealers by city or state"
               value={searchInput}
               onChange={e => handleInputChange(e.target.value)}
               onFocus={() => hasResults && setShowDropdown(true)}
@@ -416,6 +417,7 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
           <input
             ref={inputRef}
             type="text"
+            aria-label="Search dealers by city or state"
             value={searchInput}
             onChange={e => handleInputChange(e.target.value)}
             onFocus={() => hasResults && setShowDropdown(true)}

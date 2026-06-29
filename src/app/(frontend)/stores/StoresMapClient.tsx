@@ -183,6 +183,7 @@ export function StoresMapClient({ pins, selectedId, onStoreSelect }: Props) {
             </svg>
             <input
               type="text"
+              aria-label="Search stores by city or state"
               placeholder="Search city or state…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

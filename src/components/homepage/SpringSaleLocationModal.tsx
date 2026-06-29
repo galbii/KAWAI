@@ -71,6 +71,7 @@ export function SpringSaleLocationModal({ isOpen, onClose }: Props) {
           </svg>
           <input
             type="text"
+            aria-label="Search locations by city or state"
             placeholder="Search city or state..."
             value={query}
             onChange={e => setQuery(e.target.value)}

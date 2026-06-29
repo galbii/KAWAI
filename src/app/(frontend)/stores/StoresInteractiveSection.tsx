@@ -207,6 +207,7 @@ export function StoresInteractiveSection({ storefronts, pins }: Props) {
               </svg>
               <input
                 type="text"
+                aria-label="Search store locations"
                 placeholder="Search locations…"
                 value={gridQuery}
                 onChange={(e) => setGridQuery(e.target.value)}
