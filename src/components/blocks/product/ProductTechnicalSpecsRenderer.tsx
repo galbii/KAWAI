@@ -251,8 +251,8 @@ function SpecSearchBar({
             noResults
               ? 'text-kawai-red/55'
               : isSearching
-                ? 'text-kawai-charcoal/38'
-                : 'text-kawai-charcoal/22',
+                ? 'text-kawai-muted'
+                : 'text-kawai-muted',
           )}
           initial={{ opacity: 0, y: -3 }}
           animate={{ opacity: 1, y: 0 }}

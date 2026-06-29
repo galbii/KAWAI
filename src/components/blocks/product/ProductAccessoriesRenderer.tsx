@@ -61,7 +61,7 @@ function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardP
   const num = String(index + 1).padStart(2, '0')
   const href = `/products/${accessory.slug ?? accessory.model}`
 
-  const numColor = isDark ? 'text-white/20' : 'text-kawai-charcoal/25'
+  const numColor = isDark ? 'text-white/20' : 'text-kawai-muted'
   const imgBg = isDark ? 'bg-[#252220]' : 'bg-white'
   // Bottom panel always matches the footer: bg-kawai-black/95
   const bottomBg = 'bg-kawai-black/95'

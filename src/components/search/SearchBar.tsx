@@ -750,7 +750,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       <div ref={containerRef} className={cn('relative z-[9002] hidden md:block', className)}>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-kawai-muted" />
           </div>
           <input
             ref={inputRef}
@@ -785,7 +785,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
           {/* Keyboard Hint - Show when not focused and empty (large screens only) */}
           {query.length === 0 && !isFocused && (
             <div className="pointer-events-none absolute inset-y-0 right-12 hidden lg:flex items-center">
-              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <div className="flex items-center gap-1.5 text-xs text-kawai-muted">
                 <span>Press</span>
                 <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-gray-600 font-mono text-xs">
                   L

@@ -77,7 +77,7 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
   const num = String(index + 1).padStart(2, '0')
   const href = `/products/${product.slug}`
 
-  const numColor = isDark ? 'text-white/20' : 'text-kawai-charcoal/25'
+  const numColor = isDark ? 'text-white/20' : 'text-kawai-muted'
   const imgBg = isDark ? 'bg-[#252220]' : 'bg-white'
   const nameColor = 'text-white'
   const modelColor = 'text-white/40'
