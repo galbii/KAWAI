@@ -225,7 +225,7 @@ export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
                   {option.label}
                   <span className={cn(
                     "text-[10px] font-semibold tabular-nums",
-                    isSelected ? "text-kawai-black/50" : "text-kawai-muted"
+                    isSelected ? "text-kawai-black/70" : "text-kawai-muted"
                   )}>
                     {option.count}
                   </span>
