@@ -93,11 +93,12 @@ interface DesktopMenuItemProps {
 }
 
 // Context-aware Link component for client-side navigation
-const ContextAwareLink = ({ href, children, className, onClick }: { 
+const ContextAwareLink = ({ href, children, className, onClick, 'aria-label': ariaLabel }: {
   href: string
   children: React.ReactNode
   className?: string
   onClick?: () => void
+  'aria-label'?: string
 }) => {
   const { origin, isInitialized } = useNavigationContext()
   
@@ -115,6 +116,7 @@ const ContextAwareLink = ({ href, children, className, onClick }: {
       href={finalHref}
       className={className}
       {...(onClick && { onClick })}
+      {...(ariaLabel && { 'aria-label': ariaLabel })}
     >
       {children}
     </Link>
