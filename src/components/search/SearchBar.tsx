@@ -82,6 +82,8 @@ type CategoryFilter = 'all' | 'storefronts' | 'products' | 'collections' | 'page
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const pathname = usePathname()
   const isOnFindADealerPage = pathname.startsWith('/find-a-dealer')
+  // The /signup lead page hides the mobile search bar to keep focus on the offer form.
+  const isOnSignupPage = pathname === '/signup'
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -755,6 +757,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
           <input
             ref={inputRef}
             type="text"
+            aria-label="Search showrooms, pianos, and products"
             placeholder="Search showrooms, pianos, products..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -1554,8 +1557,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       )}
 
       {/* Floating Glassmorphic Search Input - Mobile Only - Always visible but hides when keyboard opens for other inputs - Portaled to body */}
-      {/* Hidden on find-a-dealer page since that page has its own dedicated search bar */}
-      {isMounted && !isOnFindADealerPage && createPortal(
+      {/* Hidden on find-a-dealer page (own search bar) and on /signup (lead page keeps focus on the offer form) */}
+      {isMounted && !isOnFindADealerPage && !isOnSignupPage && createPortal(
         <div
           className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{
@@ -1584,6 +1587,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
                 <input
                   ref={mobileInputRef}
                   type="text"
+                  aria-label="Search showrooms, pianos, and products"
                   placeholder="Search showrooms, pianos..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

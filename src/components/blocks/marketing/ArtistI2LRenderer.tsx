@@ -161,7 +161,7 @@ function LibraryRow({
           <span
             className={cn(
               'text-[9.5px] tracking-[0.18em] uppercase truncate font-[family-name:var(--font-brand-sans)]',
-              isActive ? 'text-kawai-red font-semibold' : 'text-white/40',
+              isActive ? 'text-kawai-red-400 font-semibold' : 'text-white/55',
             )}
           >
             {video.artistName ?? video.eyebrowText ?? 'Featured'}
@@ -733,6 +733,7 @@ function MobileLibrarySheet({
                   type="search"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
+                  aria-label="Search title or artist"
                   placeholder="Search title or artist…"
                   className="w-full bg-white/[0.06] border border-white/[0.08] text-white placeholder-white/35 text-[13px] pl-10 pr-9 py-2.5 rounded focus:outline-none focus:border-kawai-red/60 focus:bg-white/[0.10] transition-all font-[family-name:var(--font-brand-sans)]"
                 />
@@ -1016,6 +1017,7 @@ export function ArtistI2LRenderer({
                   type="search"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
+                  aria-label="Search title or artist"
                   placeholder="Search…"
                   className="w-full bg-white/[0.06] border border-white/[0.08] text-white placeholder-white/30 text-[11px] pl-8 pr-7 py-2 rounded focus:outline-none focus:border-kawai-red/60 focus:bg-white/[0.10] transition-all duration-200 font-[family-name:var(--font-brand-sans)]"
                 />

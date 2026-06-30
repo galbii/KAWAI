@@ -50,7 +50,7 @@ export function Section({
   const hasHeader = Boolean(eyebrow || title || intro)
 
   return (
-    <section id={id} className={cn(t.bg, padding, className)}>
+    <section id={id || undefined} className={cn(t.bg, padding, className)}>
       <div className={cn('container mx-auto px-6')}>
         <div className={cn('mx-auto', maxWidth, center && 'text-center')}>
           {hasHeader && (

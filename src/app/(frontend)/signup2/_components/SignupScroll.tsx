@@ -5,20 +5,22 @@ import { useScroll, useSpring, useReducedMotion } from 'framer-motion'
 import PinnedCanvas from './PinnedCanvas'
 import SceneHero from './scenes/SceneHero'
 import SceneRebates from './scenes/SceneRebates'
-import SceneStats from './scenes/SceneStats'
-import SceneTimeline from './scenes/SceneTimeline'
-import SceneCollections from './scenes/SceneCollections'
 import SceneShowrooms from './scenes/SceneShowrooms'
+import SceneStats from './scenes/SceneStats'
 import SceneCoda from './scenes/SceneCoda'
 import AboutStaticFallback from './AboutStaticFallback'
 import { OfferModalProvider } from './OfferModalContext'
 import type { RebateCategory } from '@/lib/payload/rebate-types'
 
 /**
- * Orchestrator for the cinematic /signup scroll experience.
+ * Orchestrator for the cinematic /signup2 scroll experience.
  *
- * Cloned from the /about experience as an independent starting point — adjust
- * scenes here freely without affecting /about.
+ * Conversion-first variant of /signup: same cinematic engine, but trimmed to the
+ * five scenes that move toward the two goals — sign up for the discount, or find
+ * a dealer. Order: hero → rebates → showrooms → trust strip → coda. The
+ * Collections and Heritage timeline scenes are dropped (they sent people off to
+ * browse / read history); the five-stat scene is compressed to a three-number
+ * trust strip. Track height drops from 700vh (7 scenes) to 500vh (5 scenes).
  *
  * Raw scroll position is run through a spring before any motion subscribes
  * to it. Fast scrolls cushion, slow scrolls track precisely — the whole
@@ -56,22 +58,20 @@ export default function SignupScroll({ rebateData }: SignupScrollProps) {
         <h2>About Kawai</h2>
         <p>
           The page is presented as a single scrollable cinematic sequence over a piano soundboard.
-          The full sequence covers: an introduction, current rebates on our pianos by model, our
-          company by the numbers, our network of 200+ authorized dealers, our featured piano
-          collections, our legacy of innovation, and an invitation to experience our pianos.
+          The sequence covers: an introduction with a sign-up form, current rebates on our pianos
+          by model, our network of 200+ authorized dealers, our company by the numbers, and an
+          invitation to claim your discount.
         </p>
       </div>
 
-      <div ref={ref} className="relative h-[700vh] bg-kawai-black">
+      <div ref={ref} className="relative h-[500vh] bg-kawai-black">
         <div className="sticky top-0 h-screen overflow-hidden">
           <PinnedCanvas progress={progress} reduce={reduce} />
           <div className="absolute inset-0 z-10">
             <SceneHero progress={progress} reduce={reduce} />
             <SceneRebates progress={progress} reduce={reduce} data={rebateData} />
-            <SceneStats progress={progress} reduce={reduce} />
             <SceneShowrooms progress={progress} reduce={reduce} />
-            <SceneCollections progress={progress} reduce={reduce} />
-            <SceneTimeline progress={progress} reduce={reduce} />
+            <SceneStats progress={progress} reduce={reduce} />
             <SceneCoda progress={progress} reduce={reduce} />
           </div>
         </div>

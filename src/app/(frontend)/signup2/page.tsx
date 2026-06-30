@@ -7,22 +7,26 @@ export const revalidate = 3600
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
-  const url = getSiteUrl(site) + '/signup'
+  const url = getSiteUrl(site) + '/signup2'
+  const title = 'Sign Up for Rebates on a Kawai Piano | Find a Dealer'
+  const description =
+    'Sign up and your nearest Authorized Kawai dealer will reach out with current rebates and savings on your next piano — or find a dealer near you to play in person.'
   return {
-    title: 'Sign Up | Kawai',
-    description:
-      'Join the Kawai community. Sign up to stay connected with the latest from three generations of innovative piano craftsmanship.',
+    title,
+    description,
+    // Conversion-test variant of /signup — keep it out of the index so it does
+    // not compete with the canonical page for the same queries.
+    robots: { index: false, follow: true },
     alternates: {
       canonical: url,
-      languages: getSiteAlternates('/signup'),
+      languages: getSiteAlternates('/signup2'),
     },
     openGraph: {
       type: 'website',
       url,
       siteName: 'KAWAI',
-      title: 'Sign Up | Kawai',
-      description:
-        'Join the Kawai community. Sign up to stay connected with the latest from Kawai.',
+      title,
+      description,
       images: [
         {
           url: '/images/banners/GX-7-BLAK-grand-styling.webp',
@@ -34,8 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Sign Up | Kawai',
-      description: 'Join the Kawai community.',
+      title,
+      description,
       images: ['/images/banners/GX-7-BLAK-grand-styling.webp'],
     },
   }

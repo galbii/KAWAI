@@ -7,67 +7,25 @@ export const heroCopy = {
   secondaryCta: { label: 'Explore Pianos', href: '/pianos' },
 }
 
+/**
+ * Trust strip — the three most credible, purchase-relevant numbers. The full
+ * five-stat heritage scene (awards, competition victories, generations) was cut
+ * for the conversion-first variant; what remains reassures a buyer right before
+ * the closing CTA without sending them off to read history.
+ */
 export const stats = [
-  { value: '1927', numeric: 1927, suffix: '', label: 'Founded' },
+  { value: '1927', numeric: 1927, suffix: '', label: 'Crafting Pianos Since' },
   { value: '2.4M+', numeric: 2.4, decimals: 1, suffix: 'M+', label: 'Pianos Built' },
-  { value: '50+', numeric: 50, suffix: '+', label: 'Awards' },
-  { value: '61+', numeric: 61, suffix: '+', label: 'Competition Victories' },
-  { value: '3', numeric: 3, suffix: '', label: 'Generations' },
+  { value: '200+', numeric: 200, suffix: '+', label: 'Authorized Dealers Nationwide' },
 ] as const
 
-export const timelineCopy = {
-  eyebrow: 'Heritage',
-  headline: 'A Legacy of Innovation',
-  events: [
-    {
-      year: '1927',
-      title: 'Foundation',
-      description:
-        'Koichi Kawai, former apprentice to Torakusu Yamaha, establishes Kawai Musical Instruments with a vision to democratize access to quality pianos.',
-    },
-    {
-      year: '1955',
-      title: 'Second Generation Leadership',
-      description:
-        'Shigeru Kawai becomes president, introducing a scientific approach to piano innovation and establishing the foundation for modern Kawai technology.',
-    },
-    {
-      year: '1971',
-      title: 'ABS Technology Revolution',
-      description:
-        'Kawai introduces revolutionary ABS composite materials for piano actions, later proven at Cal Poly to be superior to traditional wood in durability and consistency.',
-    },
-    {
-      year: '1989',
-      title: 'Third Generation & Global Expansion',
-      description:
-        "Hirotaka Kawai takes leadership, introducing robotics in manufacturing and expanding Kawai's global presence while maintaining traditional craftsmanship values.",
-    },
-    {
-      year: '2002',
-      title: 'Millennium III Action',
-      description:
-        'Launch of the revolutionary Millennium III Action, representing the pinnacle of composite action technology and setting new standards for touch and response.',
-    },
-    {
-      year: '2024',
-      title: 'Continued Excellence',
-      description:
-        '97 years later, Kawai continues to lead with 61+ international competition victories and instruments trusted by artists and institutions worldwide.',
-    },
-  ] as const,
-}
-
 export const codaCopy = {
-  eyebrow: 'Explore',
-  headline: 'Experience 97 Years of Innovation',
-  body: "Discover how Kawai's legacy of craftsmanship and innovation can shape your musical journey.",
+  eyebrow: 'Last Step',
+  headline: 'Claim your rebate today',
+  body: 'Sign up and your local Authorized Kawai dealer will reach out about current rebates and savings on your next piano.',
   primaryCta: { label: 'Explore Pianos', href: '/pianos' },
   secondaryCta: { label: 'Find a Dealer', href: '/find-a-dealer' },
 }
-
-/** Primary "browse the full catalog" CTA on the Featured Collections scene. */
-export const exploreProductsCta = { label: 'Explore All Products', href: '/pianos' } as const
 
 export const showroomsCopy = {
   eyebrow: 'Where to Play',
@@ -132,17 +90,15 @@ export const rebatesCopy = {
 } as const
 
 /**
- * Seven scene windows on master scroll progress (0 → 1).
- * Tuned so each scene gets ~14–16% of scroll plus a ~1.5% crossfade overlap.
- * Order: hero → rebates → stats → showrooms → collections → timeline → coda.
- * (Track height is set to 700vh in SignupScroll so each scene keeps ~100vh of scroll.)
+ * Five scene windows on master scroll progress (0 → 1) for the conversion-first
+ * /signup2 variant. Each scene gets ~20% of scroll plus a ~1.5% crossfade
+ * overlap. Order: hero → rebates → showrooms → stats (trust strip) → coda.
+ * (Track height is 500vh in SignupScroll so each scene keeps ~100vh of scroll.)
  */
 export const SCENE_WINDOWS = {
-  hero: [0.0, 0.13] as const,
-  rebates: [0.115, 0.29] as const,
-  stats: [0.275, 0.43] as const,
-  showrooms: [0.415, 0.57] as const,
-  collections: [0.555, 0.71] as const,
-  timeline: [0.695, 0.85] as const,
-  coda: [0.835, 1.0] as const,
+  hero: [0.0, 0.2] as const,
+  rebates: [0.185, 0.42] as const,
+  showrooms: [0.405, 0.61] as const,
+  stats: [0.595, 0.79] as const,
+  coda: [0.775, 1.0] as const,
 }

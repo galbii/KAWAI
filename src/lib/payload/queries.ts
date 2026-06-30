@@ -7,6 +7,9 @@ import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
+import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
+import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
+import { REBATE_BY_MODEL, REBATE_PROGRAM, normalizeModel } from '@/lib/data/rebates'
 import type {
   Product,
   PianosPage,
@@ -648,6 +651,149 @@ export function getProductBySlugDirect(slug: string, locale: 'en-US' | 'en-CA' =
     },
     [`product-${slug}-${locale}`],
     { tags: ['products', `product-${slug}`], revalidate: 3600 }
+  )()
+}
+
+/** Short chip labels for the rebate showcase category selector. */
+const REBATE_CATEGORY_LABELS: Record<PianoCategorySlug, string> = {
+  digital: 'Digital',
+  grand: 'Grand',
+  hybrid: 'Hybrid',
+  upright: 'Upright',
+  shigeru: 'Shigeru',
+}
+
+/**
+ * Map a product's `type` (normalized "digital"/"grand"/… or a raw Shopify
+ * productType like "Grand Piano") to one of the five piano category slugs.
+ * Shigeru is checked before grand because Shigeru models are also grands.
+ */
+function rebateTypeToCategory(type?: string | null): PianoCategorySlug | null {
+  const t = (type ?? '').toLowerCase()
+  if (!t || t.includes('accessor')) return null
+  if (t.includes('shigeru')) return 'shigeru'
+  if (t.includes('grand')) return 'grand'
+  if (t.includes('upright')) return 'upright'
+  if (t.includes('hybrid')) return 'hybrid'
+  if (t.includes('digital')) return 'digital'
+  return null
+}
+
+/**
+ * Turn a raw rebate qualifier into card-friendly text.
+ * "EP only" → "Ebony Polish only"; finish codes (e.g. "B/W") → "Finishes: B/W";
+ * "All Finishes" / blank → no note.
+ */
+function formatRebateNote(note?: string): string | undefined {
+  const raw = note?.trim()
+  if (!raw || /^all finishes$/i.test(raw)) return undefined
+  if (/^ep only$/i.test(raw)) return 'Ebony Polish only'
+  return `Finishes: ${raw}`
+}
+
+/**
+ * The active rebate program ({@link REBATE_PROGRAM}), grouped by piano category
+ * for the /signup rebate showcase. Rebate AMOUNTS come from the static rebate
+ * list (src/lib/data/rebates.ts); each line is joined to a product by normalized
+ * model to pull name, image, slug, price, and category. MSRP comes from
+ * CMS-synced pricing (no live Shopify call) — the showcase is an estimate; the
+ * Find a Dealer CTA owns the exact quote.
+ *
+ * The program is USD (Kawai America), so the CA site returns nothing.
+ * Models with no matching active product are skipped and logged.
+ */
+export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCategory[]> {
+  return unstable_cache(
+    async () => {
+      // Rebate program is Kawai America (USD only) — nothing to show on ca.kawaius.com.
+      if (site === 'cad') return []
+
+      try {
+        const payload = await getPayloadClient()
+        // Fetch active piano products once; join to the static rebate list in memory.
+        const result = await payload.find({
+          collection: 'products',
+          where: {
+            status: { equals: 'active' },
+            type: { not_equals: 'accessory' },
+          },
+          select: {
+            model: true,
+            modelLabel: true,
+            name: true,
+            slug: true,
+            imageUrl: true,
+            type: true,
+            price: true,
+          },
+          depth: 0,
+          limit: 1000,
+          pagination: false,
+        })
+
+        const byCategory = new Map<PianoCategorySlug, RebateProduct[]>()
+        const matched = new Set<string>()
+
+        for (const doc of result.docs) {
+          if (!doc.model) continue
+          const key = normalizeModel(doc.model)
+          const rebateEntry = REBATE_BY_MODEL.get(key)
+          if (!rebateEntry) continue
+
+          const category = rebateTypeToCategory(doc.type)
+          if (!category) continue
+
+          const anchor = doc.price?.msrp ?? null
+          if (anchor == null || anchor <= 0) continue
+
+          matched.add(key)
+          const note = formatRebateNote(rebateEntry.note)
+          const entry: RebateProduct = {
+            model: doc.model,
+            label: doc.modelLabel || doc.model,
+            name: doc.name || doc.model,
+            slug: doc.slug,
+            imageUrl: doc.imageUrl ?? null,
+            msrp: anchor,
+            yourPrice: Math.max(anchor - rebateEntry.rebate, 0),
+            rebate: rebateEntry.rebate,
+            ...(note ? { note } : {}),
+            currency: 'USD',
+          }
+
+          const list = byCategory.get(category) ?? []
+          list.push(entry)
+          byCategory.set(category, list)
+        }
+
+        // Surface any program models that didn't match an active product.
+        const unmatched = [...REBATE_BY_MODEL.keys()].filter((k) => !matched.has(k))
+        if (unmatched.length > 0) {
+          console.warn(
+            `[${REBATE_PROGRAM}] ${unmatched.length} rebate model(s) had no matching active product:`,
+            unmatched.join(', '),
+          )
+        }
+
+        return (Object.keys(PIANO_CATEGORIES) as PianoCategorySlug[])
+          .sort((a, b) => PIANO_CATEGORIES[a].sortOrder - PIANO_CATEGORIES[b].sortOrder)
+          .map((slug) => ({
+            slug,
+            label: REBATE_CATEGORY_LABELS[slug],
+            products: (byCategory.get(slug) ?? []).sort(
+              (a, b) =>
+                b.rebate - a.rebate ||
+                a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' }),
+            ),
+          }))
+          .filter((category) => category.products.length > 0)
+      } catch (error) {
+        console.error('Error fetching rebate showcase products:', error)
+        return []
+      }
+    },
+    [`rebate-showcase-${site}`],
+    { tags: ['products', 'rebates'], revalidate: 3600 },
   )()
 }
 

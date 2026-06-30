@@ -1,27 +1,19 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { BrandCTAButton } from './brand-ui'
 import RebateShowcase from './RebateShowcase'
 import { useOfferModal } from './OfferModalContext'
 import { aboutImages } from './images'
 import type { RebateCategory } from '@/lib/payload/rebate-types'
-import {
-  codaCopy,
-  heroCopy,
-  offerCopy,
-  showroomsCopy,
-  stats,
-  timelineCopy,
-} from './scenes'
+import { codaCopy, heroCopy, offerCopy, showroomsCopy, stats } from './scenes'
 import { OfferSignupForm } from './OfferSignupForm'
-import { CATEGORY_LABELS, collectionsCopy, featuredCollections } from './featuredCollections'
 
 /**
- * Reduced-motion fallback. Same copy, same DOM order as the cinematic version,
- * no scroll coupling — six stacked sections, each fully visible at rest.
- * Order: hero → stats → showrooms → collections → timeline → coda.
+ * Reduced-motion fallback for the conversion-first /signup2 variant. Same copy,
+ * same DOM order as the cinematic version, no scroll coupling — five stacked
+ * sections, each fully visible at rest.
+ * Order: hero → rebates → showrooms → stats (trust strip) → coda.
  */
 export default function AboutStaticFallback({ rebateData }: { rebateData: RebateCategory[] }) {
   const offer = useOfferModal()
@@ -82,33 +74,6 @@ export default function AboutStaticFallback({ rebateData }: { rebateData: Rebate
         <RebateShowcase data={rebateData} reduce />
       </section>
 
-      {/* Stats */}
-      <section className="bg-kawai-black py-20 text-white md:py-24">
-        <div className="container mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
-            {stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={`px-4 text-center md:border-l md:border-white/10 ${i === 0 ? 'md:border-l-0' : ''} ${i === stats.length - 1 ? 'col-span-2 md:col-span-1' : ''}`}
-              >
-                <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-medium leading-none md:text-6xl">
-                  {s.value}
-                </div>
-                <div className="mt-4 text-[11px] uppercase tracking-[0.25em] text-kawai-gold/80">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-14 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <BrandCTAButton onClick={offer.open} variant="red">
-              {offerCopy.cta.stats}
-            </BrandCTAButton>
-          </div>
-        </div>
-      </section>
-
       {/* Showrooms */}
       <section className="bg-kawai-black py-24 text-center text-white">
         <div className="container mx-auto max-w-3xl px-6">
@@ -149,82 +114,30 @@ export default function AboutStaticFallback({ rebateData }: { rebateData: Rebate
         </div>
       </section>
 
-      {/* Featured Collections */}
-      <section id="featured-collections" className="scroll-mt-24 bg-kawai-black py-24 text-white">
+      {/* Stats — trust strip */}
+      <section className="bg-kawai-black py-20 text-white md:py-24">
         <div className="container mx-auto max-w-5xl px-6">
-          <div className="mb-10">
-            <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-gold">
-              <span className="h-px w-8 bg-kawai-gold" />
-              {collectionsCopy.eyebrow}
-            </p>
-            <h2 className="font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,4.5vw,3.25rem)] leading-tight">
-              {collectionsCopy.headline}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
-            {featuredCollections.map((collection) => (
-              <Link
-                key={collection.handle}
-                href={`/pianos/${collection.handle}`}
-                className="group relative block aspect-[3/2] overflow-hidden rounded-lg bg-kawai-black ring-1 ring-white/10"
+          <div className="grid grid-cols-2 gap-y-12 md:grid-cols-3 md:gap-y-0">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={`px-4 text-center md:border-l md:border-white/10 ${i === 0 ? 'md:border-l-0' : ''} ${i === stats.length - 1 ? 'col-span-2 md:col-span-1' : ''}`}
               >
-                <Image
-                  src={collection.imageUrl}
-                  alt={collection.title}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <span className="absolute left-4 top-4 inline-flex items-center bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-kawai-black">
-                  {CATEGORY_LABELS[collection.category]}
-                </span>
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <h3 className="font-[family-name:var(--font-brand-serif)] text-2xl leading-tight">
-                    {collection.title}
-                  </h3>
-                  <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                    {collection.productCount} Models
-                  </p>
+                <div className="font-[family-name:var(--font-brand-serif)] text-5xl font-medium leading-none md:text-6xl">
+                  {s.value}
                 </div>
-              </Link>
+                <div className="mt-4 text-[11px] uppercase tracking-[0.25em] text-kawai-gold/80">
+                  {s.label}
+                </div>
+              </div>
             ))}
           </div>
 
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <div className="mt-14 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <BrandCTAButton onClick={offer.open} variant="red">
-              {offerCopy.signUp}
+              {offerCopy.cta.stats}
             </BrandCTAButton>
           </div>
-        </div>
-      </section>
-
-      {/* Timeline */}
-      <section className="bg-kawai-black py-24 text-white">
-        <div className="container mx-auto max-w-3xl px-6">
-          <p className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-kawai-gold">
-            <span className="h-px w-8 bg-kawai-gold" />
-            {timelineCopy.eyebrow}
-          </p>
-          <h2 className="mb-14 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,5vw,3.25rem)] leading-tight">
-            {timelineCopy.headline}
-          </h2>
-          <ol className="relative ml-3 border-l border-white/15 pl-10">
-            {timelineCopy.events.map((e) => (
-              <li key={e.year} className="relative mb-12 last:mb-0">
-                <span
-                  aria-hidden
-                  className="absolute -left-[45px] top-2 size-2.5 rounded-full bg-kawai-red ring-4 ring-kawai-black"
-                />
-                <div className="font-[family-name:var(--font-brand-serif)] text-2xl text-kawai-red">
-                  {e.year}
-                </div>
-                <h3 className="mt-1 mb-2 text-lg font-semibold">{e.title}</h3>
-                <p className="leading-relaxed text-white/75">{e.description}</p>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 

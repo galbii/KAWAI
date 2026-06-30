@@ -69,8 +69,8 @@ export default function SceneStats({ progress, reduce }: Props) {
   return (
     <SceneLayer progress={progress} window={SCENE_WINDOWS.stats} className="items-center">
       <div className="container mx-auto px-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-center">
-          <div className="grid w-full grid-cols-2 gap-y-12 md:grid-cols-5 md:gap-y-0">
+        <div className="mx-auto flex max-w-5xl flex-col items-center">
+          <div className="grid w-full grid-cols-2 gap-y-12 md:grid-cols-3 md:gap-y-0">
             {stats.map((stat, i) => (
               <StatColumn
                 key={stat.label}

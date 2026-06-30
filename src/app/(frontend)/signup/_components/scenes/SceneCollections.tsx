@@ -4,9 +4,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, type MotionValue, type Variants } from 'framer-motion'
 import SceneLayer from '../SceneLayer'
-import { BrandCTA, BrandEyebrow } from '../brand-ui'
+import { BrandCTAButton, BrandEyebrow } from '../brand-ui'
+import { useOfferModal } from '../OfferModalContext'
 import { useSceneActive } from '../useSceneActive'
-import { SCENE_WINDOWS, exploreProductsCta } from '../scenes'
+import { SCENE_WINDOWS, offerCopy } from '../scenes'
 import {
   CATEGORY_LABELS,
   collectionsCopy,
@@ -86,6 +87,7 @@ function CollectionCard({ collection }: { collection: BrandCollection }) {
 
 export default function SceneCollections({ progress, reduce }: Props) {
   const active = useSceneActive(progress, SCENE_WINDOWS.collections)
+  const offer = useOfferModal()
   const state = reduce ? 'show' : active ? 'show' : 'hide'
 
   return (
@@ -119,9 +121,9 @@ export default function SceneCollections({ progress, reduce }: Props) {
 
           {/* CTA */}
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <BrandCTA href={exploreProductsCta.href} variant="red">
-              {exploreProductsCta.label}
-            </BrandCTA>
+            <BrandCTAButton onClick={offer.open} variant="red">
+              {offerCopy.signUp}
+            </BrandCTAButton>
           </div>
         </div>
       </div>

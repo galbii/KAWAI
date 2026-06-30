@@ -136,6 +136,7 @@ function NavColumn({
                 className="text-kawai-neutral hover:text-kawai-red transition-colors text-sm leading-snug"
               >
                 {item.label}
+                <span className="sr-only"> (opens in new window)</span>
               </a>
             ) : (
               <Link
@@ -261,7 +262,7 @@ export function Footer({
                     <Link
                       href={social.href}
                       className="text-kawai-neutral/80 hover:text-kawai-red transition-colors"
-                      aria-label={social.label}
+                      aria-label={`${social.label} (opens in new window)`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -380,6 +381,7 @@ function UnifiedFooterGrid({
             <input
               type="email"
               name="email"
+              aria-label="Email address for newsletter signup"
               placeholder="Enter your email"
               required
               className="flex-1 min-w-0 px-3 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm text-sm"

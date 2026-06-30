@@ -12,6 +12,9 @@ const DEDUP_RADIUS_MILES = 0.6
 
 interface Props {
   heading?: string | null
+  /** 'h1' when this is the page's primary content (e.g. /find-a-dealer page);
+   *  'h2' when rendered as one block among others under a page-level h1 (e.g. homepage). */
+  headingLevel?: 'h1' | 'h2'
 }
 
 function storefrontToDealer(storefront: Storefront): DealerWithDistance {
@@ -100,7 +103,7 @@ const getDealerMapData = unstable_cache(
   { tags: ['dealers', 'storefronts'], revalidate: 3600 }
 )
 
-export async function DealerMapBlock({ heading }: Props) {
+export async function DealerMapBlock({ heading, headingLevel = 'h1' }: Props) {
   const [site, [dealersResponse, storefrontsResponse]] = await Promise.all([
     getSite(),
     getDealerMapData(),
@@ -147,6 +150,7 @@ export async function DealerMapBlock({ heading }: Props) {
     <DealerFinderClient
       dealers={unifiedDealers}
       site={site}
+      headingLevel={headingLevel}
       {...(heading != null ? { heading } : {})}
     />
   )

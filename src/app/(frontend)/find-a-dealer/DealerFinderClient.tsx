@@ -25,10 +25,14 @@ interface Props {
   dealers: DealerWithDistance[]
   heading?: string | null
   site?: 'us' | 'cad'
+  /** Heading level for the section title. Use 'h1' when this is the page's primary
+   *  content (e.g. /find-a-dealer); 'h2' when embedded under another h1 (e.g. homepage). */
+  headingLevel?: 'h1' | 'h2'
 }
 
-export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
+export function DealerFinderClient({ dealers, heading, site = 'us', headingLevel = 'h1' }: Props) {
   const resolvedHeading = heading ?? 'Find an Authorized Kawai Dealer Near You'
+  const SectionHeading = headingLevel
   const defaultCountry: CountryFilter = site === 'cad' ? 'canada' : 'us'
   const [desktopLayout, setDesktopLayout] = useState<'list' | 'split'>('split')
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
@@ -152,7 +156,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
   return (
     <>
       {/* Mobile View */}
-      <DealerFinderMobile dealers={dealers} site={site} />
+      <DealerFinderMobile dealers={dealers} site={site} headingLevel={headingLevel} />
 
       {/* Desktop View */}
       <div
@@ -173,12 +177,12 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
               <p className="text-kawai-red text-[9px] font-bold uppercase tracking-[0.32em] mb-2 font-[family-name:var(--font-brand-sans)]">
                 Kawai America Corporation
               </p>
-              <h1
+              <SectionHeading
                 className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
                 style={{ fontSize: 'clamp(22px, 1.8vw, 30px)' }}
               >
                 {resolvedHeading}
-              </h1>
+              </SectionHeading>
             </div>
 
             {/* Search + Radius picker */}
@@ -205,7 +209,7 @@ export function DealerFinderClient({ dealers, heading, site = 'us' }: Props) {
                       ? 'bg-kawai-charcoal text-white border-kawai-charcoal'
                       : 'bg-kawai-pearl border-kawai-neutral hover:border-kawai-charcoal/40 hover:bg-white text-kawai-charcoal'
                   )}
-                  aria-label={`Change search radius, currently ${selectedRadius} miles`}
+                  aria-label={`Within ${selectedRadius} mi — change search radius`}
                 >
                   <MapPin className="w-3.5 h-3.5 opacity-60" strokeWidth={2} />
                   <span>Within {selectedRadius} mi</span>
