@@ -42,13 +42,16 @@ interface HeroBlockProps {
     verticalAlignment?: 'top' | 'center' | 'bottom' | null
     maxWidth?: 'small' | 'medium' | 'large' | 'full' | null
   }
+  headingLevel?: 'h1' | 'h2'
 }
 
 export function HeroBlock({
   content = {},
   media = {},
-  layout = {}
+  layout = {},
+  headingLevel = 'h1'
 }: HeroBlockProps) {
+  const SectionHeading = headingLevel
   const videoRef = useRef<HTMLVideoElement>(null)
 
   // Manage video playback lifecycle
@@ -169,9 +172,9 @@ export function HeroBlock({
 
               {/* Title */}
               {content.title && (
-                <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-white mb-6">
+                <SectionHeading className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-white mb-6">
                   {content.title}
-                </h1>
+                </SectionHeading>
               )}
 
               {/* Description */}

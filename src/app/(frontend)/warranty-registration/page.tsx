@@ -43,7 +43,7 @@ export default async function WarrantyRegistrationPage() {
   const bannerImageUrl = config.bannerImageUrl
 
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#1E1B16] aspect-[4/3] sm:aspect-auto sm:min-h-[380px]">
@@ -245,6 +245,6 @@ export default async function WarrantyRegistrationPage() {
       </section>
 
 
-    </main>
+    </div>
   )
 }

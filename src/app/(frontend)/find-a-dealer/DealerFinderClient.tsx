@@ -155,8 +155,13 @@ export function DealerFinderClient({ dealers, heading, site = 'us', headingLevel
 
   return (
     <>
+      {/* Single page heading rendered once, outside the responsive desktop/mobile
+          split, so there is exactly one h1 in the DOM (the variants below duplicate
+          their layout, not their heading). */}
+      <SectionHeading className="sr-only">{resolvedHeading}</SectionHeading>
+
       {/* Mobile View */}
-      <DealerFinderMobile dealers={dealers} site={site} headingLevel={headingLevel} />
+      <DealerFinderMobile dealers={dealers} site={site} />
 
       {/* Desktop View */}
       <div
@@ -177,12 +182,15 @@ export function DealerFinderClient({ dealers, heading, site = 'us', headingLevel
               <p className="text-kawai-red text-[9px] font-bold uppercase tracking-[0.32em] mb-2 font-[family-name:var(--font-brand-sans)]">
                 Kawai America Corporation
               </p>
-              <SectionHeading
+              {/* Visible title only — the accessible heading is the hoisted
+                  SectionHeading above; aria-hidden avoids a duplicate announcement. */}
+              <p
+                aria-hidden="true"
                 className="font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-[0.9] tracking-[-0.02em]"
                 style={{ fontSize: 'clamp(22px, 1.8vw, 30px)' }}
               >
                 {resolvedHeading}
-              </SectionHeading>
+              </p>
             </div>
 
             {/* Search + Radius picker */}

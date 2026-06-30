@@ -340,7 +340,7 @@ export default async function PoliciesPage({ params }: Props) {
   const hasPaymentInfo = !!(school.tuitionDueDate || school.acceptedPayments)
 
   return (
-    <main className="bg-kawai-pearl min-h-screen">
+    <div className="bg-kawai-pearl min-h-screen">
 
       {/* ─── SLIM HEADER ──────────────────────────────────────── */}
       <header className="bg-kawai-black border-b border-white/5">
@@ -836,6 +836,6 @@ export default async function PoliciesPage({ params }: Props) {
           </div>
         )}
       </div>
-    </main>
+    </div>
   )
 }

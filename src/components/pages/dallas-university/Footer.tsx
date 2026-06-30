@@ -66,6 +66,7 @@ export function Footer() {
             >
               <input
                 type="email"
+                aria-label="Email address for newsletter signup"
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-2 bg-kawai-black/60 border border-kawai-neutral/30 rounded-md text-kawai-pearl placeholder-kawai-neutral/60 focus:outline-none focus:ring-2 focus:ring-kawai-red backdrop-blur-sm"
               />

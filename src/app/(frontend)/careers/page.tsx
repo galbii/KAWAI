@@ -50,7 +50,7 @@ export default async function CareersPage() {
   const openJobs: JobListingItem[] = openJobDocs.map(toJobListingItem)
 
   return (
-    <main className="bg-kawai-pearl min-h-screen">
+    <div className="bg-kawai-pearl min-h-screen">
       {/* 1. Full-screen editorial hero */}
       <CareersHero />
 
@@ -66,6 +66,6 @@ export default async function CareersPage() {
       {/* 5. Open positions */}
       <JobGrid jobs={openJobs} />
 
-    </main>
+    </div>
   )
 }

@@ -75,7 +75,7 @@ const breadcrumbSchema = generateBreadcrumbSchema([
 
 export default async function FindADealerPage() {
   return (
-    <main className="bg-white overflow-hidden">
+    <div className="bg-white overflow-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -89,6 +89,6 @@ export default async function FindADealerPage() {
         }}
       />
       <DealerMapBlock />
-    </main>
+    </div>
   )
 }

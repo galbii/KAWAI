@@ -22,7 +22,7 @@ export default function SceneHero({ progress, reduce }: Props) {
       className="items-center"
     >
       <div className="container mx-auto px-6">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="mx-auto grid max-w-6xl items-center gap-6 lg:grid-cols-2 lg:gap-14">
           {/* Left column — brand storytelling */}
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <h1 className="sr-only">Kawai — Crafting Inspiration Since 1927</h1>
@@ -41,7 +41,7 @@ export default function SceneHero({ progress, reduce }: Props) {
               initial={reduce ? false : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.4, ease: EASE_OUT_EXPO, delay: 0.2 }}
-              className="relative mb-4 h-[clamp(4.5rem,11vw,8.5rem)] w-full max-w-[520px]"
+              className="relative mb-4 h-[clamp(3.25rem,16vw,8.5rem)] w-full max-w-[520px]"
             >
               <Image
                 src={aboutImages.wordmark}
@@ -57,7 +57,7 @@ export default function SceneHero({ progress, reduce }: Props) {
               initial={reduce ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.4 }}
-              className="mb-7 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.32em] text-white/70"
+              className="mb-4 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.32em] text-white/70 sm:mb-7 sm:text-sm"
             >
               {heroCopy.sinceLabel}
             </motion.p>
@@ -66,15 +66,18 @@ export default function SceneHero({ progress, reduce }: Props) {
               initial={reduce ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.55 }}
-              className="mb-8 max-w-xl font-[family-name:var(--font-brand-sans)] text-base leading-relaxed text-white/78 sm:text-lg"
+              className="mb-2 max-w-xl font-[family-name:var(--font-brand-sans)] text-sm leading-relaxed text-white/78 sm:mb-8 sm:text-lg"
             >
               {heroCopy.sub}
             </motion.p>
 
+            {/* Hero CTA — redundant on mobile, where the sign-up form sits directly
+                below, so it shows only from lg up alongside the headline column. */}
             <motion.div
               initial={reduce ? false : { opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.7 }}
+              className="hidden lg:block"
             >
               <BrandCTAButton onClick={offer.open} variant="red">
                 {offerCopy.cta.hero}

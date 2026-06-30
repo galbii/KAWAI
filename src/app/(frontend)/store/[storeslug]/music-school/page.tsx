@@ -85,7 +85,7 @@ export default async function MusicSchoolPage({ params }: Props) {
       : null
 
   return (
-    <main className="bg-kawai-pearl min-h-screen">
+    <div className="bg-kawai-pearl min-h-screen">
 
       {/* ═══ HERO — minimal, video, no description ═══════════════ */}
       <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
@@ -316,6 +316,6 @@ export default async function MusicSchoolPage({ params }: Props) {
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }

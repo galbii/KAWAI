@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 
 interface UniversityEventHeroRendererProps {
   block: any // UniversityEventHeroBlock — typed as any until payload types are generated
+  headingLevel?: 'h1' | 'h2'
 }
 
 type ButtonStyle = 'primary' | 'outline' | 'frosted'
@@ -118,7 +119,9 @@ function CtaButton({ cta }: { cta: CtaConfig }) {
 
 export const UniversityEventHeroRenderer: React.FC<UniversityEventHeroRendererProps> = ({
   block,
+  headingLevel = 'h1',
 }) => {
+  const SectionHeading = headingLevel
   const [isVisible, setIsVisible] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -266,9 +269,9 @@ export const UniversityEventHeroRenderer: React.FC<UniversityEventHeroRendererPr
 
         {/* Headline */}
         {block.headline && (
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4 drop-shadow-lg">
+          <SectionHeading className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-4 drop-shadow-lg">
             {block.headline}
-          </h1>
+          </SectionHeading>
         )}
 
         {/* Subheadline */}

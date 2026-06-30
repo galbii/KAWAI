@@ -8,9 +8,11 @@ import type { HeroSectionData } from '@/lib/types/homepage'
 
 interface HomeHeroProps {
   data?: HeroSectionData  // NEW: Accept CMS data
+  headingLevel?: 'h1' | 'h2'
 }
 
-export function HomeHero({ data }: HomeHeroProps = {}) {
+export function HomeHero({ data, headingLevel = 'h1' }: HomeHeroProps = {}) {
+  const SectionHeading = headingLevel
   const heroRef = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(heroRef, { once: true, amount: 0.2 });
@@ -114,7 +116,7 @@ export function HomeHero({ data }: HomeHeroProps = {}) {
       {/* Content - Center Aligned with better mobile padding */}
       <div className="container-brand max-w-8xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative z-20 flex flex-col items-center text-center">
         {/* Single semantic page heading for SEO/a11y; design has no visible title here */}
-        <h1 className="sr-only">Kawai America — Grand, Upright, Hybrid &amp; Digital Pianos</h1>
+        <SectionHeading className="sr-only">Kawai America — Grand, Upright, Hybrid &amp; Digital Pianos</SectionHeading>
         {/* Centered Est. 1927 */}
         {heroData.establishedText && (
           <motion.div 

@@ -1,49 +1,62 @@
 'use client'
 
 import { useRef } from 'react'
-import { useScroll, useSpring, useReducedMotion } from 'framer-motion'
+import { useScroll, useSpring, useTransform, useReducedMotion } from 'framer-motion'
 import PinnedCanvas from './PinnedCanvas'
 import SceneHero from './scenes/SceneHero'
-import SceneRebates from './scenes/SceneRebates'
 import SceneShowrooms from './scenes/SceneShowrooms'
 import SceneStats from './scenes/SceneStats'
 import SceneCoda from './scenes/SceneCoda'
 import AboutStaticFallback from './AboutStaticFallback'
-import { OfferModalProvider } from './OfferModalContext'
+import { OfferModalProvider, useOfferModal } from './OfferModalContext'
+import SignupRebateSection from '@/components/rebates/SignupRebateSection'
+import { rebatesCopy } from './scenes'
 import type { RebateCategory } from '@/lib/payload/rebate-types'
 
 /**
- * Orchestrator for the cinematic /signup2 scroll experience.
+ * Orchestrator for the conversion-first /signup2 scroll experience.
  *
- * Conversion-first variant of /signup: same cinematic engine, but trimmed to the
- * five scenes that move toward the two goals — sign up for the discount, or find
- * a dealer. Order: hero → rebates → showrooms → trust strip → coda. The
- * Collections and Heritage timeline scenes are dropped (they sent people off to
- * browse / read history); the five-stat scene is compressed to a three-number
- * trust strip. Track height drops from 700vh (7 scenes) to 500vh (5 scenes).
- *
- * Raw scroll position is run through a spring before any motion subscribes
- * to it. Fast scrolls cushion, slow scrolls track precisely — the whole
- * page reads from one smoothed clock instead of eight unrelated ones.
+ * Same break-out structure as /signup: hero (pinned cinematic) → a natural white
+ * RebateSchedule section → the rest of the cinematic (showrooms → trust strip →
+ * coda). Each segment runs its own spring-smoothed scroll, remapped into the
+ * ORIGINAL coordinate range its scene windows + PinnedCanvas were authored
+ * against, so none of the choreography needs re-tuning:
+ *   intro segment → the hero slice       [0 → 0.15]
+ *   outro segment → showrooms…coda slice [0.405 → 1.0]
  */
+const SPRING = { stiffness: 90, damping: 28, mass: 0.4, restDelta: 0.0005 }
+
 type SignupScrollProps = {
   /** Rebated products grouped by category, resolved server-side for the active site. */
   rebateData: RebateCategory[]
 }
 
+/** Natural white rebate break — needs the offer modal, so it lives inside the provider. */
+function RebateBreak({ data }: { data: RebateCategory[] }) {
+  const offer = useOfferModal()
+  return (
+    <SignupRebateSection
+      data={data}
+      onSignUp={offer.open}
+      eyebrow={rebatesCopy.eyebrow}
+      heading={rebatesCopy.headline}
+      footnote={rebatesCopy.disclaimer}
+    />
+  )
+}
+
 export default function SignupScroll({ rebateData }: SignupScrollProps) {
   const reduce = useReducedMotion() ?? false
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end end'],
-  })
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 28,
-    mass: 0.4,
-    restDelta: 0.0005,
-  })
+  const introRef = useRef<HTMLDivElement>(null)
+  const outroRef = useRef<HTMLDivElement>(null)
+
+  const introRaw = useScroll({ target: introRef, offset: ['start start', 'end end'] }).scrollYProgress
+  const outroRaw = useScroll({ target: outroRef, offset: ['start start', 'end end'] }).scrollYProgress
+  const introSpring = useSpring(introRaw, SPRING)
+  const outroSpring = useSpring(outroRaw, SPRING)
+
+  const introProgress = useTransform(introSpring, [0, 1], [0, 0.15])
+  const outroProgress = useTransform(outroSpring, [0, 1], [0.405, 1])
 
   if (reduce)
     return (
@@ -57,22 +70,34 @@ export default function SignupScroll({ rebateData }: SignupScrollProps) {
       <div className="sr-only">
         <h2>About Kawai</h2>
         <p>
-          The page is presented as a single scrollable cinematic sequence over a piano soundboard.
-          The sequence covers: an introduction with a sign-up form, current rebates on our pianos
-          by model, our network of 200+ authorized dealers, our company by the numbers, and an
-          invitation to claim your discount.
+          The page is presented as a scrollable cinematic sequence over a piano soundboard. It opens
+          with an introduction and sign-up, breaks to the current rebates on our pianos by model,
+          then continues through our network of 200+ authorized dealers, our company by the numbers,
+          and an invitation to claim your discount.
         </p>
       </div>
 
-      <div ref={ref} className="relative h-[500vh] bg-kawai-black">
+      {/* Segment 1 — hero (pinned cinematic) */}
+      <div ref={introRef} className="relative h-[180vh] bg-kawai-black">
         <div className="sticky top-0 h-screen overflow-hidden">
-          <PinnedCanvas progress={progress} reduce={reduce} />
+          <PinnedCanvas progress={introProgress} reduce={reduce} />
           <div className="absolute inset-0 z-10">
-            <SceneHero progress={progress} reduce={reduce} />
-            <SceneRebates progress={progress} reduce={reduce} data={rebateData} />
-            <SceneShowrooms progress={progress} reduce={reduce} />
-            <SceneStats progress={progress} reduce={reduce} />
-            <SceneCoda progress={progress} reduce={reduce} />
+            <SceneHero progress={introProgress} reduce={reduce} />
+          </div>
+        </div>
+      </div>
+
+      {/* Rebate break — natural white RebateSchedule section */}
+      <RebateBreak data={rebateData} />
+
+      {/* Segment 2 — showrooms → trust strip → coda (pinned cinematic) */}
+      <div ref={outroRef} className="relative h-[340vh] bg-kawai-black">
+        <div className="sticky top-0 h-screen overflow-hidden">
+          <PinnedCanvas progress={outroProgress} reduce={reduce} />
+          <div className="absolute inset-0 z-10">
+            <SceneShowrooms progress={outroProgress} reduce={reduce} />
+            <SceneStats progress={outroProgress} reduce={reduce} />
+            <SceneCoda progress={outroProgress} reduce={reduce} />
           </div>
         </div>
       </div>

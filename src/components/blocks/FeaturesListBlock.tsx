@@ -86,6 +86,8 @@ export function FeaturesListBlock({
   return (
     <section className={`${spacingClass} bg-kawai-pearl`}>
       <div className="max-w-7xl mx-auto px-6">
+        {/* sr-only section heading so the feature h3s nest under an h2 (no h1→h3 skip) */}
+        <h2 className="sr-only">Features</h2>
         <div className={`grid ${gridClass} gap-8`}>
           {features.map((feature, index) => (
             <div key={index} className="text-center space-y-4">

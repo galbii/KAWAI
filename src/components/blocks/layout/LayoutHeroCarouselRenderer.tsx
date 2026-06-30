@@ -18,7 +18,7 @@ export function LayoutHeroCarouselRenderer({
   settings,
   styling,
   impressionTracking,
-  headingLevel = 'h3',
+  headingLevel = 'h2',
 }: LayoutHeroCarouselRendererProps & { impressionTracking?: any }) {
   // Validate slides
   if (!slides || slides.length === 0) {

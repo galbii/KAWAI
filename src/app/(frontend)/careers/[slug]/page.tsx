@@ -45,7 +45,7 @@ export default async function JobDetailPage(props: Props) {
     }))
 
   return (
-    <main className="bg-kawai-pearl min-h-screen pb-24 lg:pb-0">
+    <div className="bg-kawai-pearl min-h-screen pb-24 lg:pb-0">
       <JobDetailHero
         title={job.title ?? ''}
         department={job.department ?? null}
@@ -115,6 +115,6 @@ export default async function JobDetailPage(props: Props) {
 
       {/* Persistent mobile apply CTA — scrolls to #apply */}
       <MobileApplyBar jobTitle={job.title ?? ''} />
-    </main>
+    </div>
   )
 }

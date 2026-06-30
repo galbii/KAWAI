@@ -1213,7 +1213,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
       </AnimatePresence>
 
       {/* ── Product Grid ────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-6 py-10">
         <AnimatePresence mode="wait">
           {filtered.length > 0 ? (
             <motion.div
@@ -1240,7 +1240,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
       {/* ── View Full Collection CTA ─────────────────────────────── */}
       <AnimatePresence>

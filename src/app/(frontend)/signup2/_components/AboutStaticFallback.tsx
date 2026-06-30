@@ -2,11 +2,11 @@
 
 import Image from 'next/image'
 import { BrandCTAButton } from './brand-ui'
-import RebateShowcase from './RebateShowcase'
+import SignupRebateSection from '@/components/rebates/SignupRebateSection'
 import { useOfferModal } from './OfferModalContext'
 import { aboutImages } from './images'
 import type { RebateCategory } from '@/lib/payload/rebate-types'
-import { codaCopy, heroCopy, offerCopy, showroomsCopy, stats } from './scenes'
+import { codaCopy, heroCopy, offerCopy, rebatesCopy, showroomsCopy, stats } from './scenes'
 import { OfferSignupForm } from './OfferSignupForm'
 
 /**
@@ -69,10 +69,14 @@ export default function AboutStaticFallback({ rebateData }: { rebateData: Rebate
         </div>
       </section>
 
-      {/* Rebates */}
-      <section className="relative flex min-h-[90vh] items-center overflow-hidden bg-kawai-black py-20 text-white md:py-24">
-        <RebateShowcase data={rebateData} reduce />
-      </section>
+      {/* Rebates — RebateSchedule table (lead-gen) */}
+      <SignupRebateSection
+        data={rebateData}
+        onSignUp={offer.open}
+        eyebrow={rebatesCopy.eyebrow}
+        heading={rebatesCopy.headline}
+        footnote={rebatesCopy.disclaimer}
+      />
 
       {/* Showrooms */}
       <section className="bg-kawai-black py-24 text-center text-white">

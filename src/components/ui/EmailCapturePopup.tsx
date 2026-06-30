@@ -177,6 +177,7 @@ export default function EmailCapturePopup({
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      aria-label="Email address for newsletter signup"
                       placeholder="Enter your email address"
                       required
                       className="w-full pl-11 pr-4 py-3 border border-gray-300 

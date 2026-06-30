@@ -3,9 +3,11 @@ import { UniversityEventHeroRenderer } from './university/UniversityEventHeroRen
 
 interface UniversityEventHeroBlockProps {
   blockType?: string
+  headingLevel?: 'h1' | 'h2'
   [key: string]: any
 }
 
 export function UniversityEventHeroBlock(block: UniversityEventHeroBlockProps) {
-  return <UniversityEventHeroRenderer block={block} />
+  const { headingLevel, ...rest } = block
+  return <UniversityEventHeroRenderer block={rest} headingLevel={headingLevel ?? 'h1'} />
 }

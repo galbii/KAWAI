@@ -110,7 +110,7 @@ export default async function ShigeruKawaiGuidePage() {
   }
 
   return (
-    <main className="font-[family-name:var(--font-brand-sans)]">
+    <div className="font-[family-name:var(--font-brand-sans)]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -296,6 +296,6 @@ export default async function ShigeruKawaiGuidePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

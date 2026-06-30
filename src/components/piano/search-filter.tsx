@@ -302,6 +302,7 @@ export function PianoSearchFilter() {
         <select
           value={filters.sortBy}
           onChange={(e) => updateFilter('sortBy', e.target.value)}
+          aria-label="Sort pianos"
           className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="recommended">Recommended</option>

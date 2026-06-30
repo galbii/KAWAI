@@ -21,6 +21,8 @@ export type RebateModel = {
   productVariantId?: string
   productAvailable?: boolean
   productBackorder?: boolean
+  /** Lead-gen: a small line breaking out the rebate share of total savings. */
+  rebateNote?: string
 }
 
 export type RebateSeries = {
@@ -36,6 +38,21 @@ type Props = {
   deadline?: string
   schedule: RebateSeries[]
   isCanada?: boolean
+  /**
+   * Lead-generation mode (used by the /signup pages). Swaps the commerce CTAs
+   * (Add to Cart / Explore series) for Sign Up + Find a Dealer, and reframes the
+   * "applied at checkout" copy as "at participating dealers". Defaults off so the
+   * live marketing block is unchanged.
+   */
+  leadGen?: boolean
+  /** Sign-up handler for lead-gen mode (opens the dealer offer popup). */
+  onSignUp?: () => void
+  /** Sign-up CTA label for lead-gen mode. */
+  signUpLabel?: string
+  /** Override the bottom footnote (e.g. a generic rebate disclaimer). */
+  footnote?: string
+  /** Lead-gen: open a detail modal for a model instead of linking to its page. */
+  onViewModel?: ((slug: string, model: string) => void) | undefined
 }
 
 const ALL = 'All'
@@ -275,9 +292,10 @@ type ModelPriceProps = {
   consumerRebate: number
   isCanada: boolean
   size: 'mobile' | 'desktop'
+  leadGen?: boolean
 }
 
-function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, isCanada, size }: ModelPriceProps) {
+function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, isCanada, size, leadGen }: ModelPriceProps) {
   const isMobile = size === 'mobile'
   return (
     <div className={isMobile ? 'flex-shrink-0 text-right' : 'text-right'}>
@@ -320,7 +338,7 @@ function ModelPrice({ refPrice, displayPrice, pctOff, currency, consumerRebate, 
       )}
       {!isMobile && (
         <p className="text-kawai-charcoal/25 text-[11px] mt-2 leading-none italic" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-          {isCanada ? 'Rebate applied at participating dealers' : 'Rebate applied at checkout'}
+          {isCanada || leadGen ? 'Rebate applied at participating dealers' : 'Rebate applied at checkout'}
         </p>
       )}
     </div>
@@ -335,11 +353,52 @@ type ModelCtaProps = {
   hasProduct: boolean
   isCanada: boolean
   size: 'mobile' | 'desktop'
+  leadGen?: boolean
+  onSignUp?: (() => void) | undefined
+  signUpLabel?: string | undefined
+  onViewModel?: ((slug: string, model: string) => void) | undefined
 }
 
-function ModelCta({ model, productSlug, productVariantId, isAvailable, hasProduct, isCanada, size }: ModelCtaProps) {
+function ModelCta({ model, productSlug, productVariantId, isAvailable, hasProduct, isCanada, size, leadGen, onSignUp, signUpLabel, onViewModel }: ModelCtaProps) {
   const h = size === 'mobile' ? 'h-10' : 'h-9'
   const px = size === 'mobile' ? 'px-4' : 'px-5'
+
+  if (leadGen) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={onSignUp}
+          className={`inline-flex items-center gap-1.5 bg-kawai-red hover:bg-kawai-red-700 text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red${size === 'mobile' ? ' flex-1 justify-center' : ''}`}
+          style={{ fontFamily: 'var(--font-brand-sans)' }}
+        >
+          {signUpLabel ?? 'Sign Up Now'}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </button>
+        {productSlug &&
+          (onViewModel ? (
+            <button
+              type="button"
+              onClick={() => onViewModel(productSlug, model)}
+              className={`inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black`}
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              View {model}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <Link
+              href={`/products/${productSlug}`}
+              className={`inline-flex items-center gap-1.5 border border-kawai-black text-kawai-black hover:bg-kawai-black hover:text-white ${px} ${h} text-xs tracking-[0.18em] uppercase font-semibold transition-colors duration-200 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black`}
+              style={{ fontFamily: 'var(--font-brand-sans)' }}
+            >
+              View {model}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ))}
+      </>
+    )
+  }
 
   if (isCanada) {
     return (
@@ -409,10 +468,18 @@ function SeriesBlock({
   series,
   isOnly,
   isCanada = false,
+  leadGen = false,
+  onSignUp,
+  signUpLabel,
+  onViewModel,
 }: {
   series: RebateSeries
   isOnly: boolean
   isCanada?: boolean
+  leadGen?: boolean
+  onSignUp?: (() => void) | undefined
+  signUpLabel?: string | undefined
+  onViewModel?: ((slug: string, model: string) => void) | undefined
 }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: isOnly ? 0 : 0.08 })
@@ -545,6 +612,14 @@ function SeriesBlock({
                     >
                       Save {formatSavings(model.consumerRebate)}
                     </span>
+                    {model.rebateNote && (
+                      <span
+                        className="block text-kawai-charcoal/50 text-[11px] mt-1"
+                        style={{ fontFamily: 'var(--font-brand-sans)' }}
+                      >
+                        {model.rebateNote}
+                      </span>
+                    )}
                   </div>
                   <ModelPrice
                     refPrice={refPrice}
@@ -554,6 +629,7 @@ function SeriesBlock({
                     consumerRebate={model.consumerRebate}
                     isCanada={isCanada}
                     size="mobile"
+                    leadGen={leadGen}
                   />
                 </div>
 
@@ -567,6 +643,10 @@ function SeriesBlock({
                     hasProduct={hasProduct}
                     isCanada={isCanada}
                     size="mobile"
+                    leadGen={leadGen}
+                    onSignUp={onSignUp}
+                    signUpLabel={signUpLabel}
+                    onViewModel={onViewModel}
                   />
                 </div>
               </div>
@@ -620,6 +700,14 @@ function SeriesBlock({
                   <span className="text-kawai-charcoal/40 text-sm" style={{ fontFamily: 'var(--font-brand-sans)' }}>
                     {model.finishes}
                   </span>
+                  {model.rebateNote && (
+                    <span
+                      className="text-kawai-red/80 text-xs font-semibold tracking-[0.06em] uppercase"
+                      style={{ fontFamily: 'var(--font-brand-sans)' }}
+                    >
+                      {model.rebateNote}
+                    </span>
+                  )}
                 </div>
 
                 {/* Right: price + actions */}
@@ -632,6 +720,7 @@ function SeriesBlock({
                     consumerRebate={model.consumerRebate}
                     isCanada={isCanada}
                     size="desktop"
+                    leadGen={leadGen}
                   />
                   <div className="flex flex-row items-center gap-2">
                     <ModelCta
@@ -642,6 +731,10 @@ function SeriesBlock({
                       hasProduct={hasProduct}
                       isCanada={isCanada}
                       size="desktop"
+                      leadGen={leadGen}
+                      onSignUp={onSignUp}
+                      signUpLabel={signUpLabel}
+                      onViewModel={onViewModel}
                     />
                   </div>
                 </div>
@@ -659,29 +752,47 @@ function SeriesBlock({
         className="flex flex-wrap items-center gap-3 px-4 py-5 mt-1 bg-white border border-kawai-neutral/60 lg:border-l lg:border-r lg:border-b lg:border-t-0 lg:mt-0 lg:px-8 lg:py-6"
       >
         {/* Primary — solid red */}
-        <Link
-          href={`/pianos/${series.seriesName.toLowerCase().replace(/\s+/g, '-')}`}
-          className="group relative inline-flex items-center gap-3 overflow-hidden bg-kawai-red px-7 py-4 transition-all duration-300 hover:bg-[#c5141c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
-          style={{ fontFamily: 'var(--font-brand-sans)' }}
-        >
-          <span
-            className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/10 transition-transform duration-500 group-hover:translate-x-[120%]"
-            aria-hidden="true"
-          />
-          <span className="relative text-xs tracking-[0.22em] uppercase font-semibold text-white">
-            Explore {series.seriesName}
-          </span>
-          <ArrowRight className="relative h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
-        </Link>
+        {leadGen ? (
+          <button
+            type="button"
+            onClick={onSignUp}
+            className="group relative inline-flex items-center gap-3 overflow-hidden bg-kawai-red px-7 py-4 transition-all duration-300 hover:bg-[#c5141c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            <span
+              className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/10 transition-transform duration-500 group-hover:translate-x-[120%]"
+              aria-hidden="true"
+            />
+            <span className="relative text-xs tracking-[0.22em] uppercase font-semibold text-white">
+              {signUpLabel ?? 'Sign Up Now'}
+            </span>
+            <ArrowRight className="relative h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
+          </button>
+        ) : (
+          <Link
+            href={`/pianos/${series.seriesName.toLowerCase().replace(/\s+/g, '-')}`}
+            className="group relative inline-flex items-center gap-3 overflow-hidden bg-kawai-red px-7 py-4 transition-all duration-300 hover:bg-[#c5141c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            <span
+              className="pointer-events-none absolute inset-0 -translate-x-full skew-x-[-20deg] bg-white/10 transition-transform duration-500 group-hover:translate-x-[120%]"
+              aria-hidden="true"
+            />
+            <span className="relative text-xs tracking-[0.22em] uppercase font-semibold text-white">
+              Explore {series.seriesName}
+            </span>
+            <ArrowRight className="relative h-4 w-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" />
+          </Link>
+        )}
 
         {/* Secondary — black outline */}
         <Link
-          href="/pianos"
+          href={leadGen ? '/find-a-dealer' : '/pianos'}
           className="group relative inline-flex items-center gap-3 overflow-hidden border border-kawai-black/20 px-7 py-4 transition-all duration-300 hover:border-kawai-black hover:bg-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black focus-visible:ring-offset-2"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
           <span className="text-xs tracking-[0.22em] uppercase font-medium text-kawai-black/70 transition-colors duration-300 group-hover:text-white">
-            View All Pianos
+            {leadGen ? 'Find a Dealer' : 'View All Pianos'}
           </span>
           <ArrowRight className="h-4 w-4 text-kawai-black/40 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-white" />
         </Link>
@@ -698,6 +809,11 @@ export function RebateSchedule({
   heading = 'Digital Piano Rebates',
   deadline = 'June 30, 2026',
   isCanada = false,
+  leadGen = false,
+  onSignUp,
+  signUpLabel,
+  footnote,
+  onViewModel,
 }: Props) {
   const [selected, setSelected] = useState<string>(ALL)
   const headerRef = useRef(null)
@@ -725,11 +841,12 @@ export function RebateSchedule({
   const totalModels = schedule.reduce((acc, s) => acc + s.models.length, 0)
   const totalSeries = schedule.length
 
+  const availUntil = deadline ? `\u00a0·\u00a0Available until ${deadline}` : ''
   const subtitle =
     selected === ALL
-      ? `${totalModels} models across ${totalSeries} series\u00a0·\u00a0Available until ${deadline}`
+      ? `${totalModels} models across ${totalSeries} series${availUntil}`
       : activeSeries
-        ? `${activeSeries.models.length} ${activeSeries.models.length === 1 ? 'model' : 'models'}\u00a0·\u00a0save ${formatSavings(maxRebate(activeSeries))}\u00a0·\u00a0Available until ${deadline}`
+        ? `${activeSeries.models.length} ${activeSeries.models.length === 1 ? 'model' : 'models'}\u00a0·\u00a0save ${formatSavings(maxRebate(activeSeries))}${availUntil}`
         : ''
 
   return (
@@ -762,7 +879,7 @@ export function RebateSchedule({
               letterSpacing: '-0.025em',
             }}
           >
-            {heading}<span className="text-kawai-red mx-3 font-extralight opacity-40">|</span>Available only until {deadline}
+            {heading}{deadline ? (<><span className="text-kawai-red mx-3 font-extralight opacity-40">|</span>Available only until {deadline}</>) : null}
           </h2>
 
           <AnimatePresence mode="wait">
@@ -783,7 +900,7 @@ export function RebateSchedule({
             className="mt-3 text-kawai-charcoal/35 text-sm italic"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
-            * Rebates are applied at checkout at participating authorized Kawai dealers.
+            * Rebates are applied {leadGen || isCanada ? 'at participating authorized Kawai dealers' : 'at checkout at participating authorized Kawai dealers'}.
           </p>
         </motion.div>
 
@@ -851,6 +968,10 @@ export function RebateSchedule({
                       series={series}
                       isOnly={selected !== ALL}
                       isCanada={isCanada}
+                      leadGen={leadGen}
+                      onSignUp={onSignUp}
+                      signUpLabel={signUpLabel}
+                      onViewModel={onViewModel}
                     />
                   ))}
                 </div>
@@ -868,7 +989,7 @@ export function RebateSchedule({
           className="text-kawai-charcoal/30 text-sm leading-relaxed pt-8 border-t border-kawai-neutral mt-12"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          Savings applied as instant rebate at point of sale on qualifying new piano purchases at participating authorized Kawai dealers. Offer valid April 1–June 30, 2026.
+          {footnote ?? 'Savings applied as instant rebate at point of sale on qualifying new piano purchases at participating authorized Kawai dealers. Offer valid April 1–June 30, 2026.'}
         </motion.p>
       </div>
     </section>

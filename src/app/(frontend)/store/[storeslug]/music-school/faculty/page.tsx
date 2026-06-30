@@ -25,7 +25,7 @@ export default async function FacultyPage({ params }: Props) {
   const faculty = school.faculty ?? []
 
   return (
-    <main className="bg-kawai-pearl min-h-screen">
+    <div className="bg-kawai-pearl min-h-screen">
 
       {/* Slim header */}
       <header className="bg-kawai-black border-b border-white/5 sticky top-0 z-10">
@@ -58,6 +58,6 @@ export default async function FacultyPage({ params }: Props) {
       ) : (
         <FacultyPageCarousel faculty={faculty} storeslug={storeslug} />
       )}
-    </main>
+    </div>
   )
 }

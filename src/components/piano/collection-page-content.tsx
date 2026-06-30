@@ -336,7 +336,7 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
 
       {/* ── Product rows ─────────────────────────────────────────────────────── */}
       {hasProducts ? (
-        <main id="products" className="overflow-hidden">
+        <section id="products" className="overflow-hidden">
           {products.map((product, index) => (
             <div key={product.id}>
               <CollectionProductRow
@@ -358,7 +358,7 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
             </div>
           ))}
 
-        </main>
+        </section>
       ) : (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-40 px-6 text-center">

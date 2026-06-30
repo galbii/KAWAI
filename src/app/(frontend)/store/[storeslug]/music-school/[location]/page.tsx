@@ -185,7 +185,7 @@ export default async function ServiceAreaPage({ params }: Props) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       )}
 
-      <main className="bg-kawai-pearl min-h-screen">
+      <div className="bg-kawai-pearl min-h-screen">
 
         {/* ─── HEADER ──────────────────────────────────────────── */}
         <header className="bg-kawai-black border-b border-white/5">
@@ -353,7 +353,7 @@ export default async function ServiceAreaPage({ params }: Props) {
           </div>
         </section>
 
-      </main>
+      </div>
     </>
   )
 }

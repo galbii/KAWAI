@@ -141,7 +141,7 @@ export default async function KoichiKawaiPage() {
   const jsonLd = buildJsonLd(getSiteUrl(site))
 
   return (
-    <main className="bg-kawai-black">
+    <div className="bg-kawai-black">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -154,6 +154,6 @@ export default async function KoichiKawaiPage() {
       <ScoreMovement />
       <SpiritosoFilm />
       <StoryCoda />
-    </main>
+    </div>
   )
 }

@@ -20,9 +20,9 @@ export function ArtistProfileLayout({ sidebar, main, rightPanel }: ArtistProfile
     >
       <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
         {sidebar}
-        <main className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
           {main}
-        </main>
+        </div>
         {rightPanel}
       </div>
     </motion.div>

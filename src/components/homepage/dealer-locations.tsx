@@ -74,6 +74,8 @@ export function DealerLocations({ className = '', locations = [], data }: Dealer
           <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-6 sm:mb-8">
             {sectionLabel}
           </div>
+          {/* sr-only section heading so the location-card h3s nest under an h2 (no h1→h3 skip) */}
+          <h2 className="sr-only">Kawai Showroom Locations</h2>
           <p className="text-lg sm:text-xl text-kawai-black/70 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
             {sectionDescription}
           </p>

@@ -2,7 +2,7 @@ import type { MarketingHomePageHeroBlock } from '@/payload-types'
 import { HomeHero } from '@/components/homepage/HomeHero'
 import type { HeroSectionData } from '@/lib/types/homepage'
 
-export function HomePageHeroRenderer(props: MarketingHomePageHeroBlock) {
+export function HomePageHeroRenderer(props: MarketingHomePageHeroBlock & { headingLevel?: 'h1' | 'h2' }) {
   const heroData: HeroSectionData = {
     locationText: props.locationText || '',
     establishedText: props.establishedText || 'Est. 1927 • Lake St. Louis, Missouri',
@@ -22,5 +22,5 @@ export function HomePageHeroRenderer(props: MarketingHomePageHeroBlock) {
     tracking: props.tracking, // Pass tracking config to HomeHero
   }
 
-  return <HomeHero data={heroData} />
+  return <HomeHero data={heroData} headingLevel={props.headingLevel ?? 'h1'} />
 }

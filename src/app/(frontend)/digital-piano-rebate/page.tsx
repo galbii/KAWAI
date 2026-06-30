@@ -73,10 +73,10 @@ export const REBATE_SCHEDULE: RebateSeries[] = [
 
 export default function DigitalPianoRebatePage() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <Hero />
       <RebateSchedule schedule={REBATE_SCHEDULE} />
       <FindDealerCta />
-    </main>
+    </div>
   )
 }

@@ -102,8 +102,9 @@ export function NewsletterPopup() {
               <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
                 <h3 className="text-lg font-semibold mb-4">Subscribe to Our Newsletter</h3>
                 <form className="space-y-4">
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
+                    aria-label="Email address for newsletter signup"
                     placeholder="Enter your email address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required

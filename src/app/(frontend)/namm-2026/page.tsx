@@ -281,7 +281,7 @@ function CTASkeleton() {
 // Main NAMM 2026 Page Component
 export default function NAMM2026Page() {
   return (
-    <main className="relative scroll-smooth">
+    <div className="relative scroll-smooth">
       {/* Hash Scroll Handler - handles cross-page navigation with hash */}
       <HashScrollHandler />
 
@@ -331,6 +331,6 @@ export default function NAMM2026Page() {
           </section>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

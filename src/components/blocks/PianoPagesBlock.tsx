@@ -10,6 +10,7 @@ type Props = {
   showCarousel?: boolean | null
   carouselHeight?: 'medium' | 'large' | 'fullscreen' | null
   carouselAutoplayInterval?: number | null
+  headingLevel?: 'h1' | 'h2'
 }
 
 export default async function PianoPagesBlock({
@@ -18,8 +19,11 @@ export default async function PianoPagesBlock({
   showCarousel,
   carouselHeight,
   carouselAutoplayInterval,
+  headingLevel = 'h1',
 }: Props) {
   if (!category) return null
+
+  const SectionHeading = headingLevel
 
   const [products, collections, site] = await Promise.all([
     getCatalogProductsByCategory(category),
@@ -46,7 +50,7 @@ export default async function PianoPagesBlock({
       {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}
       {headingText && (
         <div className="bg-white px-6 pt-6 pb-1">
-          <h1
+          <SectionHeading
             style={{
               fontFamily: 'var(--font-brand-luxury)',
               fontWeight: 700,
@@ -57,7 +61,7 @@ export default async function PianoPagesBlock({
             }}
           >
             {headingText}
-          </h1>
+          </SectionHeading>
         </div>
       )}
       <PianoPagesBrowser products={products} collections={collections} heading={heading ?? null} category={category} site={site} />

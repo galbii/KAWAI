@@ -268,6 +268,11 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
               {...((blockType as string) === 'layout-hero-carousel' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
               {...((blockType as string) === 'product-hero' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
               {...((blockType as string) === 'marketing-dealer-map' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
+              {...((blockType as string) === 'marketing-homepage-hero' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
+              {...((blockType as string) === 'marketing-hero' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
+              {...((blockType as string) === 'marketing-grand-hero' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
+              {...((blockType as string) === 'events-university-hero' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
+              {...((blockType as string) === 'product-piano-pages' ? { headingLevel: index === 0 ? 'h1' : 'h2' } : {})}
             />
           </div>
         )

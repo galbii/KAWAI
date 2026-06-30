@@ -19,14 +19,12 @@ import Image from 'next/image'
 interface Props {
   dealers: DealerWithDistance[]
   site?: 'us' | 'cad'
-  headingLevel?: 'h1' | 'h2'
 }
 
 type DealerTypeFilter = 'all' | 'shigeru' | 'acoustic' | 'digital'
 type ViewMode = 'map' | 'list'
 
-export function DealerFinderMobile({ dealers, site = 'us', headingLevel = 'h1' }: Props) {
-  const SectionHeading = headingLevel
+export function DealerFinderMobile({ dealers, site = 'us' }: Props) {
   const defaultCountry: CountryFilter = site === 'cad' ? 'canada' : 'us'
   const [searchLocation, setSearchLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [selectedRadius, setSelectedRadius] = useState(25)
@@ -174,8 +172,6 @@ export function DealerFinderMobile({ dealers, site = 'us', headingLevel = 'h1' }
       className="lg:hidden flex flex-col overflow-hidden"
       style={{ height: 'calc(100dvh - var(--header-bottom, 70px))' }}
     >
-      {/* SEO: section heading accessible to screen readers and crawlers */}
-      <SectionHeading className="sr-only">Find an Authorized Kawai Piano Dealer Near You</SectionHeading>
 
       {/* Header: Search + Filters */}
       <div className="flex-shrink-0 bg-white border-b border-kawai-neutral/60 shadow-sm" style={{ zIndex: 30 }}>

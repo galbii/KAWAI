@@ -131,6 +131,7 @@ export function FaqSearch({
           onChange={e => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => results.length > 0 && setOpen(true)}
+          aria-label="Search support articles"
           placeholder={placeholder}
           className={cn(
             'w-full font-[family-name:var(--font-brand-sans)] transition-all duration-200 focus:outline-none',

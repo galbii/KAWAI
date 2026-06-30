@@ -13,6 +13,7 @@ interface MarketingGrandHeroRendererProps {
   block: any // Will use MarketingGrandHeroBlock after types are generated
   ctaTracking?: any
   impressionTracking?: any
+  headingLevel?: 'h1' | 'h2'
 }
 
 // Type guard for Media object
@@ -24,7 +25,9 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
   block,
   ctaTracking,
   impressionTracking,
+  headingLevel = 'h1',
 }) => {
+  const SectionHeading = headingLevel
   const [isVisible, setIsVisible] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -331,7 +334,7 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
                 />
               </div>
             ) : (
-              <h1
+              <SectionHeading
                 className={cn(
                   'mb-6 font-serif text-4xl font-light leading-tight tracking-tight transition-all',
                   'md:text-5xl lg:text-6xl xl:text-7xl',
@@ -345,7 +348,7 @@ export const MarketingGrandHeroRenderer: React.FC<MarketingGrandHeroRendererProp
                 }}
               >
                 {block.heading}
-              </h1>
+              </SectionHeading>
             )}
 
             {/* Subheading */}

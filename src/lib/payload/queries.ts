@@ -692,6 +692,20 @@ function formatRebateNote(note?: string): string | undefined {
 }
 
 /**
+ * The lowest variant compare-at price (the true MSRP) on a product, or null when
+ * none of the variants carry one. Mirrors how the rebate table anchors savings.
+ */
+function minCompareAtPrice(variations: unknown): number | null {
+  if (!Array.isArray(variations)) return null
+  const prices = variations
+    .map((v) =>
+      v && typeof v === 'object' ? (v as { compareAtPrice?: unknown }).compareAtPrice : null,
+    )
+    .filter((n): n is number => typeof n === 'number' && n > 0)
+  return prices.length > 0 ? Math.min(...prices) : null
+}
+
+/**
  * The active rebate program ({@link REBATE_PROGRAM}), grouped by piano category
  * for the /signup rebate showcase. Rebate AMOUNTS come from the static rebate
  * list (src/lib/data/rebates.ts); each line is joined to a product by normalized
@@ -725,6 +739,7 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
             imageUrl: true,
             type: true,
             price: true,
+            variations: true,
           },
           depth: 0,
           limit: 1000,
@@ -743,8 +758,14 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
           const category = rebateTypeToCategory(doc.type)
           if (!category) continue
 
-          const anchor = doc.price?.msrp ?? null
-          if (anchor == null || anchor <= 0) continue
+          // price.msrp is synced from Shopify price.min — i.e. the current selling
+          // price, not the true MSRP. The true MSRP is the variant compare-at.
+          const salePrice = doc.price?.msrp ?? null
+          if (salePrice == null || salePrice <= 0) continue
+          const compareAt = minCompareAtPrice(doc.variations)
+          // Use compare-at as MSRP only when it's genuinely higher (on sale);
+          // otherwise MSRP and selling price are the same.
+          const msrp = compareAt != null && compareAt > salePrice ? compareAt : salePrice
 
           matched.add(key)
           const note = formatRebateNote(rebateEntry.note)
@@ -754,8 +775,9 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
             name: doc.name || doc.model,
             slug: doc.slug,
             imageUrl: doc.imageUrl ?? null,
-            msrp: anchor,
-            yourPrice: Math.max(anchor - rebateEntry.rebate, 0),
+            msrp,
+            salePrice,
+            yourPrice: Math.max(salePrice - rebateEntry.rebate, 0),
             rebate: rebateEntry.rebate,
             ...(note ? { note } : {}),
             currency: 'USD',
@@ -792,7 +814,9 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
         return []
       }
     },
-    [`rebate-showcase-${site}`],
+    // v2: cache key bumped — the cached shape now carries true MSRP (compare-at)
+    // + sale price alongside the rebate.
+    [`rebate-showcase-v2-${site}`],
     { tags: ['products', 'rebates'], revalidate: 3600 },
   )()
 }

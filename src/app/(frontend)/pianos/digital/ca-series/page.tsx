@@ -125,7 +125,7 @@ export default async function CaSeriesGuidePage() {
   }
 
   return (
-    <main className="font-[family-name:var(--font-brand-sans)]">
+    <div className="font-[family-name:var(--font-brand-sans)]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -320,6 +320,6 @@ export default async function CaSeriesGuidePage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

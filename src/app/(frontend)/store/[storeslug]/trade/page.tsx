@@ -105,7 +105,7 @@ export default async function TradeInPage({
   const VIDEO_SRC = 'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/kling_20260422_%E4%BD%9C%E5%93%81_Can_you_an_460_0.mp4'
 
   return (
-    <main className="relative">
+    <div className="relative">
       {/* Fixed video — visible through all transparent sections as the user scrolls */}
       <div className="fixed inset-0 -z-10 bg-kawai-black">
         <video
@@ -123,6 +123,6 @@ export default async function TradeInPage({
       <Suspense>
         <TradePageContent storeslug={storeslug} />
       </Suspense>
-    </main>
+    </div>
   )
 }

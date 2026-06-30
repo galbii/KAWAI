@@ -73,6 +73,7 @@ export function Footer({ businessLocation }: FooterProps) {
             >
               <input
                 type="email"
+                aria-label="Email address for newsletter signup"
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-2 rounded text-white placeholder:text-white/25 focus:outline-none transition-colors"
                 style={{

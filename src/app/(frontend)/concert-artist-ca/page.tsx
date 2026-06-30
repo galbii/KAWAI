@@ -312,7 +312,7 @@ export default async function ConcertArtistPage() {
       />
 
       {/* Main Content - Narrative Arc: "The Sound of Mastery" */}
-      <main>
+      <div>
         {/* 1. Hero - Brand positioning and promise */}
         <ConcertArtistHero />
 
@@ -336,7 +336,7 @@ export default async function ConcertArtistPage() {
 
         {/* 8. Heritage Mark - The seal of authenticity */}
         <HeritageMark />
-      </main>
+      </div>
     </>
   )
 }

@@ -55,11 +55,13 @@ export default async function TSDLandingPage() {
   }))
 
   return (
-    <main className="min-h-screen bg-kawai-pearl flex flex-col">
+    <div className="min-h-screen bg-kawai-pearl flex flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {/* Page-level h1 — the hero cards below use h2, so expose a single top heading. */}
+      <h1 className="sr-only">Kawai Technical Support</h1>
       <TSDLandingHero groups={groups} />
 
       {popularFaqs.length > 0 && (
@@ -72,6 +74,6 @@ export default async function TSDLandingPage() {
           </div>
         </section>
       )}
-    </main>
+    </div>
   )
 }

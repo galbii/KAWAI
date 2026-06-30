@@ -519,7 +519,7 @@ export function CollectionsBrowser({ collections }: CollectionsBrowserProps) {
 
       {/* ── Collection rows ───────────────────────────────────────────────────── */}
       {visible.length > 0 ? (
-        <main className="overflow-hidden">
+        <div className="overflow-hidden">
           {visible.map((collection, index) => (
             <div key={collection.handle}>
               {hasMedia(collection) ? (
@@ -541,7 +541,7 @@ export function CollectionsBrowser({ collections }: CollectionsBrowserProps) {
           <div className="px-6 md:px-12 mt-2">
             <div className="h-px bg-[#1E1B16]/[0.08]" />
           </div>
-        </main>
+        </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-48 text-center">
           <p

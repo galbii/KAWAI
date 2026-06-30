@@ -32,7 +32,7 @@ export default async function ProgramsPage({ params }: Props) {
   }> = school.programs ?? []
 
   return (
-    <main className="bg-kawai-pearl min-h-screen">
+    <div className="bg-kawai-pearl min-h-screen">
 
       {/* ─── SLIM HEADER ──────────────────────────────────────── */}
       <header className="bg-kawai-black border-b border-white/5">
@@ -300,6 +300,6 @@ export default async function ProgramsPage({ params }: Props) {
           </>
         )}
       </div>
-    </main>
+    </div>
   )
 }
