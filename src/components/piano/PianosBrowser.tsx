@@ -437,6 +437,7 @@ function MobileFilterSheet({
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
+                    aria-label="Search pianos by model or name"
                     placeholder="Search by model or name…"
                     className={cn(
                       'w-full bg-kawai-pearl border border-kawai-neutral rounded-lg pl-9 pr-8 py-2.5 text-sm',
@@ -833,6 +834,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search pianos by model or name"
                 placeholder="Search models…"
                 className={cn(
                   'w-full h-11 bg-white pl-10 pr-9 text-sm rounded-sm',
@@ -1060,6 +1062,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
+                aria-label="Sort pianos"
                 className={cn(
                   'appearance-none h-11 bg-white border border-kawai-neutral pl-4 pr-10 text-sm font-medium',
                   'text-kawai-charcoal focus:outline-none focus:ring-0 cursor-pointer rounded-sm',
@@ -1085,6 +1088,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search pianos by model or name"
                   placeholder="Search by model or name…"
                   className="w-full h-12 bg-kawai-pearl border border-kawai-neutral rounded-xl pl-11 pr-10 text-base text-kawai-black placeholder:text-kawai-charcoal/40 focus:outline-none focus:border-kawai-charcoal font-[family-name:var(--font-brand-sans)]"
                 />

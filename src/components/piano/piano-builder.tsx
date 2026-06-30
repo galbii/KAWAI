@@ -871,6 +871,7 @@ export function PianoBuilder({ pianos, accessories }: Props) {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                aria-label="Search piano models"
                                 placeholder="Search models…"
                                 className="w-full pl-11 pr-10 py-3 text-[14px] font-[family-name:var(--font-brand-sans)] text-kawai-black placeholder:text-kawai-charcoal/28 bg-kawai-pearl border border-kawai-neutral/60 focus:outline-none focus:border-kawai-red transition-colors duration-200"
                               />

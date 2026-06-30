@@ -105,6 +105,9 @@ export default async function PianosPage() {
           id={String(cmsPage.id)}
           collectionLabels={{ singular: 'Page', plural: 'Pages' }}
         />
+        {/* Guarantee a single page-level h1 — the CMS blocks below carry the visual
+            title in a banner/hero that isn't promoted to h1, so expose it for AT here. */}
+        <h1 className="sr-only">{cmsPage.title ?? 'Kawai Pianos'}</h1>
         <RenderBlocks blocks={cmsPage.layout} />
       </>
     )

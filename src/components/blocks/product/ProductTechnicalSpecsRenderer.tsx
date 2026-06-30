@@ -238,6 +238,7 @@ function SpecSearchBar({
         onKeyDown={(e) => {
           if (e.key === 'Escape' && query) onChange('')
         }}
+        aria-label="Search specifications"
         placeholder="Search specifications…"
         className="w-full pl-11 pr-28 py-3.5 text-sm text-kawai-charcoal placeholder:text-kawai-charcoal/28 bg-transparent outline-none"
       />

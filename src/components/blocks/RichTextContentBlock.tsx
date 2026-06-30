@@ -11,6 +11,13 @@ import { CodeBlock } from './CodeBlock'
 // Converters keyed by actual block slugs ('content-banner', 'content-code')
 const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  // A rich-text body block always sits beneath the page/template <h1>, so an
+  // authored <h1> in the body would create a duplicate top-level heading
+  // (WCAG 2.4.6). Demote any in-body h1 to h2; other levels pass through.
+  heading: ({ node, nodesToJSX }: { node: any; nodesToJSX: any }) => {
+    const Tag = (node.tag === 'h1' ? 'h2' : node.tag) as keyof React.JSX.IntrinsicElements
+    return <Tag>{nodesToJSX({ nodes: node.children })}</Tag>
+  },
   blocks: {
     'content-banner': ({ node }: { node: any }) => <BannerBlock {...node.fields} />,
     'content-code': ({ node }: { node: any }) => <CodeBlock {...node.fields} />,

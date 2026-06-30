@@ -89,6 +89,7 @@ export default async function ArtistsPage() {
           id={String(cmsPage.id)}
           collectionLabels={{ singular: 'Page', plural: 'Pages' }}
         />
+        <h1 className="sr-only">{cmsPage.title ?? 'Kawai Artists'}</h1>
         <RenderBlocks blocks={cmsPage.layout} />
       </div>
     )
@@ -105,6 +106,7 @@ export default async function ArtistsPage() {
 
   return (
     <div className="min-h-screen bg-kawai-black">
+      <h1 className="sr-only">Kawai Artists</h1>
       {/* Hero Carousel — only shown for featured artists */}
       {hasHeroArtists && <ArtistsHeroWrapper artists={featuredArtists} />}
 

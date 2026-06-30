@@ -32,12 +32,38 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }): stri
   }
 }
 
-// Keep Payload's default rendering, but wire in internal-link resolution so links
-// authored via the Lexical editor render as working anchors.
-const answerConverters: JSXConvertersFunction<DefaultNodeTypes> = ({ defaultConverters }) => ({
-  ...defaultConverters,
-  ...LinkJSXConverter({ internalDocToHref }),
-})
+// Walk the Lexical tree and return the shallowest heading level used (1–6), or
+// null if the answer has no headings.
+const minHeadingLevel = (state: any): number | null => {
+  let min: number | null = null
+  const visit = (node: any) => {
+    if (!node) return
+    if (node.type === 'heading' && typeof node.tag === 'string') {
+      const lvl = parseInt(node.tag.slice(1), 10)
+      if (!Number.isNaN(lvl) && (min === null || lvl < min)) min = lvl
+    }
+    if (Array.isArray(node.children)) node.children.forEach(visit)
+  }
+  visit(state?.root)
+  return min
+}
+
+// Keep Payload's default rendering, but (a) wire in internal-link resolution and
+// (b) shift answer headings so the shallowest becomes <h2>. The page <h1> is the
+// question; authored answers often start at h3, which skips h2 (WCAG 2.4.6). The
+// offset preserves the answer's internal hierarchy while removing the skip.
+const makeAnswerConverters =
+  (headingOffset: number): JSXConvertersFunction<DefaultNodeTypes> =>
+  ({ defaultConverters }) => ({
+    ...defaultConverters,
+    ...LinkJSXConverter({ internalDocToHref }),
+    heading: ({ node, nodesToJSX }: { node: any; nodesToJSX: any }) => {
+      const level = parseInt(String(node.tag).slice(1), 10) || 2
+      const shifted = Math.min(6, Math.max(2, level + headingOffset))
+      const Tag = `h${shifted}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+      return <Tag>{nodesToJSX({ nodes: node.children })}</Tag>
+    },
+  })
 
 export async function generateStaticParams() {
   const slugs = await getAllFaqSlugs()
@@ -181,7 +207,10 @@ export default async function FaqDetailPage({
             <div className="bg-white rounded-2xl shadow-sm border border-kawai-neutral p-8 md:p-10">
               {faqData.answer ? (
                 <div className="prose prose-lg max-w-none prose-headings:text-kawai-charcoal prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline">
-                  <RichText converters={answerConverters} data={faqData.answer} />
+                  <RichText
+                    converters={makeAnswerConverters(2 - (minHeadingLevel(faqData.answer) ?? 2))}
+                    data={faqData.answer}
+                  />
                 </div>
               ) : (
                 <p className="text-kawai-charcoal/60">No answer content available.</p>

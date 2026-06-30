@@ -407,6 +407,27 @@ This pattern is already applied in `KawaiLogo` — follow it for any new compone
 
 ---
 
+## Accessibility (WCAG 2.1 AA)
+
+The site is held to WCAG 2.1 **Level AA** (ADA matter). These conventions prevent the regressions that an audit flags — follow them when adding pages, blocks, or form controls.
+
+### Headings — exactly one `<h1>` per page, no skipped levels
+
+- **Every page needs exactly one `<h1>`.** Block-rendered/CMS templates (`pianos/page.tsx`, `artists/page.tsx`, `store/[storeslug]/page.tsx`) must render an explicit page `h1` themselves — `RenderBlocks` only promotes the **index-0 block of specific types** (`layout-hero-carousel`, `product-hero`, `product-hero-carousel`, `marketing-dealer-map`) to `h1` via `headingLevel: index === 0 ? 'h1' : 'h2'`. If the top block isn't one of those, add a `<h1 className="sr-only">{title}</h1>` in the template.
+- **Shared/reused section components must accept a `headingLevel` prop — never hardcode `<h1>`.** A component used both as a standalone page and as an embedded block will emit duplicate `h1`s otherwise. Canonical examples: `DealerMapBlock → DealerFinderClient → DealerFinderMobile`, and `FeaturedCollectionsCarousel`. New hero-type blocks must opt into the `RenderBlocks` `headingLevel` wiring.
+- **List/card item names are NOT headings.** Dealer names, product-card titles, etc. render as `<div>`/`<span>`, not `<h2>` — hundreds of item headings destroy screen-reader heading navigation.
+- **Rich-text bodies never emit an `h1`.** `RichTextContentBlock` installs a Lexical `heading` converter that demotes in-body `h1→h2` (a body block always sits under the page `h1`). FAQ answers normalize via a heading-offset (`makeAnswerConverters`). Don't revert these.
+- **Global/footer section headings are `h2`** (footer columns, "Stay Connected"). They were `h3` and caused `h1→h3` skips on sparse pages.
+
+### Forms — every control has a programmatic label
+
+Never ship placeholder-only inputs. Every `input`/`select`/`textarea` needs an `aria-label` or an associated `<label>`. Model: the dealer-search field's `aria-label="Search dealers by city or state"`.
+
+### Contrast (1.4.3) — 4.5:1 normal / 3:1 large
+
+- Standard tokens on solid backgrounds already pass. **Text over images/video must have a scrim/overlay guaranteeing 4.5:1** — automated tools can't measure these, so verify visually.
+- Brand red on dark backgrounds uses **`kawai-red-400`**, not `kawai-red` (the brand red is only ~3.6:1 on `kawai-black`).
+
 ## Media System (Cloudflare R2)
 
 ### Usage
@@ -531,6 +552,8 @@ Defined in `globals.css` under `@theme`. Auto-generates `bg-*`, `text-*`, `borde
 | `kawai-gold` | `#d5c78c` | Shigeru Kawai premium accent |
 
 Each has a full 50–900 scale (`kawai-red-500`, etc.). Campaign-specific tokens use the `es60-` prefix. New colors go in `globals.css` under `@theme` — auto-generates `bg-*`, `text-*`, `border-*` utilities.
+
+**Contrast (WCAG AA):** text needs 4.5:1 (3:1 for large text). Brand `kawai-red` is only ~3.6:1 on `kawai-black` — use `kawai-red-400` for red text on dark. Text over images/video needs a scrim guaranteeing 4.5:1 (not machine-verifiable — check visually). See the Accessibility section.
 
 ### Styling Patterns
 
@@ -707,6 +730,10 @@ Every new page in `(frontend)/` needs `generateMetadata` with `getSiteAlternates
 | **CA `productByIdentifier` limitation** | Shopify's `productByIdentifier(customId: ...)` requires the metafield definition to have "use as identifier" enabled in Shopify Admin. The CA store was created without this. CA product lookup uses a two-step approach: US Admin API resolves model→handle, CA Admin API fetches by handle via `productByHandle`. |
 | **CA cart auto-detection** | Cart functions in `cart.ts` and `cart-storage.ts` detect site from `window.location.hostname` internally — no `site` prop threading to callers. US cart key: `kawai_shopify_cart_id`. CA cart key: `kawai_shopify_cart_id_ca`. |
 | **CA `site` prop, not `isCanada`** | Client components use `site?: 'us' \| 'cad'` prop (not a boolean `isCanada`). Server wrappers read `getSite()` and pass it down. The `'cad'` value is the discriminant — compare with `site === 'cad'`. |
+| **Placeholder ≠ label** | A `placeholder` is not an accessible name. Every form control needs `aria-label` or `<label>` (WCAG 1.3.1/3.3.2/4.1.2). See Accessibility section. |
+| **Hardcoded `<h1>` in shared components** | A component reused as both a page and an embedded block emits duplicate `h1`s. Thread a `headingLevel` prop instead (e.g. `DealerFinderClient`, `FeaturedCollectionsCarousel`). |
+| **Block-rendered pages missing an `h1`** | `RenderBlocks` only promotes index-0 of specific block types to `h1`. CMS/block templates (`/pianos`, `/artists`, `/store/*`) must add their own `<h1 className="sr-only">`. |
+| **Footer/global headings are `h2`** | Footer columns and "Stay Connected" are `h2`, not `h3` — as `h3` they caused `h1→h3` skips on sparse pages (FAQ, etc.). |
 
 ---
 

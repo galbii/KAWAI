@@ -312,7 +312,7 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
 
                 {/* Category name — fixed, dominant, not animated */}
                 {heading ? (
-                  <h1
+                  <h2
                     className="text-7xl md:text-8xl lg:text-9xl text-white leading-[0.92] mb-5"
                     style={{
                       fontFamily: 'var(--font-brand-sans)',
@@ -321,7 +321,7 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
                     }}
                   >
                     {heading}
-                  </h1>
+                  </h2>
                 ) : (
                   <p
                     className="text-4xl md:text-5xl text-white leading-none mb-5"

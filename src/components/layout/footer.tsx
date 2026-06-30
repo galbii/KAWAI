@@ -122,9 +122,9 @@ function NavColumn({
 }) {
   return (
     <div className={className}>
-      <h3 className="text-kawai-pearl text-sm font-semibold uppercase tracking-wider mb-4">
+      <h2 className="text-kawai-pearl text-sm font-semibold uppercase tracking-wider mb-4">
         {title}
-      </h3>
+      </h2>
       <ul className="space-y-2.5">
         {items.map((item) => (
           <li key={`${item.label}-${item.href}`}>
@@ -367,7 +367,7 @@ function UnifiedFooterGrid({
           {locationDescription}
         </p>
 
-        <h3 className="font-semibold text-base mb-2 text-kawai-pearl">Stay Connected</h3>
+        <h2 className="font-semibold text-base mb-2 text-kawai-pearl">Stay Connected</h2>
         <p className="text-kawai-neutral text-xs mb-3 leading-relaxed">
           Join our community for piano insights, artist stories, and exclusive events.
         </p>

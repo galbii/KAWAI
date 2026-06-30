@@ -283,6 +283,10 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
       )}
 
       <div className="min-h-screen">
+        {/* Page-level h1 — section components below use h2/h3, so expose the
+            showroom name as the single top-level heading for assistive tech. */}
+        <h1 className="sr-only">{rawStorefrontData?.locationName ?? 'Kawai Showroom'}</h1>
+
         {/* News Carousel Section */}
         <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
