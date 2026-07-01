@@ -1,19 +1,12 @@
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { DialogTitle } from '@/components/ui/dialog'
 
 /**
- * SimpleCustomerSignupSuccess Component
+ * SimpleCustomerSignupSuccess — confirmation state.
  *
- * Displays a success message after form submission in a modal overlay.
- * Extracted from SimpleCustomerSignup to separate success state rendering.
- *
- * @example
- * ```tsx
- * <SimpleCustomerSignupSuccess
- *   title="Thank You!"
- *   message="We'll be in touch soon."
- *   onClose={() => setIsOpen(false)}
- * />
- * ```
+ * Content-only: it renders *inside* the existing signup Modal (it no longer
+ * paints its own overlay, which previously stacked a second modal on top of
+ * the open one). Presentation mirrors the form's restrained treatment.
  */
 
 interface SimpleCustomerSignupSuccessProps {
@@ -25,65 +18,38 @@ interface SimpleCustomerSignupSuccessProps {
 export function SimpleCustomerSignupSuccess({
   title = 'Thank You for Signing Up!',
   message = "We'll be in touch soon with updates about our piano collection.",
-  onClose
+  onClose,
 }: SimpleCustomerSignupSuccessProps) {
   return (
-    <>
-      {/* Modal Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
+    <div className="relative flex h-full flex-col items-center justify-center bg-white px-8 pb-12 pt-14 text-center sm:px-12">
+      <button
+        type="button"
         onClick={onClose}
-        aria-hidden="true"
-      />
+        aria-label="Close"
+        className="absolute right-5 top-5 z-20 text-kawai-black/40 transition-colors hover:text-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+      >
+        <XMarkIcon className="h-5 w-5" />
+      </button>
 
-      {/* Modal Content */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full relative animate-in fade-in zoom-in duration-300"
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-kawai-black/40 hover:text-kawai-black transition-colors"
-            aria-label="Close"
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-
-          {/* Success Content */}
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-serif text-kawai-black mb-2">
-              {title}
-            </h3>
-            <p className="text-kawai-black/70 mb-6">
-              {message}
-            </p>
-            <button
-              onClick={onClose}
-              className="bg-kawai-red hover:bg-kawai-black text-white px-8 py-3 rounded-md font-medium transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-kawai-red/40">
+        <CheckIcon className="h-6 w-6 text-kawai-red" strokeWidth={1.5} />
       </div>
-    </>
+
+      <DialogTitle className="mt-7 font-serif font-normal text-3xl leading-[1.1] tracking-tight text-kawai-black sm:text-[2rem]">
+        {title}
+      </DialogTitle>
+
+      <div aria-hidden="true" className="mx-auto mt-5 h-px w-12 bg-kawai-red" />
+
+      <p className="mt-5 max-w-sm text-sm leading-relaxed text-kawai-black/55">{message}</p>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-9 border border-kawai-black/20 px-10 py-3.5 text-xs font-medium uppercase tracking-[0.25em] text-kawai-black transition-colors hover:bg-kawai-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
+      >
+        Close
+      </button>
+    </div>
   )
 }

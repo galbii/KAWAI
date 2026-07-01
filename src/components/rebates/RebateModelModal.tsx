@@ -172,6 +172,11 @@ export default function RebateModelModal({
     }
   }, [isOpen, product])
 
+  // Mobile bottom-sheet swipe refs — declared before the early return below so
+  // the hook order stays stable whether or not there's a product to show.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const touchRef = useRef<{ x: number; y: number; scrollTop: number } | null>(null)
+
   const p = product ?? shown
   if (!p) return null
 
@@ -195,8 +200,6 @@ export default function RebateModelModal({
   // Mobile bottom-sheet swipe: swipe up focuses the content (lower) panel, swipe
   // down brings back the pricing (upper) panel. Reads the content scroll position
   // to tell a real scroll from a sheet swipe, so it never fights the scroller.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const touchRef = useRef<{ x: number; y: number; scrollTop: number } | null>(null)
   const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     const t = e.touches[0]
     if (!t) return

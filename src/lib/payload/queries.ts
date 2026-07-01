@@ -10,6 +10,7 @@ import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
 import { REBATE_BY_MODEL, REBATE_PROGRAM, normalizeModel } from '@/lib/data/rebates'
+import { getCanadaRebate } from '@/lib/rebates/canada-rebates'
 import type {
   Product,
   PianosPage,
@@ -719,8 +720,10 @@ function minCompareAtPrice(variations: unknown): number | null {
 export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCategory[]> {
   return unstable_cache(
     async () => {
-      // Rebate program is Kawai America (USD only) — nothing to show on ca.kawaius.com.
-      if (site === 'cad') return []
+      // On ca.kawaius.com prices come from the CA-Shopify-synced priceCAD fields
+      // and rebate amounts from the curated CA list — mirrors the Pages rebate
+      // block (RebateTableRenderer). On the US site nothing here changes.
+      const isCanada = site === 'cad'
 
       try {
         const payload = await getPayloadClient()
@@ -739,6 +742,7 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
             imageUrl: true,
             type: true,
             price: true,
+            priceCAD: true,
             variations: true,
           },
           depth: 0,
@@ -752,23 +756,36 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
         for (const doc of result.docs) {
           if (!doc.model) continue
           const key = normalizeModel(doc.model)
-          const rebateEntry = REBATE_BY_MODEL.get(key)
-          if (!rebateEntry) continue
+          // Scope is the signup rebate program (acoustic + digital pianos) for
+          // both sites, so the CA table doesn't pick up stage pianos/controllers
+          // that only carry a Canada rebate for the Pages block.
+          const usEntry = REBATE_BY_MODEL.get(key)
+          if (!usEntry) continue
+
+          // Rebate for the active site: US = the Kawai America amount, CA = the
+          // KCM (canada-rebates) amount. On CA a model with no Canada rebate is
+          // skipped (e.g. GL-10, K-15 aren't in the KCM Q3 program).
+          const rebate = isCanada ? getCanadaRebate(doc.model) : usEntry.rebate
+          if (rebate == null) continue
 
           const category = rebateTypeToCategory(doc.type)
           if (!category) continue
 
-          // price.msrp is synced from Shopify price.min — i.e. the current selling
-          // price, not the true MSRP. The true MSRP is the variant compare-at.
-          const salePrice = doc.price?.msrp ?? null
+          // US: price.msrp is the current selling price (Shopify min); the true
+          // MSRP is the variant compare-at. CA: prices come from the
+          // CA-Shopify-synced priceCAD fields — acoustic models carry only an
+          // MSRP (no online selling price, by design), so fall back to it.
+          const salePrice = isCanada
+            ? (doc.priceCAD?.price ?? doc.priceCAD?.msrp ?? null)
+            : (doc.price?.msrp ?? null)
           if (salePrice == null || salePrice <= 0) continue
-          const compareAt = minCompareAtPrice(doc.variations)
+          const compareAt = isCanada ? (doc.priceCAD?.msrp ?? null) : minCompareAtPrice(doc.variations)
           // Use compare-at as MSRP only when it's genuinely higher (on sale);
           // otherwise MSRP and selling price are the same.
           const msrp = compareAt != null && compareAt > salePrice ? compareAt : salePrice
 
           matched.add(key)
-          const note = formatRebateNote(rebateEntry.note)
+          const note = formatRebateNote(usEntry.note)
           const entry: RebateProduct = {
             model: doc.model,
             label: doc.modelLabel || doc.model,
@@ -777,10 +794,10 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
             imageUrl: doc.imageUrl ?? null,
             msrp,
             salePrice,
-            yourPrice: Math.max(salePrice - rebateEntry.rebate, 0),
-            rebate: rebateEntry.rebate,
+            yourPrice: Math.max(salePrice - rebate, 0),
+            rebate,
             ...(note ? { note } : {}),
-            currency: 'USD',
+            currency: isCanada ? 'CAD' : 'USD',
           }
 
           const list = byCategory.get(category) ?? []
@@ -788,13 +805,16 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
           byCategory.set(category, list)
         }
 
-        // Surface any program models that didn't match an active product.
-        const unmatched = [...REBATE_BY_MODEL.keys()].filter((k) => !matched.has(k))
-        if (unmatched.length > 0) {
-          console.warn(
-            `[${REBATE_PROGRAM}] ${unmatched.length} rebate model(s) had no matching active product:`,
-            unmatched.join(', '),
-          )
+        // Surface any US program models that didn't match an active product.
+        // (Skipped on CA, where the program list differs by design.)
+        if (!isCanada) {
+          const unmatched = [...REBATE_BY_MODEL.keys()].filter((k) => !matched.has(k))
+          if (unmatched.length > 0) {
+            console.warn(
+              `[${REBATE_PROGRAM}] ${unmatched.length} rebate model(s) had no matching active product:`,
+              unmatched.join(', '),
+            )
+          }
         }
 
         return (Object.keys(PIANO_CATEGORIES) as PianoCategorySlug[])
@@ -814,9 +834,8 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
         return []
       }
     },
-    // v2: cache key bumped — the cached shape now carries true MSRP (compare-at)
-    // + sale price alongside the rebate.
-    [`rebate-showcase-v2-${site}`],
+    // v5: CA now includes acoustic models (MSRP-only) + the KCM Q3 rebate amounts.
+    [`rebate-showcase-v5-${site}`],
     { tags: ['products', 'rebates'], revalidate: 3600 },
   )()
 }

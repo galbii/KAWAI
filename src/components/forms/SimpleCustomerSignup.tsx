@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { useModal } from '@/hooks'
 import { SimpleCustomerSignupForm } from './SimpleCustomerSignupForm'
@@ -48,125 +48,79 @@ export function SimpleCustomerSignup({
   successMessage = "We'll be in touch soon with updates about our piano collection.",
   imageUrl = null,
   customTags = null,
-  storageKey
+  storageKey,
 }: SimpleCustomerSignupProps) {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  // Debug: Log component mount and props
-  useEffect(() => {
-    const lsKey = storageKey ?? null
-    const lsValue = lsKey ? localStorage.getItem(lsKey) : null
-    console.log('[SimpleCustomerSignup] Component mounted with props:', {
-      storefrontSlug,
-      showDelay,
-      storageKey,
-      title,
-      description,
-      imageUrl: imageUrl ?? '(null/undefined — modal will render centered, no image)',
-      customTagsCount: customTags?.length || 0,
-      localStorage_blocked: lsValue === 'true'
-        ? `⚠️ YES — modal blocked by localStorage["${lsKey}"]. Run: localStorage.removeItem("${lsKey}") to reset.`
-        : '✅ No'
-    })
-  }, [])
-
   // Memoize autoShow config to prevent effect from re-running on every render
-  const autoShowConfig = useMemo(() => {
-    const config = {
+  const autoShowConfig = useMemo(
+    () => ({
       delay: showDelay,
-      ...(storageKey && { storageKey })
-    }
-    console.log('[SimpleCustomerSignup] autoShowConfig created:', config)
-    return config
-  }, [showDelay, storageKey])
+      ...(storageKey && { storageKey }),
+    }),
+    [showDelay, storageKey],
+  )
 
-  const { isOpen, close } = useModal({
-    autoShow: autoShowConfig
-  })
+  const { isOpen, close } = useModal({ autoShow: autoShowConfig })
 
-  // Debug: Track isOpen state changes
-  useEffect(() => {
-    console.log('[SimpleCustomerSignup] isOpen changed to:', isOpen)
-  }, [isOpen])
-
-  const handleSuccess = () => {
-    setIsSubmitted(true)
-  }
+  const handleSuccess = () => setIsSubmitted(true)
 
   const handleClose = () => {
-    console.log('[SimpleCustomerSignup] Closing modal')
     close()
-    // Reset submitted state when modal closes
+    // Reset submitted state after the close animation settles
     if (isSubmitted) {
       setTimeout(() => setIsSubmitted(false), 300)
     }
   }
 
-  // Let the Modal component handle visibility via isOpen prop
-  // The Radix Dialog needs to be mounted in the DOM to properly handle state changes
+  const content = isSubmitted ? (
+    <SimpleCustomerSignupSuccess title={successTitle} message={successMessage} onClose={handleClose} />
+  ) : (
+    <SimpleCustomerSignupForm
+      storefrontSlug={storefrontSlug}
+      title={title}
+      description={description}
+      submitButtonText={submitButtonText}
+      imageUrl={imageUrl}
+      customTags={customTags}
+      onClose={handleClose}
+      onSuccess={handleSuccess}
+    />
+  )
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       size={imageUrl ? 'full' : 'md'}
       layout={imageUrl ? 'split' : 'centered'}
+      className={
+        imageUrl
+          ? 'p-0 overflow-hidden rounded-2xl max-w-[calc(100vw-2rem)] md:max-w-5xl md:grid-cols-2'
+          : 'p-0 overflow-hidden rounded-2xl sm:rounded-2xl max-w-[calc(100vw-2rem)] sm:max-w-md'
+      }
       closeOnOverlayClick={true}
       closeOnEscape={true}
-      showCloseButton={true}
+      showCloseButton={false}
     >
       {imageUrl ? (
         <>
-          {/* Image - left column (60%), hidden on mobile */}
-          <div className="hidden md:block relative self-stretch min-h-[500px] bg-black overflow-hidden">
+          {/* Image — left column, hidden on mobile. Blurred backdrop fills the
+              panel; the full graphic sits sharp on top so no text is cropped. */}
+          <div className="hidden md:block relative self-stretch min-h-[480px] overflow-hidden bg-kawai-black">
             <img
               src={imageUrl}
-              alt="Piano promotion"
-              className="absolute inset-0 w-full h-full object-contain"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
             />
+            <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-contain" />
           </div>
-
-          {/* Form content - right column (40%) */}
-          <div className="p-8 md:p-12 flex items-center justify-center bg-white">
-            {isSubmitted ? (
-              <SimpleCustomerSignupSuccess
-                title={successTitle}
-                message={successMessage}
-                onClose={handleClose}
-              />
-            ) : (
-              <div className="w-full max-w-md">
-                <SimpleCustomerSignupForm
-                  storefrontSlug={storefrontSlug}
-                  title={title}
-                  description={description}
-                  submitButtonText={submitButtonText}
-                  imageUrl={imageUrl}
-                  customTags={customTags}
-                  onSuccess={handleSuccess}
-                />
-              </div>
-            )}
-          </div>
+          {/* Form / success — right column */}
+          {content}
         </>
       ) : (
-        // Centered layout (no image)
-        isSubmitted ? (
-          <SimpleCustomerSignupSuccess
-            title={successTitle}
-            message={successMessage}
-            onClose={handleClose}
-          />
-        ) : (
-          <SimpleCustomerSignupForm
-            storefrontSlug={storefrontSlug}
-            title={title}
-            description={description}
-            submitButtonText={submitButtonText}
-            imageUrl={imageUrl}
-            customTags={customTags}
-            onSuccess={handleSuccess}
-          />
-        )
+        content
       )}
     </Modal>
   )

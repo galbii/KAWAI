@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getRegisterConfig } from '@/components/layout/header-dynamic'
 import { WarrantyRegistrationForm } from '@/components/warranty/WarrantyRegistrationForm'
+import { getRequestCountry, isWarrantyEligibleCountry } from '@/lib/geo'
 
 export const revalidate = 3600
 
@@ -41,6 +42,11 @@ export default async function WarrantyRegistrationPage() {
   const portalId = config.hubspotPortalId ?? DEFAULT_PORTAL_ID
   const region = config.hubspotRegion ?? DEFAULT_REGION
   const bannerImageUrl = config.bannerImageUrl
+
+  // Warranty registration (and its HubSpot lead generation) is offered for the
+  // US and Canada only. Gate on the visitor's Cloudflare-resolved country —
+  // fails open when the country is unknown (local dev / missing edge header).
+  const eligible = isWarrantyEligibleCountry(await getRequestCountry())
 
   return (
     <div className="min-h-screen bg-white">
@@ -231,12 +237,28 @@ export default async function WarrantyRegistrationPage() {
 
               {/* Form area */}
               <div style={{ padding: '32px' }}>
-                <WarrantyRegistrationForm
-                  scriptUrl={scriptUrl}
-                  formId={formId}
-                  portalId={portalId}
-                  region={region}
-                />
+                {eligible ? (
+                  <WarrantyRegistrationForm
+                    scriptUrl={scriptUrl}
+                    formId={formId}
+                    portalId={portalId}
+                    region={region}
+                  />
+                ) : (
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-brand-sans)',
+                      fontSize: '14px',
+                      color: '#1E1B16',
+                      opacity: 0.6,
+                      lineHeight: 1.7,
+                      textAlign: 'center',
+                      padding: '24px 8px',
+                    }}
+                  >
+                    This page is for US and Canada product registrations only.
+                  </p>
+                )}
               </div>
             </div>
           </div>

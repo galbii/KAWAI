@@ -22,7 +22,8 @@ type SelectedModel = { product: RebateProduct; categoryLabel: string; isShigeru:
  * in lead-gen mode, fed by the signup rebate data via {@link toRebateSeries}.
  * Each row's "View {model}" opens the cinematic {@link RebateModelModal} (touch &
  * action / tone / features over the collection film) rather than navigating away.
- * Returns null when there are no active rebates (e.g. the CA site).
+ * The data is site-aware (getRebateShowcase reads CAD pricing on ca.kawaius.com);
+ * returns null only when there are no active rebates for the current site.
  */
 export default function SignupRebateSection({ data, onSignUp, eyebrow, heading, footnote }: Props) {
   const [selected, setSelected] = useState<SelectedModel | null>(null)
