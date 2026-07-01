@@ -1,7 +1,14 @@
 'use server'
 
 import { getPayloadClient, getCollectionByHandle } from '@/lib/payload/queries'
-import type { RebateModelDetail } from '@/lib/payload/rebate-types'
+import type { RebateModelDetail, RebateMediaItem } from '@/lib/payload/rebate-types'
+
+/** Extract an 11-char YouTube id from a watch/embed/short URL (or a bare id). */
+function youTubeId(url: unknown): string | null {
+  if (typeof url !== 'string' || !url) return null
+  const m = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/.exec(url)
+  return m?.[1] ?? (/^[a-zA-Z0-9_-]{11}$/.test(url) ? url : null)
+}
 
 /** Coerce a loosely-typed Payload/Shopify metafield into a clean string list. */
 function toStringArray(val: unknown): string[] {
@@ -59,27 +66,42 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
     const doc = res.docs[0]
     if (!doc) return empty
 
-    // Gallery — Shopify IMAGE media (display order) + editor custom-media images,
-    // de-duped; fall back to the primary product image.
+    // Gallery — watchable YouTube embeds (editor custom-media videos + the
+    // collection film, prepended below) first, then Shopify IMAGE media (display
+    // order) + editor custom-media images, all de-duped. Falls back to the
+    // primary product image when there's nothing else.
     const alt = (typeof doc.name === 'string' && doc.name) || 'Product image'
-    const seen = new Set<string>()
-    const media: { url: string; alt: string }[] = []
-    const add = (url: string | null | undefined, a: string) => {
-      if (typeof url === 'string' && url && !seen.has(url)) {
-        seen.add(url)
-        media.push({ url, alt: a })
+    const seenImg = new Set<string>()
+    const seenVid = new Set<string>()
+    const images: RebateMediaItem[] = []
+    const videos: RebateMediaItem[] = []
+    const addImage = (url: string | null | undefined, a: string) => {
+      if (typeof url === 'string' && url && !seenImg.has(url)) {
+        seenImg.add(url)
+        images.push({ type: 'image', url, alt: a })
       }
+    }
+    const addVideo = (url: unknown, a: string, prepend = false) => {
+      const id = youTubeId(url)
+      if (!id || seenVid.has(id)) return
+      seenVid.add(id)
+      const item: RebateMediaItem = { type: 'video', youtubeId: id, alt: a }
+      if (prepend) videos.unshift(item)
+      else videos.push(item)
     }
 
     if (Array.isArray(doc.shopifyMedia)) {
       for (const m of [...doc.shopifyMedia].sort((a, b) => (a?.position ?? 0) - (b?.position ?? 0))) {
-        if (m?.mediaType === 'IMAGE') add(m?.imageUrl, (m?.alt as string) || alt)
+        if (m?.mediaType === 'IMAGE') addImage(m?.imageUrl, (m?.alt as string) || alt)
       }
     }
 
     if (Array.isArray(doc.customMedia)) {
       for (const item of doc.customMedia) {
-        if (item?.mediaType === 'youtube') continue
+        if (item?.mediaType === 'youtube') {
+          addVideo(item?.youtubeUrl, (item?.alt as string) || `${alt} — video`)
+          continue
+        }
         const img = item?.image
         const url =
           typeof img === 'string'
@@ -89,11 +111,11 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
             : img && typeof img === 'object' && typeof (img as { url?: unknown }).url === 'string'
               ? ((img as { url: string }).url)
               : null
-        add(url, (item?.alt as string) || alt)
+        addImage(url, (item?.alt as string) || alt)
       }
     }
 
-    if (media.length === 0) add(doc.imageUrl, alt)
+    if (images.length === 0 && videos.length === 0) addImage(doc.imageUrl, alt)
 
     // Resolve a collection film (video preferred, image fallback) from the
     // product's collections — first one that actually has media wins.
@@ -119,13 +141,19 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
       }
     }
 
+    // Lead the gallery with the collection film so it's the first thing to watch.
+    if (film?.youtubeUrl) {
+      const filmAlt = film.heading ? `${film.heading} — film` : `${alt} — collection film`
+      addVideo(film.youtubeUrl, filmAlt, true)
+    }
+
     return {
       action: toStringArray(doc.action),
       tone: toStringArray(doc.tone),
       features: toStringArray(doc.features),
       film,
       productImageUrl: typeof doc.imageUrl === 'string' ? doc.imageUrl : null,
-      media,
+      media: [...videos, ...images],
     }
   } catch (err) {
     console.error('[getRebateModelDetail] failed for', slug, err)

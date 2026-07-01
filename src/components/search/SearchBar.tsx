@@ -79,11 +79,21 @@ interface QuickLink {
 
 type CategoryFilter = 'all' | 'storefronts' | 'products' | 'collections' | 'pages'
 
+/**
+ * Route prefixes where the mobile floating search bar is hidden. Matched with
+ * `startsWith`, so a prefix also covers nested/suffixed routes — '/signup' hides
+ * '/signup', '/signup2', etc. To hide it on a new lead or campaign page, add one
+ * line here.
+ *   /find-a-dealer — has its own dedicated search
+ *   /signup        — lead pages keep focus on the offer form
+ */
+const MOBILE_SEARCH_HIDDEN_PREFIXES = ['/find-a-dealer', '/signup']
+
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const pathname = usePathname()
-  const isOnFindADealerPage = pathname.startsWith('/find-a-dealer')
-  // The /signup lead page hides the mobile search bar to keep focus on the offer form.
-  const isOnSignupPage = pathname === '/signup'
+  const hideMobileSearch = MOBILE_SEARCH_HIDDEN_PREFIXES.some((prefix) =>
+    pathname.startsWith(prefix),
+  )
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -1557,8 +1567,8 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       )}
 
       {/* Floating Glassmorphic Search Input - Mobile Only - Always visible but hides when keyboard opens for other inputs - Portaled to body */}
-      {/* Hidden on find-a-dealer page (own search bar) and on /signup (lead page keeps focus on the offer form) */}
-      {isMounted && !isOnFindADealerPage && !isOnSignupPage && createPortal(
+      {/* Hidden on the routes in MOBILE_SEARCH_HIDDEN_PREFIXES (find-a-dealer has its own search; /signup* lead pages keep focus on the offer form) */}
+      {isMounted && !hideMobileSearch && createPortal(
         <div
           className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{

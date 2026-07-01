@@ -96,8 +96,7 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://*.google-analytics.com',
       'https://www.googletagmanager.com',
       'https://www.google.com',           // conversion beacons: /pagead/1p-conversion/, /ccm/collect, /rmkt/collect/
-      'https://stats.g.doubleclick.net',
-      'https://googleads.g.doubleclick.net', // viewthrough conversion pixel
+      'https://*.doubleclick.net',        // Google Ads conversion/viewthrough pixels (ad./td./stats.g./googleads.g.)
       'https://*.googleapis.com',
       'https://*.gstatic.com',
       'https://pagead2.googlesyndication.com',
@@ -137,13 +136,13 @@ export function buildCspHeader(_isDev: boolean): string {
       // www.googletagmanager.com needed in connect-src so GTM can fetch its own container config
       // pagead2.googlesyndication.com — Google Ads conversion measurement (ccm/collect endpoint)
       // www.google.com — Enhanced Conversions (/pagead/1p-conversion/), consent mode (/ccm/collect), remarketing (/rmkt/collect/)
-      // googleads.g.doubleclick.net — viewthrough conversion beacons
+      // *.doubleclick.net — Google Ads conversion/enhanced-conversion beacons: ad. + td. (ccm/s/collect),
+      //   stats.g. (GA4 default), googleads.g. (viewthrough). Wildcard so rotating ccm endpoints don't break it.
       'https://www.googletagmanager.com',
       'https://*.google-analytics.com',
       'https://analytics.google.com',
       'https://www.google.com',
-      'https://stats.g.doubleclick.net',
-      'https://googleads.g.doubleclick.net',
+      'https://*.doubleclick.net',
       'https://pagead2.googlesyndication.com',
       // Google Maps API (*.googleapis.com covers Places, Geocoding, Directions)
       'https://*.googleapis.com',

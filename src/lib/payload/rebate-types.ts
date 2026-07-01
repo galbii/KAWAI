@@ -43,6 +43,14 @@ export type RebateCategory = {
  * model modal. Fetched lazily by slug when the modal opens — kept separate from
  * {@link RebateProduct} so the rebate showcase query stays lean.
  */
+/**
+ * One item in the modal's Details carousel — a product image or a watchable
+ * YouTube embed (collection film or an editor-added video).
+ */
+export type RebateMediaItem =
+  | { type: 'image'; url: string; alt: string }
+  | { type: 'video'; youtubeId: string; alt: string }
+
 export type RebateModelDetail = {
   /** Touch & Action descriptors (Shopify custom.action metafield). */
   action: string[]
@@ -54,6 +62,6 @@ export type RebateModelDetail = {
   film: { youtubeUrl: string | null; imageUrl: string | null; heading: string | null } | null
   /** Product photo fallback for the background when no collection film exists. */
   productImageUrl: string | null
-  /** Product gallery images (Shopify media), for the modal's Details carousel. */
-  media: { url: string; alt: string }[]
+  /** Details carousel — watchable videos first (collection film + embeds), then product images. */
+  media: RebateMediaItem[]
 }

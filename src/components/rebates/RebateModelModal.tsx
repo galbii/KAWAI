@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type TouchEvent } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { Modal } from '@/components/ui/modal'
 import { DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -186,9 +186,33 @@ export default function RebateModelModal({
   const activeItems = activeSpec ? (detail?.[activeSpec.key] ?? []) : []
   const activeLabel = navSections.find((s) => s.key === activeKey)?.label ?? ''
   const showMedia = activeKey === 'details' && media.length > 0
+  const current = media[mediaIndex]
   const stepMedia = (dir: number) => {
     setPricingOpen(false) // mobile: diving into the gallery expands it full-screen
     setMediaIndex((i) => (media.length ? (i + dir + media.length) % media.length : 0))
+  }
+
+  // Mobile bottom-sheet swipe: swipe up focuses the content (lower) panel, swipe
+  // down brings back the pricing (upper) panel. Reads the content scroll position
+  // to tell a real scroll from a sheet swipe, so it never fights the scroller.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const touchRef = useRef<{ x: number; y: number; scrollTop: number } | null>(null)
+  const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0]
+    if (!t) return
+    touchRef.current = { x: t.clientX, y: t.clientY, scrollTop: scrollRef.current?.scrollTop ?? 0 }
+  }
+  const onTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
+    const start = touchRef.current
+    touchRef.current = null
+    const t = e.changedTouches[0]
+    if (!start || !t) return
+    const dy = t.clientY - start.y
+    const dx = t.clientX - start.x
+    const scrolled = Math.abs((scrollRef.current?.scrollTop ?? 0) - start.scrollTop)
+    // Only decisive, mostly-vertical swipes that didn't scroll the content toggle.
+    if (scrolled > 6 || Math.abs(dy) < 56 || Math.abs(dx) > Math.abs(dy)) return
+    setPricingOpen(dy > 0) // up → collapse pricing (content); down → reveal pricing
   }
 
   const videoId = reduce ? null : parseYouTubeId(detail?.film?.youtubeUrl ?? null)
@@ -215,7 +239,11 @@ export default function RebateModelModal({
         {`${p.name}: ${formatPrice(p.yourPrice, p.currency)} — save ${formatPrice(Math.max(p.msrp - p.yourPrice, 0), p.currency)} off ${formatPrice(p.msrp, p.currency)} MSRP, including a ${formatPrice(p.rebate, p.currency)} instant rebate. Touch and action, sound and tone, and connectivity features, with a sign-up to claim the rebate through your local dealer.`}
       </DialogDescription>
 
-      <div className="relative flex h-[92vh] w-full flex-col overflow-hidden lg:h-[88vh] lg:max-h-[760px] lg:flex-row">
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative flex h-[92vh] w-full flex-col overflow-hidden lg:h-[88vh] lg:max-h-[760px] lg:flex-row"
+      >
         <FilmBackground videoId={videoId} imageUrl={bgImage} />
 
         {/* Close */}
@@ -348,6 +376,7 @@ export default function RebateModelModal({
           ) : null}
 
           <div
+            ref={scrollRef}
             className={cn(
               'min-h-0 flex-1 overflow-y-auto overscroll-contain',
               showMedia ? 'bg-white' : 'p-6 sm:p-8 lg:p-12',
@@ -368,22 +397,35 @@ export default function RebateModelModal({
                   Details
                 </h3>
                 <div className="relative mt-3 flex min-h-0 flex-1 items-center justify-center">
-                  <div className="relative h-full w-full">
-                    <Image
-                      key={media[mediaIndex]?.url}
-                      src={media[mediaIndex]?.url ?? ''}
-                      alt={media[mediaIndex]?.alt || p.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 640px"
-                      className="animate-fade-in object-contain"
-                    />
-                  </div>
+                  {current?.type === 'video' ? (
+                    <div className="relative aspect-video w-full max-w-3xl px-4 sm:px-8">
+                      <iframe
+                        key={current.youtubeId}
+                        src={`https://www.youtube.com/embed/${current.youtubeId}?rel=0&modestbranding=1&playsinline=1`}
+                        title={current.alt}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute inset-0 h-full w-full animate-fade-in rounded-xl bg-black shadow-lg"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative h-full w-full">
+                      <Image
+                        key={current?.url}
+                        src={current?.url ?? ''}
+                        alt={current?.alt || p.name}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 640px"
+                        className="animate-fade-in object-contain"
+                      />
+                    </div>
+                  )}
                   {media.length > 1 ? (
                     <>
                       <button
                         type="button"
                         onClick={() => stepMedia(-1)}
-                        aria-label="Previous image"
+                        aria-label="Previous item"
                         className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-kawai-black/15 bg-white text-kawai-black shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-colors hover:bg-kawai-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black/40"
                       >
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
@@ -393,7 +435,7 @@ export default function RebateModelModal({
                       <button
                         type="button"
                         onClick={() => stepMedia(1)}
-                        aria-label="Next image"
+                        aria-label="Next item"
                         className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-kawai-black/15 bg-white text-kawai-black shadow-[0_4px_16px_rgba(0,0,0,0.12)] transition-colors hover:bg-kawai-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-black/40"
                       >
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>

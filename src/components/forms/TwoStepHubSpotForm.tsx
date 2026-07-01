@@ -229,12 +229,26 @@ export function TwoStepHubSpotForm({
         ...(consentText ? { consent: { consentToProcess: true, text: consentText } } : {}),
       })
 
-      // The conversion signal — GTM keys a Custom Event trigger on this.
+      // The conversion signal — GTM keys a Custom Event trigger on this for both
+      // GA4 and Google Ads. `user_data` powers Google Ads Enhanced Conversions:
+      // GTM/Google hashes it (SHA-256) in the browser before it leaves, so no raw
+      // PII is sent to Ads. Only include fields the visitor actually provided.
+      const address: Record<string, string> = {}
+      if (finalData.firstname) address.first_name = finalData.firstname
+      if (finalData.lastname) address.last_name = finalData.lastname
+      if (finalData.zip) address.postal_code = finalData.zip
+
+      const userData: Record<string, unknown> = {}
+      if (finalData.email) userData.email = finalData.email
+      if (finalData.phone) userData.phone_number = finalData.phone
+      if (Object.keys(address).length) userData.address = address
+
       window.dataLayer = window.dataLayer ?? []
       window.dataLayer.push({
         event: dataLayerEvent,
         event_category: 'signup',
         event_label: formName,
+        ...(Object.keys(userData).length ? { user_data: userData } : {}),
       })
 
       setSubmitted(true)
