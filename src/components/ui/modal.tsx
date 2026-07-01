@@ -14,7 +14,7 @@ import {
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 
 const modalVariants = cva(
-  'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background text-foreground shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
+  'fixed left-[50%] top-[50%] z-[9101] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background text-foreground shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
   {
     variants: {
       size: {
@@ -37,7 +37,9 @@ const modalVariants = cva(
 )
 
 const overlayVariants = cva(
-  'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
+  // z-[9100] sits above the portaled mobile search bar (z-[9003]) and its results overlay (z-[9004]),
+  // but below the cart drawer / mobile nav sheets (z-[9500]+) so those stacking relationships are preserved.
+  'fixed inset-0 z-[9100] bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
 )
 
 export interface ModalProps extends VariantProps<typeof modalVariants> {

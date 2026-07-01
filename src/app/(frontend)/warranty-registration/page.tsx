@@ -256,7 +256,16 @@ export default async function WarrantyRegistrationPage() {
                       padding: '24px 8px',
                     }}
                   >
-                    This page is for US and Canada product registrations only.
+                    This page is for US and Canada product registrations only. If you
+                    have a US or Canadian product, please contact the{' '}
+                    <Link
+                      href="/technical-support-division"
+                      style={{ color: '#E11922' }}
+                      className="hover:underline"
+                    >
+                      Technical Services Department here
+                    </Link>
+                    .
                   </p>
                 )}
               </div>
