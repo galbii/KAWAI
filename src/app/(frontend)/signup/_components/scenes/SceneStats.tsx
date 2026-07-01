@@ -43,6 +43,7 @@ function StatColumn({ active, reduce, index, stat, isLast }: StatColumnProps) {
           target={stat.numeric}
           suffix={stat.suffix}
           decimals={'decimals' in stat ? (stat.decimals as number) : 0}
+          grouping={!('plain' in stat && stat.plain)}
           reduce={reduce}
           delay={delay}
         />

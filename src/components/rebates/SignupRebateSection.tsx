@@ -52,6 +52,7 @@ export default function SignupRebateSection({ data, onSignUp, eyebrow, heading, 
         heading={heading}
         deadline=""
         leadGen
+        hideMobileFilters
         onSignUp={onSignUp}
         signUpLabel="Sign Up Now"
         onViewModel={(slug) => {

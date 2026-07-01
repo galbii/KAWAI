@@ -7,6 +7,15 @@ export const heroCopy = {
   secondaryCta: { label: 'Explore Pianos', href: '/pianos' },
 }
 
+/** Static hero block — Kawai logo + Summer Savings Event + dealer proof. */
+export const summerHero = {
+  eyebrow: 'Summer Savings Event',
+  headline: 'Up to 24% off select products at your Local Dealer',
+  sub: '200+ Authorized Dealers Nationwide',
+  signUpCta: 'Sign Up Now',
+  viewRebatesCta: 'View Rebates',
+} as const
+
 /**
  * Trust strip — the three most credible, purchase-relevant numbers. The full
  * five-stat heritage scene (awards, competition victories, generations) was cut
@@ -14,7 +23,7 @@ export const heroCopy = {
  * the closing CTA without sending them off to read history.
  */
 export const stats = [
-  { value: '1927', numeric: 1927, suffix: '', label: 'Crafting Pianos Since' },
+  { value: '1927', numeric: 1927, suffix: '', label: 'Crafting Pianos Since', plain: true },
   { value: '2.4M+', numeric: 2.4, decimals: 1, suffix: 'M+', label: 'Pianos Built' },
   { value: '200+', numeric: 200, suffix: '+', label: 'Authorized Dealers Nationwide' },
 ] as const

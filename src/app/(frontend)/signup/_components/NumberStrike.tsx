@@ -16,12 +16,15 @@ type Props = {
   duration?: number
   /** Seconds to wait before counting (for time-based stagger across a row). */
   delay?: number
+  /** Thousands separator. Off for year values (1927, not 1,927). */
+  grouping?: boolean
 }
 
-function format(n: number, decimals: number): string {
+function format(n: number, decimals: number, grouping: boolean): string {
   return n.toLocaleString('en-US', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
+    useGrouping: grouping,
   })
 }
 
@@ -40,12 +43,13 @@ export default function NumberStrike({
   className,
   duration = 1.2,
   delay = 0,
+  grouping = true,
 }: Props) {
   const ref = useRef<HTMLSpanElement>(null)
   const controls = useRef<ReturnType<typeof animate> | null>(null)
 
   const write = (n: number) => {
-    if (ref.current) ref.current.textContent = format(n, decimals) + suffix
+    if (ref.current) ref.current.textContent = format(n, decimals, grouping) + suffix
   }
 
   useEffect(() => {
@@ -66,7 +70,7 @@ export default function NumberStrike({
     }
     return () => controls.current?.stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, reduce, target, decimals, suffix, duration, delay])
+  }, [active, reduce, target, decimals, suffix, duration, delay, grouping])
 
   return <span ref={ref} className={className} />
 }

@@ -236,6 +236,18 @@ export function SearchBar({ dealers, onSearch, onLocationSearch, onDealerSelect,
     }, 300)
   }, [dealers, onSearch, detectSearchType, US_STATES, toDealerResult])
 
+  // Deep-link support: /find-a-dealer?search=63367 pre-fills and runs the search
+  // on arrival — powers the /signup "Dealers Near You" modal handoff. Runs once.
+  const didInitFromUrlRef = useRef(false)
+  useEffect(() => {
+    if (didInitFromUrlRef.current || dealers.length === 0) return
+    const initial = new URLSearchParams(window.location.search).get('search')?.trim()
+    if (initial) {
+      didInitFromUrlRef.current = true
+      handleInputChange(initial)
+    }
+  }, [dealers, handleInputChange])
+
   const handleDealerResultSelect = useCallback((result: SearchResult) => {
     setSearchInput(result.name)
     setShowDropdown(false)

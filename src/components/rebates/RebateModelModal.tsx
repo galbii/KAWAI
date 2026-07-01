@@ -50,6 +50,12 @@ const ARROW = (
   </svg>
 )
 
+const CHEVRON_DOWN = (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  </svg>
+)
+
 const EYEBROW = 'font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.28em]'
 const LABEL = 'font-[family-name:var(--font-brand-sans)] text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60'
 
@@ -131,6 +137,9 @@ export default function RebateModelModal({
   const [loading, setLoading] = useState(false)
   const [activeKey, setActiveKey] = useState<SectionKey>('details')
   const [mediaIndex, setMediaIndex] = useState(0)
+  // Mobile only: collapse the pricing panel so the active content section fills
+  // the screen once the shopper dives into it. Desktop keeps both side-by-side.
+  const [pricingOpen, setPricingOpen] = useState(true)
 
   useEffect(() => {
     if (product) setShown(product)
@@ -143,6 +152,7 @@ export default function RebateModelModal({
     setLoading(true)
     setDetail(null)
     setMediaIndex(0)
+    setPricingOpen(true)
     getRebateModelDetail(product.slug)
       .then((d) => {
         if (cancelled) return
@@ -176,8 +186,10 @@ export default function RebateModelModal({
   const activeItems = activeSpec ? (detail?.[activeSpec.key] ?? []) : []
   const activeLabel = navSections.find((s) => s.key === activeKey)?.label ?? ''
   const showMedia = activeKey === 'details' && media.length > 0
-  const stepMedia = (dir: number) =>
+  const stepMedia = (dir: number) => {
+    setPricingOpen(false) // mobile: diving into the gallery expands it full-screen
     setMediaIndex((i) => (media.length ? (i + dir + media.length) % media.length : 0))
+  }
 
   const videoId = reduce ? null : parseYouTubeId(detail?.film?.youtubeUrl ?? null)
   const bgImage = detail?.film?.imageUrl ?? detail?.productImageUrl ?? p.imageUrl
@@ -224,12 +236,46 @@ export default function RebateModelModal({
             <p className={cn(EYEBROW, isShigeru ? 'text-kawai-gold' : 'text-kawai-red')}>
               {categoryLabel}
             </p>
-            <h2 className="mt-2 font-[family-name:var(--font-brand-serif)] text-[2rem] font-medium leading-tight tracking-tight text-white sm:text-4xl">
+            <h2
+              className={cn(
+                'mt-2 font-[family-name:var(--font-brand-serif)] font-medium leading-tight tracking-tight text-white transition-all duration-300 sm:text-4xl lg:!text-4xl',
+                pricingOpen ? 'text-[2rem]' : 'text-2xl',
+              )}
+            >
               {p.name}
             </h2>
           </div>
 
-          <RebateReveal product={p} />
+          {/* Full savings reveal — collapses on mobile when the shopper dives into
+              a content section, so that section can fill the screen. Always open
+              on desktop (side-by-side layout). */}
+          <div
+            className={cn(
+              'grid transition-[grid-template-rows,opacity] duration-300 ease-out lg:!grid-rows-[1fr] lg:!opacity-100',
+              pricingOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+            )}
+          >
+            <div className="overflow-hidden">
+              <RebateReveal product={p} />
+            </div>
+          </div>
+
+          {/* Compact savings bar — mobile only, shown while pricing is collapsed.
+              Tap to bring the full pricing panel back. */}
+          {!pricingOpen ? (
+            <button
+              type="button"
+              onClick={() => setPricingOpen(true)}
+              aria-label="Show full pricing"
+              className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-left transition-colors hover:bg-white/10 lg:hidden"
+            >
+              <span className="font-[family-name:var(--font-brand-sans)] text-sm font-semibold text-white">
+                Save {formatPrice(Math.max(p.msrp - p.yourPrice, 0), p.currency)}
+                <span className="text-white/50"> · {formatPrice(p.yourPrice, p.currency)}</span>
+              </span>
+              <span className="flex-shrink-0 text-white/60">{CHEVRON_DOWN}</span>
+            </button>
+          ) : null}
 
           {/* Section rail — backlit "string" nav (desktop) */}
           <nav className="mt-1 hidden flex-col lg:flex" aria-label="Product details">
@@ -288,7 +334,7 @@ export default function RebateModelModal({
                     key={s.key}
                     type="button"
                     aria-pressed={active}
-                    onClick={() => setActiveKey(s.key)}
+                    onClick={() => { setActiveKey(s.key); setPricingOpen(false) }}
                     className={cn(
                       'whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.14em] transition-colors',
                       active ? 'bg-white text-kawai-black' : 'bg-white/15 text-white/80',

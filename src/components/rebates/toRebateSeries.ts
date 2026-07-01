@@ -27,10 +27,12 @@ export function toRebateSeries(data: RebateCategory[]): RebateSeries[] {
       // $7,799 → $6,599 strikethrough reads as broken. Anchor everything to MSRP
       // and let the displayed savings be the full MSRP → your-price gap.
       const totalSavings = Math.max(p.msrp - p.yourPrice, 0)
-      // When the piano is also marked down from MSRP, call out the rebate's share
-      // of the total so both numbers are visible.
+      // Always call out the instant rebate whenever there is one — including
+      // acoustic models with no compare-at markdown, where the whole saving IS
+      // the rebate. When the piano is *also* marked down from MSRP, this same
+      // line breaks out the rebate's share of the total.
       const rebateNote =
-        p.rebate > 0 && totalSavings > p.rebate
+        p.rebate > 0
           ? `Includes ${formatPrice(p.rebate, p.currency)} instant rebate`
           : undefined
       return {

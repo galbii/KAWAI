@@ -7,8 +7,17 @@ export const heroCopy = {
   secondaryCta: { label: 'Explore Pianos', href: '/pianos' },
 }
 
+/** Static hero block — Kawai logo + Summer Savings Event + dealer proof. */
+export const summerHero = {
+  eyebrow: 'Summer Savings Event',
+  headline: 'Up to 24% off select products at your Local Dealer',
+  sub: '200+ Authorized Dealers Nationwide',
+  signUpCta: 'Sign Up Now',
+  viewRebatesCta: 'View Rebates',
+} as const
+
 export const stats = [
-  { value: '1927', numeric: 1927, suffix: '', label: 'Founded' },
+  { value: '1927', numeric: 1927, suffix: '', label: 'Founded', plain: true },
   { value: '2.4M+', numeric: 2.4, decimals: 1, suffix: 'M+', label: 'Pianos Built' },
   { value: '50+', numeric: 50, suffix: '+', label: 'Awards' },
   { value: '61+', numeric: 61, suffix: '+', label: 'Competition Victories' },

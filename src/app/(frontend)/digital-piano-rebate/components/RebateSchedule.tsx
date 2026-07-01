@@ -53,6 +53,8 @@ type Props = {
   footnote?: string
   /** Lead-gen: open a detail modal for a model instead of linking to its page. */
   onViewModel?: ((slug: string, model: string) => void) | undefined
+  /** Hide the sticky mobile series filter strip (used on the /signup landing pages). */
+  hideMobileFilters?: boolean
 }
 
 const ALL = 'All'
@@ -814,6 +816,7 @@ export function RebateSchedule({
   signUpLabel,
   footnote,
   onViewModel,
+  hideMobileFilters = false,
 }: Props) {
   const [selected, setSelected] = useState<string>(ALL)
   const headerRef = useRef(null)
@@ -905,12 +908,14 @@ export function RebateSchedule({
         </motion.div>
 
         {/* ── Mobile filter strip — sticky below the fixed header ── */}
-        <div
-          className="lg:hidden sticky z-40 py-3 bg-white border-b border-kawai-neutral/50 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-          style={{ top: 'var(--header-bottom, 70px)' }}
-        >
-          <FilterBar series={schedule} selected={selected} onSelect={handleSelect} />
-        </div>
+        {!hideMobileFilters && (
+          <div
+            className="lg:hidden sticky z-40 py-3 bg-white border-b border-kawai-neutral/50 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+            style={{ top: 'var(--header-bottom, 70px)' }}
+          >
+            <FilterBar series={schedule} selected={selected} onSelect={handleSelect} />
+          </div>
+        )}
 
         {/* ── Sidebar + content layout ── */}
         <motion.div
