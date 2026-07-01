@@ -1,7 +1,7 @@
 'use client'
 
 import { BrandEyebrow } from './brand-ui'
-import { offerCopy, signupFormSrc } from './scenes'
+import { offerCopy, hubspotSignupForm } from './scenes'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 
 /**
@@ -20,7 +20,7 @@ export function OfferSignupForm() {
       </h2>
       <p className="mt-3 mb-6 text-sm leading-relaxed text-kawai-charcoal">{offerCopy.body}</p>
 
-      <TwoStepHubSpotForm formSrc={signupFormSrc} submitLabel={offerCopy.submitLabel} />
+      <TwoStepHubSpotForm form={hubspotSignupForm} submitLabel={offerCopy.submitLabel} />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
         By signing up you agree to be contacted by your local Authorized Kawai dealer.

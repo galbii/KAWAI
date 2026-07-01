@@ -326,7 +326,7 @@ export default function RebateModelModal({
         <div className="relative z-10 flex min-h-0 flex-1 flex-col">
           {/* Section nav pills (mobile) */}
           {hasContent ? (
-            <div className="flex gap-2 overflow-x-auto border-b border-white/10 bg-black/30 px-5 py-3 backdrop-blur-sm lg:hidden">
+            <div className="flex gap-2 overflow-x-auto scrollbar-none border-b border-white/10 bg-black/30 px-5 py-3 backdrop-blur-sm lg:hidden">
               {navSections.map((s) => {
                 const active = s.key === activeKey
                 return (
@@ -336,7 +336,7 @@ export default function RebateModelModal({
                     aria-pressed={active}
                     onClick={() => { setActiveKey(s.key); setPricingOpen(false) }}
                     className={cn(
-                      'whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.14em] transition-colors',
+                      'shrink-0 whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.14em] transition-colors',
                       active ? 'bg-white text-kawai-black' : 'bg-white/15 text-white/80',
                     )}
                   >

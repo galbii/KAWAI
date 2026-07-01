@@ -12,6 +12,7 @@ export const summerHero = {
   eyebrow: 'Summer Savings Event',
   headline: 'Up to 24% off select products at your Local Dealer',
   sub: '200+ Authorized Dealers Nationwide',
+  deadline: 'Only until September 30th',
   signUpCta: 'Sign Up Now',
   viewRebatesCta: 'View Rebates',
 } as const
@@ -87,10 +88,20 @@ export const showroomsCopy = {
 } as const
 
 /**
- * HubSpot share-link form embedded in the hero card via the two-step prefill
- * flow. Replace the token if the form changes; prefill rides on query params.
+ * HubSpot form the native two-step sign-up submits to (via the public Forms API,
+ * not an iframe) so the submission fires in our page context and GTM can read it.
+ *
+ * portalId + region come from Kawai's HubSpot account (same as warranty). Only
+ * `formGuid` is form-specific — it's the `data-form-id` UUID in the form's
+ * HubSpot embed code (Marketing → Forms → your form → Share/Embed).
+ *
+ * TODO: paste the sign-up form's GUID below. Until then submission will error.
  */
-export const signupFormSrc = 'https://share.hsforms.com/1akDfa9M5QTyPYtboMk85WQd39hb'
+export const hubspotSignupForm = {
+  portalId: '21987263',
+  formGuid: '6a40df6b-d339-413c-8f62-d6e8324f3959',
+  region: 'na1',
+} as const
 
 /**
  * Dealer discount offer. Copy shared by the three offer CTAs (Hero, Showrooms,

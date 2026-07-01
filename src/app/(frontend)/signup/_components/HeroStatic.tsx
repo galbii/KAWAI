@@ -92,9 +92,19 @@ export default function HeroStatic({ reduce }: Props) {
             initial={reduce ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.55 }}
-            className="mb-9 max-w-xl font-[family-name:var(--font-brand-sans)] text-base leading-relaxed text-white/80 sm:text-lg"
+            className="mb-4 max-w-xl font-[family-name:var(--font-brand-sans)] text-base leading-relaxed text-white/80 sm:text-lg"
           >
             {summerHero.sub}
+          </motion.p>
+
+          {/* Offer deadline */}
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.62 }}
+            className="mb-9 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.28em] text-kawai-gold sm:text-sm"
+          >
+            {summerHero.deadline}
           </motion.p>
 
           {/* CTAs — both open popups */}
