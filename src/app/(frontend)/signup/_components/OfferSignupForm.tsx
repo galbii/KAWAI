@@ -37,7 +37,9 @@ export function OfferSignupForm() {
       />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
-        By signing up you agree to be contacted by your local Authorized Kawai dealer.
+        By submitting this form you agree to be contacted by your local Authorized Kawai
+        dealer and to receive marketing communications from Kawai. You can unsubscribe at
+        any time.
       </p>
     </div>
   )
