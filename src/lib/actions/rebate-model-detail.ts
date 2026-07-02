@@ -66,9 +66,9 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
     const doc = res.docs[0]
     if (!doc) return empty
 
-    // Gallery — watchable YouTube embeds (editor custom-media videos + the
-    // collection film, prepended below) first, then Shopify IMAGE media (display
-    // order) + editor custom-media images, all de-duped. Falls back to the
+    // Gallery — Shopify IMAGE media (display order) + editor custom-media images
+    // first, then watchable YouTube embeds (editor custom-media videos + the
+    // collection film, prepended below) last, all de-duped. Falls back to the
     // primary product image when there's nothing else.
     const alt = (typeof doc.name === 'string' && doc.name) || 'Product image'
     const seenImg = new Set<string>()
@@ -141,7 +141,8 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
       }
     }
 
-    // Lead the gallery with the collection film so it's the first thing to watch.
+    // Lead the video group with the collection film so it's the first thing to
+    // watch once the shopper reaches the videos (which now trail the images).
     if (film?.youtubeUrl) {
       const filmAlt = film.heading ? `${film.heading} — film` : `${alt} — collection film`
       addVideo(film.youtubeUrl, filmAlt, true)
@@ -153,7 +154,7 @@ export async function getRebateModelDetail(slug: string): Promise<RebateModelDet
       features: toStringArray(doc.features),
       film,
       productImageUrl: typeof doc.imageUrl === 'string' ? doc.imageUrl : null,
-      media: [...videos, ...images],
+      media: [...images, ...videos],
     }
   } catch (err) {
     console.error('[getRebateModelDetail] failed for', slug, err)

@@ -10,7 +10,7 @@ export const heroCopy = {
 /** Static hero block — Kawai logo + Summer Savings Event + dealer proof. */
 export const summerHero = {
   eyebrow: 'Summer Savings Event',
-  headline: 'Up to 24% off select products at your Local Dealer',
+  headline: 'Up to 24% off select pianos at your Local Dealer',
   sub: '200+ Authorized Dealers Nationwide',
   deadline: 'Only until September 30th',
   signUpCta: 'Sign Up Now',

@@ -3,6 +3,10 @@
 import { BrandEyebrow } from './brand-ui'
 import { offerCopy, hubspotSignupForm } from './scenes'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
+import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
+
+/** Source/campaign tags applied to the Shopify customer for this page. */
+const SHOPIFY_LEAD_TAGS = ['signup2', 'summer-savings']
 
 /**
  * The dealer-discount sign-up content: offer copy + the reusable HubSpot
@@ -10,6 +14,10 @@ import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
  * caller supplies its own container — the hero/fallback wrap it in a pearl card,
  * the OfferModal renders it inside the dialog. Single source of truth for the
  * offer form across every placement on the page.
+ *
+ * On submit the lead goes to HubSpot (primary CRM) and is additionally mirrored
+ * into Shopify via `onComplete` — fire-and-forget so a Shopify hiccup can never
+ * block or fail the HubSpot submission the visitor is waiting on.
  */
 export function OfferSignupForm() {
   return (
@@ -20,7 +28,13 @@ export function OfferSignupForm() {
       </h2>
       <p className="mt-3 mb-6 text-sm leading-relaxed text-kawai-charcoal">{offerCopy.body}</p>
 
-      <TwoStepHubSpotForm form={hubspotSignupForm} submitLabel={offerCopy.submitLabel} />
+      <TwoStepHubSpotForm
+        form={hubspotSignupForm}
+        submitLabel={offerCopy.submitLabel}
+        onComplete={(data) => {
+          void upsertSignupLeadToShopify(data, SHOPIFY_LEAD_TAGS).catch(() => {})
+        }}
+      />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
         By signing up you agree to be contacted by your local Authorized Kawai dealer.

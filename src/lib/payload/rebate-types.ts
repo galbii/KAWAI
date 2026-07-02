@@ -62,6 +62,6 @@ export type RebateModelDetail = {
   film: { youtubeUrl: string | null; imageUrl: string | null; heading: string | null } | null
   /** Product photo fallback for the background when no collection film exists. */
   productImageUrl: string | null
-  /** Details carousel — watchable videos first (collection film + embeds), then product images. */
+  /** Details carousel — product images first, then watchable videos (collection film + embeds) last. */
   media: RebateMediaItem[]
 }
