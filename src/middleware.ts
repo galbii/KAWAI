@@ -13,6 +13,16 @@ let _cache: ResolvedRedirect[] | null = null
 let _cacheTime = 0
 const CACHE_TTL_MS = 300_000 // 5 minutes
 
+// EEA + UK + Switzerland — jurisdictions that require prior opt-in consent for
+// analytics/advertising cookies. Everywhere else (US, Canada, rest of world)
+// uses the opt-out model. Consumed client-side via the kawai-consent-region
+// cookie to gate PostHog + Meta Pixel (see src/lib/consent-region.ts).
+const RESTRICTED_COUNTRIES = new Set([
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
+  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES',
+  'SE', 'IS', 'LI', 'NO', 'GB', 'CH',
+])
+
 async function getRedirects(baseUrl: string): Promise<ResolvedRedirect[]> {
   const now = Date.now()
   if (_cache !== null && now - _cacheTime < CACHE_TTL_MS) {
@@ -105,6 +115,20 @@ export async function middleware(request: NextRequest) {
     }
   } else if (pathname === '/' || pathname === '') {
     response.cookies.delete('kawai-dealer-slug')
+  }
+
+  // Consent region cookie — exposes EEA/UK/CH status to client-side tracking
+  // (PostHog, Meta Pixel) which, unlike Google Consent Mode, can't gate by
+  // region on their own. Cloudflare provides the visitor country via
+  // cf-ipcountry ('XX' = unknown/Tor). No httpOnly — read via document.cookie,
+  // same pattern as kawai-dealer-slug above.
+  const country = request.headers.get('cf-ipcountry')?.toUpperCase()
+  if (country && country !== 'XX') {
+    response.cookies.set(
+      'kawai-consent-region',
+      RESTRICTED_COUNTRIES.has(country) ? 'eu' : 'row',
+      { path: '/', sameSite: 'lax' },
+    )
   }
 
   return response

@@ -3,6 +3,7 @@
 import posthog from 'posthog-js'
 import { PostHogProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
+import { isConsentRestricted } from '@/lib/consent-region'
 
 export function PHProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -15,7 +16,9 @@ export function PHProvider({ children }: { children: React.ReactNode }) {
         person_profiles: 'identified_only',
         capture_pageview: true,
         capture_pageleave: true,
-        opt_out_capturing_by_default: true,
+        // Opt-out model: capture by default worldwide, except EEA/UK/CH where we
+        // wait for explicit opt-in (the cookie banner calls opt_in_capturing there).
+        opt_out_capturing_by_default: isConsentRestricted(),
         // Session recording starts disabled and is enabled only after the first
         // user interaction (click or scroll). This eliminates the 6-second beacon
         // loop on page load and avoids recording bandwidth on bounce sessions.

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import * as CookieConsent from 'vanilla-cookieconsent'
 import 'vanilla-cookieconsent/dist/cookieconsent.css'
 import posthog from 'posthog-js'
+import { isConsentRestricted } from '@/lib/consent-region'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -31,6 +32,11 @@ function applyMarketingConsent(accepted: boolean) {
   })
   if (accepted) {
     initMetaPixel()
+    if (window.fbq) window.fbq('consent', 'grant')
+  } else if (window.fbq) {
+    // Pixel may already be loaded (opt-out model loads it on mount) — revoke
+    // stops it sending further events without unloading the script.
+    window.fbq('consent', 'revoke')
   }
 }
 
@@ -70,6 +76,13 @@ function initMetaPixel() {
 
 export function CookieConsentBanner() {
   useEffect(() => {
+    // Opt-out model outside the EEA/UK/CH: analytics + marketing default ON, and
+    // the Meta Pixel loads immediately rather than waiting for a banner click.
+    // Restricted regions keep the opt-in model (categories off, pixel gated).
+    const restricted = isConsentRestricted()
+
+    if (!restricted) initMetaPixel()
+
     CookieConsent.run({
       guiOptions: {
         consentModal: {
@@ -89,7 +102,7 @@ export function CookieConsentBanner() {
           readOnly: true,
         },
         analytics: {
-          enabled: false,
+          enabled: !restricted,
           autoClear: {
             cookies: [
               { name: /^_ph_/ },
@@ -100,7 +113,7 @@ export function CookieConsentBanner() {
           },
         },
         marketing: {
-          enabled: false,
+          enabled: !restricted,
           autoClear: {
             cookies: [
               { name: '_fbp' },

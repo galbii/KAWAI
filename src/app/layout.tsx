@@ -129,8 +129,11 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} antialiased bg-kawai-black text-kawai-pearl`}>
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
-            Reads vanilla-cookieconsent's saved cookie synchronously so returning visitors
-            who already accepted don't have their pageview dropped by the 500ms race. */}
+            Opt-out model: granted by default worldwide (US/Canada + rest), EXCEPT the
+            EEA, UK, and Switzerland where GDPR/UK-GDPR/FADP require prior opt-in — those
+            regions default to denied via Consent Mode's native region scoping (Google
+            does its own server-side geo, so this is reliable even on edge-cached pages).
+            Returning visitors keep their exact saved cookie choice regardless of region. */}
         <Script
           id="gtag-consent-defaults"
           strategy="afterInteractive"
@@ -139,21 +142,41 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
 
-              // Read vanilla-cookieconsent's saved cookie (cc_cookie) synchronously.
-              // This runs before GTM so returning visitors get correct consent immediately.
+              // Read vanilla-cookieconsent's saved cookie (cc_cookie) synchronously so
+              // returning visitors get their exact prior choice before GTM loads.
               var _ccCookie = (document.cookie.match(/(?:^|;\\s*)cc_cookie=([^;]*)/) || [])[1];
               var _ccData = null;
               try { _ccData = _ccCookie ? JSON.parse(decodeURIComponent(_ccCookie)) : null; } catch(e) {}
-              var _analyticsAccepted = _ccData && Array.isArray(_ccData.categories) && _ccData.categories.indexOf('analytics') !== -1;
-              var _marketingAccepted = _ccData && Array.isArray(_ccData.categories) && _ccData.categories.indexOf('marketing') !== -1;
 
-              gtag('consent', 'default', {
-                'ad_storage':          _marketingAccepted ? 'granted' : 'denied',
-                'ad_user_data':        _marketingAccepted ? 'granted' : 'denied',
-                'ad_personalization':  _marketingAccepted ? 'granted' : 'denied',
-                'analytics_storage':   _analyticsAccepted ? 'granted' : 'denied',
-                'wait_for_update':     _ccData ? 0 : 2000
-              });
+              if (_ccData) {
+                // Returning visitor — honor their exact saved preference, regardless of region.
+                var _analyticsAccepted = Array.isArray(_ccData.categories) && _ccData.categories.indexOf('analytics') !== -1;
+                var _marketingAccepted = Array.isArray(_ccData.categories) && _ccData.categories.indexOf('marketing') !== -1;
+                gtag('consent', 'default', {
+                  'ad_storage':          _marketingAccepted ? 'granted' : 'denied',
+                  'ad_user_data':        _marketingAccepted ? 'granted' : 'denied',
+                  'ad_personalization':  _marketingAccepted ? 'granted' : 'denied',
+                  'analytics_storage':   _analyticsAccepted ? 'granted' : 'denied',
+                  'wait_for_update':     0
+                });
+              } else {
+                // New visitor — granted by default worldwide (opt-out model)...
+                gtag('consent', 'default', {
+                  'ad_storage':         'granted',
+                  'ad_user_data':       'granted',
+                  'ad_personalization': 'granted',
+                  'analytics_storage':  'granted'
+                });
+                // ...except EEA + UK + Switzerland, where prior opt-in is required.
+                gtag('consent', 'default', {
+                  'region': ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'],
+                  'ad_storage':         'denied',
+                  'ad_user_data':       'denied',
+                  'ad_personalization': 'denied',
+                  'analytics_storage':  'denied',
+                  'wait_for_update':    2000
+                });
+              }
             `,
           }}
         />
