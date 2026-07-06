@@ -2111,41 +2111,38 @@ export interface Product {
    */
   category?: string | null;
   /**
-   * Active automatic discount from Shopify (synced, read-only). Empty when no automatic discount currently applies.
+   * Active automatic discount from Shopify (synced, read-only). Fields are blank when no automatic discount currently applies.
    */
   shopifyDiscount?: {
-    /**
-     * Whether an active automatic Shopify discount applies to this product
-     */
-    active?: boolean | null;
     /**
      * Discount name in Shopify
      */
     title?: string | null;
     /**
-     * Percentage (fraction 0–1) or fixed amount off
-     */
-    valueType?: ('percentage' | 'fixed') | null;
-    /**
-     * Discount value — a fraction for percentage (0.2 = 20%), or an amount for fixed
+     * Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount
      */
     value?: number | null;
     /**
      * Effective price after the discount (computed from MSRP / min variant price)
      */
     discountedPrice?: number | null;
+  };
+  /**
+   * Active automatic discount from the CA Shopify store (synced, read-only). Applies to ca.kawaius.com. Fields are blank when no CA automatic discount currently applies.
+   */
+  shopifyDiscountCAD?: {
     /**
-     * Discount has a minimum subtotal/quantity requirement — it may not apply to every cart
+     * Discount name in the CA Shopify store
      */
-    hasMinimumRequirement?: boolean | null;
+    title?: string | null;
     /**
-     * Discount start (from Shopify)
+     * Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount
      */
-    startsAt?: string | null;
+    value?: number | null;
     /**
-     * Discount end (from Shopify) — blank means no end date
+     * Effective CA price after the discount (computed from CA min variant price)
      */
-    endsAt?: string | null;
+    discountedPrice?: number | null;
   };
   /**
    * Product image URL (synced from Shopify)
@@ -12400,14 +12397,16 @@ export interface ProductsSelect<T extends boolean = true> {
   shopifyDiscount?:
     | T
     | {
-        active?: T;
         title?: T;
-        valueType?: T;
         value?: T;
         discountedPrice?: T;
-        hasMinimumRequirement?: T;
-        startsAt?: T;
-        endsAt?: T;
+      };
+  shopifyDiscountCAD?:
+    | T
+    | {
+        title?: T;
+        value?: T;
+        discountedPrice?: T;
       };
   imageUrl?: T;
   shopifyCollections?:

@@ -55,18 +55,17 @@ export interface NormalizedDiscount {
 
 /**
  * The synced per-product discount snapshot written to Payload
- * (`products.shopifyDiscount`). `active: false` means no automatic discount currently
+ * (`products.shopifyDiscount`). All-null means no automatic discount currently
  * applies — writing it on every sync clears a stale discount when one expires.
+ * A present `discountedPrice` is the signal that a discount is active.
  */
 export interface ProductDiscount {
-  active: boolean
+  /** Discount name in Shopify */
   title?: string | null
-  valueType?: 'percentage' | 'fixed' | null
+  /** Raw discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount */
   value?: number | null
+  /** Effective price after the discount */
   discountedPrice?: number | null
-  hasMinimumRequirement?: boolean | null
-  startsAt?: string | null
-  endsAt?: string | null
 }
 
 // Only `DiscountAutomaticBasic` carries an amount-off value we can apply to a single
@@ -108,6 +107,12 @@ const ACTIVE_AUTOMATIC_DISCOUNTS_QUERY = `
                   ... on DiscountProducts {
                     products(first: 250) {
                       nodes { id }
+                    }
+                    productVariants(first: 250) {
+                      nodes {
+                        id
+                        product { id }
+                      }
                     }
                   }
                   ... on DiscountCollections {
@@ -164,13 +169,23 @@ function normalizeDiscount(node: any): NormalizedDiscount | null {
   if (!isFinite(numericValue) || numericValue <= 0) return null
 
   const items = d.customerGets?.items
+
+  // Product targeting can arrive as whole products OR specific variants. Fold a
+  // variant-targeted discount onto its parent product so "does this product have a
+  // discount?" matches either way — otherwise a finish-level discount syncs as nothing.
+  const productIds = new Set<string>()
+  if (items?.__typename === 'DiscountProducts') {
+    for (const n of items.products?.nodes ?? []) {
+      if (n?.id) productIds.add(n.id)
+    }
+    for (const v of items.productVariants?.nodes ?? []) {
+      if (v?.product?.id) productIds.add(v.product.id)
+    }
+  }
+
   const target = {
     all: items?.__typename === 'AllDiscountItems' && items.allItems === true,
-    productIds: new Set<string>(
-      (items?.__typename === 'DiscountProducts' ? items.products?.nodes ?? [] : [])
-        .map((n: any) => n?.id)
-        .filter(Boolean),
-    ),
+    productIds,
     collectionIds: new Set<string>(
       (items?.__typename === 'DiscountCollections' ? items.collections?.nodes ?? [] : [])
         .map((n: any) => n?.id)
@@ -199,9 +214,12 @@ function normalizeDiscount(node: any): NormalizedDiscount | null {
 /**
  * Fetch all active automatic discounts from Shopify (US store by default).
  *
- * Cached for an hour via `revalidate` so a full bulk sync (or many single-product
- * syncs) doesn't re-query the discount list per product. Never throws — returns an
- * empty array on any failure so a discount-service outage can't break product sync.
+ * Fetched LIVE (no cache) so every sync reflects the current discount state — a
+ * cached list would make a product's synced discount lag behind Shopify by up to the
+ * cache TTL, which reads as "the discount didn't sync." Cost is one call per sync:
+ * the bulk sync fetches this once and passes the list to every product; a single
+ * product save fetches it once. Never throws — returns an empty array on any failure
+ * so a discount-service outage can't break product sync.
  *
  * @param adminClient - Admin client to use (defaults to the US store client)
  */
@@ -220,7 +238,7 @@ export async function fetchActiveAutomaticDiscounts(
         await adminClient.query<AutomaticDiscountsResponse>(
           ACTIVE_AUTOMATIC_DISCOUNTS_QUERY,
           cursor ? { cursor } : undefined,
-          { revalidate: 3600 },
+          { cache: 'no-store' },
         )
 
       for (const edge of data.automaticDiscountNodes.edges) {
@@ -250,8 +268,8 @@ export async function fetchActiveAutomaticDiscounts(
  *
  * A discount applies when it targets all items, this specific product, or any
  * collection the product belongs to. When multiple apply, the one yielding the
- * largest deduction on `basePrice` wins. Returns `{ active: false }` when none apply
- * (so the caller always clears stale discount data on re-sync).
+ * largest deduction on `basePrice` wins. Returns an all-null snapshot when none
+ * apply (so the caller always clears stale discount data on re-sync).
  */
 export function computeProductDiscount(params: {
   productGid?: string | null
@@ -262,8 +280,10 @@ export function computeProductDiscount(params: {
 }): ProductDiscount {
   const { productGid, collectionGids = [], basePrice, currency, discounts } = params
 
+  const empty: ProductDiscount = { title: null, value: null, discountedPrice: null }
+
   if (!discounts.length || basePrice == null || !isFinite(basePrice) || basePrice <= 0) {
-    return { active: false }
+    return empty
   }
 
   const productCollections = new Set(
@@ -302,18 +322,13 @@ export function computeProductDiscount(params: {
     }
   }
 
-  if (!best) return { active: false }
+  if (!best) return empty
 
   const discountedPrice = Math.max(0, Math.round((basePrice - bestDeduction) * 100) / 100)
 
   return {
-    active: true,
     title: best.title,
-    valueType: best.valueType,
     value: best.value,
     discountedPrice,
-    hasMinimumRequirement: best.hasMinimumRequirement,
-    startsAt: best.startsAt,
-    endsAt: best.endsAt,
   }
 }

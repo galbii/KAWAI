@@ -59,6 +59,7 @@ export type ShopifyDataUpdate = Partial<
   > & {
     shopify?: Partial<ShopifyGroup>
     shopifyDiscount?: ProductDiscount
+    shopifyDiscountCAD?: ProductDiscount
     specificationJson?: Record<string, unknown> | null
     ownersManualUrl?: string | null
     action?: string[]
@@ -82,6 +83,14 @@ export type CAPricingResult = {
   msrp: number | null
   /** Per-variant prices keyed by lowercase-trimmed variant title. */
   byVariantTitle: Map<string, CAVariantPrice>
+  /** CA store product GID — for matching CA-store discounts (store-scoped GIDs). */
+  productGid: string | null
+  /** CA store collection GIDs the product belongs to — for CA discount matching. */
+  collectionGids: string[]
+  /** CA min variant price as a number — base price for CA discount computation. */
+  basePrice: number | null
+  /** CA store currency (e.g. "CAD") — guards fixed-amount discount currency. */
+  currency: string | null
 }
 
 /**
@@ -122,6 +131,10 @@ export async function fetchCAPricing(handle: string): Promise<CAPricingResult | 
     price: minOf(allPrices.map((v) => v.price)),
     msrp: minOf(allPrices.map((v) => v.compareAtPrice)),
     byVariantTitle,
+    productGid: caData.id ?? null,
+    collectionGids: caData.collections?.map((c) => c.id) ?? [],
+    basePrice: parseFloat(caData.price.min) || null,
+    currency: caData.price.currency ?? null,
   }
 
   console.log(`[Shopify Sync] CA pricing fetched for "${caData.title}" (${byVariantTitle.size} variants)`)
@@ -394,8 +407,11 @@ export async function syncShopifyDataToProduct(
       ? fetchCAPricing(shopifyData.handle)
       : Promise.resolve(null)
 
-    // Fetch active automatic discounts in parallel (cached; never throws)
+    // Fetch active automatic discounts in parallel (cached; never throws).
+    // US and CA are separate stores with store-scoped GIDs, so match each product
+    // against its own store's discount list.
     const discountsPromise = fetchActiveAutomaticDiscounts()
+    const caDiscountsPromise = fetchActiveAutomaticDiscounts(shopifyAdminClientCA)
 
     // Extract model from metafields
     const extractedModel = extractModelFromMetafields(shopifyData)
@@ -427,6 +443,19 @@ export async function syncShopifyDataToProduct(
       currency: shopifyData.price.currency,
       discounts: activeDiscounts,
     })
+
+    // CA discount — matched against CA-store GIDs from the CA product fetch. Only
+    // computed when CA pricing was available; left unchanged otherwise (mirrors priceCAD).
+    const caActiveDiscounts = await caDiscountsPromise
+    const shopifyDiscountCAD = caPricing
+      ? computeProductDiscount({
+          productGid: caPricing.productGid,
+          collectionGids: caPricing.collectionGids,
+          basePrice: caPricing.basePrice,
+          currency: caPricing.currency,
+          discounts: caActiveDiscounts,
+        })
+      : null
 
     // Map Shopify variants to Payload variations array (only if truly multi-variant)
     const variations = shouldCreateVariations
@@ -487,6 +516,8 @@ export async function syncShopifyDataToProduct(
       }),
       variations, // Already null if no true variations exist
       shopifyDiscount, // Active automatic discount snapshot (or { active: false })
+      // CA discount — only written when CA data was fetched; left unchanged otherwise
+      ...(shopifyDiscountCAD && { shopifyDiscountCAD }),
       specificationJson: shopifyData.metafields?.specificationJson ?? null,
       ownersManualUrl: shopifyData.metafields?.ownersManual ?? null,
       action: shopifyData.metafields?.action ?? [],

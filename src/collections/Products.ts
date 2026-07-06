@@ -3,6 +3,7 @@ import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType, fetchCAPricing } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
 import { fetchActiveAutomaticDiscounts, computeProductDiscount, type NormalizedDiscount } from '@/lib/shopify/fetch-discounts'
+import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
 import { imageField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
@@ -15,6 +16,7 @@ import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/
 async function transformShopifyToPayload(
   shopifyProduct: ShopifyProductData,
   discounts: NormalizedDiscount[] = [],
+  caDiscounts: NormalizedDiscount[] = [],
 ): Promise<any> {
   const model = shopifyProduct.metafields?.model || ''
 
@@ -117,6 +119,18 @@ async function transformShopifyToPayload(
     discounts,
   })
 
+  // CA discount — matched against CA-store GIDs captured by fetchCAPricing. Only
+  // computed when CA pricing responded; left unchanged otherwise (mirrors priceCAD).
+  const shopifyDiscountCAD = caPricing
+    ? computeProductDiscount({
+        productGid: caPricing.productGid,
+        collectionGids: caPricing.collectionGids,
+        basePrice: caPricing.basePrice,
+        currency: caPricing.currency,
+        discounts: caDiscounts,
+      })
+    : null
+
   // Build the base product data
   const baseData = {
     model,
@@ -145,6 +159,8 @@ async function transformShopifyToPayload(
     }),
     variations, // Already null if no true variations exist
     shopifyDiscount, // Active automatic discount snapshot (or { active: false })
+    // CA discount — only written when CA data was fetched; left unchanged otherwise
+    ...(shopifyDiscountCAD && { shopifyDiscountCAD }),
     shopify: {
       productId: shopifyProduct.id,
       handle: shopifyProduct.handle,
@@ -508,48 +524,24 @@ export const Products: CollectionConfig = {
               name: 'shopifyDiscount',
               type: 'group',
               admin: {
-                description: 'Active automatic discount from Shopify (synced, read-only). Empty when no automatic discount currently applies.',
+                description: 'Active automatic discount from Shopify (synced, read-only). Fields are blank when no automatic discount currently applies.',
                 readOnly: true,
               },
               fields: [
-                {
-                  name: 'active',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: {
-                    description: 'Whether an active automatic Shopify discount applies to this product',
-                    readOnly: true,
-                  },
-                },
                 {
                   name: 'title',
                   type: 'text',
                   admin: {
                     description: 'Discount name in Shopify',
                     readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
-                  },
-                },
-                {
-                  name: 'valueType',
-                  type: 'select',
-                  options: [
-                    { label: 'Percentage', value: 'percentage' },
-                    { label: 'Fixed amount', value: 'fixed' },
-                  ],
-                  admin: {
-                    description: 'Percentage (fraction 0–1) or fixed amount off',
-                    readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
                   },
                 },
                 {
                   name: 'value',
                   type: 'number',
                   admin: {
-                    description: 'Discount value — a fraction for percentage (0.2 = 20%), or an amount for fixed',
+                    description: 'Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount',
                     readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
                   },
                 },
                 {
@@ -558,34 +550,44 @@ export const Products: CollectionConfig = {
                   admin: {
                     description: 'Effective price after the discount (computed from MSRP / min variant price)',
                     readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+              ],
+            },
+
+            // Active automatic discount from the CANADA store (ca.kawaius.com).
+            // The CA store has its own discounts targeting CA-store product/collection
+            // GIDs, so this is computed separately from the US shopifyDiscount above.
+            {
+              name: 'shopifyDiscountCAD',
+              type: 'group',
+              admin: {
+                description: 'Active automatic discount from the CA Shopify store (synced, read-only). Applies to ca.kawaius.com. Fields are blank when no CA automatic discount currently applies.',
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'title',
+                  type: 'text',
+                  admin: {
+                    description: 'Discount name in the CA Shopify store',
+                    readOnly: true,
                   },
                 },
                 {
-                  name: 'hasMinimumRequirement',
-                  type: 'checkbox',
+                  name: 'value',
+                  type: 'number',
                   admin: {
-                    description: 'Discount has a minimum subtotal/quantity requirement — it may not apply to every cart',
+                    description: 'Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount',
                     readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
                   },
                 },
                 {
-                  name: 'startsAt',
-                  type: 'date',
+                  name: 'discountedPrice',
+                  type: 'number',
                   admin: {
-                    description: 'Discount start (from Shopify)',
+                    description: 'Effective CA price after the discount (computed from CA min variant price)',
                     readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
-                  },
-                },
-                {
-                  name: 'endsAt',
-                  type: 'date',
-                  admin: {
-                    description: 'Discount end (from Shopify) — blank means no end date',
-                    readOnly: true,
-                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
                   },
                 },
               ],
@@ -1373,10 +1375,14 @@ export const Products: CollectionConfig = {
 
           console.log(`[Bulk Sync] Found ${existingProducts.length} existing products in Payload`)
 
-          // Fetch active automatic discounts ONCE for the whole run, then each product
-          // matches itself against the same list (no per-product discount query).
-          const activeDiscounts = await fetchActiveAutomaticDiscounts()
-          console.log(`[Bulk Sync] Loaded ${activeDiscounts.length} active automatic discount(s) for matching`)
+          // Fetch active automatic discounts ONCE for the whole run (US + CA are
+          // separate stores with store-scoped GIDs), then each product matches itself
+          // against the right store's list (no per-product discount query).
+          const [activeDiscounts, caActiveDiscounts] = await Promise.all([
+            fetchActiveAutomaticDiscounts(),
+            fetchActiveAutomaticDiscounts(shopifyAdminClientCA),
+          ])
+          console.log(`[Bulk Sync] Loaded ${activeDiscounts.length} US + ${caActiveDiscounts.length} CA active automatic discount(s) for matching`)
 
           // Step 3: Process each Shopify product (create or update) in parallel batches
           const BATCH_SIZE = 5
@@ -1433,7 +1439,7 @@ export const Products: CollectionConfig = {
               }
 
               // transformShopifyToPayload fetches media + CA pricing internally
-              const productData = await transformShopifyToPayload(shopifyProduct, activeDiscounts)
+              const productData = await transformShopifyToPayload(shopifyProduct, activeDiscounts, caActiveDiscounts)
 
               if (existing) {
                 // UPDATE — exclude slug (CMS URL); exclude status unless Shopify ARCHIVED
