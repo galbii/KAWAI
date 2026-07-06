@@ -27,6 +27,7 @@
 import { fetchShopifyProduct, fetchShopifyProductByModel } from './fetch-product'
 import type { ShopifyProductData } from './fetch-product'
 import { shopifyAdminClientCA } from './admin-client'
+import { fetchActiveAutomaticDiscounts, computeProductDiscount, type ProductDiscount } from './fetch-discounts'
 import type { Product } from '@/payload-types'
 
 /**
@@ -57,6 +58,7 @@ export type ShopifyDataUpdate = Partial<
     'name' | 'description' | 'price' | 'priceCAD' | 'imageUrl' | 'model' | 'variations' | 'type' | 'category' | 'shopifyCollections' | 'status'
   > & {
     shopify?: Partial<ShopifyGroup>
+    shopifyDiscount?: ProductDiscount
     specificationJson?: Record<string, unknown> | null
     ownersManualUrl?: string | null
     action?: string[]
@@ -392,6 +394,9 @@ export async function syncShopifyDataToProduct(
       ? fetchCAPricing(shopifyData.handle)
       : Promise.resolve(null)
 
+    // Fetch active automatic discounts in parallel (cached; never throws)
+    const discountsPromise = fetchActiveAutomaticDiscounts()
+
     // Extract model from metafields
     const extractedModel = extractModelFromMetafields(shopifyData)
 
@@ -412,6 +417,16 @@ export async function syncShopifyDataToProduct(
     })
 
     const caPricing = await caPricingPromise
+
+    // Match active automatic discounts to this product and precompute effective price.
+    const activeDiscounts = await discountsPromise
+    const shopifyDiscount = computeProductDiscount({
+      productGid: shopifyData.id,
+      collectionGids: shopifyData.collections?.map((c) => c.id) ?? [],
+      basePrice: parseFloat(shopifyData.price.min) || null,
+      currency: shopifyData.price.currency,
+      discounts: activeDiscounts,
+    })
 
     // Map Shopify variants to Payload variations array (only if truly multi-variant)
     const variations = shouldCreateVariations
@@ -471,6 +486,7 @@ export async function syncShopifyDataToProduct(
         },
       }),
       variations, // Already null if no true variations exist
+      shopifyDiscount, // Active automatic discount snapshot (or { active: false })
       specificationJson: shopifyData.metafields?.specificationJson ?? null,
       ownersManualUrl: shopifyData.metafields?.ownersManual ?? null,
       action: shopifyData.metafields?.action ?? [],

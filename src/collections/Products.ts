@@ -2,6 +2,7 @@ import type { CollectionConfig, CollectionAfterChangeHook, Endpoint } from 'payl
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType, fetchCAPricing } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
+import { fetchActiveAutomaticDiscounts, computeProductDiscount, type NormalizedDiscount } from '@/lib/shopify/fetch-discounts'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
 import { imageField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
@@ -11,7 +12,10 @@ import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/
  *
  * Maps Shopify fields to Payload fields for bulk import/update operations.
  */
-async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Promise<any> {
+async function transformShopifyToPayload(
+  shopifyProduct: ShopifyProductData,
+  discounts: NormalizedDiscount[] = [],
+): Promise<any> {
   const model = shopifyProduct.metafields?.model || ''
 
   // Strip HTML from description
@@ -102,6 +106,17 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
       })
     : null
 
+  // Match any active automatic Shopify discount to this product and precompute the
+  // effective price. Always written (even when inactive) so a re-sync clears a stale
+  // discount once it expires.
+  const shopifyDiscount = computeProductDiscount({
+    productGid: shopifyProduct.id,
+    collectionGids: shopifyProduct.collections?.map((c) => c.id) ?? [],
+    basePrice: parseFloat(shopifyProduct.price.min) || null,
+    currency: shopifyProduct.price.currency,
+    discounts,
+  })
+
   // Build the base product data
   const baseData = {
     model,
@@ -129,6 +144,7 @@ async function transformShopifyToPayload(shopifyProduct: ShopifyProductData): Pr
       },
     }),
     variations, // Already null if no true variations exist
+    shopifyDiscount, // Active automatic discount snapshot (or { active: false })
     shopify: {
       productId: shopifyProduct.id,
       handle: shopifyProduct.handle,
@@ -480,6 +496,99 @@ export const Products: CollectionConfig = {
                 description: 'Product category (synced from Shopify taxonomy, e.g. "Digital Pianos")',
                 readOnly: true,
               }
+            },
+
+            // Active automatic discount (from Shopify Discounts — synced).
+            // Shopify Discounts are a separate resource from price/compareAtPrice and
+            // apply only at checkout; this group mirrors any ACTIVE automatic discount
+            // that targets this product, one of its collections, or all products, and
+            // precomputes the effective price. Populated by the Shopify sync — re-sync
+            // (or the scheduled bulk sync) refreshes it as discounts start/expire.
+            {
+              name: 'shopifyDiscount',
+              type: 'group',
+              admin: {
+                description: 'Active automatic discount from Shopify (synced, read-only). Empty when no automatic discount currently applies.',
+                readOnly: true,
+              },
+              fields: [
+                {
+                  name: 'active',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Whether an active automatic Shopify discount applies to this product',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'title',
+                  type: 'text',
+                  admin: {
+                    description: 'Discount name in Shopify',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'valueType',
+                  type: 'select',
+                  options: [
+                    { label: 'Percentage', value: 'percentage' },
+                    { label: 'Fixed amount', value: 'fixed' },
+                  ],
+                  admin: {
+                    description: 'Percentage (fraction 0–1) or fixed amount off',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'value',
+                  type: 'number',
+                  admin: {
+                    description: 'Discount value — a fraction for percentage (0.2 = 20%), or an amount for fixed',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'discountedPrice',
+                  type: 'number',
+                  admin: {
+                    description: 'Effective price after the discount (computed from MSRP / min variant price)',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'hasMinimumRequirement',
+                  type: 'checkbox',
+                  admin: {
+                    description: 'Discount has a minimum subtotal/quantity requirement — it may not apply to every cart',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'startsAt',
+                  type: 'date',
+                  admin: {
+                    description: 'Discount start (from Shopify)',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+                {
+                  name: 'endsAt',
+                  type: 'date',
+                  admin: {
+                    description: 'Discount end (from Shopify) — blank means no end date',
+                    readOnly: true,
+                    condition: (data) => Boolean(data?.shopifyDiscount?.active),
+                  },
+                },
+              ],
             },
 
             // Image URL (from Shopify)
@@ -1264,6 +1373,11 @@ export const Products: CollectionConfig = {
 
           console.log(`[Bulk Sync] Found ${existingProducts.length} existing products in Payload`)
 
+          // Fetch active automatic discounts ONCE for the whole run, then each product
+          // matches itself against the same list (no per-product discount query).
+          const activeDiscounts = await fetchActiveAutomaticDiscounts()
+          console.log(`[Bulk Sync] Loaded ${activeDiscounts.length} active automatic discount(s) for matching`)
+
           // Step 3: Process each Shopify product (create or update) in parallel batches
           const BATCH_SIZE = 5
 
@@ -1319,7 +1433,7 @@ export const Products: CollectionConfig = {
               }
 
               // transformShopifyToPayload fetches media + CA pricing internally
-              const productData = await transformShopifyToPayload(shopifyProduct)
+              const productData = await transformShopifyToPayload(shopifyProduct, activeDiscounts)
 
               if (existing) {
                 // UPDATE — exclude slug (CMS URL); exclude status unless Shopify ARCHIVED

@@ -131,7 +131,12 @@ export const Posts: CollectionConfig = {
                 'product-reference',
               ] as any,
               blocks: [],
-              defaultValue: [{ blockType: 'content-rich-text' }],
+              // ⚠️ Do NOT add `defaultValue` here. A blocks/array `defaultValue`
+              // makes Payload mint a NEW row `id` on every `getFormState` pass on the
+              // create view, so form state never converges — producing an infinite
+              // `form-state` server-action loop (the create page appears to constantly
+              // refresh). Verified: layout.0.id changed between every form-state POST.
+              // New posts start with an empty layout; editors add a block manually.
               admin: {
                 description: 'Add blocks to build the post. Use "Rich Text" for article prose, "Video" for YouTube/Vimeo embeds, "Image" for standalone photos.',
               },

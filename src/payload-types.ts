@@ -2111,6 +2111,43 @@ export interface Product {
    */
   category?: string | null;
   /**
+   * Active automatic discount from Shopify (synced, read-only). Empty when no automatic discount currently applies.
+   */
+  shopifyDiscount?: {
+    /**
+     * Whether an active automatic Shopify discount applies to this product
+     */
+    active?: boolean | null;
+    /**
+     * Discount name in Shopify
+     */
+    title?: string | null;
+    /**
+     * Percentage (fraction 0–1) or fixed amount off
+     */
+    valueType?: ('percentage' | 'fixed') | null;
+    /**
+     * Discount value — a fraction for percentage (0.2 = 20%), or an amount for fixed
+     */
+    value?: number | null;
+    /**
+     * Effective price after the discount (computed from MSRP / min variant price)
+     */
+    discountedPrice?: number | null;
+    /**
+     * Discount has a minimum subtotal/quantity requirement — it may not apply to every cart
+     */
+    hasMinimumRequirement?: boolean | null;
+    /**
+     * Discount start (from Shopify)
+     */
+    startsAt?: string | null;
+    /**
+     * Discount end (from Shopify) — blank means no end date
+     */
+    endsAt?: string | null;
+  };
+  /**
    * Product image URL (synced from Shopify)
    */
   imageUrl?: string | null;
@@ -12360,6 +12397,18 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   type?: T;
   category?: T;
+  shopifyDiscount?:
+    | T
+    | {
+        active?: T;
+        title?: T;
+        valueType?: T;
+        value?: T;
+        discountedPrice?: T;
+        hasMinimumRequirement?: T;
+        startsAt?: T;
+        endsAt?: T;
+      };
   imageUrl?: T;
   shopifyCollections?:
     | T
