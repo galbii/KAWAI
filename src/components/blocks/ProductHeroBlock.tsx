@@ -56,6 +56,102 @@ interface ProductHeroBlockProps {
   shopifyProduct?: ShopifyProduct | null
 }
 
+/** One count-down leg: reach `to` starting at `atMs` from mount, easing over `durationMs`. */
+interface CountLeg {
+  to: number
+  atMs: number
+  durationMs: number
+}
+
+/**
+ * A price that counts DOWN through one or more legs, formatted as currency.
+ * Used for the discount reveal: e.g. MSRP → sale price → discounted price, each leg
+ * timed to fall in step with the staged reveal (badge shows between legs). On the
+ * first appearance it plays every leg at its scheduled `atMs`; on later prop changes
+ * (switching variation) it re-counts quickly from the current value straight to the
+ * final target with no stagger. Respects reduced motion by jumping to the final value.
+ */
+function CountingPrice({
+  from,
+  legs,
+  currency,
+  className,
+  style,
+}: {
+  from: number
+  legs: CountLeg[]
+  currency: string
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const [display, setDisplay] = useState(from)
+  const valueRef = useRef(from)
+  const hasRunRef = useRef(false)
+  // Effect depends only on the final target so unrelated re-renders don't restart it.
+  const finalTo = legs.length ? legs[legs.length - 1]!.to : from
+
+  useEffect(() => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+    let raf = 0
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    const runLeg = (start: number, to: number, durationMs: number) => {
+      if (prefersReduced || durationMs <= 0 || start === to) {
+        valueRef.current = to
+        setDisplay(to)
+        return
+      }
+      let startTs = 0
+      const tick = (ts: number) => {
+        if (!startTs) startTs = ts
+        const t = Math.min(1, (ts - startTs) / durationMs)
+        const v = start + (to - start) * easeOutCubic(t)
+        valueRef.current = v
+        setDisplay(v)
+        if (t < 1) raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+
+    if (prefersReduced) {
+      valueRef.current = finalTo
+      setDisplay(finalTo)
+      return
+    }
+
+    if (!hasRunRef.current) {
+      hasRunRef.current = true
+      // Schedule each leg at its absolute time; each starts from the prior leg's target.
+      let prevTarget = from
+      for (const leg of legs) {
+        const start = prevTarget
+        prevTarget = leg.to
+        timers.push(setTimeout(() => runLeg(start, leg.to, leg.durationMs), Math.max(0, leg.atMs)))
+      }
+    } else {
+      // Variation switch: quick single count from wherever we are to the new final.
+      runLeg(valueRef.current, finalTo, 320)
+    }
+
+    return () => {
+      timers.forEach(clearTimeout)
+      cancelAnimationFrame(raf)
+    }
+  // legs/from captured on first run; later runs resume from valueRef toward finalTo
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalTo])
+
+  return (
+    <span className={className} style={style}>
+      {formatPrice(Math.round(display), currency)}
+    </span>
+  )
+}
+
 export function ProductHeroBlock({
   site = 'us',
   layout = {},
@@ -532,15 +628,19 @@ export function ProductHeroBlock({
     if (!baseDisplayPrice || !activeDiscount) return baseDisplayPrice
 
     if (baseDisplayPrice.type === 'single') {
-      // Pre-discount price is the current selling price — the automatic discount takes
-      // precedence over (and replaces) any compareAtPrice strikethrough.
-      const original = baseDisplayPrice.price
-      const discounted = applyDiscount(original)
-      if (discounted >= original) return baseDisplayPrice
+      // Three tiers, high → low: list (Shopify compare-at, if any) → sale (current
+      // selling price) → discounted (automatic discount applied on top). The reveal
+      // counts down through whichever tiers are genuinely distinct.
+      const sellingPrice = baseDisplayPrice.price
+      const listPrice = baseDisplayPrice.compareAtPrice ?? null
+      const discounted = applyDiscount(sellingPrice)
+      if (discounted >= sellingPrice) return baseDisplayPrice
       return {
         type: 'single' as const,
-        price: discounted,
-        compareAtPrice: original,
+        price: discounted,                       // final price you pay
+        salePrice: sellingPrice,                 // pre-discount selling price (mid tier)
+        listPrice,                               // true MSRP (top tier) or null
+        compareAtPrice: listPrice ?? sellingPrice, // struck figure
         onSale: true,
         isAutoDiscount: true as const,
       }
@@ -839,42 +939,119 @@ export function ProductHeroBlock({
 
               if (!variationsDisplayPrice || !shopifyProduct) return null
 
+              // Typed view of the price display (extra tier fields exist on the discounted variants).
+              const v = variationsDisplayPrice as {
+                type: 'single' | 'range'
+                price: number
+                compareAtPrice?: number
+                onSale?: boolean
+                isAutoDiscount?: boolean
+                salePrice?: number
+                listPrice?: number | null
+              }
+              const range = variationsDisplayPrice as { originalMin?: number; originalMax?: number; minPrice: number; maxPrice: number }
+
+              const isAutoDiscount = v.isAutoDiscount === true
+              // Three-tier when an automatic discount sits on top of a genuine list price
+              // (Shopify compare-at): list → sale → discounted. Otherwise two-tier.
+              const threeTier =
+                v.type === 'single' &&
+                isAutoDiscount &&
+                v.listPrice != null &&
+                v.salePrice != null &&
+                v.salePrice < v.listPrice
+
               // Discount badge — only for an active automatic Shopify discount.
-              const isAutoDiscount = (variationsDisplayPrice as { isAutoDiscount?: boolean }).isAutoDiscount === true
               const amountLabel = discountAmountLabel(currency)
               const discountBadge = isAutoDiscount && amountLabel
                 ? `${activeDiscount?.title ? `${activeDiscount.title} · ` : ''}${amountLabel}`
                 : null
-              const range = variationsDisplayPrice as { originalMin?: number; originalMax?: number; minPrice: number; maxPrice: number }
+
+              // ── Staged reveal timeline (ms from mount) ───────────────────────────
+              // MSRP rises → strike sweeps → price counts down. When there's a discount:
+              //   three-tier: leg1 (list→sale) → badge → leg2 (sale→discounted)
+              //   two-tier:   badge → single count (sale→discounted)
+              // CSS beats use `both` fill so the resting state survives reduced-motion.
+              const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)'
+              const STRIKE_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'
+              const SALE_FADE = 900   // sale figure fades in
+              const LEG_DUR = 620     // each countdown leg
+              const LEG1_AT = 940     // first countdown (list→sale, or the only leg for plain sales)
+              const BADGE_3T = 1620   // badge after leg 1 (three-tier)
+              const LEG2_AT = 1820    // second countdown (sale→discounted)
+              const BADGE_2T = 940    // badge before the single countdown (two-tier)
+              const LEG_2T_AT = 1160  // single discount countdown (two-tier / range)
+              const badgeDelay = threeTier ? BADGE_3T : BADGE_2T
+
+              const anim = {
+                msrp: { animation: `price-rise 340ms ${EASE} 60ms both` },
+                strike: { animation: `price-strike 360ms ${STRIKE_EASE} 500ms both` },
+                sale: { animation: `price-rise 360ms ${EASE} ${SALE_FADE}ms both` },
+                badge: { animation: `price-badge-in 400ms ${EASE} ${badgeDelay}ms both` },
+              } as const
+
+              // Was-price (struck) + now-price (counting) markup, reused for single & range.
+              // <del>/<ins> carry the price-reduction semantics for assistive tech; the
+              // red sweep line is decorative (aria-hidden) so it isn't double-announced.
+              const renderSale = (wasLabel: string, saleNode: React.ReactNode) => (
+                <>
+                  <del
+                    className={cn("relative inline-block text-3xl font-semibold no-underline", accentColorClass)}
+                    style={anim.msrp}
+                  >
+                    {wasLabel}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute left-0 top-1/2 -mt-px h-0.5 w-full origin-left bg-kawai-red"
+                      style={anim.strike}
+                    />
+                  </del>
+                  <ins className="text-3xl font-bold text-kawai-red no-underline" style={anim.sale}>
+                    {saleNode}
+                  </ins>
+                </>
+              )
+
+              // Build the countdown legs for a single on-sale price.
+              const singleLegs = (): CountLeg[] => {
+                if (threeTier) {
+                  return [
+                    { to: v.salePrice!, atMs: LEG1_AT, durationMs: LEG_DUR },
+                    { to: v.price, atMs: LEG2_AT, durationMs: LEG_DUR },
+                  ]
+                }
+                // Two-tier auto discount → count after the badge; plain compare-at sale → count immediately.
+                return [{ to: v.price, atMs: isAutoDiscount ? LEG_2T_AT : LEG1_AT, durationMs: LEG_DUR }]
+              }
 
               return (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className={cn("flex items-baseline gap-3 flex-wrap", textColorClass)}>
                     <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
-                    {variationsDisplayPrice.type === 'single' ? (
-                      variationsDisplayPrice.onSale ? (
-                        <>
-                          <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
-                            {formatPrice(variationsDisplayPrice.compareAtPrice!, currency)}
-                          </span>
-                          <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            {formatPrice(variationsDisplayPrice.price, currency)}
-                          </span>
-                        </>
+                    {v.type === 'single' ? (
+                      v.onSale ? (
+                        renderSale(
+                          formatPrice(v.compareAtPrice ?? v.price, currency),
+                          <CountingPrice
+                            from={v.compareAtPrice ?? v.price}
+                            legs={singleLegs()}
+                            currency={currency}
+                          />,
+                        )
                       ) : (
                         <span className="text-3xl font-bold transition-all duration-300">
-                          {formatPrice(variationsDisplayPrice.price, currency)}
+                          {formatPrice(v.price, currency)}
                         </span>
                       )
                     ) : range.originalMin != null ? (
-                      <>
-                        <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
-                          {formatPrice(range.originalMin, currency)} - {formatPrice(range.originalMax!, currency)}
-                        </span>
-                        <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
-                          {formatPrice(range.minPrice, currency)} - {formatPrice(range.maxPrice, currency)}
-                        </span>
-                      </>
+                      renderSale(
+                        `${formatPrice(range.originalMin, currency)} - ${formatPrice(range.originalMax!, currency)}`,
+                        <>
+                          <CountingPrice from={range.originalMin} legs={[{ to: range.minPrice, atMs: LEG_2T_AT, durationMs: LEG_DUR }]} currency={currency} />
+                          {' - '}
+                          <CountingPrice from={range.originalMax!} legs={[{ to: range.maxPrice, atMs: LEG_2T_AT, durationMs: LEG_DUR }]} currency={currency} />
+                        </>,
+                      )
                     ) : (
                       <span className="text-3xl font-bold transition-all duration-300">
                         {formatPrice(range.minPrice, currency)} - {formatPrice(range.maxPrice, currency)}
@@ -882,7 +1059,10 @@ export function ProductHeroBlock({
                     )}
                   </div>
                   {discountBadge && (
-                    <span className="inline-flex items-center rounded-full bg-kawai-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-kawai-red">
+                    <span
+                      className="inline-flex items-center rounded-full bg-kawai-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-kawai-red"
+                      style={anim.badge}
+                    >
                       {discountBadge}
                     </span>
                   )}

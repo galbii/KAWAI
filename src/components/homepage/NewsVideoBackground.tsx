@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { getYouTubeEmbedUrl } from '@/lib/utils/youtube'
+import { BackgroundMotionToggle } from '@/components/ui/background-motion-toggle'
 
 export interface NewsVideoBackgroundProps {
   title: string
@@ -128,6 +129,9 @@ export function NewsVideoBackground({
           </video>
         )}
       </div>
+
+      {/* Background-motion pause control (WCAG 2.2.2) */}
+      <BackgroundMotionToggle className="bottom-6 right-6 lg:bottom-8 lg:right-8" />
 
       {/* Gradient Overlays for Better Text Contrast */}
       <div className="absolute inset-0 bg-gradient-to-t from-kawai-black/80 via-kawai-black/40 to-kawai-black/30" />

@@ -342,7 +342,7 @@ export function GenerationTrio() {
   const reduce = useReducedMotion()
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {generations.map((g: Generation, i) => (
         <motion.article
           key={g.name}
@@ -372,6 +372,13 @@ export function GenerationTrio() {
           <p className="mt-3 font-[family-name:var(--font-brand-sans)] text-[15px] leading-relaxed text-kawai-charcoal">
             {g.blurb}
           </p>
+          {g.href && (
+            <div className="mt-auto pt-6">
+              <BrandArrowLink href={g.href} tone="red">
+                {`Read ${g.name}’s story`}
+              </BrandArrowLink>
+            </div>
+          )}
         </motion.article>
       ))}
     </div>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { MediaRenderer } from "@/components/ui/media/MediaRenderer";
+import { BackgroundMotionToggle } from "@/components/ui/background-motion-toggle";
 import type { HeroProps } from "@/lib/types/homepage";
 import { DEFAULT_HERO_DATA } from "@/lib/types/homepage";
 
@@ -83,6 +84,9 @@ export function Hero({ data = DEFAULT_HERO_DATA, storefrontName }: HeroProps) {
       
       {/* Lighter Overlay - Let Background Video Shine */}
       <div className="absolute top-0 left-0 w-full h-full bg-kawai-black/35 z-10" />
+
+      {/* Background-motion pause control (WCAG 2.2.2) */}
+      <BackgroundMotionToggle />
 
       {/* Content - Centered */}
       <div className="container-brand max-w-8xl mx-auto px-8 sm:px-12 lg:px-16 relative z-20">

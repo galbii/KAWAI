@@ -251,7 +251,17 @@ export const generations: Generation[] = [
     tenure: '1989–2024',
     theme: 'Craft Meets Robotics',
     blurb:
-      'Married precision robotics to hand craftsmanship and launched the carbon-fibre Millennium III action — proving that technology and artistry could serve the same instrument.',
+      'Married precision robotics to hand craftsmanship and launched the carbon-fibre Millennium III action — proving that technology and artistry could serve the same instrument. Led Kawai for thirty-five years, until his passing in 2024.',
+    href: '/about/heritage/hirotaka-kawai',
+  },
+  {
+    name: 'Kentaro Kawai',
+    ordinal: 'Fourth Generation',
+    tenure: '2024–present',
+    theme: 'The Next Century',
+    blurb:
+      'Kawai’s fourth president, who took the helm in 2024 — three years before the company’s centennial — with a renewed philosophy, “Let your life resound,” and an ambition to lead piano-making into its second century.',
+    href: '/about/heritage/kentaro-kawai',
   },
 ]
 
@@ -325,6 +335,11 @@ export const milestones: Milestone[] = [
     year: '2002',
     title: 'The Millennium III action',
     description: 'Carbon-fibre-infused action components deliver faster repetition and greater strength than wood.',
+  },
+  {
+    year: '2024',
+    title: 'The fourth generation',
+    description: 'Following the passing of Hirotaka Kawai, Kentaro Kawai becomes the fourth president of Kawai — leading toward the company’s centennial in 2027.',
   },
   {
     year: 'Today',

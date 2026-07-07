@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ChevronUp, Play, X } from 'lucide-react'
 import type { ArtistI2LBlockData, VideoItem } from '../ArtistI2LBlock'
 import { cn } from '@/lib/utils'
+import { BackgroundMotionToggle } from '@/components/ui/background-motion-toggle'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -910,6 +911,10 @@ export function ArtistI2LRenderer({
             />
           </div>
         </div>
+
+        {/* Background-motion pause control (WCAG 2.2.2). Top-left: the CTAs sit
+            bottom-left and the full-height video playlist occupies the right. */}
+        <BackgroundMotionToggle className="bottom-auto right-auto top-6 left-6 z-30" />
 
         {/* Bottom-left radial scrim */}
         <div

@@ -4,6 +4,15 @@ import { buildCspHeader, ADMIN_CSP } from './src/lib/csp'
 
 const nextConfig: NextConfig = {
   experimental: {
+    // Server Actions (Payload admin form-state POSTs) are rejected when the browser
+    // Origin doesn't match the forwarded Host. Behind Cloudflare in front of the
+    // self-hosted origin, a mismatch makes Next.js re-render the route instead of
+    // running the action — which resets admin form fields on every keystroke.
+    // Whitelist the public admin hosts so the action executes. If the origin sees a
+    // different Host (e.g. an internal proxy rewrites it), add that value here too.
+    serverActions: {
+      allowedOrigins: ['kawaius.com', 'www.kawaius.com', 'ca.kawaius.com'],
+    },
     optimizePackageImports: ['framer-motion', 'lucide-react', '@heroicons/react'],
   },
   webpack: (config, { isServer }) => {

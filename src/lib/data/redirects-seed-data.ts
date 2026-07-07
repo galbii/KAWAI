@@ -1998,8 +1998,8 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
   // ─── CMS Pages — Company ─────────────────────────────────────────────────
   {
     from: '/company/hirotaka-kawai',
-    toUrl: '/about/heritage',
-    notes: '[CMS] Not in sitemap; generational story → /about/heritage',
+    toUrl: '/about/heritage/hirotaka-kawai',
+    notes: 'Third-president bio relocated under About > Heritage',
   },
   {
     from: '/company/kawai-heritage',
@@ -2008,8 +2008,8 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
   },
   {
     from: '/company/kentaro-kawai',
-    toUrl: '/about/heritage',
-    notes: '[CMS] Not in sitemap; generational story → /about/heritage',
+    toUrl: '/about/heritage/kentaro-kawai',
+    notes: 'Fourth-president bio relocated under About > Heritage',
   },
   {
     from: '/company/ryuyo-grand-piano-factory',

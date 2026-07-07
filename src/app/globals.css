@@ -17,16 +17,6 @@
   }
 }
 
-/* Accessibility (WCAG 2.2.2): the site-wide "Pause background motion" control
-   (MotionPauseControl) sets data-motion-paused on <html>. Freeze CSS keyframe
-   animations (Ken Burns zooms, marquees, etc.) while paused. Transitions —
-   hover/focus feedback — are intentionally left running. */
-[data-motion-paused="true"] *,
-[data-motion-paused="true"] *::before,
-[data-motion-paused="true"] *::after {
-  animation-play-state: paused !important;
-}
-
 @theme {
   /* Official Kawai Brand Colors - Standard Namespace for Auto-generation */
   --color-kawai-red: #E11922;        /* Official Kawai Red */
@@ -556,6 +546,28 @@ body {
 
 .animate-scroll-bounce {
   animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------ */
+/* Product price-reveal sequence (ProductHeroBlock)              */
+/* An elegant staged unveiling of a discounted price: each piece */
+/* rises in on a stagger; the MSRP strike-through is *drawn*     */
+/* left→right as the signature beat. fill-mode: both keeps the   */
+/* end state under reduced-motion (duration is clamped, not off).*/
+/* ------------------------------------------------------------ */
+@keyframes price-rise {
+  from { opacity: 0; transform: translateY(0.4rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes price-strike {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes price-badge-in {
+  0%   { opacity: 0; transform: translateY(0.25rem) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ============================================================ */

@@ -22,17 +22,11 @@ const AdminBar = dynamic(
   { ssr: false }
 )
 
-const MotionPauseControl = dynamic(
-  () => import('./MotionPauseControl').then(m => ({ default: m.MotionPauseControl })),
-  { ssr: false }
-)
-
 export function ClientOnlyOverlays() {
   return (
     <>
       <NavigationProgress />
       <AdminBar />
-      <MotionPauseControl />
     </>
   )
 }

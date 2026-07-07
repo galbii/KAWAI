@@ -145,6 +145,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/about', { changeFrequency: 'monthly', priority: 0.7 })
     add('/about/heritage', { changeFrequency: 'monthly', priority: 0.7 })
     add('/about/heritage/koichi-kawai', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/about/heritage/shigeru-kawai', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/about/heritage/hirotaka-kawai', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/about/heritage/kentaro-kawai', { changeFrequency: 'monthly', priority: 0.6 })
     add('/about/craftsmanship', { changeFrequency: 'monthly', priority: 0.7 })
 
     // ==========================================
