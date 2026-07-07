@@ -6,6 +6,7 @@ import type { JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 import type { DefaultNodeTypes, SerializedLinkNode } from '@payloadcms/richtext-lexical'
 import { getAllFaqSlugs, getFaqBySlug } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
+import { linkifyLexical } from '@/lib/lexical/linkify'
 
 export const revalidate = 3600
 
@@ -209,7 +210,7 @@ export default async function FaqDetailPage({
                 <div className="prose prose-lg max-w-none prose-headings:text-kawai-charcoal prose-a:text-kawai-red prose-a:no-underline hover:prose-a:underline">
                   <RichText
                     converters={makeAnswerConverters(2 - (minHeadingLevel(faqData.answer) ?? 2))}
-                    data={faqData.answer}
+                    data={linkifyLexical(faqData.answer)}
                   />
                 </div>
               ) : (
