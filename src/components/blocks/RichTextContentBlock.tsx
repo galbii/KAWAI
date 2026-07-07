@@ -43,6 +43,35 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
       </figure>
     )
   },
+  // Payload's default table converter emits inline `border:1px solid #ccc;
+  // padding:8px` on every cell, which (being inline) overrides the branded
+  // `.prose table/th/td` rules in globals.css. Override it to emit clean,
+  // style-free markup so the KAWAI `.prose` table styling applies, and wrap
+  // the table in a horizontally-scrollable container for narrow viewports.
+  table: ({ node, nodesToJSX }: { node: any; nodesToJSX: any }) => (
+    <div className="overflow-x-auto">
+      <table>
+        <tbody>{nodesToJSX({ nodes: node.children })}</tbody>
+      </table>
+    </div>
+  ),
+  tablerow: ({ node, nodesToJSX }: { node: any; nodesToJSX: any }) => (
+    <tr>{nodesToJSX({ nodes: node.children })}</tr>
+  ),
+  tablecell: ({ node, nodesToJSX }: { node: any; nodesToJSX: any }) => {
+    const Tag = (node.headerState > 0 ? 'th' : 'td') as 'th' | 'td'
+    const colSpan = node.colSpan && node.colSpan > 1 ? node.colSpan : undefined
+    const rowSpan = node.rowSpan && node.rowSpan > 1 ? node.rowSpan : undefined
+    return (
+      <Tag
+        colSpan={colSpan}
+        rowSpan={rowSpan}
+        style={node.backgroundColor ? { backgroundColor: node.backgroundColor } : undefined}
+      >
+        {nodesToJSX({ nodes: node.children })}
+      </Tag>
+    )
+  },
 })
 
 export function RichTextContentBlock({ content }: ContentRichTextBlock) {

@@ -154,6 +154,35 @@ button[class*="mobile-nav"] {
   --gutter-h: 40px;
 }
 
+/* ── 7b. Restore list markers inside the Lexical rich-text editor ──────── */
+/*
+ * The root app/layout.tsx imports globals.css (`@import "tailwindcss"`), whose
+ * Preflight resets `ul, ol { list-style: none }`. That reset cascades into the
+ * admin panel. Payload's own editor CSS (.LexicalEditorTheme__ul / __ol1) only
+ * sets `list-style-position` and relies on the browser default list-style-type
+ * (disc / decimal) — which Preflight has wiped, so bullets/numbers vanish in
+ * the WYSIWYG editor.
+ *
+ * These rules are UNLAYERED (custom.scss declares no @layer), so they beat both
+ * Preflight (Tailwind's @layer base) and Payload's own layered editor styles —
+ * restoring the markers without touching anything else in admin.
+ */
+.LexicalEditorTheme__ul {
+  list-style-type: disc;
+
+  ul {
+    list-style-type: circle;
+
+    ul {
+      list-style-type: square;
+    }
+  }
+}
+
+.LexicalEditorTheme__ol1 {
+  list-style-type: decimal;
+}
+
 /* ── 8. Sticky tab navigation on tall collection documents ─────────────── */
 /*
  * Payload's .tabs-field__tabs-wrap is not sticky by default — on tall
