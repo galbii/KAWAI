@@ -26,7 +26,9 @@ const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 type LexNode = {
   type?: string
   text?: string
-  format?: number
+  // Lexical text nodes carry a numeric format bitmask; element nodes (paragraph,
+  // link, …) carry a string element-format. Allow both.
+  format?: number | string
   children?: LexNode[]
   [k: string]: unknown
 }
