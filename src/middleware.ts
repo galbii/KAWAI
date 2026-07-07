@@ -139,11 +139,14 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes) — but explicitly include /api/access
+     * - admin (Payload CMS admin — frontend middleware must never run here;
+     *   it interferes with admin Server Actions/form-state and adds needless
+     *   latency. None of the middleware's concerns apply to the admin panel.)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|admin|_next/static|_next/image|favicon.ico).*)',
     '/api/access',
     '/terms',
   ],
