@@ -2,7 +2,6 @@
 
 import { memo } from 'react'
 import { motion } from 'framer-motion'
-import { GoogleMapsEmbed } from '@next/third-parties/google'
 import Image from 'next/image'
 
 interface LocationSectionProps {
@@ -26,13 +25,15 @@ function LocationSectionComponent({ locationName, address, phone, spotsRemaining
           <div className="grid lg:grid-cols-2 gap-0">
             {/* Google Maps Embed */}
             <div className="relative h-[400px] lg:h-[500px]">
-              <GoogleMapsEmbed
-                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
-                height={500}
+              <iframe
+                title={locationName ? `Map of ${locationName}` : 'Map of event location'}
+                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&q=${encodeURIComponent(address)}&zoom=15`}
                 width="100%"
-                mode="place"
-                q={address}
-                zoom="15"
+                height={500}
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
               />
             </div>
 

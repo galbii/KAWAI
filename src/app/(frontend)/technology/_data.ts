@@ -216,6 +216,71 @@ export const researchHighlights: ResearchHighlight[] = [
   },
 ]
 
+/**
+ * Millennium III — treated as Kawai's named signature technology (the way
+ * Bösendorfer owns "Resonance Case" or Fazioli its fourth pedal). Every figure
+ * is taken verbatim from Kawai's own ABS-Carbon / carbon-fiber detail pages.
+ */
+export const millenniumSignature = {
+  eyebrow: 'The Kawai Signature',
+  name: 'Millennium III Action',
+  lede: 'The heart of a Kawai is its action — and Kawai builds it differently. The Millennium III action is engineered from ABS-Carbon composite: the same class of material trusted in the Boeing 787, Formula 1, and elite bicycles, chosen for one reason — more strength and stiffness at less weight. The result is a touch that is faster, more durable, and more stable than any wooden action, season after season.',
+  stats: [
+    { value: '25%', label: 'Faster repetition than a wood action' },
+    { value: '50%+', label: 'Stronger than conventional wood parts' },
+    { value: '90%', label: 'Strength gained from carbon-fiber infusion' },
+    { value: '50+ yrs', label: 'Of composite action R&D' },
+  ],
+  videoId: 'yQyYVcIiuMg',
+  links: [
+    { label: 'How a piano action works', href: '/technology/piano-action' },
+    { label: 'Inside ABS-Carbon & carbon fiber', href: '/technology/carbon-fiber-technology' },
+  ],
+} as const
+
+/**
+ * Neotex — Kawai's premium key surface. Surfaced here because it answers a
+ * common research question ("are Kawai keys plastic / ivory?") and distinguishes
+ * what a player actually touches from the internal ABS-Carbon parts.
+ * Facts per Kawai (cellulose-fiber, silica-filled, moisture-absorbing).
+ */
+export const neotex = {
+  eyebrow: 'What You Touch',
+  name: 'Neotex Key Surfaces',
+  description:
+    'The ABS-Carbon composite is inside the action. The keys under your fingers are finished in Neotex — Kawai’s exclusive cellulose-fiber key surface with the understated texture of natural ivory and ebony. Its semi-porous, silica-filled finish absorbs the hand’s natural oils and perspiration for a secure grip through the most demanding passages, resists cracking and fading over decades, and stays static-free to shed dust.',
+  points: [
+    'Ivory-and-ebony feel, on both naturals and sharps',
+    'Absorbs moisture for a secure, slip-free touch',
+    'Resists cracking, fading, and static over years of play',
+  ],
+} as const
+
+/**
+ * Feel-reassurance FAQ. Forum research shows the objection is never "does
+ * composite work" (technicians praise it) — it's "does it feel different" and
+ * "is "plastic" as good as wood." These answers reframe the material and are
+ * mirrored into FAQPage JSON-LD. Every figure is from Kawai's own pages.
+ */
+export const techFaqs = [
+  {
+    q: 'Is a composite piano action as good as a wooden one?',
+    a: 'Better, in the ways that matter for playing. Kawai’s ABS-Carbon action parts are over 50% stronger and more durable than conventional wood, transfer more energy to the hammer, and make the Millennium III grand action about 25% faster. Because they don’t absorb moisture, they hold their precise regulation season after season — where wooden parts swell, shrink, and drift out of adjustment.',
+  },
+  {
+    q: 'Will a Kawai action feel like plastic?',
+    a: 'No. Pianists consistently describe the Millennium III touch as fast, even, and grand-like. "ABS-Carbon" refers to what the internal action parts are engineered from — not the playing surface. The keys you actually touch are finished in Neotex, a cellulose-fiber surface with the understated texture of ivory and ebony that absorbs moisture for a secure grip.',
+  },
+  {
+    q: 'Does the composite action hold up in humidity?',
+    a: 'Yes — that is one of its biggest advantages. Traditional wooden action parts expand and contract with humidity, altering the fine geometry of the action. ABS-Carbon does not shrink or swell, so a Kawai keeps its factory-set touch and repetition in climates and seasons that force frequent regulation on all-wood actions. The stability was independently confirmed in testing at Cal Poly.',
+  },
+  {
+    q: 'Is carbon fiber in a piano just marketing?',
+    a: 'It is the same reasoning that put carbon fiber in the Boeing 787, Formula 1 cars, and elite bicycles: more strength and stiffness at lower weight. Infusing carbon fiber into Kawai’s ABS-Styran increased part strength by 90%, letting the action move faster with less effort. Kawai has refined composite action design for more than 50 years — longer than anyone in the industry.',
+  },
+] as const
+
 export const pillars: Pillar[] = [
   { title: 'Research', description: 'Rigorous scientific investigation and material testing' },
   {

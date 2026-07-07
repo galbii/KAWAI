@@ -17,7 +17,7 @@ const SEO_DESCRIPTION =
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
-  const url = getSiteUrl(site) + '/company/koichi-kawai'
+  const url = getSiteUrl(site) + '/about/heritage/koichi-kawai'
   return {
     title: 'Koichi Kawai — Founder of Kawai Pianos | Spiritoso',
     description: SEO_DESCRIPTION,
@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     alternates: {
       canonical: url,
-      languages: getSiteAlternates('/company/koichi-kawai'),
+      languages: getSiteAlternates('/about/heritage/koichi-kawai'),
     },
     openGraph: {
       type: 'article',
@@ -68,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * kawai-global.com/company/history.
  */
 function buildJsonLd(siteUrl: string) {
-  const personId = `${siteUrl}/company/koichi-kawai#koichi-kawai`
+  const personId = `${siteUrl}/about/heritage/koichi-kawai#koichi-kawai`
   const orgId = 'https://www.kawai-global.com/#organization'
   return {
     '@context': 'https://schema.org',
@@ -123,12 +123,13 @@ function buildJsonLd(siteUrl: string) {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Home', item: `${siteUrl}/` },
-          { '@type': 'ListItem', position: 2, name: 'Company', item: `${siteUrl}/company` },
+          { '@type': 'ListItem', position: 2, name: 'About', item: `${siteUrl}/about` },
+          { '@type': 'ListItem', position: 3, name: 'Heritage', item: `${siteUrl}/about/heritage` },
           {
             '@type': 'ListItem',
-            position: 3,
+            position: 4,
             name: 'Koichi Kawai',
-            item: `${siteUrl}/company/koichi-kawai`,
+            item: `${siteUrl}/about/heritage/koichi-kawai`,
           },
         ],
       },

@@ -23,7 +23,8 @@ export const heritageCopy = {
   headline: 'A Family Legacy of Craft',
   body: 'In 1927, Koichi Kawai — a gifted inventor and former apprentice to Torakusu Yamaha — founded Kawai with a singular belief: that exceptional pianos should be within reach of every musician. Three generations later, that founding conviction still guides every instrument we build, marrying traditional Japanese craftsmanship with relentless scientific curiosity.',
   links: [
-    { label: 'Meet our founder, Koichi Kawai', href: '/company/koichi-kawai' },
+    { label: 'Our full heritage', href: '/about/heritage' },
+    { label: 'Meet our founder, Koichi Kawai', href: '/about/heritage/koichi-kawai' },
     { label: 'Our philosophy', href: '/company/our-philosophy' },
   ],
   plate: { kicker: 'Established', year: '1927' },

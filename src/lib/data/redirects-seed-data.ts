@@ -1998,33 +1998,38 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
   // ─── CMS Pages — Company ─────────────────────────────────────────────────
   {
     from: '/company/hirotaka-kawai',
-    toUrl: '/about',
-    notes: '[CMS] Not in sitemap; redirect to /about',
+    toUrl: '/about/heritage',
+    notes: '[CMS] Not in sitemap; generational story → /about/heritage',
   },
   {
     from: '/company/kawai-heritage',
-    toUrl: '/about',
-    notes: '[CMS] Not in sitemap; redirect to /about',
+    toUrl: '/about/heritage',
+    notes: '[CMS] Not in sitemap; heritage → /about/heritage',
   },
   {
     from: '/company/kentaro-kawai',
-    toUrl: '/about',
-    notes: '[CMS] Not in sitemap; redirect to /about',
+    toUrl: '/about/heritage',
+    notes: '[CMS] Not in sitemap; generational story → /about/heritage',
   },
   {
     from: '/company/ryuyo-grand-piano-factory',
-    toUrl: '/about',
-    notes: '[CMS] Not in sitemap; redirect to /about',
+    toUrl: '/about/craftsmanship',
+    notes: '[CMS] Not in sitemap; Ryuyo factory → /about/craftsmanship',
+  },
+  {
+    from: '/company/koichi-kawai',
+    toUrl: '/about/heritage/koichi-kawai',
+    notes: 'Founder page relocated under the About > Heritage umbrella',
   },
   {
     from: '/company/shigeru-kawai',
-    toUrl: '/pianos/shigeru-kawai',
-    notes: '[CMS] Redirect to Shigeru Kawai pianos page',
+    toUrl: '/about/heritage/shigeru-kawai',
+    notes: 'Shigeru Kawai (the man) → heritage bio (distinct from /pianos/shigeru-kawai line)',
   },
   {
     from: '/company/timeline',
-    toUrl: '/about',
-    notes: '[CMS] Not in sitemap; redirect to /about',
+    toUrl: '/about/heritage',
+    notes: '[CMS] Not in sitemap; company timeline → /about/heritage',
   },
 
   // ─── CMS Pages — Digital legacy sections ─────────────────────────────────
@@ -2170,8 +2175,8 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
   },
   {
     from: '/learn/heritage',
-    toUrl: '/company',
-    notes: '[CMS] GSC 404 export; /learn/ section → /company',
+    toUrl: '/about/heritage',
+    notes: '[CMS] GSC 404 export; heritage → /about/heritage',
   },
   {
     from: '/learn/kawai-innovation',

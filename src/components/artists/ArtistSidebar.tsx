@@ -53,6 +53,9 @@ export function ArtistSidebar({
 
   return (
     <div className="contents">
+      {/* Single semantic page heading — the visual name overlays below are
+          responsive duplicates, so they render as <p> to avoid multiple h1s. */}
+      <h1 className="sr-only">{name}</h1>
       {/* ── MOBILE HERO (hidden on lg+) ─────────────────────────── */}
       <div className="lg:hidden">
         {/* Back link */}
@@ -92,9 +95,9 @@ export function ArtistSidebar({
 
           {/* Name + tags overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-5">
-            <h1 className="text-3xl font-bold text-white leading-tight mb-3">
+            <p className="text-3xl font-bold text-white leading-tight mb-3">
               {name}
-            </h1>
+            </p>
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map(tag => (
@@ -180,9 +183,9 @@ export function ArtistSidebar({
               )}
 
               <div className="absolute bottom-0 left-0 right-0 p-5">
-                <h1 className="text-2xl font-bold text-white leading-tight mb-2.5">
+                <p className="text-2xl font-bold text-white leading-tight mb-2.5">
                   {name}
-                </h1>
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {tags.map(tag => (
                     <span

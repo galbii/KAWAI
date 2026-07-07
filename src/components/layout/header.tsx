@@ -749,6 +749,29 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     }, 500)
   }, [])
 
+  // Keyboard/click toggle for mega-menu triggers (WCAG 2.1.1) — the hover
+  // handlers alone leave these menus unreachable without a pointer.
+  const toggleMenu = useCallback((key: string) => {
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current)
+      menuTimeoutRef.current = null
+    }
+    setIsAutoHidden(false)
+    menuOpenedAtY.current = scrollY.get()
+    setActiveMenu((prev) => (prev === key ? null : key))
+  }, [scrollY])
+
+  // Escape closes any open mega-menu (WCAG 2.1.1 keyboard operability). Focus
+  // stays on the trigger button that opened it.
+  useEffect(() => {
+    if (!activeMenu) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActiveMenu(null)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [activeMenu])
+
   // If the mouse passes over a menu trigger within 200ms of a scroll event,
   // skip opening — prevents accidental menu opens while the user is scrolling.
   const isRecentlyScrolling = useCallback(
@@ -1197,6 +1220,10 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     onMouseLeave={isMounted ? handleNewsMenuClose : undefined}
                   >
                     <button
+                      onClick={() => toggleMenu('news')}
+                      aria-expanded={isNewsMenuOpen}
+                      aria-haspopup="true"
+                      aria-controls="news-mega-menu"
                       className={cn(
                         "px-3 py-2 font-medium text-kawai-charcoal transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
                         "hover:text-kawai-red/75 hover:bg-kawai-red/[0.06]",
@@ -1243,6 +1270,10 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                     onMouseLeave={isMounted ? handleResourcesMenuClose : undefined}
                   >
                     <button
+                      onClick={() => toggleMenu('resources')}
+                      aria-expanded={isResourcesMenuOpen}
+                      aria-haspopup="true"
+                      aria-controls="resources-mega-menu"
                       className={cn(
                         "px-3 py-2 font-medium text-kawai-charcoal transition-all duration-200 rounded-md font-[family-name:var(--font-brand-sans)] tracking-[0.05em] uppercase text-[12px]",
                         "hover:text-kawai-red/75 hover:bg-kawai-red/[0.06]",
@@ -1591,6 +1622,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
       {/* Resources Mega Menu - Rendered at root level for proper positioning */}
       <div
+        id="resources-mega-menu"
         onMouseEnter={isMounted ? handleResourcesMenuOpen : undefined}
         onMouseLeave={isMounted ? handleResourcesMenuClose : undefined}
       >
@@ -1611,6 +1643,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
       {/* News Mega Menu - Rendered at root level for proper positioning */}
       <div
+        id="news-mega-menu"
         onMouseEnter={isMounted ? handleNewsMenuOpen : undefined}
         onMouseLeave={isMounted ? handleNewsMenuClose : undefined}
       >

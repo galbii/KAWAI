@@ -537,6 +537,15 @@ export const Products: CollectionConfig = {
                   },
                 },
                 {
+                  name: 'valueType',
+                  type: 'select',
+                  options: ['percentage', 'fixed'],
+                  admin: {
+                    description: 'How to read "value": percentage (fraction 0–1) or fixed (amount off). Used to re-apply the discount per variation.',
+                    readOnly: true,
+                  },
+                },
+                {
                   name: 'value',
                   type: 'number',
                   admin: {
@@ -571,6 +580,15 @@ export const Products: CollectionConfig = {
                   type: 'text',
                   admin: {
                     description: 'Discount name in the CA Shopify store',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'valueType',
+                  type: 'select',
+                  options: ['percentage', 'fixed'],
+                  admin: {
+                    description: 'How to read "value": percentage (fraction 0–1) or fixed (amount off). Used to re-apply the discount per variation.',
                     readOnly: true,
                   },
                 },

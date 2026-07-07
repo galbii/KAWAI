@@ -595,6 +595,7 @@ function SlideMedia({ feature, priority }: { feature: FeatureSlide; priority: bo
   if (mediaType === 'youtube' && youtubeUrl) {
     return (
       <iframe
+        title={feature.title ? `${feature.title} — background video` : 'Background video'}
         src={parseYouTubeUrl(youtubeUrl)}
         className="absolute inset-0 w-full h-full scale-110 pointer-events-none"
         allow="autoplay; muted; loop"

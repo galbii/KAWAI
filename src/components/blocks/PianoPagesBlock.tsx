@@ -23,8 +23,6 @@ export default async function PianoPagesBlock({
 }: Props) {
   if (!category) return null
 
-  const SectionHeading = headingLevel
-
   const [products, collections, site] = await Promise.all([
     getCatalogProductsByCategory(category),
     getCollectionsForCategory(category),
@@ -35,19 +33,26 @@ export default async function PianoPagesBlock({
     (c) => c.youtubeUrl || c.mediaUrl || c.imageUrl,
   )
 
+  // The carousel renders the category title as the page heading when present.
+  // In that case the text heading below drops a level so there is only one h1.
+  const carouselShown = showCarousel !== false && carouselCollections.length > 0
+  const SectionHeading = carouselShown ? 'h2' : headingLevel
+
   const headingText = heading ?? (category ? category.charAt(0).toUpperCase() + category.slice(1) + ' Pianos' : null)
 
   return (
     <section id="piano-pages-browser">
-      {showCarousel !== false && carouselCollections.length > 0 && (
+      {carouselShown && (
         <CollectionVideoCarousel
           collections={carouselCollections}
           category={category}
           height={carouselHeight ?? 'large'}
           autoplayInterval={carouselAutoplayInterval ?? 4000}
+          headingLevel={headingLevel}
         />
       )}
-      {/* SEO H1 — server-rendered, technically visible (has color + size), not hidden */}
+      {/* Secondary text heading — server-rendered, faint. Drops to h2 when the
+          carousel above already provides the page heading (single-h1 rule). */}
       {headingText && (
         <div className="bg-white px-6 pt-6 pb-1">
           <SectionHeading

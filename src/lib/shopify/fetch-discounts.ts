@@ -62,6 +62,13 @@ export interface NormalizedDiscount {
 export interface ProductDiscount {
   /** Discount name in Shopify */
   title?: string | null
+  /**
+   * How to read `value`: 'percentage' → `value` is a fraction 0–1; 'fixed' →
+   * `value` is an amount off. Stored so the frontend can re-apply the discount to
+   * an individual variation's price (the synced `discountedPrice` only reflects the
+   * min variant price). Null when no discount applies.
+   */
+  valueType?: 'percentage' | 'fixed' | null
   /** Raw discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount */
   value?: number | null
   /** Effective price after the discount */
@@ -280,7 +287,7 @@ export function computeProductDiscount(params: {
 }): ProductDiscount {
   const { productGid, collectionGids = [], basePrice, currency, discounts } = params
 
-  const empty: ProductDiscount = { title: null, value: null, discountedPrice: null }
+  const empty: ProductDiscount = { title: null, valueType: null, value: null, discountedPrice: null }
 
   if (!discounts.length || basePrice == null || !isFinite(basePrice) || basePrice <= 0) {
     return empty
@@ -328,6 +335,7 @@ export function computeProductDiscount(params: {
 
   return {
     title: best.title,
+    valueType: best.valueType,
     value: best.value,
     discountedPrice,
   }

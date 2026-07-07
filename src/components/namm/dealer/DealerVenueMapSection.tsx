@@ -103,6 +103,7 @@ export default function DealerVenueMapSection({
             <h3 className="text-xl md:text-2xl font-serif text-white mb-4">Venue Location</h3>
             <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-lg">
               <iframe
+                title="Map of Anaheim Convention Center, 800 W Katella Ave, Anaheim, CA"
                 src="https://maps.google.com/maps?q=Anaheim+Convention+Center,+800+W+Katella+Ave,+Anaheim,+CA+92802&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 width="100%"
                 height="100%"

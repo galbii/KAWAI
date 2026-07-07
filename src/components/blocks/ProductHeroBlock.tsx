@@ -378,6 +378,50 @@ export function ProductHeroBlock({
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
 
+  // Active automatic Shopify discount — the synced snapshot on the product doc.
+  // Shopify "Discounts" are a separate resource from price/compareAtPrice and apply
+  // only at checkout, so computeProductDiscount() precomputed the effective price at
+  // sync time. We re-apply the discount per-variation here so a selected variation
+  // shows its own sale price. Automatic discount WINS over any compareAtPrice sale.
+  const discountSnapshot = site === 'cad'
+    ? (product as any).shopifyDiscountCAD
+    : product.shopifyDiscount
+  const activeDiscount = (() => {
+    if (!discountSnapshot) return null
+    const { value, discountedPrice, title } = discountSnapshot as {
+      value?: number | null
+      discountedPrice?: number | null
+      title?: string | null
+      valueType?: 'percentage' | 'fixed' | null
+    }
+    // A present discountedPrice is the sync's "a discount is active" signal.
+    if (value == null || discountedPrice == null || !isFinite(value) || value <= 0) return null
+    // valueType was added to the sync alongside this feature; older synced docs may
+    // lack it — infer from the value (percentages are stored as a 0–1 fraction).
+    const valueType: 'percentage' | 'fixed' =
+      discountSnapshot.valueType ?? (value < 1 ? 'percentage' : 'fixed')
+    return { title: title ?? null, valueType, value }
+  })()
+
+  // Apply the active discount to a single price. Returns the input unchanged when no
+  // discount applies or the math wouldn't actually lower the price.
+  const applyDiscount = (price: number): number => {
+    if (!activeDiscount) return price
+    const discounted = activeDiscount.valueType === 'percentage'
+      ? price * (1 - activeDiscount.value)
+      : price - activeDiscount.value
+    const rounded = Math.max(0, Math.round(discounted * 100) / 100)
+    return rounded < price ? rounded : price
+  }
+
+  // Human-readable discount amount, e.g. "20% off" or "$500 off"
+  const discountAmountLabel = (currency: string): string | null => {
+    if (!activeDiscount) return null
+    return activeDiscount.valueType === 'percentage'
+      ? `${Math.round(activeDiscount.value * 100)}% off`
+      : `${formatPrice(activeDiscount.value, currency)} off`
+  }
+
   // Helper to get Shopify variant price for a CMS variation
   const getVariationPrice = (variationName: string) => {
     if (!shopifyProduct) return null
@@ -479,7 +523,44 @@ export function ProductHeroBlock({
     }
   }
 
-  const variationsDisplayPrice = getVariationsDisplayPrice()
+  const baseDisplayPrice = getVariationsDisplayPrice()
+
+  // Layer the active automatic discount over the base price display. Automatic discount
+  // wins: the discounted figure becomes the price, the pre-discount figure is struck
+  // through, and `isAutoDiscount` flags the row so we can render the discount badge.
+  const variationsDisplayPrice = (() => {
+    if (!baseDisplayPrice || !activeDiscount) return baseDisplayPrice
+
+    if (baseDisplayPrice.type === 'single') {
+      // Pre-discount price is the current selling price — the automatic discount takes
+      // precedence over (and replaces) any compareAtPrice strikethrough.
+      const original = baseDisplayPrice.price
+      const discounted = applyDiscount(original)
+      if (discounted >= original) return baseDisplayPrice
+      return {
+        type: 'single' as const,
+        price: discounted,
+        compareAtPrice: original,
+        onSale: true,
+        isAutoDiscount: true as const,
+      }
+    }
+
+    // Range: discount both ends, keep the originals for the strikethrough.
+    const minPrice = applyDiscount(baseDisplayPrice.minPrice)
+    const maxPrice = applyDiscount(baseDisplayPrice.maxPrice)
+    if (minPrice >= baseDisplayPrice.minPrice && maxPrice >= baseDisplayPrice.maxPrice) {
+      return baseDisplayPrice
+    }
+    return {
+      type: 'range' as const,
+      minPrice,
+      maxPrice,
+      originalMin: baseDisplayPrice.minPrice,
+      originalMax: baseDisplayPrice.maxPrice,
+      isAutoDiscount: true as const,
+    }
+  })()
 
   // Off-white background fading to white in center for image blending
   const getBackgroundClasses = () => {
@@ -757,27 +838,52 @@ export function ProductHeroBlock({
               const currency = site === 'cad' ? 'CAD' : (shopifyProduct?.price.currency ?? 'USD')
 
               if (!variationsDisplayPrice || !shopifyProduct) return null
+
+              // Discount badge — only for an active automatic Shopify discount.
+              const isAutoDiscount = (variationsDisplayPrice as { isAutoDiscount?: boolean }).isAutoDiscount === true
+              const amountLabel = discountAmountLabel(currency)
+              const discountBadge = isAutoDiscount && amountLabel
+                ? `${activeDiscount?.title ? `${activeDiscount.title} · ` : ''}${amountLabel}`
+                : null
+              const range = variationsDisplayPrice as { originalMin?: number; originalMax?: number; minPrice: number; maxPrice: number }
+
               return (
-                <div className={cn("flex items-baseline gap-3", textColorClass)}>
-                  <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
-                  {variationsDisplayPrice.type === 'single' ? (
-                    variationsDisplayPrice.onSale ? (
+                <div className="space-y-1.5">
+                  <div className={cn("flex items-baseline gap-3 flex-wrap", textColorClass)}>
+                    <span className="text-3xl font-bold tracking-wide text-kawai-red">MSRP:</span>
+                    {variationsDisplayPrice.type === 'single' ? (
+                      variationsDisplayPrice.onSale ? (
+                        <>
+                          <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
+                            {formatPrice(variationsDisplayPrice.compareAtPrice!, currency)}
+                          </span>
+                          <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            {formatPrice(variationsDisplayPrice.price, currency)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-3xl font-bold transition-all duration-300">
+                          {formatPrice(variationsDisplayPrice.price, currency)}
+                        </span>
+                      )
+                    ) : range.originalMin != null ? (
                       <>
                         <span className="text-3xl font-bold line-through opacity-60 animate-in fade-in duration-500">
-                          {formatPrice(variationsDisplayPrice.compareAtPrice!, currency)}
+                          {formatPrice(range.originalMin, currency)} - {formatPrice(range.originalMax!, currency)}
                         </span>
                         <span className="text-3xl font-bold text-kawai-red animate-in fade-in slide-in-from-bottom-2 duration-500">
-                          {formatPrice(variationsDisplayPrice.price, currency)}
+                          {formatPrice(range.minPrice, currency)} - {formatPrice(range.maxPrice, currency)}
                         </span>
                       </>
                     ) : (
                       <span className="text-3xl font-bold transition-all duration-300">
-                        {formatPrice(variationsDisplayPrice.price, currency)}
+                        {formatPrice(range.minPrice, currency)} - {formatPrice(range.maxPrice, currency)}
                       </span>
-                    )
-                  ) : (
-                    <span className="text-3xl font-bold transition-all duration-300">
-                      {formatPrice(variationsDisplayPrice.minPrice, currency)} - {formatPrice(variationsDisplayPrice.maxPrice, currency)}
+                    )}
+                  </div>
+                  {discountBadge && (
+                    <span className="inline-flex items-center rounded-full bg-kawai-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-kawai-red">
+                      {discountBadge}
                     </span>
                   )}
                 </div>

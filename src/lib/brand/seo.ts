@@ -57,6 +57,46 @@ export async function buildPageMetadata(input: PageMetaInput): Promise<Metadata>
   }
 }
 
+/**
+ * Canonical entity @ids. Reused across every page's JSON-LD so Google resolves
+ * one Organization and one founder Person entity, no matter which page is
+ * crawled. The Organization @id matches the node the koichi-kawai page has
+ * always emitted (kawai-global is the manufacturer of record). The Person @id
+ * lives on the founder page but is referenced from here as `founder`.
+ */
+export const ORG_ID = 'https://www.kawai-global.com/#organization'
+export const koichiPersonId = (siteUrl: string) => `${siteUrl}/about/heritage/koichi-kawai#koichi-kawai`
+
+/**
+ * The single canonical schema.org Organization node for Kawai. Reference it as
+ * `about`/`publisher` from any page's `@graph` (it carries its own `@id`, so
+ * repeating it across pages is deduped by Google, not double-counted). Facts
+ * verified against Wikidata / kawai-global.com/company/history.
+ */
+export function buildOrganizationNode(siteUrl: string) {
+  return {
+    '@type': 'Organization',
+    '@id': ORG_ID,
+    name: 'Kawai Musical Instruments',
+    legalName: 'Kawai Musical Instruments Manufacturing Co., Ltd.',
+    url: 'https://www.kawai-global.com/',
+    logo: `${siteUrl}/images/logos/kawai-logo-red-2x.png`,
+    foundingDate: '1927',
+    foundingLocation: { '@type': 'Place', name: 'Hamamatsu, Shizuoka, Japan' },
+    founder: { '@id': koichiPersonId(siteUrl) },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Hamamatsu',
+      addressRegion: 'Shizuoka',
+      addressCountry: 'JP',
+    },
+    sameAs: [
+      'https://en.wikipedia.org/wiki/Kawai_Musical_Instruments',
+      'https://www.wikidata.org/wiki/Q1425561',
+    ],
+  }
+}
+
 type BreadcrumbStep = { name: string; path: string }
 
 /**

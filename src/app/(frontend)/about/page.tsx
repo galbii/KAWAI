@@ -1,8 +1,46 @@
 import type { Metadata } from 'next'
 import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import { JsonLd } from '@/components/brand'
+import { buildBreadcrumb, buildOrganizationNode, ORG_ID } from '@/lib/brand/seo'
 import AboutScroll from './_components/AboutScroll'
+import AboutAnswers, { aboutFaqs } from './_components/AboutAnswers'
 
 export const revalidate = 3600
+
+/**
+ * JSON-LD for the About hub. `AboutPage.mainEntity` points at the canonical
+ * Organization node (shared @id), and a FAQPage mirrors the visible Q&A in
+ * AboutAnswers so Google/LLMs can cite the where-made / who-makes / is-it-good
+ * answers directly. Facts live in `aboutFaqs` (single source of truth).
+ */
+function buildJsonLd(siteUrl: string) {
+  const url = `${siteUrl}/about`
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildOrganizationNode(siteUrl),
+      {
+        '@type': 'AboutPage',
+        '@id': `${url}#aboutpage`,
+        url,
+        name: 'About Kawai',
+        mainEntity: { '@id': ORG_ID },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: aboutFaqs.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      },
+      buildBreadcrumb(siteUrl, [
+        { name: 'Home', path: '/' },
+        { name: 'About', path: '/about' },
+      ]),
+    ],
+  }
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
@@ -40,6 +78,15 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function AboutPage() {
-  return <AboutScroll />
+export default async function AboutPage() {
+  const site = await getSite()
+  const jsonLd = buildJsonLd(getSiteUrl(site))
+
+  return (
+    <>
+      <JsonLd data={jsonLd} />
+      <AboutScroll />
+      <AboutAnswers />
+    </>
+  )
 }

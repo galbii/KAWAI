@@ -68,6 +68,7 @@ export function ShowroomLocation({ eventLocation }: ShowroomLocationProps) {
             }}
           >
             <iframe
+              title={`Map of ${eventLocation.venueName ?? 'the event location'}`}
               width="100%"
               height="100%"
               style={{ border: 0, display: 'block', minHeight: '360px' }}

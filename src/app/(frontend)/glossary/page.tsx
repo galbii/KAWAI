@@ -68,7 +68,7 @@ const sections = [
       {
         title: 'Koichi Kawai — Founder',
         description: 'The extraordinary story of the inventor who started it all in 1927.',
-        href: '/company/koichi-kawai',
+        href: '/about/heritage/koichi-kawai',
       },
       {
         title: "The Winner's Choice",

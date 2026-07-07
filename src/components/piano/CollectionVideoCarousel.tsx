@@ -14,6 +14,9 @@ export interface CollectionVideoCarouselProps {
   category?: string | null
   autoplayInterval?: number
   height?: 'medium' | 'large' | 'fullscreen'
+  /** Heading level for the category title. Defaults to 'h1' for standalone use;
+   *  pass 'h2' when the parent already provides the page h1 (avoids duplicate h1). */
+  headingLevel?: 'h1' | 'h2'
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -158,7 +161,9 @@ export function CollectionVideoCarousel({
   category,
   autoplayInterval = 4000,
   height = 'large',
+  headingLevel = 'h1',
 }: CollectionVideoCarouselProps) {
+  const CategoryHeading = headingLevel
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -233,7 +238,7 @@ const displayTitle = collection.heading ?? collection.title
 
             {/* Category heading — fixed, dominant */}
             {categoryLabel ? (
-              <h1
+              <CategoryHeading
                 className="text-7xl md:text-8xl lg:text-9xl text-white leading-[0.92] mb-5"
                 style={{
                   fontFamily: 'var(--font-brand-sans)',
@@ -242,7 +247,7 @@ const displayTitle = collection.heading ?? collection.title
                 }}
               >
                 {categoryLabel}
-              </h1>
+              </CategoryHeading>
             ) : (
               <p
                 className="text-4xl md:text-5xl text-white leading-none mb-5"

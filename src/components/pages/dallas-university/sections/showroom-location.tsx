@@ -73,6 +73,7 @@ export function ShowroomLocation() {
               <div className="lg:col-span-3 relative">
                 <div className="w-full h-[600px]">
                   <iframe
+                    title="Map of 5800 Richmond Ave, Houston, TX"
                     width="100%"
                     height="600"
                     style={{ border: 0 }}

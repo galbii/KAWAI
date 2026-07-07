@@ -2119,6 +2119,10 @@ export interface Product {
      */
     title?: string | null;
     /**
+     * How to read "value": percentage (fraction 0–1) or fixed (amount off). Used to re-apply the discount per variation.
+     */
+    valueType?: ('percentage' | 'fixed') | null;
+    /**
      * Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount
      */
     value?: number | null;
@@ -2135,6 +2139,10 @@ export interface Product {
      * Discount name in the CA Shopify store
      */
     title?: string | null;
+    /**
+     * How to read "value": percentage (fraction 0–1) or fixed (amount off). Used to re-apply the discount per variation.
+     */
+    valueType?: ('percentage' | 'fixed') | null;
     /**
      * Discount value — a fraction for a percentage discount (0.2 = 20%), or an amount for a fixed discount
      */
@@ -12398,6 +12406,7 @@ export interface ProductsSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        valueType?: T;
         value?: T;
         discountedPrice?: T;
       };
@@ -12405,6 +12414,7 @@ export interface ProductsSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        valueType?: T;
         value?: T;
         discountedPrice?: T;
       };

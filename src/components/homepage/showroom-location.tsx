@@ -1,17 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import type { ShowroomLocationProps } from "@/lib/types/homepage";
 import { DEFAULT_SHOWROOM_DATA } from "@/lib/types/homepage";
-
-const GoogleMapsEmbed = dynamic(
-  () => import('@next/third-parties/google').then((m) => ({ default: m.GoogleMapsEmbed })),
-  {
-    ssr: false,
-    loading: () => <div className="w-full h-[600px] bg-kawai-pearl animate-pulse" />,
-  }
-);
 
 // Helper function to get SVG icon based on icon name
 function getFeatureIconSvg(iconName: string) {
@@ -51,13 +42,15 @@ export function ShowroomLocation({ data = DEFAULT_SHOWROOM_DATA }: ShowroomLocat
         <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Map Section - Full Width */}
           <div className="relative w-full">
-            <GoogleMapsEmbed
-              apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}
-              height={600}
+            <iframe
+              title={`Map of ${data.showroomInfo.name}`}
+              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&q=${encodeURIComponent(data.showroomInfo.address)}&zoom=15`}
               width="100%"
-              mode="place"
-              q={data.showroomInfo.address}
-              zoom="15"
+              height={600}
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
             />
             {/* Subtle overlay gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-kawai-black/5 via-transparent to-transparent pointer-events-none" />

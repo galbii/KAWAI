@@ -873,7 +873,7 @@ export const HomePage: CollectionConfig = {
                   title: 'Instrumental to Life',
                   description: 'Redefining harmony between tradition and innovation',
                   category: 'news',
-                  link: '/about/instrumental-to-life'
+                  link: '/instrumental-to-life'
                 },
                 {
                   title: 'Kawai Piano Gallery',

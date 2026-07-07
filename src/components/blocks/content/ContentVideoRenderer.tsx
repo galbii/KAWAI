@@ -21,6 +21,7 @@ export function ContentVideoRenderer({
         <figure className="my-8">
           <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-lg">
             <iframe
+              title={caption || 'YouTube video player'}
               className="absolute top-0 left-0 w-full h-full"
               src={`https://www.youtube.com/embed/${youtubeId}${autoplay ? '?autoplay=1&mute=1' : ''}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -45,6 +46,7 @@ export function ContentVideoRenderer({
         <figure className="my-8">
           <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-lg">
             <iframe
+              title={caption || 'Vimeo video player'}
               className="absolute top-0 left-0 w-full h-full"
               src={`https://player.vimeo.com/video/${vimeoId}${autoplay ? '?autoplay=1&muted=1' : ''}`}
               allow="autoplay; fullscreen; picture-in-picture"

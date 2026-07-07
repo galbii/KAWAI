@@ -1,12 +1,21 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { BrandArrowLink, BrandCTA, JsonLd, Reveal, Section } from '@/components/brand'
-import { buildBreadcrumb, buildPageMetadata } from '@/lib/brand/seo'
+import { BrandArrowLink, BrandCTA, JsonLd, Reveal, Section, StatStrip } from '@/components/brand'
+import { buildBreadcrumb, buildOrganizationNode, buildPageMetadata, ORG_ID } from '@/lib/brand/seo'
 import { getSite, getSiteUrl } from '@/lib/site-context'
 import { brandImages } from '@/lib/brand/images'
 import { TechFeature } from './_components/TechFeature'
 import { TechMedia } from './_components/TechMedia'
-import { SEO, heroImage, pillars, researchHighlights, technologies } from './_data'
+import {
+  SEO,
+  heroImage,
+  millenniumSignature,
+  neotex,
+  pillars,
+  researchHighlights,
+  techFaqs,
+  technologies,
+} from './_data'
 
 export const revalidate = 3600
 
@@ -24,9 +33,31 @@ export function generateMetadata(): Promise<Metadata> {
 }
 
 function buildJsonLd(siteUrl: string) {
+  const url = `${siteUrl}${PATH}`
   return {
     '@context': 'https://schema.org',
     '@graph': [
+      buildOrganizationNode(siteUrl),
+      {
+        '@type': 'TechArticle',
+        '@id': `${url}#techarticle`,
+        headline: 'Kawai Piano Technology — The Engineering Behind the Instrument',
+        description: SEO.description,
+        about: { '@id': ORG_ID },
+        publisher: { '@id': ORG_ID },
+        image: heroImage,
+        mainEntityOfPage: url,
+      },
+      {
+        '@type': 'VideoObject',
+        name: 'Kawai Millennium III Action',
+        description:
+          'How Kawai’s Millennium III action uses ABS-Carbon composite for a faster, stronger, more stable touch than conventional wooden actions.',
+        thumbnailUrl: `https://img.youtube.com/vi/${millenniumSignature.videoId}/maxresdefault.jpg`,
+        embedUrl: `https://www.youtube.com/embed/${millenniumSignature.videoId}`,
+        contentUrl: `https://www.youtube.com/watch?v=${millenniumSignature.videoId}`,
+        publisher: { '@id': ORG_ID },
+      },
       {
         '@type': 'ItemList',
         name: 'Kawai Piano Technologies',
@@ -35,6 +66,14 @@ function buildJsonLd(siteUrl: string) {
           position: i + 1,
           name: t.name,
           url: `${siteUrl}${t.detailPath}`,
+        })),
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: techFaqs.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
       buildBreadcrumb(siteUrl, [
@@ -96,6 +135,61 @@ export default async function TechnologyPage() {
         maxWidth="max-w-3xl"
       >
         <span className="sr-only">Explore the technologies below.</span>
+      </Section>
+
+      {/* Signature technology — Millennium III as Kawai's named differentiator */}
+      <Section
+        tone="black"
+        eyebrow={millenniumSignature.eyebrow}
+        title={millenniumSignature.name}
+        intro={millenniumSignature.lede}
+        maxWidth="max-w-5xl"
+      >
+        <Reveal className="mt-12">
+          <TechMedia
+            videoId={millenniumSignature.videoId}
+            label={millenniumSignature.name}
+            aspectClass="aspect-video"
+          />
+        </Reveal>
+        <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
+          {millenniumSignature.links.map((link) => (
+            <BrandArrowLink key={link.href} href={link.href} tone="light">
+              {link.label}
+            </BrandArrowLink>
+          ))}
+        </div>
+      </Section>
+      <StatStrip stats={[...millenniumSignature.stats]} tone="pearl" />
+
+      {/* Neotex — what the player actually touches (separates surface from action) */}
+      <Section tone="white" maxWidth="max-w-5xl">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+          <Reveal>
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-kawai-charcoal/55">
+              {neotex.eyebrow}
+            </p>
+            <h2 className="mt-4 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,4vw,3rem)] font-light leading-[1.08] tracking-tight text-kawai-black">
+              {neotex.name}
+            </h2>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-kawai-charcoal sm:text-lg">
+              {neotex.description}
+            </p>
+          </Reveal>
+          <Reveal>
+            <ul className="space-y-4 border-t border-kawai-black/10 pt-8">
+              {neotex.points.map((point) => (
+                <li key={point} className="flex items-start gap-3 text-kawai-charcoal">
+                  <span
+                    aria-hidden
+                    className="mt-2 block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-kawai-red"
+                  />
+                  <span className="leading-relaxed">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
       </Section>
 
       {/* The technologies */}
@@ -160,6 +254,37 @@ export default async function TechnologyPage() {
         <div className="mt-14 flex justify-center">
           <BrandArrowLink href="/pianos" tone="red">
             Experience These Technologies
+          </BrandArrowLink>
+        </div>
+      </Section>
+
+      {/* The feel question — reframe the "plastic vs wood" objection researchers arrive with */}
+      <Section
+        id="the-feel-question"
+        tone="pearl"
+        eyebrow="The Feel Question"
+        title="Composite, wood, and what your fingers actually feel"
+        intro="The questions pianists ask before choosing a Kawai — answered plainly."
+        maxWidth="max-w-3xl"
+      >
+        <dl className="mt-6 divide-y divide-kawai-neutral/70 border-t border-kawai-neutral/70">
+          {techFaqs.map((faq) => (
+            <div key={faq.q} className="py-7">
+              <dt>
+                <h3 className="font-[family-name:var(--font-brand-serif)] text-xl font-light text-kawai-black md:text-2xl">
+                  {faq.q}
+                </h3>
+              </dt>
+              <dd className="mt-3 leading-relaxed text-kawai-charcoal">{faq.a}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
+          <BrandArrowLink href="/technology/piano-action" tone="red">
+            How a piano action works
+          </BrandArrowLink>
+          <BrandArrowLink href="/technology/carbon-fiber-technology" tone="red">
+            Inside ABS-Carbon
           </BrandArrowLink>
         </div>
       </Section>

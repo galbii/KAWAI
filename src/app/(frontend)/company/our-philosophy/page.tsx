@@ -159,7 +159,7 @@ export default function OurPhilosophyPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 shrink-0">
               <Link
-                href="/company/koichi-kawai"
+                href="/about/heritage/koichi-kawai"
                 className="inline-block px-6 py-3 bg-kawai-red text-white text-sm font-medium rounded hover:bg-kawai-red-700 transition-colors duration-200 text-center"
               >
                 Koichi Kawai

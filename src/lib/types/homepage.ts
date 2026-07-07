@@ -309,7 +309,7 @@ export const DEFAULT_NEWS_CAROUSEL_DATA: NewsCarouselSectionData = {
       description: 'Redefining harmony between tradition and innovation',
       image: '/images/banners/I2LNew-banner.jpg',
       category: 'news',
-      link: '/about/instrumental-to-life'
+      link: '/instrumental-to-life'
     },
     {
       title: 'Kawai Piano Gallery',

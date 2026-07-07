@@ -285,9 +285,9 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
               <p className="text-[10px] tracking-[0.3em] uppercase text-kawai-red font-medium mb-4 font-[family-name:var(--font-brand-sans)]">
                 Piano Accessories
               </p>
-              <h1 className="text-4xl md:text-[52px] font-[family-name:var(--font-brand-luxury)] leading-none tracking-[-0.01em]">
+              <h2 className="text-4xl md:text-[52px] font-[family-name:var(--font-brand-luxury)] leading-none tracking-[-0.01em]">
                 Find the perfect<br />complement.
-              </h1>
+              </h2>
             </div>
             <p className="hidden md:block text-white/25 text-sm max-w-[220px] text-right leading-relaxed font-[family-name:var(--font-brand-sans)]">
               Select a model to discover benches, pedals, covers, and more — matched to your instrument.

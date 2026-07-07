@@ -17,6 +17,16 @@
   }
 }
 
+/* Accessibility (WCAG 2.2.2): the site-wide "Pause background motion" control
+   (MotionPauseControl) sets data-motion-paused on <html>. Freeze CSS keyframe
+   animations (Ken Burns zooms, marquees, etc.) while paused. Transitions —
+   hover/focus feedback — are intentionally left running. */
+[data-motion-paused="true"] *,
+[data-motion-paused="true"] *::before,
+[data-motion-paused="true"] *::after {
+  animation-play-state: paused !important;
+}
+
 @theme {
   /* Official Kawai Brand Colors - Standard Namespace for Auto-generation */
   --color-kawai-red: #E11922;        /* Official Kawai Red */

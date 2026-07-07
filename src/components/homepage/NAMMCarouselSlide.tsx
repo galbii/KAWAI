@@ -174,14 +174,14 @@ export function NAMMCarouselSlide({ prefersReducedMotion = false }: NAMMCarousel
             </motion.div>
 
             {/* Title */}
-            <motion.h3
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
               className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-light font-serif text-white leading-tight"
             >
               Visit Kawai at NAMM 2026
-            </motion.h3>
+            </motion.h2>
 
             {/* Description */}
             <motion.p
