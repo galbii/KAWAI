@@ -510,14 +510,6 @@ export function ProductHeroBlock({
     return rounded < price ? rounded : price
   }
 
-  // Human-readable discount amount, e.g. "20% off" or "$500 off"
-  const discountAmountLabel = (currency: string): string | null => {
-    if (!activeDiscount) return null
-    return activeDiscount.valueType === 'percentage'
-      ? `${Math.round(activeDiscount.value * 100)}% off`
-      : `${formatPrice(activeDiscount.value, currency)} off`
-  }
-
   // Helper to get Shopify variant price for a CMS variation
   const getVariationPrice = (variationName: string) => {
     if (!shopifyProduct) return null
@@ -966,10 +958,11 @@ export function ProductHeroBlock({
                 v.salePrice != null &&
                 v.salePrice < v.listPrice
 
-              // Discount badge — only for an active automatic Shopify discount.
-              const amountLabel = discountAmountLabel(currency)
-              const discountBadge = isAutoDiscount && amountLabel
-                ? `${activeDiscount?.title ? `${activeDiscount.title} · ` : ''}${amountLabel}`
+              // Discount badge — the sale title only, for an active automatic Shopify
+              // discount. The amount (e.g. "20% off") is intentionally omitted; the
+              // strike-through MSRP → sale-price animation already conveys the savings.
+              const discountBadge = isAutoDiscount && activeDiscount?.title
+                ? activeDiscount.title
                 : null
 
               // ── Staged reveal timeline (ms from mount) ───────────────────────────
