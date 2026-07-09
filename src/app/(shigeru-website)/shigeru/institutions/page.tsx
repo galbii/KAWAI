@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: "Shigeru Kawai Institutional Sales | Chosen by the World's Premier Institutions",
   description:
     'Shigeru Kawai grand pianos are chosen by over 100 institutions worldwide — from the Berliner Philharmoniker to Carnegie Hall. Explore universities, conservatories, and concert halls that trust Shigeru Kawai.',
+  alternates: getStaticAlternates('/shigeru/institutions'),
 }
 
 type Region = 'north-america' | 'europe' | 'asia-pacific' | 'other'

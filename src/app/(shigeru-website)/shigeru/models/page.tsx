@@ -5,11 +5,13 @@ import { getShigeruPageData } from '../_data/shopify'
 import { HeroAnimated } from './_components/HeroAnimated'
 import { ModelCard } from './_components/ModelCard'
 import { ModelProgressIndicator } from './_components/ModelProgressIndicator'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Shigeru Kawai Grand Piano Models | SK-2 to SK-EX',
   description:
     "Explore all six Shigeru Kawai grand piano models — from the 5'11\" SK-2 Classic Salon Grand to the 9'1\" SK-EX Concert Grand. Each handcrafted at the Ryuyo factory in Hamamatsu, Japan.",
+  alternates: getStaticAlternates('/shigeru/models'),
 }
 
 const standardFeatures = [

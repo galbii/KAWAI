@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getStaticAlternates } from '@/lib/site-context'
 import { getShigeruPageData } from './_data/shopify'
 import { ShigeruHero } from './_components/ShigeruHero'
 import { ShigeruProductShowcase } from './_components/ShigeruProductShowcase'
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
     'shigeru kawai price',
     'shigeru kawai dealer',
   ],
+  alternates: getStaticAlternates('/shigeru'),
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kawaius.com'

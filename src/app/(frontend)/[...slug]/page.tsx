@@ -109,11 +109,10 @@ export async function generateMetadata(
     )()
 
     if (!page) {
-      return {
-        title: 'Page Not Found',
-        description: 'The requested page could not be found.',
-        robots: { index: false, follow: false },
-      };
+      // Emit a real HTTP 404 (not a streamed 200 + noindex). Belt-and-braces
+      // with the page component's notFound() — metadata resolution blocks the
+      // response, so the status is set before any HTML is flushed.
+      notFound()
     }
 
     const siteUrl = getSiteUrl(site)
@@ -152,6 +151,12 @@ export async function generateMetadata(
       },
     };
   } catch (error) {
+    // Re-throw Next.js control-flow errors (notFound/redirect) — swallowing
+    // them here would turn 404s back into 200s with fallback metadata.
+    if (typeof error === 'object' && error !== null && 'digest' in error &&
+        String((error as { digest?: unknown }).digest).startsWith('NEXT_')) {
+      throw error
+    }
     console.error(`[generateMetadata] Error:`, error);
     return { title: 'Page | Kawai Pianos', description: 'Kawai Pianos' };
   }

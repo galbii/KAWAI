@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Shigeru Kawai Technology | 12 Proprietary Innovations',
   description:
     'Discover the 12 proprietary technologies that make Shigeru Kawai grand pianos extraordinary — from Kigarashi naturally-aged soundboards to the Millennium III ABS-Carbon action and hand-wound Temaki bass strings.',
+  alternates: getStaticAlternates('/shigeru/technology'),
 }
 
 const technologies = [

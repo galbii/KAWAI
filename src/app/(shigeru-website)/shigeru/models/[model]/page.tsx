@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { SHIGERU_MODELS } from '../../_data/models'
 import { getShigeruPageData } from '../../_data/shopify'
 import { TechnicalSpecSheet } from '../_components/TechnicalSpecSheet'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export async function generateStaticParams() {
   return SHIGERU_MODELS.map((m) => ({ model: m.slug }))
@@ -21,6 +22,7 @@ export async function generateMetadata({
   return {
     title: model.seoTitle,
     description: model.seoDescription,
+    alternates: getStaticAlternates(`/shigeru/models/${model.slug}`),
   }
 }
 

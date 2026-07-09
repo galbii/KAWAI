@@ -2620,4 +2620,437 @@ export const REDIRECTS_SEED_DATA: RedirectSeedEntry[] = [
     toUrl: '/blog/zitong-wang-international-chopin-piano-competition-winner',
     notes: '[Blog] /news/ → /blog/; verify post exists',
   },
+
+  // ─── GSC "Crawled — currently not indexed" export 2026-07-09 ─────────────
+  // Legacy WordPress-era URLs Google still recrawls. Destinations verified
+  // against the live sitemap on 2026-07-09 — every toUrl below exists.
+  // Deliberately NOT redirected (allowed to hard-404): /wp-content/*, /tag/*,
+  // /digital/*.pdf|.html static assets, ?p= query URLs, and malformed paths.
+
+  // Old flat digital-piano product URLs
+  {
+    from: '/digital-pianos/es120',
+    toUrl: '/products/kawai-es120-digital-piano',
+    notes: '[GSC-2026-07] Legacy flat product URL',
+  },
+  {
+    from: '/digital-pianos/es920',
+    toUrl: '/products/kawai-es920-digital-piano',
+    notes: '[GSC-2026-07] Legacy flat product URL',
+  },
+
+  // Old /news/* posts
+  {
+    from: '/news/ca-series-digital-pianos-ca79-ca99',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] CA79/CA99 news post → CA series collection',
+  },
+  {
+    from: '/news/editors-choice-award-2024',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award news post → awards page',
+  },
+  {
+    from: '/news/kawai-celebrates-hazel-scott-and-don-shirley',
+    toUrl: '/blog/kawai-celebrates-hazel-scott-and-don-shirley',
+    notes: '[GSC-2026-07] /news/ → /blog/ (post exists)',
+  },
+  {
+    from: '/news/music-inc-awards-gx2',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award news post → awards page',
+  },
+
+  // Old nested /pianos/* content pages
+  {
+    from: '/pianos/digital-piano-buyers-guide',
+    toUrl: '/guides/digital-piano',
+    notes: '[GSC-2026-07] Old buyers guide → current guide',
+  },
+  {
+    from: '/pianos/digital-pianos/ca-99-product-excellence-award',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award page → awards hub',
+  },
+  {
+    from: '/pianos/digital-pianos/ca65-ca95',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] Discontinued CA65/CA95 → CA series',
+  },
+  {
+    from: '/pianos/grand-pianos/gl-series-grand-pianos',
+    toUrl: '/pianos/gl-series',
+    notes: '[GSC-2026-07] Old GL series URL (2-word slug not covered by next.config pattern)',
+  },
+  {
+    from: '/pianos/grand-pianos/gl-series-mmr-award',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award page → awards hub',
+  },
+  {
+    from: '/pianos/grand-pianos/gx-2-award',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award page → awards hub',
+  },
+  {
+    from: '/pianos/hybrid-pianos',
+    toUrl: '/pianos/hybrid',
+    notes: '[GSC-2026-07] Old hybrid category (bare, no slug — next.config pattern needs a slug)',
+  },
+  {
+    from: '/pianos/hybrid/aures-hybrid',
+    toUrl: '/pianos/aures',
+    notes: '[GSC-2026-07] AURES hybrid line → aures collection',
+  },
+  {
+    from: '/pianos/hybrid/aures-hybrid/gx-2-aures-2',
+    toUrl: '/products/kawai-gx-2-aures-2-hybrid-piano',
+    notes: '[GSC-2026-07] GX-2 AURES 2 product',
+  },
+  {
+    from: '/pianos/hybrid/aures-hybrid/k-300-aures-2',
+    toUrl: '/products/kawai-k-300-aures-2-hybrid-piano',
+    notes: '[GSC-2026-07] K-300 AURES 2 product',
+  },
+  {
+    from: '/pianos/hybrid/kawai-k300-aures-hybrid',
+    toUrl: '/products/kawai-k300-aures-hybrid-upright-piano',
+    notes: '[GSC-2026-07] K300 AURES product',
+  },
+  {
+    from: '/pianos/hybrid/kawai-novus-nv5-award',
+    toUrl: '/company/awards',
+    notes: '[GSC-2026-07] Award page → awards hub',
+  },
+  {
+    from: '/pianos/hybrid/novus-hybrid',
+    toUrl: '/pianos/novus-series',
+    notes: '[GSC-2026-07] NOVUS line → novus-series collection',
+  },
+  {
+    from: '/pianos/hybrid/novus-hybrid/nv10s',
+    toUrl: '/pianos/novus-series',
+    notes: '[GSC-2026-07] NV10S has no standalone product page → series',
+  },
+  {
+    from: '/pianos/hybrid/novus-hybrid/nv5s',
+    toUrl: '/pianos/novus-series',
+    notes: '[GSC-2026-07] NV5S has no standalone product page → series',
+  },
+  {
+    from: '/pianos/hybrid/novus-series',
+    toUrl: '/pianos/novus-series',
+    notes: '[GSC-2026-07] /pianos/hybrid/ prefix not in next.config pattern',
+  },
+  {
+    from: '/pianos/ryuyo-piano-factory',
+    toUrl: '/shigeru/about',
+    notes: '[GSC-2026-07] Ryuyo factory content lives on Shigeru about page',
+  },
+  {
+    from: '/pianos/upright-pianos/designer-series',
+    toUrl: '/pianos/console',
+    notes: '[GSC-2026-07] Designer (furniture-style) uprights → console collection',
+  },
+  {
+    from: '/pianos/upright-pianos/institutional-series',
+    toUrl: '/pianos/institutional',
+    notes: '[GSC-2026-07] Institutional uprights → institutional collection',
+  },
+  {
+    from: '/pianos/upright-pianos/k-series/specs',
+    toUrl: '/pianos/k-series',
+    notes: '[GSC-2026-07] 2-segment path not covered by next.config pattern',
+  },
+
+  // Old WooCommerce /product-category/* taxonomy
+  {
+    from: '/product-category/accessories',
+    toUrl: '/accessories',
+    notes: '[GSC-2026-07] WooCommerce category',
+  },
+  {
+    from: '/product-category/digital-piano',
+    toUrl: '/pianos/digital',
+    notes: '[GSC-2026-07] WooCommerce category',
+  },
+  {
+    from: '/product-category/digital-piano/cl-series',
+    toUrl: '/pianos/digital',
+    notes: '[GSC-2026-07] Discontinued CL series → digital category',
+  },
+  {
+    from: '/product-category/digital-piano/cs-series',
+    toUrl: '/pianos/cs-series',
+    notes: '[GSC-2026-07] WooCommerce category → CS series collection',
+  },
+  {
+    from: '/product-category/digital-piano/page/2',
+    toUrl: '/pianos/digital',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/grand-pianos/crystal-grand-piano',
+    toUrl: '/pianos/crystal-grand-piano',
+    notes: '[GSC-2026-07] Crystal grand → collection',
+  },
+  {
+    from: '/product-category/grand-pianos/page/1',
+    toUrl: '/pianos/grand',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/grand-pianos/page/2',
+    toUrl: '/pianos/grand',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/hybrid/page/1',
+    toUrl: '/pianos/hybrid',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/legacy-pianos',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] Legacy/discontinued archive → pianos hub',
+  },
+  {
+    from: '/product-category/legacy-pianos/page/1',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/legacy-pianos/page/2',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/legacy-pianos/page/3',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/legacy-pianos/page/5',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/pianos/upright-pianos',
+    toUrl: '/pianos/upright',
+    notes: '[GSC-2026-07] WooCommerce category',
+  },
+  {
+    from: '/product-category/pianos/upright-pianos/page/2',
+    toUrl: '/pianos/upright',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/upright-pianos/page/1',
+    toUrl: '/pianos/upright',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+  {
+    from: '/product-category/upright-pianos/page/2',
+    toUrl: '/pianos/upright',
+    notes: '[GSC-2026-07] WooCommerce pagination',
+  },
+
+  // Old WooCommerce /product-tag/* pages — mapped to the model's product page
+  // where one exists, otherwise to the model's series collection
+  {
+    from: '/product-tag/ca-series-digital-pianos',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] Tag → CA series',
+  },
+  {
+    from: '/product-tag/ca98-digital-piano',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] Discontinued CA98 → CA series',
+  },
+  {
+    from: '/product-tag/cn25',
+    toUrl: '/pianos/cn-series',
+    notes: '[GSC-2026-07] Discontinued CN25 → CN series',
+  },
+  {
+    from: '/product-tag/cs11-digital-piano/feed',
+    toUrl: '/pianos/cs-series',
+    notes: '[GSC-2026-07] Discontinued CS11 (RSS feed URL) → CS series',
+  },
+  {
+    from: '/product-tag/dg30',
+    toUrl: '/pianos/digital-grand',
+    notes: '[GSC-2026-07] DG30 → digital grand collection',
+  },
+  {
+    from: '/product-tag/es520',
+    toUrl: '/pianos/es-series',
+    notes: '[GSC-2026-07] ES520 has no product page → ES series',
+  },
+  {
+    from: '/product-tag/gl20',
+    toUrl: '/products/kawai-gl-20-baby-grand-piano',
+    notes: '[GSC-2026-07] GL-20 product page exists',
+  },
+  {
+    from: '/product-tag/gl30-atx2-upright-piano',
+    toUrl: '/products/kawai-gl30-atx2-hybrid-grand-piano',
+    notes: '[GSC-2026-07] GL30 ATX2 product page exists',
+  },
+  {
+    from: '/product-tag/kawai-ca65-digital-piano',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] Discontinued CA65 → CA series',
+  },
+  {
+    from: '/product-tag/kawai-ca78',
+    toUrl: '/pianos/ca-series',
+    notes: '[GSC-2026-07] Discontinued CA78 → CA series',
+  },
+  {
+    from: '/product-tag/kawai-cn25',
+    toUrl: '/pianos/cn-series',
+    notes: '[GSC-2026-07] Discontinued CN25 → CN series',
+  },
+  {
+    from: '/product-tag/kawai-cn34',
+    toUrl: '/pianos/cn-series',
+    notes: '[GSC-2026-07] Discontinued CN34 → CN series',
+  },
+  {
+    from: '/product-tag/kawai-cn34-digital-piano/feed',
+    toUrl: '/pianos/cn-series',
+    notes: '[GSC-2026-07] Discontinued CN34 (RSS feed URL) → CN series',
+  },
+  {
+    from: '/product-tag/kawai-cs4-digital-piano/feed',
+    toUrl: '/pianos/cs-series',
+    notes: '[GSC-2026-07] Discontinued CS4 (RSS feed URL) → CS series',
+  },
+  {
+    from: '/product-tag/kawai-gl20/feed',
+    toUrl: '/products/kawai-gl-20-baby-grand-piano',
+    notes: '[GSC-2026-07] GL-20 (RSS feed URL) → product page',
+  },
+  {
+    from: '/product-tag/kawai-kdp90-digital-piano/feed',
+    toUrl: '/pianos/kdp-series',
+    notes: '[GSC-2026-07] Discontinued KDP90 (RSS feed URL) → KDP series',
+  },
+  {
+    from: '/product-tag/kawai-mp11-digital-piano',
+    toUrl: '/products/kawai-mp11-digital-piano',
+    notes: '[GSC-2026-07] MP11 product page exists',
+  },
+  {
+    from: '/product-tag/kawai-mp5',
+    toUrl: '/pianos/mp-stage-pianos',
+    notes: '[GSC-2026-07] Discontinued MP5 → MP stage pianos',
+  },
+  {
+    from: '/product-tag/kawai-novus-nv5/feed',
+    toUrl: '/pianos/novus-series',
+    notes: '[GSC-2026-07] NV5 (RSS feed URL) → NOVUS series',
+  },
+  {
+    from: '/product-tag/kawai-ust9',
+    toUrl: '/pianos/institutional',
+    notes: '[GSC-2026-07] UST-9 institutional upright → institutional collection',
+  },
+  {
+    from: '/product-tag/mp10-digital-piano',
+    toUrl: '/pianos/mp-stage-pianos',
+    notes: '[GSC-2026-07] Discontinued MP10 → MP stage pianos',
+  },
+  {
+    from: '/product-tag/mp7-digital-piano',
+    toUrl: '/pianos/mp-stage-pianos',
+    notes: '[GSC-2026-07] Discontinued MP7 → MP stage pianos',
+  },
+  {
+    from: '/product-tag/rx6-grand-piano',
+    toUrl: '/pianos/rx',
+    notes: '[GSC-2026-07] Discontinued RX-6 → RX collection',
+  },
+  {
+    from: '/product-tag/sc-1-soft-carry-case',
+    toUrl: '/products/kawai-sc-1-soft-case',
+    notes: '[GSC-2026-07] SC-1 case product page exists',
+  },
+  {
+    from: '/product-tag/sc-1-soft-carry-case/feed',
+    toUrl: '/products/kawai-sc-1-soft-case',
+    notes: '[GSC-2026-07] SC-1 case (RSS feed URL) → product page',
+  },
+  {
+    from: '/product-tag/sc-1-soft-case',
+    toUrl: '/products/kawai-sc-1-soft-case',
+    notes: '[GSC-2026-07] SC-1 case → product page',
+  },
+
+  // Malformed / campaign /product/* slugs (the generic /product/→/products/
+  // rewrite lands these on non-existent slugs — exact mappings beat it because
+  // middleware CMS redirects run before next.config redirects)
+  {
+    from: '/product/ca901-ab',
+    toUrl: '/products/kawai-ca901-digital-piano',
+    notes: '[GSC-2026-07] CA901 finish variant slug',
+  },
+  {
+    from: '/product/gl-10-sale',
+    toUrl: '/products/kawai-gl-10-baby-grand-piano',
+    notes: '[GSC-2026-07] Old sale campaign slug',
+  },
+  {
+    from: '/product/k-200-sale',
+    toUrl: '/products/kawai-k-200-upright-piano',
+    notes: '[GSC-2026-07] Old sale campaign slug',
+  },
+  {
+    from: '/product/k-300-',
+    toUrl: '/products/kawai-k-300-upright-piano',
+    notes: '[GSC-2026-07] Truncated slug',
+  },
+  {
+    from: '/product/k200-atx4/feed',
+    toUrl: '/products/kawai-k200-atx4-hybrid-piano',
+    notes: '[GSC-2026-07] K200 ATX4 (RSS feed URL) → product page',
+  },
+  {
+    from: '/product/kawai-ca501-digital-',
+    toUrl: '/products/kawai-ca501-digital-piano',
+    notes: '[GSC-2026-07] Truncated slug',
+  },
+  {
+    from: '/products/anymusic/atx5/tech-specs',
+    toUrl: '/pianos/anytime-pianos',
+    notes: '[GSC-2026-07] Ancient AnyTime static path → AnyTime collection',
+  },
+  {
+    from: '/products/digital',
+    toUrl: '/pianos/digital',
+    notes: '[GSC-2026-07] Old category-ish path',
+  },
+  {
+    from: '/products/digitalpianos/mp-series/mp11se',
+    toUrl: '/products/kawai-mp11se-digital-piano',
+    notes: '[GSC-2026-07] Ancient static path → MP11SE product page',
+  },
+  {
+    from: '/products/kawai-es8-digital-',
+    toUrl: '/pianos/es-series',
+    notes: '[GSC-2026-07] Truncated slug; ES8 discontinued → ES series',
+  },
+
+  // Old WooCommerce /shop pagination
+  {
+    from: '/shop/page/1',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce shop archive',
+  },
+  {
+    from: '/shop/page/11',
+    toUrl: '/pianos',
+    notes: '[GSC-2026-07] WooCommerce shop archive',
+  },
 ]

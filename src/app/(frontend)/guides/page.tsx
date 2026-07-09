@@ -1,6 +1,29 @@
+import type { Metadata } from "next";
 import { BookOpen, CheckCircle, Heart, Home, Music, Settings, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getStaticAlternates } from "@/lib/site-context";
+
+export const metadata: Metadata = {
+  title: "Piano Guides | Buying, Care & Maintenance Advice",
+  description:
+    "Expert piano guidance from Kawai — buying guides for first-time buyers, digital and acoustic piano selection, plus care and maintenance advice to keep your instrument performing at its best.",
+  alternates: getStaticAlternates("/guides"),
+  openGraph: {
+    title: "Piano Guides | Buying, Care & Maintenance Advice",
+    description:
+      "Expert piano guidance from Kawai — buying guides, digital and acoustic piano selection, and care & maintenance advice.",
+    url: "https://kawaius.com/guides",
+    siteName: "Kawai America",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Piano Guides | Buying, Care & Maintenance Advice",
+    description:
+      "Expert piano guidance from Kawai — buying guides, selection help, and care & maintenance advice.",
+  },
+};
 
 const buyingGuides = [
   {

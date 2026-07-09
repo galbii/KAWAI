@@ -5,8 +5,15 @@ import { REDIRECTS_SEED_DATA } from '@/lib/data/redirects-seed-data'
 /**
  * POST /api/admin/seed-redirects
  *
- * Seeds the redirects collection from REDIRECTS_SEED_DATA (derived from kawaius-redirect-map.csv).
- * Upserts by `from` path — existing records are overwritten with updated destinations/notes.
+ * Seeds the redirects collection from REDIRECTS_SEED_DATA (derived from kawaius-redirect-map.csv
+ * plus GSC coverage exports).
+ *
+ * CREATE-ONLY: records whose `from` path already exists are SKIPPED, never
+ * overwritten — admins hand-tune destinations and isActive flags in the CMS,
+ * and re-seeding must not clobber those edits. To intentionally reset every
+ * seeded record to the seed-file values, pass `{ "overwrite": true }` in the
+ * request body.
+ *
  * Requires an authenticated admin user (payload-token cookie).
  */
 export async function POST(request: NextRequest) {
@@ -21,8 +28,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden — admin only' }, { status: 403 })
     }
 
+    const overwrite = await request
+      .json()
+      .then((body) => body?.overwrite === true)
+      .catch(() => false) // no/invalid body → default create-only
+
     let created = 0
     let updated = 0
+    let skipped = 0
     const errors: string[] = []
 
     const seedData = {
@@ -41,6 +54,11 @@ export async function POST(request: NextRequest) {
 
       try {
         if (existing.docs[0]) {
+          // Default: never touch existing records — they may carry manual edits.
+          if (!overwrite) {
+            skipped++
+            continue
+          }
           await payload.update({
             collection: 'redirects',
             id: existing.docs[0].id,
@@ -91,6 +109,7 @@ export async function POST(request: NextRequest) {
       total: REDIRECTS_SEED_DATA.length,
       created,
       updated,
+      skipped,
       errors,
     })
   } catch (err) {

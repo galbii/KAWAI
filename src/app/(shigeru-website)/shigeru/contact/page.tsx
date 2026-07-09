@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ShigeruContactBox } from '../_components/ShigeruContactBox'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Contact Shigeru Kawai | Sales & Technical Inquiries',
   description:
     "Contact the Shigeru Kawai team for sales inquiries, technical assistance, or to learn more about the world's premier handcrafted grand pianos.",
+  alternates: getStaticAlternates('/shigeru/contact'),
 }
 
 const contactOptions = [

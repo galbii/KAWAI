@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Shigeru Kawai Artists | Pianists & Testimonials',
   description:
     "Shigeru Kawai is applauded by many of the world's most talented pianists. Explore artist testimonials and the complete roster of 25+ Shigeru Kawai artists including Alexander Kobrin, David Lanz, Joe Bongiorno, and more.",
+  alternates: getStaticAlternates('/shigeru/artists'),
 }
 
 const artists = [

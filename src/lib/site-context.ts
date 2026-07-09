@@ -37,3 +37,15 @@ export function getSiteAlternates(path: string) {
     'x-default': `${SITE_URLS.us}${path}`,
   }
 }
+
+/**
+ * Full `alternates` object (self-referencing canonical + hreflang) for pages
+ * using static `export const metadata` — where `getSite()` isn't available.
+ * Canonical points at the US apex; hreflang covers the CA variant.
+ */
+export function getStaticAlternates(path: string) {
+  return {
+    canonical: `${SITE_URLS.us}${path}`,
+    languages: getSiteAlternates(path),
+  }
+}

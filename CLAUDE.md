@@ -624,8 +624,9 @@ import { getSite, getSiteName, getSiteUrl, getSiteAlternates } from '@/lib/site-
 ```
 - `getSite()` — async, server-only, returns `'us' | 'cad'`
 - `getSiteName(site)` — `'Kawai America'` or `'Kawai Canada'`
-- `getSiteUrl(site)` — `'https://www.kawaius.com'` or `'https://ca.kawaius.com'`
+- `getSiteUrl(site)` — `'https://kawaius.com'` (apex, no www) or `'https://ca.kawaius.com'`
 - `getSiteAlternates(path)` — hreflang object for `alternates.languages` in metadata
+- `getStaticAlternates(path)` — full `alternates` object (self-referencing canonical + hreflang) for pages using static `export const metadata` where `getSite()` isn't available (e.g. `/shigeru/*`, `/guides`)
 
 ### CA Shopify: Pricing & Checkout Only
 

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-context'
+import { SHIGERU_MODELS } from '@/app/(shigeru-website)/shigeru/_data/models'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
@@ -103,6 +104,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/pianos/grand/shigeru-kawai', { changeFrequency: 'monthly', priority: 0.85 })
     // /pianos/search and /pianos/compare are noindexed utility pages — excluded from sitemap
     add('/accessories', { changeFrequency: 'weekly', priority: 0.65 })
+
+    // ==========================================
+    // STATIC ROUTES — Shigeru Kawai sub-site
+    // ==========================================
+
+    add('/shigeru', { changeFrequency: 'weekly', priority: 0.9 })
+    add('/shigeru/models', { changeFrequency: 'weekly', priority: 0.85 })
+    for (const model of SHIGERU_MODELS) {
+      add(`/shigeru/models/${model.slug}`, { changeFrequency: 'monthly', priority: 0.8 })
+    }
+    add('/shigeru/about', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/shigeru/artisans', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/shigeru/artists', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/shigeru/technology', { changeFrequency: 'monthly', priority: 0.65 })
+    add('/shigeru/institutions', { changeFrequency: 'monthly', priority: 0.6 })
+    add('/shigeru/dealers', { changeFrequency: 'weekly', priority: 0.7 })
+    add('/shigeru/contact', { changeFrequency: 'yearly', priority: 0.5 })
 
     // ==========================================
     // STATIC ROUTES — Product / Marketing

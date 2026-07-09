@@ -10,7 +10,7 @@ export function SeedRedirectsButton() {
     if (status === 'loading') return
 
     const confirmed = confirm(
-      `Seed/update ~500 redirects from kawaius-redirect-map.csv?\n\nCovers product pages (SK, CA, CN, GX, GL, K-series, hybrids, etc.), WooCommerce categories/tags, artists, and CMS pages.\n\nExisting records will be OVERWRITTEN with corrected destinations.`,
+      `Seed missing redirects from the seed file (~586 entries)?\n\nCovers product pages (SK, CA, CN, GX, GL, K-series, hybrids, etc.), WooCommerce categories/tags, artists, CMS pages, and GSC legacy-URL exports.\n\nOnly NEW entries are created — existing records (including your manual edits) are never touched.`,
     )
     if (!confirmed) return
 
@@ -26,11 +26,13 @@ export function SeedRedirectsButton() {
         return
       }
 
-      const { created, updated, errors } = data
+      const { created, updated, skipped, errors } = data
       if (errors?.length) {
-        toast.error(`Done with ${errors.length} error(s). ${created} created, ${updated} updated.`)
+        toast.error(
+          `Done with ${errors.length} error(s). ${created} created, ${skipped} existing skipped.`,
+        )
       } else {
-        toast.success(`Done! ${created} created, ${updated} updated.`)
+        toast.success(`Done! ${created} created, ${skipped} existing skipped (untouched).`)
       }
 
       setStatus('done')
@@ -58,7 +60,7 @@ export function SeedRedirectsButton() {
           ? 'Seeding…'
           : status === 'done'
             ? '✓ Done'
-            : '🌱 Seed / Update Redirects'}
+            : '🌱 Seed Missing Redirects'}
       </Button>
     </div>
   )

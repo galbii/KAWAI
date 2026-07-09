@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: "About Shigeru Kawai | The Legacy of Japan's Premier Piano Maker",
   description:
     'The story of Shigeru Kawai — born July 28, 1922 in Shizuoka, Japan. Learn how he built the world\'s premier piano company, founded the Ryuyo Grand Piano Factory, and introduced the Shigeru Kawai piano line in 1999.',
+  alternates: getStaticAlternates('/shigeru/about'),
 }
 
 const timelineMilestones = [

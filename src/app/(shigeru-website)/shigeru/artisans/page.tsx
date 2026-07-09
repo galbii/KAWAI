@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Shigeru Kawai Master Piano Artisans | The Art of Piano Craftsmanship',
   description:
     'Shigeru Kawai Master Piano Artisans — the most esteemed rank in piano craftsmanship. Every new Shigeru Kawai owner receives an in-home visit from an elite MPA for concert-level regulation, voicing, and tuning.',
+  alternates: getStaticAlternates('/shigeru/artisans'),
 }
 
 const craftPrinciples = [

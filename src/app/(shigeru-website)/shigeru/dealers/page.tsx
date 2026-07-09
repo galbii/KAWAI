@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { getStaticAlternates } from '@/lib/site-context'
 import ShigeruDealerGrid, { type ShigeruDealerDoc } from '../_components/ShigeruDealerGrid'
 
 export const revalidate = 3600
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
   title: 'Authorized Shigeru Kawai Dealers | Find a Dealer Near You',
   description:
     'Find an authorized Shigeru Kawai dealer near you across the United States and Canada. Experience the SK Series grand pianos in person at a location near you.',
+  alternates: getStaticAlternates('/shigeru/dealers'),
 }
 
 // Canadian province codes — used to separate US from Canada

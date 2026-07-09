@@ -65,9 +65,9 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru`,
-  },
+  // NOTE: no `alternates.canonical` here — a layout-level canonical cascades to
+  // every child page, marking them all as duplicates of /shigeru. Each page
+  // sets its own self-referencing canonical via getStaticAlternates().
 }
 
 // JSON-LD structured data for the Shigeru Kawai brand
