@@ -66,7 +66,7 @@ function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardP
   // Bottom panel always matches the footer: bg-kawai-black/95
   const bottomBg = 'bg-kawai-black/95'
   const nameColor = 'text-white'
-  const modelColor = 'text-white/40'
+  const modelColor = 'text-white/60' // ≥4.5:1 on kawai-black/95 (WCAG 1.4.3 — /40 failed)
   const priceColor = 'text-white/55'
 
   const typeLabel = accessory.type
@@ -146,7 +146,7 @@ function AccessoryCardItem({ accessory, isDark, index, isCanada = false }: CardP
       {/* Bottom panel */}
       <div className={`${bottomBg} px-4 pt-4 pb-4 flex flex-col flex-1`}>
         {/* Type */}
-        <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-kawai-red mb-1.5">
+        <p className="text-[9px] tracking-[0.4em] uppercase font-bold text-kawai-red-400 mb-1.5">
           {typeLabel}
         </p>
 

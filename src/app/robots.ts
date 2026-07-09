@@ -67,12 +67,10 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         disallow: ['/'],
       },
     ],
-    // Declare all machine-readable content files so crawlers discover them
-    // without having to guess the path. llms.txt follows the llmstxt.org spec.
-    sitemap: [
-      `${baseUrl}/sitemap.xml`,
-      `${baseUrl}/llms.txt`,
-      `${baseUrl}/llms-full.txt`,
-    ],
+    // Only real XML sitemaps belong in the Sitemap directive — declaring
+    // llms.txt here caused Google Search Console sitemap parse errors.
+    // llms.txt / llms-full.txt are discovered by convention at their
+    // well-known paths per the llmstxt.org spec; no directive needed.
+    sitemap: [`${baseUrl}/sitemap.xml`],
   }
 }

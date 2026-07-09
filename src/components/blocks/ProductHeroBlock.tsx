@@ -876,12 +876,17 @@ export function ProductHeroBlock({
                             <button
                               key={idx}
                               onClick={(e) => { e.stopPropagation(); setMobileCarouselIndex(idx) }}
-                              className={cn(
-                                "h-1.5 rounded-full transition-all duration-200",
-                                idx === mobileCarouselIndex ? "w-4 bg-kawai-red" : "w-1.5 bg-white/70"
-                              )}
+                              // 24×24px min touch target (WCAG 2.5.8) — the visible dot stays small
+                              className="flex items-center justify-center h-6 min-w-6"
                               aria-label={`Go to image ${idx + 1}`}
-                            />
+                            >
+                              <span
+                                className={cn(
+                                  "h-1.5 rounded-full transition-all duration-200",
+                                  idx === mobileCarouselIndex ? "w-4 bg-kawai-red" : "w-1.5 bg-white/70"
+                                )}
+                              />
+                            </button>
                           ))}
                         </div>
                       </>
@@ -1073,7 +1078,8 @@ export function ProductHeroBlock({
             {/* Compact Variation Selection */}
             {showVariations && hasVariations && (
               <div className="space-y-3">
-                <h3 className={cn("text-base lg:text-lg font-medium", textColorClass)}>Variations</h3>
+                {/* h2, not h3 — sits directly under the page h1 (heading-order) */}
+                <h2 className={cn("text-base lg:text-lg font-medium", textColorClass)}>Variations</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {allVariations.map((variation, index) => {
                     const isSelected = selectedVariation === index

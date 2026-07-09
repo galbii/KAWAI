@@ -80,7 +80,7 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
   const numColor = isDark ? 'text-white/20' : 'text-kawai-muted'
   const imgBg = isDark ? 'bg-[#252220]' : 'bg-white'
   const nameColor = 'text-white'
-  const modelColor = 'text-white/40'
+  const modelColor = 'text-white/60' // ≥4.5:1 on kawai-black/95 (WCAG 1.4.3 — /40 failed)
 
   const typeLabel = formatCategory(product.type)
 
@@ -162,7 +162,7 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
       <div className="bg-kawai-black/95 px-4 pt-4 pb-4 flex flex-col flex-1">
         {/* Type */}
         {typeLabel && (
-          <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red mb-1.5">
+          <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red-400 mb-1.5">
             {typeLabel}
           </p>
         )}

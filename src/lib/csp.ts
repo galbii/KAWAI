@@ -58,6 +58,9 @@ export function buildCspHeader(_isDev: boolean): string {
 
       // Shopify
       'https://cdn.shopify.com',
+
+      // Cloudflare Web Analytics beacon (injected by Cloudflare at the edge)
+      'https://static.cloudflareinsights.com',
     ],
 
     'style-src': [
@@ -159,6 +162,16 @@ export function buildCspHeader(_isDev: boolean): string {
 
       // Meta Pixel — fbq('track') sends event data to /tr endpoint via XHR/beacon
       'https://www.facebook.com',
+      // NOTE (intentional omission): fbevents.js also probes rotating "captured
+      // event endpoint" hosts (random subdomains of *.run.app / *.on.aws hitting
+      // /events?cee=no). Those are per-session random hostnames on open PaaS
+      // domains — allowlisting them would require wildcarding all of Google
+      // Cloud Run / AWS ECS, gutting the CSP. Leave them blocked; the pixel
+      // falls back to www.facebook.com/tr. The console CSP errors they cause
+      // are expected and harmless.
+
+      // Cloudflare Web Analytics beacon submits RUM data here
+      'https://cloudflareinsights.com',
 
       // HubSpot form submissions + tracking
       'https://api.hsforms.com',
@@ -203,6 +216,9 @@ export function buildCspHeader(_isDev: boolean): string {
 
       // Shopify checkout
       'https://checkout.shopify.com',
+
+      // Meta Pixel occasionally frames facebook.com for cookie matching
+      'https://www.facebook.com',
     ],
 
     // *.googlevideo.com serves YouTube video stream data
