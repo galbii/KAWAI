@@ -2130,6 +2130,18 @@ export interface Product {
      * Effective price after the discount (computed from MSRP / min variant price)
      */
     discountedPrice?: number | null;
+    /**
+     * US variant GIDs the discount is restricted to (specific finishes). Empty/blank = applies to every finish.
+     */
+    entitledVariantIds?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   /**
    * Active automatic discount from the CA Shopify store (synced, read-only). Applies to ca.kawaius.com. Fields are blank when no CA automatic discount currently applies.
@@ -2151,6 +2163,18 @@ export interface Product {
      * Effective CA price after the discount (computed from CA min variant price)
      */
     discountedPrice?: number | null;
+    /**
+     * CA-store variant GIDs the discount is restricted to (specific finishes). Empty/blank = applies to every finish.
+     */
+    entitledVariantIds?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   /**
    * Product image URL (synced from Shopify)
@@ -2413,6 +2437,10 @@ export interface Product {
          * Shopify Variant ID (gid://shopify/ProductVariant/...)
          */
         shopifyVariantId?: string | null;
+        /**
+         * CA-store Shopify Variant ID (synced, matched by title) — used to scope CA discounts to specific finishes
+         */
+        shopifyVariantIdCA?: string | null;
         /**
          * Variant price (synced from Shopify)
          */
@@ -12409,6 +12437,7 @@ export interface ProductsSelect<T extends boolean = true> {
         valueType?: T;
         value?: T;
         discountedPrice?: T;
+        entitledVariantIds?: T;
       };
   shopifyDiscountCAD?:
     | T
@@ -12417,6 +12446,7 @@ export interface ProductsSelect<T extends boolean = true> {
         valueType?: T;
         value?: T;
         discountedPrice?: T;
+        entitledVariantIds?: T;
       };
   imageUrl?: T;
   shopifyCollections?:
@@ -12492,6 +12522,7 @@ export interface ProductsSelect<T extends boolean = true> {
     | {
         name?: T;
         shopifyVariantId?: T;
+        shopifyVariantIdCA?: T;
         price?: T;
         compareAtPrice?: T;
         priceCAD?: T;

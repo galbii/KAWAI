@@ -147,3 +147,110 @@ describe('normalizeProductPrice — automatic discount (new behavior)', () => {
     expect(r.tiers?.sale).toBe(48000)
   })
 })
+
+describe('normalizeProductPrice — variant-scoped discount (entitledVariantIds)', () => {
+  const gid = (n: number) => `gid://shopify/ProductVariant/${n}`
+  const twoFinishes = (over: Partial<PricingProduct> = {}): PricingProduct => ({
+    price: { msrp: 5000, currency: 'USD' },
+    variations: [
+      { name: 'Ebony Polish', shopifyVariantId: gid(1), price: 5000 },
+      { name: 'Satin White', shopifyVariantId: gid(2), price: 5000 },
+    ],
+    shopifyDiscount: {
+      title: 'EP Sale',
+      valueType: 'percentage',
+      value: 0.1,
+      discountedPrice: 4500,
+      entitledVariantIds: [gid(1)],
+    },
+    ...over,
+  })
+
+  it('discounts only the entitled finish when selected', () => {
+    const r = normalizeProductPrice(twoFinishes(), { selectedVariationName: 'Ebony Polish' })
+    expect(r.kind).toBe('single')
+    expect(r.tiers?.final).toBe(4500)
+    expect(r.isAutoDiscount).toBe(true)
+  })
+
+  it('leaves an unentitled finish undiscounted when selected', () => {
+    const r = normalizeProductPrice(twoFinishes(), { selectedVariationName: 'Satin White' })
+    expect(r.kind).toBe('single')
+    expect(r.tiers?.final).toBe(5000)
+    expect(r.isAutoDiscount).toBe(false)
+    expect(r.discountTitle).toBeNull()
+  })
+
+  it('same-priced finishes with mixed entitlement become a range, not a collapsed single', () => {
+    const r = normalizeProductPrice(twoFinishes())
+    expect(r.kind).toBe('range')
+    expect(r.min?.final).toBe(4500) // entitled Ebony Polish
+    expect(r.max?.final).toBe(5000) // unentitled Satin White
+  })
+
+  it('null/empty entitledVariantIds keeps whole-product behavior', () => {
+    const all = normalizeProductPrice(
+      twoFinishes({
+        shopifyDiscount: { valueType: 'percentage', value: 0.1, discountedPrice: 4500, entitledVariantIds: null },
+      }),
+      { selectedVariationName: 'Satin White' },
+    )
+    expect(all.tiers?.final).toBe(4500)
+
+    const empty = normalizeProductPrice(
+      twoFinishes({
+        shopifyDiscount: { valueType: 'percentage', value: 0.1, discountedPrice: 4500, entitledVariantIds: [] },
+      }),
+      { selectedVariationName: 'Satin White' },
+    )
+    expect(empty.tiers?.final).toBe(4500)
+  })
+
+  it('product-level fallback (no variations) ignores a variant-scoped discount', () => {
+    const r = normalizeProductPrice({
+      price: { msrp: 3200, currency: 'USD' },
+      variations: [],
+      shopifyDiscount: { valueType: 'percentage', value: 0.1, discountedPrice: 2880, entitledVariantIds: [gid(9)] },
+    })
+    expect(r.tiers?.final).toBe(3200)
+    expect(r.isAutoDiscount).toBe(false)
+  })
+
+  it('CA site matches entitlement against shopifyVariantIdCA (CA-store GIDs)', () => {
+    const r = normalizeProductPrice(
+      {
+        price: { msrp: 5000, currency: 'USD' },
+        variations: [
+          { name: 'Ebony Polish', shopifyVariantId: gid(1), shopifyVariantIdCA: gid(101), priceCAD: 6500 },
+          { name: 'Satin White', shopifyVariantId: gid(2), shopifyVariantIdCA: gid(102), priceCAD: 6500 },
+        ],
+        shopifyDiscountCAD: {
+          valueType: 'percentage',
+          value: 0.1,
+          discountedPrice: 5850,
+          entitledVariantIds: [gid(101)],
+        },
+      },
+      { site: 'cad', selectedVariationName: 'Ebony Polish' },
+    )
+    expect(r.tiers?.final).toBe(5850)
+
+    const white = normalizeProductPrice(
+      {
+        price: { msrp: 5000, currency: 'USD' },
+        variations: [
+          { name: 'Ebony Polish', shopifyVariantId: gid(1), shopifyVariantIdCA: gid(101), priceCAD: 6500 },
+          { name: 'Satin White', shopifyVariantId: gid(2), shopifyVariantIdCA: gid(102), priceCAD: 6500 },
+        ],
+        shopifyDiscountCAD: {
+          valueType: 'percentage',
+          value: 0.1,
+          discountedPrice: 5850,
+          entitledVariantIds: [gid(101)],
+        },
+      },
+      { site: 'cad', selectedVariationName: 'Satin White' },
+    )
+    expect(white.tiers?.final).toBe(6500)
+  })
+})

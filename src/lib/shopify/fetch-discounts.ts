@@ -46,10 +46,16 @@ export interface NormalizedDiscount {
   target: {
     /** Applies to every product in the store */
     all: boolean
-    /** Product GIDs the discount explicitly targets */
+    /** Product GIDs the discount targets as WHOLE products (every variant) */
     productIds: Set<string>
     /** Collection GIDs the discount targets */
     collectionIds: Set<string>
+    /**
+     * Variant-level targeting: parent product GID → the specific variant GIDs
+     * (finishes) the discount applies to. A product present here but not in
+     * `productIds` is only discounted on these variants.
+     */
+    variantIdsByProduct: Map<string, Set<string>>
   }
 }
 
@@ -73,6 +79,13 @@ export interface ProductDiscount {
   value?: number | null
   /** Effective price after the discount */
   discountedPrice?: number | null
+  /**
+   * Variant GIDs the discount is restricted to, when it targets specific variants
+   * (finishes) of this product rather than the whole product. Null/empty means the
+   * discount applies to every variant. US snapshots hold US-store GIDs; CAD
+   * snapshots hold CA-store GIDs.
+   */
+  entitledVariantIds?: string[] | null
 }
 
 // Only `DiscountAutomaticBasic` carries an amount-off value we can apply to a single
@@ -177,16 +190,24 @@ function normalizeDiscount(node: any): NormalizedDiscount | null {
 
   const items = d.customerGets?.items
 
-  // Product targeting can arrive as whole products OR specific variants. Fold a
-  // variant-targeted discount onto its parent product so "does this product have a
-  // discount?" matches either way — otherwise a finish-level discount syncs as nothing.
+  // Product targeting can arrive as whole products OR specific variants. Whole
+  // products go in `productIds` (discount every variant); variant targets are kept
+  // per parent product in `variantIdsByProduct` so a finish-level discount is only
+  // applied to the entitled finishes.
   const productIds = new Set<string>()
+  const variantIdsByProduct = new Map<string, Set<string>>()
   if (items?.__typename === 'DiscountProducts') {
     for (const n of items.products?.nodes ?? []) {
       if (n?.id) productIds.add(n.id)
     }
     for (const v of items.productVariants?.nodes ?? []) {
-      if (v?.product?.id) productIds.add(v.product.id)
+      if (!v?.id || !v?.product?.id) continue
+      let set = variantIdsByProduct.get(v.product.id)
+      if (!set) {
+        set = new Set<string>()
+        variantIdsByProduct.set(v.product.id, set)
+      }
+      set.add(v.id)
     }
   }
 
@@ -198,10 +219,16 @@ function normalizeDiscount(node: any): NormalizedDiscount | null {
         .map((n: any) => n?.id)
         .filter(Boolean),
     ),
+    variantIdsByProduct,
   }
 
   // A discount that targets nothing we can match is not useful.
-  if (!target.all && target.productIds.size === 0 && target.collectionIds.size === 0) {
+  if (
+    !target.all &&
+    target.productIds.size === 0 &&
+    target.collectionIds.size === 0 &&
+    target.variantIdsByProduct.size === 0
+  ) {
     return null
   }
 
@@ -287,7 +314,13 @@ export function computeProductDiscount(params: {
 }): ProductDiscount {
   const { productGid, collectionGids = [], basePrice, currency, discounts } = params
 
-  const empty: ProductDiscount = { title: null, valueType: null, value: null, discountedPrice: null }
+  const empty: ProductDiscount = {
+    title: null,
+    valueType: null,
+    value: null,
+    discountedPrice: null,
+    entitledVariantIds: null,
+  }
 
   if (!discounts.length || basePrice == null || !isFinite(basePrice) || basePrice <= 0) {
     return empty
@@ -297,12 +330,21 @@ export function computeProductDiscount(params: {
     collectionGids.filter((c): c is string => Boolean(c)),
   )
 
-  const applies = (d: NormalizedDiscount): boolean => {
+  // True when the discount covers the WHOLE product — all items, this product
+  // explicitly, or a collection it belongs to. Variant-level targeting is narrower
+  // and tracked separately so the snapshot can scope the discount to finishes.
+  const appliesToWholeProduct = (d: NormalizedDiscount): boolean => {
     if (d.target.all) return true
     if (productGid && d.target.productIds.has(productGid)) return true
     for (const cid of d.target.collectionIds) {
       if (productCollections.has(cid)) return true
     }
+    return false
+  }
+
+  const applies = (d: NormalizedDiscount): boolean => {
+    if (appliesToWholeProduct(d)) return true
+    if (productGid && d.target.variantIdsByProduct.has(productGid)) return true
     return false
   }
 
@@ -333,10 +375,17 @@ export function computeProductDiscount(params: {
 
   const discountedPrice = Math.max(0, Math.round((basePrice - bestDeduction) * 100) / 100)
 
+  // Whole-product coverage → null (every finish qualifies). Otherwise the discount
+  // reached this product only through specific variants — scope it to those finishes.
+  const entitledVariantIds = appliesToWholeProduct(best)
+    ? null
+    : Array.from((productGid && best.target.variantIdsByProduct.get(productGid)) || [])
+
   return {
     title: best.title,
     valueType: best.valueType,
     value: best.value,
     discountedPrice,
+    entitledVariantIds,
   }
 }

@@ -499,6 +499,26 @@ export function ProductHeroBlock({
     return { title: title ?? null, valueType, value }
   })()
 
+  // Variant GIDs the discount is restricted to (specific finishes). Null = the
+  // whole product is discounted. Shopify checkout only discounts the entitled
+  // finishes, so the display must gate the same way or it shows a price the
+  // customer won't actually get.
+  const entitledVariantIds: string[] | null = (() => {
+    const ids = (discountSnapshot as { entitledVariantIds?: unknown } | null)?.entitledVariantIds
+    return Array.isArray(ids) && ids.length > 0 ? (ids as string[]) : null
+  })()
+
+  // Does the active discount apply to this CMS variation (finish)? The snapshot's
+  // GIDs are store-scoped: US snapshot ↔ shopifyVariantId, CA snapshot ↔ shopifyVariantIdCA.
+  const discountAppliesToVariation = (
+    v: NonNullable<Product['variations']>[number] | undefined,
+  ): boolean => {
+    if (!activeDiscount) return false
+    if (!entitledVariantIds) return true
+    const gid = site === 'cad' ? v?.shopifyVariantIdCA : v?.shopifyVariantId
+    return !!gid && entitledVariantIds.includes(gid)
+  }
+
   // Apply the active discount to a single price. Returns the input unchanged when no
   // discount applies or the math wouldn't actually lower the price.
   const applyDiscount = (price: number): number => {
@@ -620,6 +640,25 @@ export function ProductHeroBlock({
     if (!baseDisplayPrice || !activeDiscount) return baseDisplayPrice
 
     if (baseDisplayPrice.type === 'single') {
+      // A single figure represents one finish (selected), a collapsed set of
+      // same-priced finishes, or a single-variant product — the discount only
+      // layers on when that finish is actually entitled.
+      const selected =
+        hasVariations && selectedVariation >= 0 ? allVariations[selectedVariation] : undefined
+      const appliesToThisFigure = (() => {
+        if (!entitledVariantIds) return true
+        if (selected) return discountAppliesToVariation(selected)
+        if (hasVariations) {
+          // Collapsed pre-selection figure — only discount when every finish qualifies,
+          // otherwise a non-qualifying finish would inherit a price it can't have.
+          return allVariations.every((v) => discountAppliesToVariation(v))
+        }
+        // Single-variant product — check its only Shopify variant.
+        const firstVariant = shopifyProduct?.variants[0]
+        return !!firstVariant && entitledVariantIds.includes(firstVariant.id)
+      })()
+      if (!appliesToThisFigure) return baseDisplayPrice
+
       // Three tiers, high → low: list (Shopify compare-at, if any) → sale (current
       // selling price) → discounted (automatic discount applied on top). The reveal
       // counts down through whichever tiers are genuinely distinct.
@@ -638,7 +677,34 @@ export function ProductHeroBlock({
       }
     }
 
-    // Range: discount both ends, keep the originals for the strikethrough.
+    // Range with a variant-scoped discount: discount each finish individually and
+    // rebuild the ends from the per-finish finals, so an unentitled finish's price
+    // is never shown lowered.
+    if (entitledVariantIds && hasVariations) {
+      const pairs = allVariations
+        .map((v) => {
+          const p = getVariationPrice(v.name || '')
+          if (!p) return null
+          const final = discountAppliesToVariation(v) ? applyDiscount(p.price) : p.price
+          return { sale: p.price, final }
+        })
+        .filter((x): x is { sale: number; final: number } => x !== null)
+      if (pairs.length === 0 || !pairs.some((p) => p.final < p.sale)) return baseDisplayPrice
+      return {
+        type: 'range' as const,
+        minPrice: Math.min(...pairs.map((p) => p.final)),
+        maxPrice: Math.max(...pairs.map((p) => p.final)),
+        originalMin: baseDisplayPrice.minPrice,
+        originalMax: baseDisplayPrice.maxPrice,
+        isAutoDiscount: true as const,
+      }
+    }
+
+    // Variant-scoped discount but no CMS variations to attribute it to — leave the
+    // range undiscounted rather than lowering prices we can't verify.
+    if (entitledVariantIds) return baseDisplayPrice
+
+    // Whole-product discount range: discount both ends, keep originals for the strikethrough.
     const minPrice = applyDiscount(baseDisplayPrice.minPrice)
     const maxPrice = applyDiscount(baseDisplayPrice.maxPrice)
     if (minPrice >= baseDisplayPrice.minPrice && maxPrice >= baseDisplayPrice.maxPrice) {

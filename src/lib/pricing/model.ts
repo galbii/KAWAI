@@ -24,6 +24,10 @@ export type Site = 'us' | 'cad'
 /** Duck-typed product shape — matches the Payload doc but decoupled from the generated type. */
 export interface PricingVariation {
   name?: string | null
+  /** US-store variant GID — used to scope variant-targeted discounts to finishes. */
+  shopifyVariantId?: string | null
+  /** CA-store variant GID — same, matched against `shopifyDiscountCAD.entitledVariantIds`. */
+  shopifyVariantIdCA?: string | null
   price?: number | null
   compareAtPrice?: number | null
   priceCAD?: number | null
@@ -37,6 +41,11 @@ export interface PricingDiscount {
   value?: number | null
   /** Present ⇒ a discount is active (the sync's signal). */
   discountedPrice?: number | null
+  /**
+   * Variant GIDs the discount is restricted to (specific finishes). Null/empty =
+   * the whole product is discounted. US snapshots hold US GIDs, CAD snapshots CA GIDs.
+   */
+  entitledVariantIds?: string[] | null
 }
 
 export interface PricingProduct {
@@ -141,15 +150,28 @@ export function normalizeProductPrice(
     return typeof c === 'number' ? c : null
   }
 
-  const tiersFor = (sale: number, list: number | null): PriceTiers => {
-    const final = applyDiscount(sale, discount)
+  // A variant-scoped discount only lowers the finishes it targets (Shopify checkout
+  // already enforces this — the display must match). Null/empty entitled list =
+  // whole-product discount. The product-level fallback (no variation) also only
+  // takes a whole-product discount.
+  const entitled = discount?.entitledVariantIds
+  const discountFor = (v: PricingVariation | null): PricingDiscount | null => {
+    if (!discount) return null
+    if (!entitled || entitled.length === 0) return discount
+    if (!v) return null
+    const gid = site === 'cad' ? v.shopifyVariantIdCA : v.shopifyVariantId
+    return gid && entitled.includes(gid) ? discount : null
+  }
+
+  const tiersFor = (sale: number, list: number | null, v: PricingVariation | null): PriceTiers => {
+    const final = applyDiscount(sale, discountFor(v))
     // Only keep the list tier when it's genuinely above the price we'll show.
     return { list: list != null && list > final ? list : null, sale, final }
   }
 
   const variationTiers = (v: PricingVariation): PriceTiers | null => {
     const sale = priceOf(v)
-    return sale == null ? null : tiersFor(sale, listOf(v))
+    return sale == null ? null : tiersFor(sale, listOf(v), v)
   }
 
   const title = discount?.discountedPrice != null ? discount.title ?? null : null
@@ -210,7 +232,7 @@ export function normalizeProductPrice(
     site === 'cad'
       ? product.priceCAD?.price ?? product.priceCAD?.msrp ?? null
       : product.price?.msrp ?? null
-  if (typeof fallback === 'number') return single(tiersFor(fallback, null))
+  if (typeof fallback === 'number') return single(tiersFor(fallback, null, null))
 
   return {
     kind: 'unavailable',

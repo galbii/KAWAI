@@ -71,7 +71,12 @@ export type ShopifyDataUpdate = Partial<
 /**
  * CA variant price entry keyed by normalised variant title (lowercase, trimmed).
  */
-export type CAVariantPrice = { price: number | null; compareAtPrice: number | null }
+export type CAVariantPrice = {
+  price: number | null
+  compareAtPrice: number | null
+  /** CA-store variant GID — for matching CA discounts that target specific variants. */
+  variantGid: string | null
+}
 
 /**
  * Result of a CA pricing fetch — product-level aggregates + per-variant map.
@@ -118,6 +123,7 @@ export async function fetchCAPricing(handle: string): Promise<CAPricingResult | 
     byVariantTitle.set(variant.title.toLowerCase().trim(), {
       price: parseFloat(variant.price) || null,
       compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+      variantGid: variant.id ?? null,
     })
   }
 
@@ -464,6 +470,7 @@ export async function syncShopifyDataToProduct(
           return {
             name: variant.title,
             shopifyVariantId: variant.id,
+            shopifyVariantIdCA: caVariant?.variantGid ?? null,
             price: parseFloat(variant.price) || null,
             compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
             priceCAD: caVariant?.price ?? null,

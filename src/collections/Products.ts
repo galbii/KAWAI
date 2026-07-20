@@ -91,6 +91,7 @@ async function transformShopifyToPayload(
         return {
           name: variant.title,
           shopifyVariantId: variant.id,
+          shopifyVariantIdCA: caVariant?.variantGid ?? null,
           price: parseFloat(variant.price) || null,
           compareAtPrice: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
           priceCAD: caVariant?.price ?? null,
@@ -561,6 +562,14 @@ export const Products: CollectionConfig = {
                     readOnly: true,
                   },
                 },
+                {
+                  name: 'entitledVariantIds',
+                  type: 'json',
+                  admin: {
+                    description: 'US variant GIDs the discount is restricted to (specific finishes). Empty/blank = applies to every finish.',
+                    readOnly: true,
+                  },
+                },
               ],
             },
 
@@ -605,6 +614,14 @@ export const Products: CollectionConfig = {
                   type: 'number',
                   admin: {
                     description: 'Effective CA price after the discount (computed from CA min variant price)',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'entitledVariantIds',
+                  type: 'json',
+                  admin: {
+                    description: 'CA-store variant GIDs the discount is restricted to (specific finishes). Empty/blank = applies to every finish.',
                     readOnly: true,
                   },
                 },
@@ -903,6 +920,14 @@ export const Products: CollectionConfig = {
                   type: 'text',
                   admin: {
                     description: 'Shopify Variant ID (gid://shopify/ProductVariant/...)',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'shopifyVariantIdCA',
+                  type: 'text',
+                  admin: {
+                    description: 'CA-store Shopify Variant ID (synced, matched by title) — used to scope CA discounts to specific finishes',
                     readOnly: true,
                   },
                 },
