@@ -11,6 +11,8 @@ export const heroCopy = {
 export const summerHero = {
   eyebrow: 'Summer Savings Event',
   headline: 'Up to $4,500 off select pianos at your Local Dealer',
+  /** Canada (ca.kawaius.com) variant. */
+  headlineCA: 'Up to $2,600 off select pianos at your Local Dealer',
   sub: '200+ Authorized Dealers Nationwide',
   deadline: 'Only until September 30th',
   signUpCta: 'Sign Up Now',

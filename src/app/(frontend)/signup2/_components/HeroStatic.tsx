@@ -11,7 +11,7 @@ import { EASE_OUT_EXPO } from './motion'
 /** Summer-savings background film (R2). Poster + scrim guarantee legible copy. */
 const HERO_VIDEO = 'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/summersavingsbackground.mp4'
 
-type Props = { reduce: boolean }
+type Props = { reduce: boolean; site?: 'us' | 'cad' }
 
 /**
  * Static hero block for /signup2 — Kawai logo, "Summer Savings Event", and the
@@ -21,7 +21,7 @@ type Props = { reduce: boolean }
  * Copy fades in once on mount (not scroll-coupled); reduced-motion users get it
  * fully static.
  */
-export default function HeroStatic({ reduce }: Props) {
+export default function HeroStatic({ reduce, site = 'us' }: Props) {
   const offer = useOfferModal()
 
   const scrollToRebates = () => {
@@ -84,7 +84,7 @@ export default function HeroStatic({ reduce }: Props) {
             transition={{ duration: 1, ease: EASE_OUT_EXPO, delay: 0.4 }}
             className="mb-4 font-[family-name:var(--font-brand-serif)] text-[clamp(2rem,5vw,3.5rem)] font-light leading-[1.05]"
           >
-            {summerHero.headline}
+            {site === 'cad' ? summerHero.headlineCA : summerHero.headline}
           </motion.p>
 
           {/* Sub */}

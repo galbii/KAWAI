@@ -32,6 +32,8 @@ const SPRING = { stiffness: 90, damping: 28, mass: 0.4, restDelta: 0.0005 }
 type SignupScrollProps = {
   /** Rebated products grouped by category, resolved server-side for the active site. */
   rebateData: RebateCategory[]
+  /** Active site — 'cad' swaps in the Canada hero headline. */
+  site?: 'us' | 'cad'
 }
 
 /** Natural white rebate break — needs the offer modal, so it lives inside the provider. */
@@ -48,7 +50,7 @@ function RebateBreak({ data }: { data: RebateCategory[] }) {
   )
 }
 
-export default function SignupScroll({ rebateData }: SignupScrollProps) {
+export default function SignupScroll({ rebateData, site = 'us' }: SignupScrollProps) {
   const reduce = useReducedMotion() ?? false
   const outroRef = useRef<HTMLDivElement>(null)
 
@@ -79,7 +81,7 @@ export default function SignupScroll({ rebateData }: SignupScrollProps) {
       </div>
 
       {/* Hero — static block, flows straight into the rebate table */}
-      <HeroStatic reduce={reduce} />
+      <HeroStatic reduce={reduce} site={site} />
 
       {/* Rebate break — natural white RebateSchedule section */}
       <RebateBreak data={rebateData} />

@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { getSite } from '@/lib/site-context'
 
 const newsletterSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -40,6 +41,11 @@ export async function submitNewsletterSignup(
 
   const tags = ['footer-newsletter', 'source-footer']
   if (storefrontSlug) tags.push(storefrontSlug)
+
+  // Signups from ca.kawaius.com go to the same US-store CRM — mark them so
+  // Canadian leads are distinguishable.
+  const site = await getSite()
+  if (site === 'cad') tags.push('canada')
 
   try {
     await upsertCustomer({

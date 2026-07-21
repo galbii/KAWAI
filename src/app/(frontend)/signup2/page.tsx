@@ -48,5 +48,5 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SignupPage() {
   const site = await getSite()
   const rebateData = await getRebateShowcase(site)
-  return <SignupScroll rebateData={rebateData} />
+  return <SignupScroll rebateData={rebateData} site={site} />
 }
