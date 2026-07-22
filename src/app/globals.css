@@ -249,6 +249,16 @@ body {
   letter-spacing: -0.01em;
 }
 
+/*
+ * When the 3D model viewer modal is open (ThreeDViewerModal adds .viewer-modal-open
+ * to <body>), hide the high-z-index floating chrome so it can't sit on top of the
+ * full-screen viewer: the Floating Add to Cart bar (z-10100) and the Payload Admin
+ * bar (z-10000). The "View in 3D" open button hides itself via its `visible` prop.
+ */
+body.viewer-modal-open [data-hide-on-3d-viewer] {
+  display: none !important;
+}
+
 /* Custom Scrollbar Styling for Calendly Modal */
 .custom-scrollbar {
   scrollbar-width: thin;

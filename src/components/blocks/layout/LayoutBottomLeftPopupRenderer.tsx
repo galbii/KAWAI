@@ -24,6 +24,8 @@ interface LayoutBottomLeftPopupRendererProps {
   animationStyle?: 'slide' | 'fade' | 'bounce' | 'scale' | null
   customStorageKey?: string | null
   zIndex?: number | null
+  showOnAllPages?: boolean | null
+  excludePaths?: Array<{ path?: string | null }> | null
 }
 
 export function LayoutBottomLeftPopupRenderer(props: LayoutBottomLeftPopupRendererProps) {

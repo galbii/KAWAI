@@ -39,7 +39,7 @@ export function ThreeDViewerRenderer({
   productName,
   buttonText = 'View in 3D',
   buttonPosition = 'bottom-left',
-  theme = 'blue',
+  theme = 'kawai-red',
   autoOpen = false,
   contextSection,
   layout,
@@ -134,7 +134,7 @@ export function ThreeDViewerRenderer({
     },
   }
 
-  const currentTheme = themeStyles[theme as keyof typeof themeStyles] || themeStyles.blue
+  const currentTheme = themeStyles[theme as keyof typeof themeStyles] || themeStyles['kawai-red']
 
   // Button position classes with mobile-optimized spacing
   // On mobile: bottom-20 (80px) to clear browser chrome and mobile search bars
@@ -205,7 +205,7 @@ export function ThreeDViewerRenderer({
         onClick={handleOpen}
         text={buttonText || 'View in 3D'}
         productName={productName || modelId}
-        visible={true}
+        visible={!viewer.isOpen}
         className={cn(
           // High z-index for mobile (above browser UI)
           zIndexClass,

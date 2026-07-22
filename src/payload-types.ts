@@ -1235,6 +1235,19 @@ export interface LayoutBottomLeftPopupBlock {
    */
   enabled?: boolean | null;
   /**
+   * Show this popup site-wide on every page (not just where the block is placed). Configure the popup once here on the homepage.
+   */
+  showOnAllPages?: boolean | null;
+  /**
+   * Paths where the popup should NOT appear. Use an exact path (e.g. /contact) or a trailing wildcard (e.g. /pianos/*).
+   */
+  excludePaths?:
+    | {
+        path: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Optional icon/image (recommended: 48x48px - 64x64px)
    */
   icon?: (string | null) | Media;
@@ -3743,7 +3756,7 @@ export interface Marketing3DViewerBlock {
   /**
    * Button color theme
    */
-  theme?: ('blue' | 'kawai-red' | 'black' | 'gold') | null;
+  theme?: ('kawai-red' | 'blue' | 'black' | 'gold') | null;
   /**
    * Allow ?mode=3d URL parameter to automatically open the 3D viewer when the page loads
    */

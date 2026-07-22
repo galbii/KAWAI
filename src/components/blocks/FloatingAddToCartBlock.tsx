@@ -106,6 +106,7 @@ export function FloatingAddToCartBlock({
 
   return (
     <div
+      data-hide-on-3d-viewer
       className={cn(
         'fixed z-[10100] transition-all duration-500 ease-out',
         positionClasses[position ?? 'bottom-right'],

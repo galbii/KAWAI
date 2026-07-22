@@ -20,6 +20,7 @@ import { NammAwareShell } from "@/components/layout/NammAwareShell";
 // 'use client' file (required by Next.js App Router for dynamic with ssr:false).
 import { ClientOnlyOverlays } from "@/components/layout/ClientOnlyOverlays";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { GlobalBottomPopup } from "@/components/blocks/GlobalBottomPopup";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite()
@@ -189,6 +190,9 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       </Suspense>
       <DealerDimensionTracker />
       <CookieConsentBanner />
+      <Suspense fallback={null}>
+        <GlobalBottomPopup />
+      </Suspense>
       </PageHistoryProvider>
     </NavigationContextProvider>
     </AdminBarProvider>

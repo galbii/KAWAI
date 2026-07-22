@@ -64,10 +64,10 @@ export const ThreeDViewer: Block = {
         {
           name: 'theme',
           type: 'select',
-          defaultValue: 'blue',
+          defaultValue: 'kawai-red',
           options: [
-            { label: 'Blue (Default)', value: 'blue' },
-            { label: 'Kawai Red', value: 'kawai-red' },
+            { label: 'Kawai Red (Default)', value: 'kawai-red' },
+            { label: 'Blue', value: 'blue' },
             { label: 'Black', value: 'black' },
             { label: 'Gold', value: 'gold' },
           ],

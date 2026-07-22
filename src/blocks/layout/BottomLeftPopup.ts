@@ -23,6 +23,45 @@ export const BottomLeftPopup: Block = {
     },
     {
       type: 'collapsible',
+      label: 'Page Targeting',
+      admin: {
+        initCollapsed: true,
+        condition: (data: any) => data.enabled !== false,
+      },
+      fields: [
+        {
+          name: 'showOnAllPages',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'Show this popup site-wide on every page (not just where the block is placed). Configure the popup once here on the homepage.',
+          },
+        },
+        {
+          name: 'excludePaths',
+          type: 'array',
+          labels: { singular: 'Excluded Path', plural: 'Excluded Paths' },
+          admin: {
+            description:
+              'Paths where the popup should NOT appear. Use an exact path (e.g. /contact) or a trailing wildcard (e.g. /pianos/*).',
+            condition: (_data: any, siblingData: any) => Boolean(siblingData?.showOnAllPages),
+          },
+          fields: [
+            {
+              name: 'path',
+              type: 'text',
+              required: true,
+              admin: {
+                placeholder: '/contact or /pianos/*',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
       label: 'Content',
       admin: {
         initCollapsed: false,

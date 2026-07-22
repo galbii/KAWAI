@@ -1,10 +1,36 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import type { Media } from '@/payload-types'
 import { X } from 'lucide-react'
 import { trackCTAClick, trackWithConfig } from '@/lib/analytics/unified-tracking'
+
+interface ExcludePath {
+  path?: string | null
+}
+
+/**
+ * Match the current pathname against the editor-supplied exclude list.
+ * Supports exact paths (`/contact`) and trailing wildcards (`/pianos/*`).
+ */
+function isPathExcluded(pathname: string | null, excludePaths?: ExcludePath[] | null): boolean {
+  if (!pathname || !excludePaths?.length) return false
+  const norm = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p)
+  const path = norm(pathname)
+  return excludePaths.some(({ path: raw }) => {
+    let pat = raw?.trim()
+    if (!pat) return false
+    if (!pat.startsWith('/')) pat = '/' + pat
+    if (pat.endsWith('/*')) {
+      const base = norm(pat.slice(0, -2))
+      return path === base || path.startsWith(base + '/')
+    }
+    if (pat.endsWith('*')) return path.startsWith(pat.slice(0, -1))
+    return path === norm(pat)
+  })
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -37,6 +63,14 @@ interface BottomLeftPopupBlockProps {
   animationStyle?: 'slide' | 'fade' | 'bounce' | 'scale' | null
   customStorageKey?: string | null
   zIndex?: number | null  // Default 9010 — must be above mobile search bar (z-9003)
+  showOnAllPages?: boolean | null
+  excludePaths?: ExcludePath[] | null
+  /**
+   * True when rendered by the site-wide GlobalBottomPopup mount. The homepage
+   * inline instance (rendered via RenderBlocks) sets this false and bails when
+   * showOnAllPages is on, so exactly one popup renders across the site.
+   */
+  isGlobalMount?: boolean
   tracking?: any
   ctaTracking?: any
 }
@@ -131,12 +165,26 @@ export function BottomLeftPopupBlock({
   animationStyle = 'slide',
   customStorageKey,
   zIndex = 9010,
+  showOnAllPages = false,
+  excludePaths,
+  isGlobalMount = false,
   tracking,
   ctaTracking,
 }: BottomLeftPopupBlockProps) {
   const [state, setState] = useState<PopupState>('hidden')
   const [shouldRender, setShouldRender] = useState(true)
   const isMobile = useIsMobile()
+  const pathname = usePathname()
+
+  // A single popup instance should render across the site:
+  // - When showOnAllPages is on, only the global mount renders (the homepage
+  //   inline instance defers to it).
+  // - When it's off, only the inline instance renders (the global mount is null).
+  // - Never on an excluded path.
+  const active =
+    enabled !== false &&
+    (showOnAllPages ? isGlobalMount : !isGlobalMount) &&
+    !isPathExcluded(pathname, excludePaths)
 
   const storageKey = customStorageKey || DEFAULT_STORAGE_KEY
 
@@ -162,10 +210,11 @@ export function BottomLeftPopupBlock({
   }, [dismissible, state, showOncePerSession, storageKey, theme, position, tracking])
 
   useEffect(() => {
-    if (!enabled) { setShouldRender(false); return }
+    if (!active) { setShouldRender(false); return }
     if (showOncePerSession && typeof window !== 'undefined') {
       if (sessionStorage.getItem(storageKey)) { setShouldRender(false); return }
     }
+    setShouldRender(true)
     const timer = setTimeout(() => {
       setState('entering')
       setTimeout(() => {
@@ -180,7 +229,7 @@ export function BottomLeftPopupBlock({
       }, 50)
     }, autoShowDelay ?? 3000)
     return () => clearTimeout(timer)
-  }, [enabled, autoShowDelay, showOncePerSession, storageKey])
+  }, [active, autoShowDelay, showOncePerSession, storageKey])
 
   useEffect(() => {
     if (state === 'visible' && autoDismissDelay && autoDismissDelay > 0) {
@@ -201,7 +250,7 @@ export function BottomLeftPopupBlock({
     return undefined
   }, [state, handleDismiss])
 
-  if (!shouldRender || state === 'dismissed') return null
+  if (!active || !shouldRender || state === 'dismissed') return null
 
   const featuredMedia =
     typeof featuredImage === 'object' && featuredImage !== null ? (featuredImage as Media) : null
