@@ -13,6 +13,7 @@ import { trackWithConfig } from '@/lib/analytics/unified-tracking'
  * After build, this will be available as Marketing3DViewerBlock in @/payload-types
  */
 interface ThreeDViewerRendererProps {
+  enabled?: boolean | null
   modelId: string
   productName?: string | null
   buttonText?: string | null

@@ -13,6 +13,15 @@ export const ThreeDViewer: Block = {
   interfaceName: 'Marketing3DViewerBlock',
   fields: [
     {
+      name: 'enabled',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description:
+          'Enable the 3D model viewer on this page. Uncheck to hide the button and viewer without removing the block.',
+      },
+    },
+    {
       name: 'modelId',
       type: 'text',
       required: true,

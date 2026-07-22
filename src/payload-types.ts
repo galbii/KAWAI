@@ -3738,6 +3738,10 @@ export interface MarketingFeaturedModelsBlock {
  */
 export interface Marketing3DViewerBlock {
   /**
+   * Enable the 3D model viewer on this page. Uncheck to hide the button and viewer without removing the block.
+   */
+  enabled?: boolean | null;
+  /**
    * Piano model ID for the 3D viewer (e.g., "ca901", "gl-10", "gx-7", "sk-ex"). This identifies which piano model to display.
    */
   modelId: string;

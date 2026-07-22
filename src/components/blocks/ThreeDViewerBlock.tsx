@@ -15,6 +15,7 @@ import { ThreeDViewerRenderer } from './marketing/ThreeDViewerRenderer'
  * Props interface - will be auto-generated as Marketing3DViewerBlock after build
  */
 interface ThreeDViewerBlockProps {
+  enabled?: boolean | null
   modelId: string
   productName?: string | null
   buttonText?: string | null
@@ -37,5 +38,8 @@ interface ThreeDViewerBlockProps {
 }
 
 export function ThreeDViewerBlock(props: ThreeDViewerBlockProps) {
+  // Gate on the `enabled` toggle. Default is enabled — only an explicit `false`
+  // hides it. Returning null here keeps the viewer's hooks/preload from mounting.
+  if (props.enabled === false) return null
   return <ThreeDViewerRenderer {...props} />
 }
