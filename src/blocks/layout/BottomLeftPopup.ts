@@ -1,5 +1,5 @@
 import type { Block } from 'payload'
-import { imageField } from '@/lib/payload/fields/media'
+import { imageField, mediaField } from '@/lib/payload/fields/media'
 import { trackingField, ctaTrackingField } from '@/lib/payload/fields/tracking'
 
 export const BottomLeftPopup: Block = {
@@ -34,9 +34,10 @@ export const BottomLeftPopup: Block = {
             description: 'Optional icon/image (recommended: 48x48px - 64x64px)',
           },
         }),
-        imageField('featuredImage', {
+        mediaField('featuredImage', {
           admin: {
-            description: 'Optional featured image (displays prominently in popup)',
+            description:
+              'Optional featured image or video (displays prominently in popup). Video files autoplay muted on loop.',
           },
         }),
         {
@@ -50,7 +51,7 @@ export const BottomLeftPopup: Block = {
             { label: 'Tall (400px)', value: 'tall' },
           ],
           admin: {
-            description: 'Featured image height (only applies if image is selected)',
+            description: 'Featured media height (only applies if an image or video is selected)',
             condition: (data: any, siblingData: any) => Boolean(siblingData?.featuredImage),
           },
         },

@@ -203,14 +203,11 @@ export function BottomLeftPopupBlock({
 
   if (!shouldRender || state === 'dismissed') return null
 
-  const featuredImageUrl =
-    typeof featuredImage === 'object' && featuredImage !== null && 'url' in featuredImage
-      ? featuredImage.url
-      : null
-  const featuredImageAlt =
-    typeof featuredImage === 'object' && featuredImage !== null && 'alt' in featuredImage
-      ? ((featuredImage as Media).alt ?? '')
-      : ''
+  const featuredMedia =
+    typeof featuredImage === 'object' && featuredImage !== null ? (featuredImage as Media) : null
+  const featuredImageUrl = featuredMedia?.url ?? null
+  const featuredImageAlt = featuredMedia?.alt ?? ''
+  const featuredIsVideo = Boolean(featuredMedia?.mimeType?.startsWith('video'))
 
   // Ensure popup is above mobile floating search bar (z-9003)
   const resolvedZIndex = Math.max(zIndex ?? 9010, 9010)
@@ -286,16 +283,34 @@ export function BottomLeftPopupBlock({
           {/* Accent bar — the brand signature line */}
           <div style={{ height: 3, background: t.accentBar }} />
 
-          {/* Featured image */}
+          {/* Featured image or video */}
           {featuredImageUrl && (
             <div style={{ position: 'relative', width: '100%', height: imgH, flexShrink: 0 }}>
-              <Image
-                src={featuredImageUrl}
-                alt={featuredImageAlt || title || ''}
-                fill
-                style={{ objectFit: 'cover' }}
-                priority
-              />
+              {featuredIsVideo ? (
+                <video
+                  src={featuredImageUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label={featuredImageAlt || title || undefined}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <Image
+                  src={featuredImageUrl}
+                  alt={featuredImageAlt || title || ''}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority
+                />
+              )}
               {/* Bottom vignette so title reads cleanly below */}
               <div
                 style={{
