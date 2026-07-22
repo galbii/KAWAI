@@ -1239,11 +1239,11 @@ export interface LayoutBottomLeftPopupBlock {
    */
   icon?: (string | null) | Media;
   /**
-   * Optional featured image (displays prominently in popup)
+   * Optional featured image or video (displays prominently in popup). Video files autoplay muted on loop.
    */
   featuredImage?: (string | null) | Media;
   /**
-   * Featured image height (only applies if image is selected)
+   * Featured media height (only applies if an image or video is selected)
    */
   featuredImageHeight?: ('small' | 'medium' | 'large' | 'tall') | null;
   /**
@@ -2527,6 +2527,7 @@ export interface Product {
         | ProductAccessoriesBlock
         | ProductFaqBlock
         | MarketingFeaturedModelsBlock
+        | Marketing3DViewerBlock
       )[]
     | null;
   /**
@@ -3717,6 +3718,94 @@ export interface MarketingFeaturedModelsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-featured-models';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Marketing3DViewerBlock".
+ */
+export interface Marketing3DViewerBlock {
+  /**
+   * Piano model ID for the 3D viewer (e.g., "ca901", "gl-10", "gx-7", "sk-ex"). This identifies which piano model to display.
+   */
+  modelId: string;
+  /**
+   * Optional: Display name for analytics tracking (e.g., "CA901 Digital Piano"). If not provided, the model ID will be used.
+   */
+  productName?: string | null;
+  /**
+   * Text displayed on the floating 3D viewer button
+   */
+  buttonText?: string | null;
+  /**
+   * Position of the floating 3D viewer button on the page
+   */
+  buttonPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center') | null;
+  /**
+   * Button color theme
+   */
+  theme?: ('blue' | 'kawai-red' | 'black' | 'gold') | null;
+  /**
+   * Allow ?mode=3d URL parameter to automatically open the 3D viewer when the page loads
+   */
+  autoOpen?: boolean | null;
+  /**
+   * Optional context section to explain the 3D viewer feature
+   */
+  contextSection?: {
+    /**
+     * Show a text section near the 3D viewer button to provide context or instructions
+     */
+    showContext?: boolean | null;
+    /**
+     * Heading text for the context section
+     */
+    heading?: string | null;
+    /**
+     * Description text explaining the 3D viewer feature
+     */
+    description?: string | null;
+    /**
+     * Where to display the context section relative to the button
+     */
+    contextPosition?: ('above' | 'below' | 'separate') | null;
+  };
+  /**
+   * Layout and display options
+   */
+  layout?: {
+    /**
+     * Hide the 3D viewer button on mobile devices (some 3D models may not perform well on mobile)
+     */
+    hideOnMobile?: boolean | null;
+    /**
+     * Show a subtle scroll indicator if this block is placed at the top of the page
+     */
+    showScrollIndicator?: boolean | null;
+  };
+  /**
+   * Track when visitors open the 3D model viewer — high-intent engagement signal
+   */
+  tracking?: {
+    /**
+     * Track interactions with this block (CTAs, impressions, etc.)
+     */
+    enabled?: boolean | null;
+    /**
+     * Override default event name (leave empty for auto-generated)
+     */
+    eventName?: string | null;
+    /**
+     * Category for organizing analytics reports
+     */
+    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
+    /**
+     * Estimated dollar value of this conversion (for ROI tracking)
+     */
+    conversionValue?: number | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marketing-3d-viewer';
 }
 /**
  * Frequently asked questions with rich text answers and product linking
@@ -5154,94 +5243,6 @@ export interface MarketingDealerMapBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'marketing-dealer-map';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "Marketing3DViewerBlock".
- */
-export interface Marketing3DViewerBlock {
-  /**
-   * Piano model ID for the 3D viewer (e.g., "ca901", "gl-10", "gx-7", "sk-ex"). This identifies which piano model to display.
-   */
-  modelId: string;
-  /**
-   * Optional: Display name for analytics tracking (e.g., "CA901 Digital Piano"). If not provided, the model ID will be used.
-   */
-  productName?: string | null;
-  /**
-   * Text displayed on the floating 3D viewer button
-   */
-  buttonText?: string | null;
-  /**
-   * Position of the floating 3D viewer button on the page
-   */
-  buttonPosition?: ('bottom-left' | 'bottom-right' | 'bottom-center') | null;
-  /**
-   * Button color theme
-   */
-  theme?: ('blue' | 'kawai-red' | 'black' | 'gold') | null;
-  /**
-   * Allow ?mode=3d URL parameter to automatically open the 3D viewer when the page loads
-   */
-  autoOpen?: boolean | null;
-  /**
-   * Optional context section to explain the 3D viewer feature
-   */
-  contextSection?: {
-    /**
-     * Show a text section near the 3D viewer button to provide context or instructions
-     */
-    showContext?: boolean | null;
-    /**
-     * Heading text for the context section
-     */
-    heading?: string | null;
-    /**
-     * Description text explaining the 3D viewer feature
-     */
-    description?: string | null;
-    /**
-     * Where to display the context section relative to the button
-     */
-    contextPosition?: ('above' | 'below' | 'separate') | null;
-  };
-  /**
-   * Layout and display options
-   */
-  layout?: {
-    /**
-     * Hide the 3D viewer button on mobile devices (some 3D models may not perform well on mobile)
-     */
-    hideOnMobile?: boolean | null;
-    /**
-     * Show a subtle scroll indicator if this block is placed at the top of the page
-     */
-    showScrollIndicator?: boolean | null;
-  };
-  /**
-   * Track when visitors open the 3D model viewer — high-intent engagement signal
-   */
-  tracking?: {
-    /**
-     * Track interactions with this block (CTAs, impressions, etc.)
-     */
-    enabled?: boolean | null;
-    /**
-     * Override default event name (leave empty for auto-generated)
-     */
-    eventName?: string | null;
-    /**
-     * Category for organizing analytics reports
-     */
-    category?: ('engagement' | 'conversion' | 'lead' | 'navigation' | 'media') | null;
-    /**
-     * Estimated dollar value of this conversion (for ROI tracking)
-     */
-    conversionValue?: number | null;
-  };
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'marketing-3d-viewer';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

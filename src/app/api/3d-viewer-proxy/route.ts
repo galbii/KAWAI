@@ -17,12 +17,53 @@ import { NextRequest, NextResponse } from 'next/server'
  * Returns: HTML content from kawai-global.com without X-Frame-Options
  */
 
+const VIEWER_ORIGIN = 'https://www.kawai-global.com'
+const VIEWER_BASE = `${VIEWER_ORIGIN}/modelviewer/index.php`
+
 export async function GET(request: NextRequest) {
   try {
     // Extract parameters from query string
     const searchParams = request.nextUrl.searchParams
     const model = searchParams.get('model')
     const asset = searchParams.get('asset')
+    // The viewer's own JS fetches model assets (.glb, textures) at runtime via a
+    // base64 "?_req=" handler on index.php. Those requests are relative, so they
+    // resolve against THIS proxy URL and land here. kawai-global serves them
+    // WITHOUT CORS headers, so they must stay same-origin (proxied) — we can't
+    // point them straight at kawai-global from a <model-viewer> on our origin.
+    const req = searchParams.get('_req')
+
+    // Handle runtime model-asset requests (the "?_req=..." scheme)
+    if (req) {
+      const targetUrl = `${VIEWER_BASE}?_req=${encodeURIComponent(req)}`
+      console.log('[3D Viewer Proxy] Fetching model asset:', targetUrl)
+
+      const response = await fetch(targetUrl, {
+        method: 'GET',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; KAWAI-Proxy/1.0)' },
+        signal: AbortSignal.timeout(30000),
+      })
+
+      if (!response.ok) {
+        console.error('[3D Viewer Proxy] Model asset fetch failed:', response.status)
+        return NextResponse.json(
+          { error: `Failed to fetch model asset: ${response.statusText}` },
+          { status: response.status },
+        )
+      }
+
+      const contentType = response.headers.get('content-type') || 'application/octet-stream'
+      const content = await response.arrayBuffer()
+
+      return new NextResponse(content, {
+        status: 200,
+        headers: {
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=31536000, immutable', // models are versioned in the path
+        },
+      })
+    }
 
     // Handle asset requests (GLTF files, textures, etc.)
     if (asset) {
@@ -101,37 +142,14 @@ export async function GET(request: NextRequest) {
     // Get the content type from the original response
     const contentType = response.headers.get('content-type') || 'text/html'
 
-    // Read the response body
-    let content = await response.text()
-
-    // Rewrite URLs to proxy through our API for CORS support
-    if (contentType.includes('text/html')) {
-      // Replace absolute URLs to kawai-global.com with our proxy
-      content = content.replace(
-        /https?:\/\/www\.kawai-global\.com(\/modelviewer)?/g,
-        ''
-      )
-
-      // Replace absolute paths starting with / (e.g., src="/models/file.gltf")
-      content = content.replace(
-        /(src|href)=(["'])\/([^"']*\.(?:gltf|glb|bin|png|jpg|jpeg|webp|js|css))/gi,
-        `$1=$2/api/3d-viewer-proxy?asset=/$3`
-      )
-
-      // Replace relative paths without leading / (e.g., src="models/file.gltf")
-      content = content.replace(
-        /(src|href)=(["'])(?!http|\/\/|\/api|data:)([^"']*\.(?:gltf|glb|bin|png|jpg|jpeg|webp|js|css))/gi,
-        `$1=$2/api/3d-viewer-proxy?asset=$3`
-      )
-
-      // Debug: Log what the model-viewer src looks like after rewriting
-      const modelViewerMatch = content.match(/<model-viewer[^>]*src=["']([^"']+)["']/i)
-      if (modelViewerMatch) {
-        console.log('[3D Viewer Proxy] Rewritten model-viewer src:', modelViewerMatch[1])
-      }
-
-      console.log('[3D Viewer Proxy] Rewrote asset URLs to use proxy for CORS')
-    }
+    // Read the response body. We deliberately do NOT rewrite asset URLs:
+    //   - Scripts (model-viewer, Draco) are absolute CDN URLs (jsdelivr, gstatic) and
+    //     load directly — our CSP whitelists them (see src/lib/csp.ts).
+    //   - The viewer's runtime model fetches use a relative "?_req=..." URL, which
+    //     resolves against this proxy document and is handled by the `_req` branch above.
+    // The only thing we change is stripping X-Frame-Options (done via the fresh response
+    // below), which is the sole reason this proxy exists.
+    const content = await response.text()
 
     // Create a new response with the proxied content
     // Strip X-Frame-Options and other security headers that prevent embedding

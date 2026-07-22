@@ -6,6 +6,7 @@ const VALID_BLOCK_TYPES = [
   'marketing-hero',
   'marketing-cta',
   'marketing-testimonials',
+  'marketing-3d-viewer',
   // Product blocks
   'product-showcase',
   'product-hero',

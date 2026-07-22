@@ -29,6 +29,7 @@ import { SoundCloudEmbedRenderer } from '@/components/blocks/product/SoundCloudE
 import { ProductFaqRenderer } from '@/components/blocks/product/ProductFaqRenderer'
 import { ProductAccessoriesRenderer } from '@/components/blocks/product/ProductAccessoriesRenderer'
 import { ProductReferenceBlockWrapper } from '@/components/blocks/ProductReferenceBlockWrapper'
+import { ThreeDViewerBlockLazy } from '@/components/blocks/ThreeDViewerBlockLazy'
 
 // Block component mapping (using actual block slugs from block definitions)
 const BLOCK_COMPONENTS = {
@@ -36,6 +37,7 @@ const BLOCK_COMPONENTS = {
   'marketing-hero': HeroBlock,
   'marketing-cta': CallToActionBlock,
   'marketing-testimonials': TestimonialsBlock,
+  'marketing-3d-viewer': ThreeDViewerBlockLazy,
   // Product blocks
   'product-showcase': ProductShowcaseBlock,
   'product-hero': ProductHeroBlock,

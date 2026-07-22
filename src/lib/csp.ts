@@ -61,6 +61,13 @@ export function buildCspHeader(_isDev: boolean): string {
 
       // Cloudflare Web Analytics beacon (injected by Cloudflare at the edge)
       'https://static.cloudflareinsights.com',
+
+      // Kawai 3D model viewer (proxied via /api/3d-viewer-proxy) loads these directly:
+      //   cdn.jsdelivr.net — @google/model-viewer + qrcodejs
+      //   www.gstatic.com  — Draco decoder (draco_wasm_wrapper.js)
+      // The proxied HTML runs same-origin, so it inherits this page's CSP.
+      'https://cdn.jsdelivr.net',
+      'https://www.gstatic.com',
     ],
 
     'style-src': [
@@ -129,6 +136,8 @@ export function buildCspHeader(_isDev: boolean): string {
 
     'connect-src': [
       "'self'",
+      'blob:', // model-viewer decodes the .glb into a blob: URL and re-fetches it
+
 
       // PostHog — wildcard covers all endpoints including toolbar (internal-j, us.posthog.com)
       'https://*.posthog.com',
@@ -149,6 +158,10 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://pagead2.googlesyndication.com',
       // Google Maps API (*.googleapis.com covers Places, Geocoding, Directions)
       'https://*.googleapis.com',
+
+      // Kawai 3D model viewer — Draco decoder .wasm is fetched (not <script>) from gstatic.
+      // The model .glb itself is proxied same-origin via /api/3d-viewer-proxy ('self' covers it).
+      'https://www.gstatic.com',
 
       // Calendly
       'https://api.calendly.com',

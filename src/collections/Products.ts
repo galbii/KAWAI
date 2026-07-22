@@ -1089,6 +1089,7 @@ export const Products: CollectionConfig = {
                 'product-accessories',               // Accessories - Auto-displays compatible accessories (hidden if none exist)
                 'product-faq',                       // Product FAQ - Accordion FAQ section pulled from linked FAQs
                 'marketing-featured-models',         // Featured Models - Showcase related models
+                'marketing-3d-viewer',               // 3D Model Viewer - Floating button + iframe modal
               ] as any,
               blocks: [], // Required to be empty when using blockReferences
               admin: {
