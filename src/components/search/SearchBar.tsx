@@ -1570,6 +1570,7 @@ export function SearchBar({ className, onOpenChange }: SearchBarProps) {
       {/* Hidden on the routes in MOBILE_SEARCH_HIDDEN_PREFIXES (find-a-dealer has its own search; /signup* lead pages keep focus on the offer form) */}
       {isMounted && !hideMobileSearch && createPortal(
         <div
+          data-hide-on-3d-viewer
           className="fixed left-0 right-0 z-[9003] md:hidden transition-all duration-200 ease-out"
           style={{
             // Hide when keyboard is open but search input is not focused (user is typing in another form)
