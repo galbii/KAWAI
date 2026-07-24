@@ -1,19 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { lookupSerialNumber, getApproximateAge } from '@/lib/serial-numbers'
+import { lookupSerialNumber } from '@/lib/serial-numbers'
 import type { LookupResult, LookupError } from '@/lib/serial-numbers'
 import { cn } from '@/lib/utils'
 
 /* ─── Data ─────────────────────────────────────────────────────────── */
 
-const COUNTRY = {
-  Japan:     { code: 'JP', location: 'Hamamatsu, Japan'           },
-  USA:       { code: 'US', location: 'Lincolnton, North Carolina' },
-  Indonesia: { code: 'ID', location: 'Surabaya, Indonesia'        },
+const COUNTRY_LABEL = {
+  Japan:     'Japan',
+  USA:       'United States',
+  Indonesia: 'Indonesia',
 } as const
 
-const EXAMPLES = ['1856250', 'A49071', 'F049000', 'B151616']
+const EXAMPLES = ['1856250', 'A49071', 'F049000']
 
 const TIMELINE_START = 1927
 const TIMELINE_END   = 2026
@@ -122,8 +122,12 @@ function ReadoutField({
 }
 
 function SuccessCard({ result }: { result: LookupResult }) {
-  const c = COUNTRY[result.country]
-  const age = getApproximateAge(result.year)
+  // Show the year as a range (e.g. "1998–1999") unless the reading is ambiguous
+  // or has no upper bound, in which case a single year is clearer.
+  const yearLabel =
+    !result.isAmbiguous && result.yearEnd && result.yearEnd !== result.year
+      ? `${result.year}–${result.yearEnd}`
+      : String(result.year)
 
   return (
     <div style={{ animation: 'revealUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}>
@@ -137,16 +141,10 @@ function SuccessCard({ result }: { result: LookupResult }) {
         </span>
       </div>
 
-      {/* Readout: year / origin / age */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr_0.8fr] sm:divide-x divide-kawai-neutral/70">
-        <ReadoutField
-          label="Production Year"
-          value={String(result.year)}
-          sub={!result.isAmbiguous && result.yearEnd ? `through ${result.yearEnd}` : undefined}
-          big
-        />
-        <ReadoutField label="Origin" value={result.country} sub={c.location} />
-        <ReadoutField label="Age" value={String(age)} sub={age === 1 ? 'year' : 'years'} />
+      {/* Readout: production year + manufacturing country */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] sm:divide-x divide-kawai-neutral/70">
+        <ReadoutField label="Production Year" value={yearLabel} big />
+        <ReadoutField label="Manufacturing Country" value={COUNTRY_LABEL[result.country]} />
       </div>
 
       {/* Timeline */}
@@ -220,8 +218,8 @@ export function SerialNumberLookup() {
         {/* Brand rule */}
         <div className="h-[3px] bg-kawai-red w-full" />
 
-        <div className="max-w-5xl mx-auto px-5 sm:px-6 pt-12 sm:pt-16 pb-24">
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-8 lg:gap-12 items-start">
+        <div className="max-w-2xl mx-auto px-5 sm:px-6 pt-12 sm:pt-16 pb-24">
+          <div>
 
             {/* ── Main column ── */}
             <div className="min-w-0">
@@ -240,7 +238,7 @@ export function SerialNumberLookup() {
               Serial Number Lookup
             </h1>
             <p className="mt-4 text-base sm:text-lg text-kawai-charcoal leading-relaxed max-w-lg">
-              Find when and where your piano was built. Enter the serial number stamped on the
+              Find when your piano was built. Enter the serial number stamped on the
               iron plate or printed on the fallboard.
             </p>
           </header>
@@ -335,41 +333,7 @@ export function SerialNumberLookup() {
 
             </div>{/* /main column */}
 
-            {/* ── Serial formats sidebar ── */}
-            <aside>
-              <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-kawai-charcoal/55 mb-3">
-                Serial Formats
-              </p>
-              <div className="rounded-lg border border-kawai-neutral bg-white overflow-hidden">
-                {[
-                  { code: 'JP', prefix: 'No letter',     country: 'Japan',      range: '1927–present' },
-                  { code: 'JP', prefix: 'B / C / E / S', country: 'Japan',      range: '1987–present' },
-                  { code: 'US', prefix: 'A',             country: 'USA',        range: '1988–2004'    },
-                  { code: 'ID', prefix: 'F',             country: 'Indonesia',  range: '2002–present' },
-                ].map((row, i) => (
-                  <div
-                    key={row.prefix}
-                    className={cn('flex items-center gap-3 px-4 py-3.5', i > 0 && 'border-t border-kawai-neutral/70')}
-                  >
-                    <span className="font-mono text-[10px] font-bold tracking-[0.1em] text-kawai-charcoal/70 bg-kawai-pearl border border-kawai-neutral rounded px-1.5 py-1 w-9 text-center shrink-0">
-                      {row.code}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-kawai-black leading-tight">{row.country}</div>
-                      <div className="font-mono text-[11px] text-kawai-charcoal/60 mt-0.5">
-                        {row.prefix} · {row.range}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-xs text-kawai-charcoal/60 leading-relaxed">
-                Enter the serial exactly as it appears, including any leading letter. An unfamiliar
-                leading letter is disregarded and the number is dated as a Japan serial.
-              </p>
-            </aside>
-
-          </div>{/* /grid */}
+          </div>
         </div>
       </div>
     </>

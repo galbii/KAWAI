@@ -227,45 +227,10 @@ const INDONESIA: SerialEntry[] = [
   { year: 2026, serialStart: 218032 },
 ]
 
-// ── Japan, prefix B ──  master database, 1991–2026
-const B_SERIES: SerialEntry[] = [
-  { year: 1991, serialStart: 103091 },
-  { year: 1992, serialStart: 103501 },
-  { year: 1993, serialStart: 105465 },
-  { year: 1994, serialStart: 108146 },
-  { year: 1995, serialStart: 110209 },
-  { year: 1996, serialStart: 112723 },
-  { year: 1997, serialStart: 115987 },
-  { year: 1998, serialStart: 120412 },
-  { year: 1999, serialStart: 125741 },
-  { year: 2000, serialStart: 131790 },
-  { year: 2001, serialStart: 138196 },
-  { year: 2002, serialStart: 140951 },
-  { year: 2003, serialStart: 144844 },
-  { year: 2004, serialStart: 148044 },
-  { year: 2005, serialStart: 152436 },
-  { year: 2006, serialStart: 156491 },
-  { year: 2007, serialStart: 159799 },
-  { year: 2008, serialStart: 163057 },
-  { year: 2009, serialStart: 166744 },
-  { year: 2010, serialStart: 168953 },
-  { year: 2011, serialStart: 171527 },
-  { year: 2012, serialStart: 173953 },
-  { year: 2013, serialStart: 176587 },
-  { year: 2014, serialStart: 179298 },
-  { year: 2015, serialStart: 182546 },
-  { year: 2016, serialStart: 185837 },
-  { year: 2017, serialStart: 188688 },
-  { year: 2018, serialStart: 192056 },
-  { year: 2019, serialStart: 196115 },
-  { year: 2020, serialStart: 200444 },
-  { year: 2021, serialStart: 203071 },
-  { year: 2022, serialStart: 206685 },
-  { year: 2023, serialStart: 210516 },
-  { year: 2024, serialStart: 214280 },
-  { year: 2025, serialStart: 216222 },
-  { year: 2026, serialStart: 217893 },
-]
+// Note: the prefix-B series (Japan, 1991–2026) is intentionally NOT handled by
+// this lookup. A B serial is rejected in `lookupSerialNumber` rather than dated,
+// because stripping the letter and reading it as a plain number would mis-date
+// the piano by decades.
 
 // ── Japan, prefix C ──  master database, 1999–2003 (discontinued)
 const C_SERIES: SerialEntry[] = [
@@ -319,7 +284,6 @@ interface Series {
 const PREFIX_SERIES: Record<string, Series> = {
   A: { country: 'USA', table: USA, ceiling: 116125, endYear: 2004 },
   F: { country: 'Indonesia', table: INDONESIA },
-  B: { country: 'Japan', table: B_SERIES },
   C: { country: 'Japan', table: C_SERIES, ceiling: 11347, endYear: 2003 },
   E: { country: 'Japan', table: E_SERIES, ceiling: 17357, endYear: 2002 },
   S: { country: 'Japan', table: S_SERIES, ceiling: 133557, endYear: 1997 },
@@ -346,12 +310,22 @@ export function lookupSerialNumber(raw: string): LookupResult | LookupError {
     return { type: 'invalid', message: 'Please enter a serial number.' }
   }
 
-  // Known lettered series (A, B, C, E, F, R, S)
+  // Prefix-B serials are not supported — reject rather than mis-date them.
+  if (input[0] === 'B') {
+    return {
+      type: 'invalid',
+      message:
+        'Serial numbers beginning with “B” aren’t supported by this lookup. Your authorized Kawai dealer can identify the production year.',
+    }
+  }
+
+  // Known lettered series (A, C, E, F, R, S)
   const prefix = input[0]!
   const series = /[A-Z]/.test(prefix) ? PREFIX_SERIES[prefix] : undefined
 
   if (series) {
-    const numStr = input.slice(1).replace(/\D/g, '')
+    // Strip any leading zeros so "A049000" and "A49000" resolve identically.
+    const numStr = input.slice(1).replace(/\D/g, '').replace(/^0+/, '')
     const num = parseInt(numStr, 10)
     if (numStr === '' || isNaN(num)) {
       return {
@@ -382,13 +356,14 @@ export function lookupSerialNumber(raw: string): LookupResult | LookupError {
       isAmbiguous: false,
       altYear: null,
       altYearEnd: null,
-      serialNormalized: `${prefix}${String(num).padStart(6, '0')}`,
+      serialNormalized: `${prefix}${num}`,
     }
   }
 
   // No recognized prefix → treat as a numeric serial. Disregard any stray
-  // leading letter (per Kawai guidance for unlabeled/atypical serials).
-  const cleaned = input.replace(/\D/g, '')
+  // leading letter (per Kawai guidance for unlabeled/atypical serials) and
+  // strip leading zeros so "0038947" resolves the same as "38947".
+  const cleaned = input.replace(/\D/g, '').replace(/^0+/, '')
   const num = parseInt(cleaned, 10)
 
   if (cleaned === '' || isNaN(num)) {

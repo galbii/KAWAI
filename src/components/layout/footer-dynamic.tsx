@@ -46,7 +46,7 @@ function getDealerLocationContactInfo(slug: string): Promise<DealerLocationConta
           name: showroomInfo?.name || '',
           address: showroomInfo?.address || '',
           phone: showroomInfo?.phone || '',
-          email: `info@kawaipianos${slug.replace(/-/g, '')}.com`,
+          email: showroomInfo?.email || '',
           locationName: location.locationName || '',
           slug: location.slug || '',
         }

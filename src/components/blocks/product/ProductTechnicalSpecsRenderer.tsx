@@ -5,6 +5,7 @@ import { useState, useRef } from 'react'
 import {
   ChevronDownIcon,
   ArrowDownTrayIcon,
+  DocumentTextIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
@@ -630,6 +631,42 @@ function DownloadButton({
 }
 
 // ---------------------------------------------------------------------------
+// Owner's manual link — separate from the blueprint download
+// ---------------------------------------------------------------------------
+
+function OwnersManualLink({ fileUrl, productName }: { fileUrl: string; productName: string }) {
+  const text = "Owner's Manual"
+  return (
+    <a
+      href={fileUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        'group inline-flex items-center gap-2.5 px-6 py-3 mt-2',
+        'border border-kawai-charcoal/18 hover:border-kawai-red/50',
+        'text-sm text-kawai-charcoal/70 hover:text-kawai-red',
+        'bg-white hover:bg-kawai-red/[0.025]',
+        'shadow-sm hover:shadow-md',
+        'transition-all duration-200 rounded-lg',
+      )}
+      onClick={() => {
+        trackFileDownload({
+          blockType: 'product-technical-specs',
+          blockData: {},
+          fileName: text,
+          fileUrl,
+          additionalProps: { product_name: productName, document_type: 'owners_manual' },
+        })
+      }}
+      aria-label={`Download owner's manual${productName ? ` for ${productName}` : ''} (PDF)`}
+    >
+      <DocumentTextIcon className="w-4 h-4 transition-transform duration-200 group-hover:translate-y-0.5" />
+      {text}
+    </a>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main renderer
 // ---------------------------------------------------------------------------
 
@@ -730,6 +767,10 @@ export function ProductTechnicalSpecsRenderer({
   const downloadFileUrl = productBlueprintUrl || ''
   const downloadText = downloadButtonText || 'Download Technical Specs'
   const productName = product?.name ?? ''
+
+  // Owner's manual PDF, synced from Shopify (Product.ownersManualUrl). Rendered
+  // as its own link alongside the blueprint download — the two are distinct docs.
+  const ownersManualUrl = product?.ownersManualUrl || null
 
   // Sticky search bar — stays visible while scrolling through specs
   const stickySearch = hasSpecs ? (
@@ -864,12 +905,19 @@ export function ProductTechnicalSpecsRenderer({
                     {header.subtitle}
                   </p>
                 )}
-                {enableDownload && (
-                  <DownloadButton
-                    text={downloadText}
-                    fileUrl={downloadFileUrl}
-                    productName={productName}
-                  />
+                {(enableDownload || ownersManualUrl) && (
+                  <div className="flex flex-wrap gap-3">
+                    {enableDownload && (
+                      <DownloadButton
+                        text={downloadText}
+                        fileUrl={downloadFileUrl}
+                        productName={productName}
+                      />
+                    )}
+                    {ownersManualUrl && (
+                      <OwnersManualLink fileUrl={ownersManualUrl} productName={productName} />
+                    )}
+                  </div>
                 )}
               </div>
               <div>
@@ -915,12 +963,19 @@ export function ProductTechnicalSpecsRenderer({
                   {header.subtitle}
                 </p>
               )}
-              {enableDownload && (
-                <DownloadButton
-                  text={downloadText}
-                  fileUrl={downloadFileUrl}
-                  productName={productName}
-                />
+              {(enableDownload || ownersManualUrl) && (
+                <div className="flex flex-wrap gap-3">
+                  {enableDownload && (
+                    <DownloadButton
+                      text={downloadText}
+                      fileUrl={downloadFileUrl}
+                      productName={productName}
+                    />
+                  )}
+                  {ownersManualUrl && (
+                    <OwnersManualLink fileUrl={ownersManualUrl} productName={productName} />
+                  )}
+                </div>
               )}
             </div>
             {stickySearch}
