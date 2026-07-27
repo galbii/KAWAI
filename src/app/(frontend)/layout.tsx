@@ -13,6 +13,7 @@ import { organizationSchema, featuredProductsSchema } from "@/lib/seo/schemas";
 import { UTMCapture } from "@/components/analytics/UTMCapture";
 import { DealerDimensionTracker } from "@/components/analytics/DealerDimensionTracker";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { GeoSuggestionBanner } from "@/components/layout/GeoSuggestionBanner";
 import { ConditionalFooterWrapper } from "@/components/layout/ConditionalFooterWrapper";
 import { DealerPageLayoutWrapper } from "@/components/layout/DealerPageLayoutWrapper";
 import { NammAwareShell } from "@/components/layout/NammAwareShell";
@@ -190,6 +191,7 @@ export default async function FrontendLayout(props: { children: React.ReactNode 
       </Suspense>
       <DealerDimensionTracker />
       <CookieConsentBanner />
+      <GeoSuggestionBanner site={site} />
       <Suspense fallback={null}>
         <GlobalBottomPopup />
       </Suspense>

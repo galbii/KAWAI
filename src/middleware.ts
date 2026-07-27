@@ -129,6 +129,12 @@ export async function middleware(request: NextRequest) {
       RESTRICTED_COUNTRIES.has(country) ? 'eu' : 'row',
       { path: '/', sameSite: 'lax' },
     )
+
+    // Expose the raw visitor country to the client so GeoSuggestionBanner can
+    // offer cross-border visitors the site built for them (US ↔ CA) without a
+    // forced redirect. No httpOnly — read via document.cookie, same pattern as
+    // kawai-consent-region and kawai-dealer-slug above.
+    response.cookies.set('kawai-geo-country', country, { path: '/', sameSite: 'lax' })
   }
 
   return response

@@ -636,7 +636,7 @@ export function ProductHeroBlock({
   // Layer the active automatic discount over the base price display. Automatic discount
   // wins: the discounted figure becomes the price, the pre-discount figure is struck
   // through, and `isAutoDiscount` flags the row so we can render the discount badge.
-  const variationsDisplayPrice = (() => {
+  const discountedDisplayPrice = (() => {
     if (!baseDisplayPrice || !activeDiscount) return baseDisplayPrice
 
     if (baseDisplayPrice.type === 'single') {
@@ -718,6 +718,31 @@ export function ProductHeroBlock({
       originalMax: baseDisplayPrice.maxPrice,
       isAutoDiscount: true as const,
     }
+  })()
+
+  // A real piano never sells for $0. When the actual price resolves to 0 (a Shopify
+  // variant with no price set, or a fixed discount that clamped to zero) but there's a
+  // positive compare-at / list figure, that compare-at IS the number to surface — show it
+  // as a plain MSRP instead of "$21,895 → $0". Applies identically to US and CA since it
+  // operates on the final numbers, not the currency or site.
+  const variationsDisplayPrice = (() => {
+    if (!discountedDisplayPrice) return discountedDisplayPrice
+    if (discountedDisplayPrice.type === 'single') {
+      const dp = discountedDisplayPrice as {
+        type: 'single'
+        price: number
+        compareAtPrice?: number
+        salePrice?: number
+        listPrice?: number | null
+      }
+      if ((dp.price ?? 0) <= 0) {
+        const fallback = dp.compareAtPrice ?? dp.listPrice ?? dp.salePrice ?? 0
+        if (fallback > 0) {
+          return { type: 'single' as const, price: fallback, compareAtPrice: undefined, onSale: false }
+        }
+      }
+    }
+    return discountedDisplayPrice
   })()
 
   // Off-white background fading to white in center for image blending
