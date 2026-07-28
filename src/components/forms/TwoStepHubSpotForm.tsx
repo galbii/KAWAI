@@ -113,14 +113,20 @@ const DEFAULT_FIELDS: PreFormField[] = [
   },
   {
     // Required on the HubSpot form — used to match the lead to a nearby dealer.
+    // Accepts a US ZIP (+4) or a Canadian postal code (A1A 1A1, optional space).
     name: 'zip',
-    label: 'ZIP Code',
-    placeholder: '90210',
+    label: 'ZIP / Postal Code',
+    placeholder: '90210 or M5V 2T6',
     required: true,
     step: 1,
     icon: MapPinIcon,
     helpText: "We'll match you to your nearest Authorized Kawai dealer.",
-    validation: { pattern: { regex: /^\d{5}(-\d{4})?$/, message: 'Enter a valid ZIP code' } },
+    validation: {
+      pattern: {
+        regex: /^(\d{5}(-\d{4})?|[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]\d)$/,
+        message: 'Enter a valid ZIP or postal code',
+      },
+    },
   },
 ]
 
