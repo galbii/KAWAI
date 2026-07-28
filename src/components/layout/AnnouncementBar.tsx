@@ -79,7 +79,10 @@ export function AnnouncementBar({
         styleClasses[style],
         sizeClasses[size]
       )}
-      style={{ top: 'var(--admin-bar-height, 0px)' }}
+      style={{
+        top: 'calc(var(--geo-banner-height, 0px) + var(--admin-bar-height, 0px))',
+        transition: 'top 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
     >
       <motion.div
         initial={{ opacity: 0 }}

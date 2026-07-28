@@ -16,7 +16,10 @@ export function LayoutSpacer() {
     <div
       className="w-full flex-shrink-0"
       style={{
-        height: 'var(--header-bottom, 70px)'
+        height: 'var(--header-bottom, 70px)',
+        // Glide in step with the geo banner sliding in/out (--header-bottom
+        // includes --geo-banner-height) instead of snapping the page down.
+        transition: 'height 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
       }}
       aria-hidden="true"
     />

@@ -74,7 +74,15 @@ export function AdminBar() {
     <div
       ref={barRef}
       data-hide-on-3d-viewer
-      style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10000 }}
+      style={{
+        position: 'fixed',
+        // Sits below the geo suggestion banner, which pins itself to top: 0.
+        top: 'var(--geo-banner-height, 0px)',
+        left: 0,
+        right: 0,
+        zIndex: 10000,
+        transition: 'top 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+      }}
     >
       <div
         style={{

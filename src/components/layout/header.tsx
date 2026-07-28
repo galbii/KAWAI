@@ -540,7 +540,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
       const totalPx = 64 + navHeight
       document.documentElement.style.setProperty(
         '--header-bottom',
-        `calc(${totalPx}px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))`
+        `calc(${totalPx}px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px) + var(--geo-banner-height, 0px))`
       )
     }
     updateHeaderBottom()
@@ -946,7 +946,8 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
       ref={headerRef}
       className="fixed left-0 right-0 z-50 w-full bg-white shadow-sm cursor-pointer"
       style={{
-        top: 'calc(var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))'
+        top: 'calc(var(--geo-banner-height, 0px) + var(--admin-bar-height, 0px) + var(--announcement-bar-height, 0px))',
+        transition: 'top 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
       }}
       onClick={handleHeaderClick}
     >
