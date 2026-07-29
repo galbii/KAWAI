@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -29,6 +29,8 @@ export function ImageGalleryLightbox({
   const [isImageLoaded, setIsImageLoaded] = useState(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50
@@ -75,6 +77,36 @@ export function ImageGalleryLightbox({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose, goToPrevious, goToNext])
+
+  // A11y: initial focus, Tab focus trap, focus restore
+  useEffect(() => {
+    if (!isOpen) return
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    containerRef.current?.focus()
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !containerRef.current) return
+      const focusable = containerRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleTab)
+    return () => {
+      window.removeEventListener('keydown', handleTab)
+      previouslyFocused.current?.focus?.()
+    }
+  }, [isOpen])
 
   // Touch handlers for swipe
   const onTouchStart = (e: React.TouchEvent) => {
@@ -126,7 +158,12 @@ export function ImageGalleryLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center"
+      ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image gallery"
+      tabIndex={-1}
+      className="fixed inset-0 z-[100] flex items-center justify-center focus:outline-none"
       style={{
         animation: 'fadeIn 0.3s ease-out',
       }}

@@ -54,6 +54,14 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
 
   const cellHeight = 'clamp(120px, 14vw, 180px)';
 
+  // Keyboard activation for div-based image triggers (Enter/Space open the lightbox)
+  const activate = (fn: () => void) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fn();
+    }
+  };
+
   return (
     <div
       className="mt-12 sm:mt-16"
@@ -115,9 +123,13 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
         >
           {/* Row 1-2: CA701R large left */}
           <div
-            className="row-span-2 relative overflow-hidden cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            aria-label={`View ${BENTO_INITIAL[0]!.label} image`}
+            className="row-span-2 relative overflow-hidden cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             style={{ height: `calc(${cellHeight} * 2 + 4px)` }}
             onClick={() => onImageClick(BENTO_INITIAL[0]!.src, BENTO_INITIAL[0]!.label, 1200, 800)}
+            onKeyDown={activate(() => onImageClick(BENTO_INITIAL[0]!.src, BENTO_INITIAL[0]!.label, 1200, 800))}
           >
             <Image src={BENTO_INITIAL[0]!.src} alt={BENTO_INITIAL[0]!.label} fill sizes="33vw" className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
             <HoverOverlay /><BentoLabel label={BENTO_INITIAL[0]!.label} />
@@ -125,9 +137,13 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
 
           {/* Row 1: Kawai Grand */}
           <div
-            className="relative overflow-hidden cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            aria-label={`View ${BENTO_INITIAL[1]!.label} image`}
+            className="relative overflow-hidden cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             style={{ height: cellHeight }}
             onClick={() => onImageClick(BENTO_INITIAL[1]!.src, BENTO_INITIAL[1]!.label, 800, 600)}
+            onKeyDown={activate(() => onImageClick(BENTO_INITIAL[1]!.src, BENTO_INITIAL[1]!.label, 800, 600))}
           >
             <Image src={BENTO_INITIAL[1]!.src} alt={BENTO_INITIAL[1]!.label} fill sizes="33vw" className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
             <HoverOverlay /><BentoLabel label={BENTO_INITIAL[1]!.label} />
@@ -135,9 +151,13 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
 
           {/* Row 2: AnyTime X4 */}
           <div
-            className="relative overflow-hidden cursor-pointer group"
+            role="button"
+            tabIndex={0}
+            aria-label={`View ${BENTO_INITIAL[2]!.label} image`}
+            className="relative overflow-hidden cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             style={{ height: cellHeight }}
             onClick={() => onImageClick(BENTO_INITIAL[2]!.src, BENTO_INITIAL[2]!.label, 800, 600)}
+            onKeyDown={activate(() => onImageClick(BENTO_INITIAL[2]!.src, BENTO_INITIAL[2]!.label, 800, 600))}
           >
             <Image src={BENTO_INITIAL[2]!.src} alt={BENTO_INITIAL[2]!.label} fill sizes="33vw" className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
             <HoverOverlay /><BentoLabel label={BENTO_INITIAL[2]!.label} />
@@ -151,7 +171,10 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
             return (
               <div
                 key={img.src}
-                className={`relative overflow-hidden cursor-pointer group${isLast ? ' col-span-2' : ''}`}
+                role="button"
+                tabIndex={expanded ? 0 : -1}
+                aria-label={`View ${img.label} image`}
+                className={`relative overflow-hidden cursor-pointer group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white${isLast ? ' col-span-2' : ''}`}
                 style={{
                   height: cellHeight,
                   overflow: 'hidden',
@@ -160,6 +183,7 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
                   opacity: expanded ? 1 : 0,
                 }}
                 onClick={() => onImageClick(img.src, img.label, 1200, 800)}
+                onKeyDown={activate(() => onImageClick(img.src, img.label, 1200, 800))}
               >
                 <Image src={img.src} alt={img.label} fill sizes={isLast ? '66vw' : '33vw'} className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" />
                 <HoverOverlay /><BentoLabel label={img.label} />
@@ -187,14 +211,14 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
 
       {/* ── Bento grid — mobile ─────────────────────────────────────── */}
       <div className="md:hidden mt-1 flex flex-col gap-1">
-        <div className="relative overflow-hidden cursor-pointer" style={{ height: '200px' }} onClick={() => onImageClick(BENTO_INITIAL[0]!.src, BENTO_INITIAL[0]!.label, 1200, 800)}>
+        <div role="button" tabIndex={0} aria-label={`View ${BENTO_INITIAL[0]!.label} image`} className="relative overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{ height: '200px' }} onClick={() => onImageClick(BENTO_INITIAL[0]!.src, BENTO_INITIAL[0]!.label, 1200, 800)} onKeyDown={activate(() => onImageClick(BENTO_INITIAL[0]!.src, BENTO_INITIAL[0]!.label, 1200, 800))}>
           <Image src={BENTO_INITIAL[0]!.src} alt={BENTO_INITIAL[0]!.label} fill sizes="100vw" className="object-cover" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,13,46,0.7) 0%, transparent 50%)' }} />
           <MobileBentoLabel label={BENTO_INITIAL[0]!.label} />
         </div>
         <div className="grid grid-cols-2 gap-1">
           {[BENTO_INITIAL[1]!, BENTO_INITIAL[2]!].map((img) => (
-            <div key={img.src} className="relative overflow-hidden cursor-pointer" style={{ height: '130px' }} onClick={() => onImageClick(img.src, img.label, 800, 600)}>
+            <div key={img.src} role="button" tabIndex={0} aria-label={`View ${img.label} image`} className="relative overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" style={{ height: '130px' }} onClick={() => onImageClick(img.src, img.label, 800, 600)} onKeyDown={activate(() => onImageClick(img.src, img.label, 800, 600))}>
               <Image src={img.src} alt={img.label} fill sizes="50vw" className="object-cover" />
               <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,13,46,0.7) 0%, transparent 50%)' }} />
               <MobileBentoLabel label={img.label} />
@@ -210,9 +234,13 @@ export default function GallerySection({ onImageClick, isVisible }: GallerySecti
             {BENTO_EXTRA.map((img, i) => (
               <div
                 key={img.src}
-                className={`relative overflow-hidden cursor-pointer${i === BENTO_EXTRA.length - 1 && BENTO_EXTRA.length % 2 !== 0 ? ' col-span-2' : ''}`}
+                role="button"
+                tabIndex={expanded ? 0 : -1}
+                aria-label={`View ${img.label} image`}
+                className={`relative overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white${i === BENTO_EXTRA.length - 1 && BENTO_EXTRA.length % 2 !== 0 ? ' col-span-2' : ''}`}
                 style={{ height: '130px', opacity: expanded ? 1 : 0, transform: expanded ? 'translateY(0)' : 'translateY(10px)', transition: `opacity 400ms ease ${i * 50}ms, transform 400ms ease ${i * 50}ms` }}
                 onClick={() => onImageClick(img.src, img.label, 800, 600)}
+                onKeyDown={activate(() => onImageClick(img.src, img.label, 800, 600))}
               >
                 <Image src={img.src} alt={img.label} fill sizes="50vw" className="object-cover" />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(26,13,46,0.7) 0%, transparent 50%)' }} />

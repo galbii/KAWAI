@@ -310,6 +310,7 @@ export function EnhancedSeriesBrowser({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawai-black/50 h-4 w-4" />
               <Input
                 placeholder="Search pianos..."
+                aria-label="Search pianos"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-white border-kawai-neutral/30 focus:border-kawai-red"

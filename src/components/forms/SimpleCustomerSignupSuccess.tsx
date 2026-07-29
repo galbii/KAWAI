@@ -41,7 +41,7 @@ export function SimpleCustomerSignupSuccess({
 
       <div aria-hidden="true" className="mx-auto mt-5 h-px w-12 bg-kawai-red" />
 
-      <p className="mt-5 max-w-sm text-sm leading-relaxed text-kawai-black/55">{message}</p>
+      <p className="mt-5 max-w-sm text-sm leading-relaxed text-kawai-muted">{message}</p>
 
       <button
         type="button"

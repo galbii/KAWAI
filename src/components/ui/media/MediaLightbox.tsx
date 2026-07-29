@@ -35,6 +35,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
   const lightboxRef = useRef<HTMLDivElement>(null)
   const mediaRef = useRef<HTMLDivElement>(null)
   const thumbnailsRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
 
   const currentMedia = currentIndex >= 0 && currentIndex < media.length ? media[currentIndex] : null
   const isVideo = typeof currentMedia === 'object' && currentMedia !== null && currentMedia.mediaType === 'video'
@@ -79,6 +80,37 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
       document.body.style.overflow = 'unset'
     }
   }, [isOpen, onClose, gestureState.scale])
+
+  // A11y: initial focus, Tab focus trap, focus restore (kept separate so it does
+  // not re-run on zoom/scale changes and steal focus)
+  useEffect(() => {
+    if (!isOpen) return
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    lightboxRef.current?.focus()
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !lightboxRef.current) return
+      const focusable = lightboxRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleTab)
+    return () => {
+      document.removeEventListener('keydown', handleTab)
+      previouslyFocused.current?.focus?.()
+    }
+  }, [isOpen])
 
   // Mouse wheel zoom
   const handleWheel = useCallback((event: React.WheelEvent) => {
@@ -251,8 +283,12 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image viewer"
+      tabIndex={-1}
       className={cn(
-        'fixed inset-0 z-50 bg-black/95 flex flex-col',
+        'fixed inset-0 z-50 bg-black/95 flex flex-col focus:outline-none',
         className
       )}
       ref={lightboxRef}
@@ -279,6 +315,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
+            aria-label="Close"
             className="text-white hover:bg-white/20"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -297,6 +334,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
               variant="ghost"
               size="lg"
               onClick={onPrevious}
+              aria-label="Previous image"
               className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
               disabled={currentIndex === 0}
             >
@@ -308,6 +346,7 @@ export const MediaLightbox: React.FC<MediaLightboxProps> = ({
               variant="ghost"
               size="lg"
               onClick={onNext}
+              aria-label="Next image"
               className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
               disabled={currentIndex === media.length - 1}
             >

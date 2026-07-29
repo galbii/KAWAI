@@ -459,6 +459,8 @@ export interface ImagePropsWithFallbackOptions {
   sizes?: string
   priority?: boolean
   loading?: 'eager' | 'lazy'
+  /** Explicit alt text. Overrides the CMS Media.alt field when provided. */
+  alt?: string
 }
 
 export function getImagePropsWithFallback(
@@ -474,8 +476,17 @@ export function getImagePropsWithFallback(
     className = 'object-cover',
     sizes,
     priority = false,
-    loading = 'lazy'
+    loading = 'lazy',
+    alt: altOverride
   } = options
+
+  // Resolve alt text: explicit override wins; otherwise fall back to the CMS
+  // Media object's alt field. Empty string only when nothing is available.
+  const cmsAlt =
+    typeof cmsImage === 'object' && cmsImage !== null && typeof cmsImage.alt === 'string'
+      ? cmsImage.alt
+      : ''
+  const resolvedAlt = altOverride ?? cmsAlt
 
   // Use CMS image if available, otherwise use fallback
   const imageToUse = cmsImage || fallbackImage
@@ -484,7 +495,7 @@ export function getImagePropsWithFallback(
   if (typeof imageToUse === 'string') {
     const baseProps = {
       src: imageToUse,
-      alt: '', // Alt should be provided by the caller
+      alt: resolvedAlt, // CMS Media.alt (or caller override); '' only when unavailable
       className,
       priority,
       loading: priority ? 'eager' as const : loading,
@@ -512,7 +523,7 @@ export function getImagePropsWithFallback(
     // Fallback to default image if optimization fails
     const baseProps = {
       src: fallbackImage,
-      alt: '',
+      alt: resolvedAlt,
       className,
       priority,
       loading: priority ? 'eager' as const : loading,
@@ -536,7 +547,7 @@ export function getImagePropsWithFallback(
   // Use optimized props
   const baseOptimizedProps = {
     src: imageProps.src,
-    alt: '',
+    alt: resolvedAlt,
     className,
     priority,
     loading: priority ? 'eager' as const : (imageProps.loading || loading),

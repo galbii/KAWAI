@@ -33,6 +33,12 @@ export function FacultyPageCarousel({ faculty, storeslug }: Props) {
   const [bgExpanded, setBgExpanded] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Auto-advance respects a user-operable play/pause control (WCAG 2.2.2) and
+  // pauses on hover/focus. Reduced-motion users start paused.
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
+  const shouldRun = isPlaying && !isPaused
+
   const total = faculty.length
   const member = faculty[index]
 
@@ -47,10 +53,20 @@ export function FacultyPageCarousel({ faculty, storeslug }: Props) {
     setTimeout(() => setAnimating(false), 350)
   }
 
+  // Respect prefers-reduced-motion: start paused and follow live changes.
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (mq.matches) setIsPlaying(false)
+    const onChange = (e: MediaQueryListEvent) => setIsPlaying(!e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  useEffect(() => {
+    if (!shouldRun || total <= 1) return
     timerRef.current = setTimeout(() => go(index + 1), 3000)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [index]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [index, shouldRun, total]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!member) return null
 
@@ -70,7 +86,12 @@ export function FacultyPageCarousel({ faculty, storeslug }: Props) {
     : member.background
 
   return (
-    <div>
+    <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+    >
       <style>{`
         @keyframes faculty-page-enter {
           from { opacity: 0; transform: translateY(12px); }
@@ -136,6 +157,21 @@ export function FacultyPageCarousel({ faculty, storeslug }: Props) {
               {pad(index + 1)} / {pad(total)}
             </span>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsPlaying((p) => !p)}
+                aria-label={isPlaying ? 'Pause automatic rotation' : 'Play automatic rotation'}
+                className="w-9 h-9 flex items-center justify-center border border-kawai-neutral hover:border-kawai-black text-kawai-charcoal/40 hover:text-kawai-black rounded transition-colors"
+              >
+                {isPlaying ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
               <button
                 onClick={() => go(index - 1)}
                 aria-label="Previous"

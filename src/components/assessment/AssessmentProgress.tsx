@@ -150,7 +150,7 @@ export const AssessmentProgress: React.FC<AssessmentProgressProps> = ({
                         ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
                         : isCurrent
                         ? "bg-blue-100 text-blue-600 border-2 border-blue-600"
-                        : "bg-gray-100 text-gray-400"
+                        : "bg-gray-100 text-gray-600"
                     )}
                   >
                     {isCompleted ? (

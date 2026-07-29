@@ -1,4 +1,3 @@
-export { MarketingHeroRenderer } from './MarketingHeroRenderer'
 export { MarketingGrandHeroRenderer } from './MarketingGrandHeroRenderer'
 export { MarketingCtaRenderer } from './MarketingCtaRenderer'
 export { MarketingTestimonialsRenderer } from './MarketingTestimonialsRenderer'

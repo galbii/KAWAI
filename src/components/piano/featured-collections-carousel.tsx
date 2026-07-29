@@ -176,6 +176,13 @@ export function FeaturedCollectionsCarousel({
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [idx, setIdx] = useState(0)
 
+  // Auto-advance respects a user-operable play/pause control (WCAG 2.2.2) and
+  // pauses on hover/focus. Reduced-motion users start paused and the background
+  // video does not autoplay.
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
   // Derive available categories from all collections
   const availableCategories = Array.from(
     new Set(collections.flatMap((c) => c.pianoCategories ?? [])),
@@ -199,12 +206,25 @@ export function FeaturedCollectionsCarousel({
   const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
   const videoId = currentCollection ? getVideoId(currentCollection) : null
 
-  // Auto-advance through all slides
+  // Respect prefers-reduced-motion: start paused and follow live changes.
   useEffect(() => {
-    if (total <= 1) return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mq.matches)
+    if (mq.matches) setIsPlaying(false)
+    const onChange = (e: MediaQueryListEvent) => {
+      setReducedMotion(e.matches)
+      setIsPlaying(!e.matches)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  // Auto-advance through all slides (gated on play state + hover/focus pause)
+  useEffect(() => {
+    if (total <= 1 || !isPlaying || isPaused) return
     const t = setInterval(next, AUTO_ROTATE_MS)
     return () => clearInterval(t)
-  }, [next, total])
+  }, [next, total, isPlaying, isPaused])
 
   if (collections.length === 0) return null
 
@@ -233,6 +253,10 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
       <section
         className="relative w-full overflow-hidden bg-kawai-black"
         style={{ height: 'clamp(600px, 78vh, 920px)' }}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onFocusCapture={() => setIsPaused(true)}
+        onBlurCapture={() => setIsPaused(false)}
       >
         {/* Background crossfade */}
         <AnimatePresence initial={false}>
@@ -256,8 +280,8 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
             ) : videoId ? (
               <div className="absolute inset-0 overflow-hidden">
                 <iframe
-                  key={videoId}
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
+                  key={`${videoId}-${reducedMotion ? 'still' : 'auto'}`}
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=${reducedMotion ? 0 : 1}&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
                   allow="autoplay; encrypted-media"
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                   style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
@@ -386,6 +410,21 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
                     {totalDisplay}
                   </div>
                   <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setIsPlaying((p) => !p)}
+                      aria-label={isPlaying ? 'Pause automatic slideshow' : 'Play automatic slideshow'}
+                      className="w-12 h-12 border border-white/20 flex items-center justify-center text-white/50 hover:border-white/55 hover:text-white transition-all duration-200"
+                    >
+                      {isPlaying ? (
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                        </svg>
+                      ) : (
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      )}
+                    </button>
                     <button
                       onClick={prev}
                       aria-label="Previous collection"

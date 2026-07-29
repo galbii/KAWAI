@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { 
@@ -67,6 +67,46 @@ export function ShowroomCTA({
 }: ShowroomCTAProps) {
   const [selectedLocation, setSelectedLocation] = useState<string>(showroomLocations[0]?.id || '')
 
+  // A11y: dialog focus trap, initial focus, Escape-to-close, focus restore (modal variant)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    if (variant !== 'modal') return
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeRef.current?.()
+        return
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (!first || !last) return
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused.current?.focus?.()
+    }
+  }, [variant])
+
   if (variant === 'floating') {
     return (
       <div className={cn(
@@ -74,8 +114,9 @@ export function ShowroomCTA({
         className
       )}>
         {onClose && (
-          <button 
+          <button
             onClick={onClose}
+            aria-label="Close"
             className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
           >
             <X className="h-4 w-4" />
@@ -100,11 +141,18 @@ export function ShowroomCTA({
   if (variant === 'modal') {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Visit our showroom"
+          tabIndex={-1}
+          className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto focus:outline-none"
+        >
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">Visit Our Showroom</h2>
             {onClose && (
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <button onClick={onClose} aria-label="Close" className="text-gray-400 hover:text-gray-600">
                 <X className="h-6 w-6" />
               </button>
             )}

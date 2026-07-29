@@ -165,7 +165,7 @@ export function VideoBackgroundBlock({
   // Subheading color mapping
   const subheadingColorMap = {
     gold: 'text-kawai-gold/95',
-    red: 'text-kawai-red/95',
+    red: 'text-kawai-red-400',
     white: 'text-white/95',
     pearl: 'text-kawai-pearl/95',
   }

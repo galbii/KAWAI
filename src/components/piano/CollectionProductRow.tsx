@@ -352,14 +352,14 @@ export function CollectionProductRow({
       {priceDisplay.type === 'single' && priceDisplay.price && (
         <div className="mb-8">
           <p
-            className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2"
+            className="text-[9px] tracking-[0.25em] uppercase text-kawai-muted mb-2"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             {priceDisplay.onSale ? 'Sale Price' : 'MSRP'}
           </p>
           {priceDisplay.onSale && priceDisplay.compareAtPrice ? (
             <div className="flex items-baseline gap-4">
-              <span className="text-4xl font-semibold text-kawai-charcoal/35 line-through" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+              <span className="text-4xl font-semibold text-kawai-muted line-through" style={{ fontFamily: 'var(--font-brand-sans)' }}>
                 {formatPrice(priceDisplay.compareAtPrice, product.currency ?? 'USD')}
               </span>
               <span className="text-4xl font-semibold text-kawai-red" style={{ fontFamily: 'var(--font-brand-sans)' }}>
@@ -375,20 +375,20 @@ export function CollectionProductRow({
       )}
       {priceDisplay.type === 'range' && (
         <div className="mb-8">
-          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-muted mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             Starting From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             {formatPrice(priceDisplay.minPrice, product.currency ?? 'USD')}
             {priceDisplay.minPrice !== priceDisplay.maxPrice && (
-              <span className="text-kawai-charcoal/35">{' '}– {formatPrice(priceDisplay.maxPrice, product.currency ?? 'USD')}</span>
+              <span className="text-kawai-muted">{' '}– {formatPrice(priceDisplay.maxPrice, product.currency ?? 'USD')}</span>
             )}
           </p>
         </div>
       )}
       {priceDisplay.type === 'fallback' && priceDisplay.price && (
         <div className="mb-8">
-          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-charcoal/35 mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+          <p className="text-[9px] tracking-[0.25em] uppercase text-kawai-muted mb-2" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             MSRP From
           </p>
           <p className="text-4xl font-semibold text-kawai-black" style={{ fontFamily: 'var(--font-brand-sans)' }}>
@@ -407,7 +407,7 @@ export function CollectionProductRow({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="text-[11px] tracking-[0.14em] uppercase text-kawai-charcoal/35 mb-8"
+              className="text-[11px] tracking-[0.14em] uppercase text-kawai-muted mb-8"
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >
               Select a finish to continue
@@ -472,7 +472,7 @@ export function CollectionProductRow({
       {/* Variant selector */}
       {product.variations.length > 1 && (
         <motion.div variants={infoChildVariants} className="mb-8">
-          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-charcoal/35 mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-muted mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
             Finish
           </p>
           <div className="flex flex-wrap gap-3">

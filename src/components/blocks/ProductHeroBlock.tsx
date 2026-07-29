@@ -1009,7 +1009,7 @@ export function ProductHeroBlock({
                 <div>
                   <p className={cn(
                     "text-xs tracking-wider uppercase font-semibold",
-                    backgroundColor === 'black' ? 'text-kawai-red' : 'text-kawai-red'
+                    backgroundColor === 'black' ? 'text-kawai-red-400' : 'text-kawai-red'
                   )}>Model</p>
                   <p className={cn(
                     "text-base lg:text-lg xl:text-xl font-light",

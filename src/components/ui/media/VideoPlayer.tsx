@@ -316,6 +316,7 @@ export const VideoPlayer = React.forwardRef<
                 variant="ghost"
                 size="sm"
                 onClick={togglePlay}
+                aria-label={state.isPlaying ? 'Pause' : 'Play'}
                 className="text-white hover:text-white hover:bg-white/20"
               >
                 {state.isPlaying ? (
@@ -343,6 +344,7 @@ export const VideoPlayer = React.forwardRef<
                     variant="ghost"
                     size="sm"
                     onClick={toggleMute}
+                    aria-label={state.isMuted || state.volume === 0 ? 'Unmute' : 'Mute'}
                     className="text-white hover:text-white hover:bg-white/20"
                   >
                     {state.isMuted || state.volume === 0 ? (
@@ -374,6 +376,7 @@ export const VideoPlayer = React.forwardRef<
                   variant="ghost"
                   size="sm"
                   onClick={toggleFullscreen}
+                  aria-label={state.isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
                   className="text-white hover:text-white hover:bg-white/20"
                 >
                   {state.isFullscreen ? (

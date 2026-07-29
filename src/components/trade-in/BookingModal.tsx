@@ -64,12 +64,14 @@ function validate(form: ContactForm): FormErrors {
 
 function Field({
   label,
+  htmlFor,
   required,
   error,
   children,
   half,
 }: {
   label: string
+  htmlFor?: string | undefined
   required?: boolean | undefined
   error?: string | undefined
   children: React.ReactNode
@@ -77,7 +79,7 @@ function Field({
 }) {
   return (
     <div className={cn('flex flex-col gap-1.5', half && 'min-w-0')}>
-      <label className="text-[0.65rem] tracking-[0.18em] uppercase font-semibold text-kawai-charcoal/50 select-none">
+      <label htmlFor={htmlFor} className="text-[0.65rem] tracking-[0.18em] uppercase font-semibold text-kawai-charcoal/50 select-none">
         {label}
         {required && <span className="text-kawai-red ml-1">*</span>}
       </label>
@@ -359,8 +361,9 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
               <div className="space-y-5 mb-7">
                 {/* Name row */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="First Name" required error={errors.firstName} half>
+                  <Field label="First Name" htmlFor="booking-firstName" required error={errors.firstName} half>
                     <Input
+                      id="booking-firstName"
                       type="text"
                       placeholder="Jane"
                       value={form.firstName}
@@ -370,8 +373,9 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                       autoFocus
                     />
                   </Field>
-                  <Field label="Last Name" required error={errors.lastName} half>
+                  <Field label="Last Name" htmlFor="booking-lastName" required error={errors.lastName} half>
                     <Input
+                      id="booking-lastName"
                       type="text"
                       placeholder="Smith"
                       value={form.lastName}
@@ -382,8 +386,9 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                   </Field>
                 </div>
 
-                <Field label="Email Address" required error={errors.email}>
+                <Field label="Email Address" htmlFor="booking-email" required error={errors.email}>
                   <Input
+                    id="booking-email"
                     type="email"
                     placeholder="jane@example.com"
                     value={form.email}
@@ -393,8 +398,9 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                   />
                 </Field>
 
-                <Field label="Phone Number">
+                <Field label="Phone Number" htmlFor="booking-phone">
                   <Input
+                    id="booking-phone"
                     type="tel"
                     placeholder="(555) 000-0000"
                     value={form.phone}

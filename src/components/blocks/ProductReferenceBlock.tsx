@@ -101,7 +101,7 @@ const IMAGE_WIDTH: Record<string, string> = {
 }
 const BG:     Record<string, string> = { white: 'bg-white',        pearl: 'bg-kawai-pearl',  black: 'bg-kawai-black' }
 const TEXT:   Record<string, string> = { white: 'text-kawai-black', pearl: 'text-kawai-black', black: 'text-white' }
-const MUTED:  Record<string, string> = { white: 'text-kawai-charcoal/60', pearl: 'text-kawai-charcoal/60', black: 'text-white/50' }
+const MUTED:  Record<string, string> = { white: 'text-kawai-muted', pearl: 'text-kawai-muted', black: 'text-white/70' }
 const BORDER: Record<string, string> = { white: 'border-kawai-neutral', pearl: 'border-kawai-neutral', black: 'border-white/10' }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -217,7 +217,7 @@ export function ProductReferenceBlock({
 
   const bgClass     = BG[bg]     ?? 'bg-white'
   const textClass   = TEXT[bg]   ?? 'text-kawai-black'
-  const mutedClass  = MUTED[bg]  ?? 'text-kawai-charcoal/60'
+  const mutedClass  = MUTED[bg]  ?? 'text-kawai-muted'
   const borderClass = BORDER[bg] ?? 'border-kawai-neutral'
 
   return (
@@ -311,7 +311,7 @@ export function ProductReferenceBlock({
                     className={cn(
                       'block text-center text-xs font-medium mt-1 transition-colors duration-150',
                       'font-[family-name:var(--font-brand-sans)]',
-                      bg === 'black' ? 'text-white/50 hover:text-white/80' : 'text-kawai-charcoal/50 hover:text-kawai-red',
+                      bg === 'black' ? 'text-white/70 hover:text-white' : 'text-kawai-muted hover:text-kawai-red',
                     )}
                   >
                     View full product page →
@@ -333,7 +333,7 @@ export function ProductReferenceBlock({
                     className={cn(
                       'block text-center text-xs font-medium mt-1 transition-colors duration-150',
                       'font-[family-name:var(--font-brand-sans)]',
-                      bg === 'black' ? 'text-white/50 hover:text-white/80' : 'text-kawai-charcoal/50 hover:text-kawai-red',
+                      bg === 'black' ? 'text-white/70 hover:text-white' : 'text-kawai-muted hover:text-kawai-red',
                     )}
                   >
                     View full product page →

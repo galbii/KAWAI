@@ -408,7 +408,7 @@ function MobileFilterSheet({
               <div className="flex items-center gap-3">
                 <button
                   onClick={onClearAll}
-                  className="text-[11px] uppercase tracking-[0.12em] text-kawai-charcoal/50 hover:text-kawai-black transition-colors font-[family-name:var(--font-brand-sans)]"
+                  className="text-[11px] uppercase tracking-[0.12em] text-kawai-muted hover:text-kawai-black transition-colors font-[family-name:var(--font-brand-sans)]"
                 >
                   Clear all
                 </button>
@@ -426,7 +426,7 @@ function MobileFilterSheet({
             <div className="overflow-y-auto pb-28" style={{ maxHeight: 'calc(88vh - 120px)' }}>
               {/* Search */}
               <div className="px-5 pt-5 pb-4">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 mb-2.5 font-[family-name:var(--font-brand-sans)]">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-muted mb-2.5 font-[family-name:var(--font-brand-sans)]">
                   Search
                 </p>
                 <div className="relative">
@@ -462,7 +462,7 @@ function MobileFilterSheet({
 
               {/* Category */}
               <div className="px-5 pt-4 pb-4">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 mb-3 font-[family-name:var(--font-brand-sans)]">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-muted mb-3 font-[family-name:var(--font-brand-sans)]">
                   Category
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -488,7 +488,7 @@ function MobileFilterSheet({
                 <>
                   <div className="h-px bg-kawai-neutral/50 mx-5" />
                   <div className="px-5 pt-4 pb-4">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 mb-3 font-[family-name:var(--font-brand-sans)]">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-muted mb-3 font-[family-name:var(--font-brand-sans)]">
                       Collection
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -526,7 +526,7 @@ function MobileFilterSheet({
 
               {/* Sort */}
               <div className="px-5 pt-4 pb-4">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/50 mb-3 font-[family-name:var(--font-brand-sans)]">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-kawai-muted mb-3 font-[family-name:var(--font-brand-sans)]">
                   Sort By
                 </p>
                 <div className="space-y-1">
@@ -575,7 +575,7 @@ function MobileFilterSheet({
                   </div>
                   <div>
                     <p className="text-sm text-kawai-black font-[family-name:var(--font-brand-sans)]">Show Legacy Products</p>
-                    <p className="text-[10px] text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] mt-0.5">Include discontinued models</p>
+                    <p className="text-[10px] text-kawai-muted font-[family-name:var(--font-brand-sans)] mt-0.5">Include discontinued models</p>
                   </div>
                 </button>
               </div>
@@ -920,7 +920,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
 
                       {/* Category */}
                       <div>
-                        <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/40 mb-3 font-[family-name:var(--font-brand-sans)]">
+                        <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-muted mb-3 font-[family-name:var(--font-brand-sans)]">
                           Category
                         </p>
                         <LayoutGroup id="filter-panel-cats">
@@ -948,7 +948,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                       {visibleCollections.length > 0 && (
                         <div>
                           <div className="h-px bg-kawai-neutral/50 -mx-6 mb-6" />
-                          <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-charcoal/40 mb-3 font-[family-name:var(--font-brand-sans)]">
+                          <p className="text-[9px] uppercase tracking-[0.25em] text-kawai-muted mb-3 font-[family-name:var(--font-brand-sans)]">
                             Collection
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1020,7 +1020,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                               </svg>
                             )}
                           </div>
-                          <span className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/60 group-hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)]">
+                          <span className="text-[10px] uppercase tracking-[0.15em] text-kawai-muted group-hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)]">
                             Show Legacy Products
                           </span>
                         </button>
@@ -1031,7 +1031,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                     <div className="flex items-center justify-between px-6 py-4 border-t border-kawai-neutral/60">
                       <button
                         onClick={() => { clearAll() }}
-                        className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)]"
+                        className="text-[10px] uppercase tracking-[0.15em] text-kawai-muted hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)]"
                       >
                         Clear all
                       </button>
@@ -1147,7 +1147,7 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
                 )}
                 <button
                   onClick={clearAll}
-                  className="text-[10px] uppercase tracking-[0.15em] text-kawai-charcoal/40 hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)] ml-1"
+                  className="text-[10px] uppercase tracking-[0.15em] text-kawai-muted hover:text-kawai-charcoal transition-colors font-[family-name:var(--font-brand-sans)] ml-1"
                 >
                   Clear all
                 </button>
@@ -1199,12 +1199,12 @@ export function PianosBrowser({ products, collectionsForBrowser, pageHeading, si
               >
                 {activeCollectionObj.title}
               </h2>
-              <span className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+              <span className="text-sm text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                 {filtered.length} {itemLabel}
               </span>
             </div>
             {(activeCollectionObj as CollectionForBrowser).subheading && (
-              <p className="mt-2 text-sm text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] max-w-2xl">
+              <p className="mt-2 text-sm text-kawai-muted font-[family-name:var(--font-brand-sans)] max-w-2xl">
                 {(activeCollectionObj as CollectionForBrowser).subheading}
               </p>
             )}
@@ -1351,7 +1351,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
               <PianoSilhouette />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                 {product.modelLabel ?? product.model}
               </span>
             </div>
@@ -1440,7 +1440,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
                             'absolute inset-0 flex items-center justify-center text-[7px] uppercase tracking-wide font-[family-name:var(--font-brand-sans)]',
                             i === activeVariantIdx
                               ? 'bg-kawai-black text-white'
-                              : 'bg-kawai-charcoal/10 text-kawai-charcoal/50',
+                              : 'bg-kawai-charcoal/10 text-kawai-muted',
                           )}
                         >
                           {v.name.slice(0, 2)}
@@ -1449,7 +1449,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
                     </button>
                   ))}
                   {extraCount > 0 && (
-                    <span className="text-[9px] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] pl-0.5 leading-none select-none">
+                    <span className="text-[9px] text-kawai-muted font-[family-name:var(--font-brand-sans)] pl-0.5 leading-none select-none">
                       +{extraCount}
                     </span>
                   )}
@@ -1461,7 +1461,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
 
         {/* Card body */}
         <div className="flex flex-col flex-1 p-8">
-          <p className="text-sm uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
+          <p className="text-sm uppercase tracking-[0.3em] text-kawai-muted mb-1 font-[family-name:var(--font-brand-sans)]">
             {product.modelLabel ?? product.model}
           </p>
           <h2
@@ -1475,15 +1475,15 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
           {hasVariants && activeVariant ? (
             <div className="mt-2 flex items-center gap-2 min-h-[1.125rem]">
               <span className="w-[3px] h-[3px] rounded-full bg-kawai-charcoal/30 flex-shrink-0" />
-              <p className="text-xs text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)] tracking-wide leading-none truncate">
+              <p className="text-xs text-kawai-muted font-[family-name:var(--font-brand-sans)] tracking-wide leading-none truncate">
                 {activeVariant.name}
               </p>
-              <span className="ml-auto flex-shrink-0 text-[9px] uppercase tracking-[0.18em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+              <span className="ml-auto flex-shrink-0 text-[9px] uppercase tracking-[0.18em] text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                 {variants.length} finishes
               </span>
             </div>
           ) : product.shopifyCollections && product.shopifyCollections.length > 0 ? (
-            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] line-clamp-1">
+            <p className="mt-2 text-xs uppercase tracking-[0.12em] text-kawai-muted font-[family-name:var(--font-brand-sans)] line-clamp-1">
               {product.shopifyCollections.slice(0, 2).map((c) => c.title).join(' · ')}
             </p>
           ) : null}
@@ -1496,7 +1496,7 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
                 <>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-[10px] font-bold tracking-widest text-kawai-red uppercase font-[family-name:var(--font-brand-sans)]">MSRP</span>
-                    <span className="text-[11px] text-kawai-charcoal/40 line-through font-[family-name:var(--font-brand-sans)]">
+                    <span className="text-[11px] text-kawai-muted line-through font-[family-name:var(--font-brand-sans)]">
                       {formatCurrency(effectiveCompareAt ?? 0, currency)}
                     </span>
                   </div>
@@ -1512,14 +1512,14 @@ function ProductCard({ product, index, site = 'us' }: { product: CatalogProduct;
                   </p>
                 </>
               ) : (
-                <p className="text-xs italic text-kawai-charcoal/60 font-[family-name:var(--font-brand-sans)]">Contact for Price</p>
+                <p className="text-xs italic text-kawai-muted font-[family-name:var(--font-brand-sans)]">Contact for Price</p>
               )}
             </div>
 
             <span
               className={cn(
                 'flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em]',
-                'font-[family-name:var(--font-brand-sans)] text-kawai-charcoal/50',
+                'font-[family-name:var(--font-brand-sans)] text-kawai-muted',
                 'group-hover:text-kawai-red transition-colors duration-300',
               )}
             >
@@ -1546,7 +1546,7 @@ function EmptyState({ hasFilters, onClear }: { hasFilters: boolean; onClear: () 
       <p className="text-2xl text-kawai-black mb-2" style={{ fontFamily: 'var(--font-brand-luxury)', fontWeight: 400 }}>
         No instruments found
       </p>
-      <p className="text-sm text-kawai-charcoal/60 mb-8 font-[family-name:var(--font-brand-sans)]">
+      <p className="text-sm text-kawai-muted mb-8 font-[family-name:var(--font-brand-sans)]">
         {hasFilters ? 'Try adjusting your search or filters.' : 'No products are currently available.'}
       </p>
       {hasFilters && (

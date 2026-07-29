@@ -223,10 +223,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-2">
+                  <label htmlFor="location-contact-firstName" className="block text-lg font-medium text-kawai-black mb-2">
                     First Name *
                   </label>
                   <input
+                    id="location-contact-firstName"
                     type="text"
                     {...register('firstName')}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
@@ -238,10 +239,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-2">
+                  <label htmlFor="location-contact-lastName" className="block text-lg font-medium text-kawai-black mb-2">
                     Last Name *
                   </label>
                   <input
+                    id="location-contact-lastName"
                     type="text"
                     {...register('lastName')}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
@@ -253,10 +255,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-2">
+                  <label htmlFor="location-contact-email" className="block text-lg font-medium text-kawai-black mb-2">
                     Email Address *
                   </label>
                   <input
+                    id="location-contact-email"
                     type="email"
                     {...register('email')}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
@@ -268,10 +271,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-2">
+                  <label htmlFor="location-contact-phone" className="block text-lg font-medium text-kawai-black mb-2">
                     Phone Number *
                   </label>
                   <input
+                    id="location-contact-phone"
                     type="tel"
                     {...register('phone')}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50"
@@ -331,10 +335,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
 
                 {/* Inquiry Type */}
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-4">
+                  <label htmlFor="location-contact-inquiryType" className="block text-lg font-medium text-kawai-black mb-4">
                     What can we help you with? *
                   </label>
                   <select
+                    id="location-contact-inquiryType"
                     {...register('inquiryType')}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                   >
@@ -353,10 +358,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
                 {/* Piano Interest (conditional) */}
                 {watchedValues.inquiryType === 'piano-consultation' && (
                   <div>
-                    <label className="block text-lg font-medium text-kawai-black mb-2">
+                    <label htmlFor="location-contact-pianoInterest" className="block text-lg font-medium text-kawai-black mb-2">
                       What type of piano interests you most?
                     </label>
                     <select
+                      id="location-contact-pianoInterest"
                       {...register('pianoInterest')}
                       className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                     >
@@ -371,10 +377,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
                 {/* Best Time to Call (conditional) */}
                 {watchedValues.preferredContact === 'phone' && (
                   <div>
-                    <label className="block text-lg font-medium text-kawai-black mb-2">
+                    <label htmlFor="location-contact-bestTimeToCall" className="block text-lg font-medium text-kawai-black mb-2">
                       Best time to call
                     </label>
                     <select
+                      id="location-contact-bestTimeToCall"
                       {...register('bestTimeToCall')}
                       className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black"
                     >
@@ -389,10 +396,11 @@ export function LocationContactForm({ data = DEFAULT_CONTACT_FORM_DATA, storefro
 
                 {/* Message */}
                 <div>
-                  <label className="block text-lg font-medium text-kawai-black mb-2">
+                  <label htmlFor="location-contact-message" className="block text-lg font-medium text-kawai-black mb-2">
                     Additional Message
                   </label>
                   <textarea
+                    id="location-contact-message"
                     {...register('message')}
                     rows={4}
                     className="w-full p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors bg-white text-kawai-black placeholder:text-kawai-black/50 resize-vertical"

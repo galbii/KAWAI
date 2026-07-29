@@ -409,10 +409,11 @@ export function ContactForm({ data }: ContactFormProps) {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-lg font-medium text-kawai-black mb-2 block">
+                    <label htmlFor="homepage-contact-name" className="text-lg font-medium text-kawai-black mb-2 block">
                       Your Name *
                     </label>
                     <input
+                      id="homepage-contact-name"
                       type="text"
                       {...register('name')}
                       className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"
@@ -424,10 +425,11 @@ export function ContactForm({ data }: ContactFormProps) {
                   </div>
 
                   <div>
-                    <label className="text-lg font-medium text-kawai-black mb-2 block">
+                    <label htmlFor="homepage-contact-email" className="text-lg font-medium text-kawai-black mb-2 block">
                       Email Address *
                     </label>
                     <input
+                      id="homepage-contact-email"
                       type="email"
                       {...register('email')}
                       className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"
@@ -440,10 +442,11 @@ export function ContactForm({ data }: ContactFormProps) {
                 </div>
 
                 <div>
-                  <label className="text-lg font-medium text-kawai-black mb-2 block">
+                  <label htmlFor="homepage-contact-phone" className="text-lg font-medium text-kawai-black mb-2 block">
                     Phone Number (Optional)
                   </label>
                   <input
+                    id="homepage-contact-phone"
                     type="tel"
                     {...register('phone')}
                     className="w-full p-3 sm:p-4 border border-kawai-black/20 rounded-md focus:border-kawai-red focus:outline-none transition-colors min-h-[44px] text-base"

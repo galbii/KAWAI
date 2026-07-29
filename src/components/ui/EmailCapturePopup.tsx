@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Piano, Mail, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -65,6 +65,46 @@ export default function EmailCapturePopup({
     localStorage.setItem('kawai-email-popup-dismissed', Date.now().toString())
   }
 
+  // A11y: dialog focus trap, initial focus, Escape-to-close, focus restore
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+  const closeRef = useRef(handleClose)
+  closeRef.current = handleClose
+
+  useEffect(() => {
+    if (!isVisible) return
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeRef.current()
+        return
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (!first || !last) return
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused.current?.focus?.()
+    }
+  }, [isVisible])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || isSubmitting) return
@@ -125,18 +165,23 @@ export default function EmailCapturePopup({
           
           {/* Slide-in popup */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Newsletter signup"
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ 
-              type: "spring", 
-              damping: 25, 
+            transition={{
+              type: "spring",
+              damping: 25,
               stiffness: 300,
-              duration: 0.4 
+              duration: 0.4
             }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                       w-[90vw] max-w-md bg-stone-50 rounded-2xl shadow-2xl 
-                       border-2 border-black z-[9999] overflow-hidden"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                       w-[90vw] max-w-md bg-stone-50 rounded-2xl shadow-2xl
+                       border-2 border-black z-[9999] overflow-hidden focus:outline-none"
           >
             {/* Close button */}
             <button

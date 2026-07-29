@@ -157,10 +157,11 @@ export function SaleLeadForm({ storeslug, products }: SaleLeadFormProps) {
               {/* First + Last name */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
+                  <label htmlFor="sale-lead-firstName" className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
                     First Name <span className="text-kawai-red">*</span>
                   </label>
                   <input
+                    id="sale-lead-firstName"
                     {...register('firstName')}
                     type="text"
                     placeholder="Jane"
@@ -173,10 +174,11 @@ export function SaleLeadForm({ storeslug, products }: SaleLeadFormProps) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
+                  <label htmlFor="sale-lead-lastName" className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
                     Last Name <span className="text-kawai-red">*</span>
                   </label>
                   <input
+                    id="sale-lead-lastName"
                     {...register('lastName')}
                     type="text"
                     placeholder="Smith"
@@ -192,10 +194,11 @@ export function SaleLeadForm({ storeslug, products }: SaleLeadFormProps) {
 
               {/* Email */}
               <div>
-                <label className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
+                <label htmlFor="sale-lead-email" className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
                   Email Address <span className="text-kawai-red">*</span>
                 </label>
                 <input
+                  id="sale-lead-email"
                   {...register('email')}
                   type="email"
                   placeholder="jane@example.com"
@@ -211,11 +214,12 @@ export function SaleLeadForm({ storeslug, products }: SaleLeadFormProps) {
               {/* Piano interest */}
               {products.length > 0 && (
                 <div>
-                  <label className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
+                  <label htmlFor="sale-lead-pianoInterest" className="block text-kawai-charcoal/70 text-sm font-medium mb-1.5 font-[family-name:var(--font-brand-sans)]">
                     Which model interests you?{' '}
                     <span className="text-kawai-charcoal/35 font-normal">(optional)</span>
                   </label>
                   <select
+                    id="sale-lead-pianoInterest"
                     {...register('pianoInterest')}
                     className={`${INPUT_BASE} cursor-pointer`}
                   >

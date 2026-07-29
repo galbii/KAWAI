@@ -85,7 +85,7 @@ function CollectionBentoGrid({ products }: { products: CollectionProduct[] }) {
       <div className="flex items-center gap-6 mb-8">
         <div className="h-px flex-1 bg-kawai-black/8" />
         <p
-          className="text-[9px] tracking-[0.45em] uppercase font-bold text-kawai-charcoal/30 shrink-0"
+          className="text-[9px] tracking-[0.45em] uppercase font-bold text-kawai-muted shrink-0"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
           Gallery
@@ -256,11 +256,11 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
             className="flex items-center gap-3 text-[10px] tracking-[0.22em] uppercase font-semibold"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
-            <Link href="/" className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200">
+            <Link href="/" className="text-kawai-muted hover:text-kawai-black transition-colors duration-200">
               Home
             </Link>
             <span className="text-kawai-charcoal/25">·</span>
-            <Link href="/pianos" className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200">
+            <Link href="/pianos" className="text-kawai-muted hover:text-kawai-black transition-colors duration-200">
               Pianos
             </Link>
             {primaryCategory && (
@@ -268,7 +268,7 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
                 <span className="text-kawai-charcoal/25">·</span>
                 <Link
                   href={`/pianos/${primaryCategory}`}
-                  className="text-kawai-charcoal/50 hover:text-kawai-black transition-colors duration-200"
+                  className="text-kawai-muted hover:text-kawai-black transition-colors duration-200"
                 >
                   {categoryLabel}
                 </Link>
@@ -391,7 +391,7 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
       <section className="bg-kawai-black text-white py-28 mt-4">
         <div className="max-w-3xl mx-auto px-6 md:px-12 text-center">
           <p
-            className="text-[9px] tracking-[0.45em] uppercase font-bold text-white/30 mb-6"
+            className="text-[9px] tracking-[0.45em] uppercase font-bold text-white/70 mb-6"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Find Your Piano
@@ -405,7 +405,7 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
             <span className="text-white/35">in Person</span>
           </h2>
           <p
-            className="text-white/45 text-sm leading-[1.85] mb-10 max-w-md mx-auto"
+            className="text-white/70 text-sm leading-[1.85] mb-10 max-w-md mx-auto"
             style={{ fontFamily: 'var(--font-brand-sans)' }}
           >
             Visit our showroom to hear and feel the difference. Our piano specialists will help you find the perfect instrument for your musical journey.

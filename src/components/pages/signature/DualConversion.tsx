@@ -367,10 +367,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
             <form onSubmit={bookingForm.handleSubmit(handleBookingSubmit)} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-firstName" className="block text-sm font-medium text-gray-700 mb-2">
                     First Name *
                   </label>
                   <input
+                    id="dual-booking-firstName"
                     {...bookingForm.register('firstName')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                     placeholder="John"
@@ -382,10 +383,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-lastName" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name *
                   </label>
                   <input
+                    id="dual-booking-lastName"
                     {...bookingForm.register('lastName')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                     placeholder="Doe"
@@ -400,10 +402,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address *
                   </label>
                   <input
+                    id="dual-booking-email"
                     {...bookingForm.register('email')}
                     type="email"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
@@ -416,10 +419,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-phone" className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
+                    id="dual-booking-phone"
                     {...bookingForm.register('phone')}
                     type="tel"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
@@ -435,10 +439,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-preferredDate" className="block text-sm font-medium text-gray-700 mb-2">
                     Preferred Date *
                   </label>
                   <input
+                    id="dual-booking-preferredDate"
                     {...bookingForm.register('preferredDate')}
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
@@ -451,10 +456,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dual-booking-preferredTime" className="block text-sm font-medium text-gray-700 mb-2">
                     Preferred Time *
                   </label>
                   <select
+                    id="dual-booking-preferredTime"
                     {...bookingForm.register('preferredTime')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   >
@@ -477,10 +483,11 @@ export const DualConversion: React.FC<DualConversionProps> = ({
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="dual-booking-message" className="block text-sm font-medium text-gray-700 mb-2">
                   Additional Message (optional)
                 </label>
                 <textarea
+                  id="dual-booking-message"
                   {...bookingForm.register('message')}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"

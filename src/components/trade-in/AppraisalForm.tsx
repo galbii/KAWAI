@@ -227,10 +227,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
               {/* Model + Year inline */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                  <label htmlFor="appraisal-pianoModel" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                     Model <span className="text-kawai-pearl/25 font-light">(optional)</span>
                   </label>
                   <input
+                    id="appraisal-pianoModel"
                     {...register('pianoModel')}
                     placeholder={'e.g., U1, GH1B, 5\'10"'}
                     className="w-full bg-white/4 border border-white/10 text-kawai-pearl px-4 py-3.5 text-sm focus:outline-none focus:border-kawai-red/40 transition-colors placeholder:text-kawai-pearl/20 rounded-none"
@@ -238,10 +239,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
                   />
                 </div>
                 <div>
-                  <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                  <label htmlFor="appraisal-pianoYear" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                     Approximate Year <span className="text-kawai-pearl/25 font-light">(optional)</span>
                   </label>
                   <input
+                    id="appraisal-pianoYear"
                     {...register('pianoYear')}
                     placeholder="e.g., 1994"
                     className="w-full bg-white/4 border border-white/10 text-kawai-pearl px-4 py-3.5 text-sm focus:outline-none focus:border-kawai-red/40 transition-colors placeholder:text-kawai-pearl/20 rounded-none"
@@ -286,12 +288,13 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
               {/* Target grand */}
               {products.length > 0 && (
                 <div>
-                  <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                  <label htmlFor="appraisal-targetGrand" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                     I&apos;m hoping to upgrade to{' '}
                     <span className="text-kawai-pearl/25 font-light">(optional)</span>
                   </label>
                   <div className="relative">
                     <select
+                      id="appraisal-targetGrand"
                       {...register('targetGrand')}
                       className="w-full bg-white/4 border border-white/10 text-kawai-pearl px-4 py-3.5 text-sm appearance-none focus:outline-none focus:border-kawai-red/40 transition-colors rounded-sm"
                       style={{ background: 'rgba(255,255,255,0.04)' }}
@@ -326,10 +329,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                  <label htmlFor="appraisal-firstName" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                     First name <span className="text-kawai-red/60">*</span>
                   </label>
                   <input
+                    id="appraisal-firstName"
                     {...register('firstName')}
                     placeholder="Jane"
                     className="w-full bg-white/4 border border-white/10 text-kawai-pearl px-4 py-3.5 text-sm focus:outline-none focus:border-kawai-red/40 transition-colors placeholder:text-kawai-pearl/20 rounded-none"
@@ -338,10 +342,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
                   <FieldError message={errors.firstName?.message} />
                 </div>
                 <div>
-                  <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                  <label htmlFor="appraisal-lastName" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                     Last name <span className="text-kawai-red/60">*</span>
                   </label>
                   <input
+                    id="appraisal-lastName"
                     {...register('lastName')}
                     placeholder="Smith"
                     className="w-full bg-white/4 border border-white/10 text-kawai-pearl px-4 py-3.5 text-sm focus:outline-none focus:border-kawai-red/40 transition-colors placeholder:text-kawai-pearl/20 rounded-none"
@@ -352,10 +357,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
               </div>
 
               <div>
-                <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                <label htmlFor="appraisal-email" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                   Email <span className="text-kawai-red/60">*</span>
                 </label>
                 <input
+                  id="appraisal-email"
                   {...register('email')}
                   type="email"
                   placeholder="jane@example.com"
@@ -366,10 +372,11 @@ export function AppraisalForm({ storeslug, products }: AppraisalFormProps) {
               </div>
 
               <div>
-                <label className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
+                <label htmlFor="appraisal-phone" className="text-kawai-pearl/60 text-sm tracking-wide block mb-3">
                   Phone <span className="text-kawai-pearl/25 font-light">(optional)</span>
                 </label>
                 <input
+                  id="appraisal-phone"
                   {...register('phone')}
                   type="tel"
                   placeholder="(555) 867-5309"

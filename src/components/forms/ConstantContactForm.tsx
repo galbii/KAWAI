@@ -293,7 +293,7 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {finalFormConfig.fields.map((field) => (
           <div key={field.name}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={`cc-field-${field.name}`} className="block text-sm font-medium text-gray-700 mb-1">
               {field.required && <span className="text-red-500 mr-1">*</span>}
               {field.label}
             </label>
@@ -301,6 +301,7 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
             {field.type === 'checkbox' ? (
               <label className="flex items-center space-x-2">
                 <input
+                  id={`cc-field-${field.name}`}
                   {...form.register(field.name)}
                   type="checkbox"
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -311,9 +312,11 @@ export const ConstantContactForm: React.FC<ConstantContactFormProps> = ({
               </label>
             ) : (
               <input
+                id={`cc-field-${field.name}`}
                 {...form.register(field.name)}
                 type={field.type}
                 placeholder={field.placeholder}
+                aria-label={field.label}
                 className={styles.input}
               />
             )}

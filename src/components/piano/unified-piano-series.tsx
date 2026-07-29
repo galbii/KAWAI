@@ -274,6 +274,23 @@ export function UnifiedPianoSeries({
   const titleRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
+  // Auto-scroll respects a user-operable play/pause control (WCAG 2.2.2) and
+  // pauses on hover/focus. Reduced-motion users start paused.
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const runningRef = useRef(false);
+  const shouldRun = isPlaying && !isPaused;
+  const shouldRunRef = useRef(shouldRun);
+  shouldRunRef.current = shouldRun;
+
+  const stopScroll = () => {
+    runningRef.current = false;
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+  };
+
   // Get current active series data
   const activeSeriesData = filteredSeries.find(s =>
     s.name.toLowerCase().replace(/\s+/g, '-') === selectedTab
@@ -289,10 +306,10 @@ export function UnifiedPianoSeries({
         spacing: 16,
       },
       created(s) {
-        startSmoothScroll(s);
+        if (shouldRunRef.current) startSmoothScroll(s);
       },
       updated(s) {
-        startSmoothScroll(s);
+        if (shouldRunRef.current) startSmoothScroll(s);
       },
     }
   );
@@ -303,29 +320,35 @@ export function UnifiedPianoSeries({
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-    
+    runningRef.current = true;
+
     const tryStart = () => {
+      if (!runningRef.current) return;
       if (!slider?.track?.details) {
         // Retry if track details not ready yet
         setTimeout(tryStart, 100);
         return;
       }
-      
+
       const animate = () => {
+        if (!runningRef.current) {
+          animationRef.current = null;
+          return;
+        }
         if (slider.track && slider.track.details) {
           // Use track.add() for relative movement - works better with loop
           const increment = 0.0006; // Ultra slow, smooth scrolling
-          
+
           // Use track.add() to add relative movement
           slider.track.add(increment);
-          
+
           animationRef.current = requestAnimationFrame(animate);
         }
       };
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     tryStart();
   };
 
@@ -346,8 +369,21 @@ export function UnifiedPianoSeries({
     return () => observer.disconnect();
   }, []);
 
+  // Respect prefers-reduced-motion: start paused and follow live changes.
   useEffect(() => {
-    // Force start animation when component mounts and slider is ready
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) setIsPlaying(false);
+    const onChange = (e: MediaQueryListEvent) => setIsPlaying(!e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    // Start/stop the marquee whenever the effective run state changes.
+    if (!shouldRun) {
+      stopScroll();
+      return;
+    }
     const timer = setTimeout(() => {
       if (instanceRef.current) {
         startSmoothScroll(instanceRef.current);
@@ -356,11 +392,9 @@ export function UnifiedPianoSeries({
 
     return () => {
       clearTimeout(timer);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      stopScroll();
     };
-  }, []);
+  }, [shouldRun]);
 
   // Update carousel content when active series changes WITHOUT restarting animation
   useEffect(() => {
@@ -456,7 +490,30 @@ export function UnifiedPianoSeries({
       </motion.div>
 
       {/* Continuous Scrolling Carousel */}
-      <section className="bg-white mt-32 lg:mt-40 pb-16 md:pb-20 lg:pb-24">
+      <section
+        className="relative bg-white mt-32 lg:mt-40 pb-16 md:pb-20 lg:pb-24"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onFocusCapture={() => setIsPaused(true)}
+        onBlurCapture={() => setIsPaused(false)}
+      >
+        {/* Play/Pause control for the auto-scrolling marquee (WCAG 2.2.2) */}
+        <button
+          type="button"
+          onClick={() => setIsPlaying(p => !p)}
+          aria-label={isPlaying ? 'Pause scrolling gallery' : 'Play scrolling gallery'}
+          className="absolute top-4 right-4 md:right-8 z-30 w-11 h-11 flex items-center justify-center rounded-full bg-kawai-black/70 hover:bg-kawai-black text-white backdrop-blur-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
+        >
+          {isPlaying ? (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
         <div ref={sliderRef} className="keen-slider py-8 md:py-12 lg:py-16 px-4 md:px-6 lg:px-8">
           {carouselItems.map((item, index) => {
             // Check if item is a slide or piano

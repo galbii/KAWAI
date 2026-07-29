@@ -565,7 +565,7 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
               <Link
                 href={`/find-a-dealer/${dealer.slug}`}
                 onClick={(e) => e.stopPropagation()}
-                className="hover:text-kawai-red transition-colors"
+                className="inline-block py-1 -my-1 hover:text-kawai-red transition-colors"
               >
                 {dealer.dealerName}
               </Link>

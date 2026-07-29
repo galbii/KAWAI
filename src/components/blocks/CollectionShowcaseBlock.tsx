@@ -133,7 +133,7 @@ export function CollectionShowcaseBlock({
                   'py-5 text-xs tracking-[0.2em] uppercase whitespace-nowrap transition-colors',
                   i === activeIndex
                     ? 'text-white border-b-2 border-white'
-                    : 'text-white/40 hover:text-white/70 border-b-2 border-transparent'
+                    : 'text-white/70 hover:text-white border-b-2 border-transparent'
                 )}
               >
                 {tab.label}

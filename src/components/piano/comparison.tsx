@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { X, Plus, Check, Star, ArrowRight, Scale } from 'lucide-react'
@@ -369,6 +369,7 @@ function PianoCard({ piano, onRemove }: { piano: Piano; onRemove: () => void }) 
     <div className="bg-gray-50 rounded-lg p-4 relative">
       <button
         onClick={onRemove}
+        aria-label="Remove from comparison"
         className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 hover:bg-white rounded"
       >
         <X className="h-4 w-4" />
@@ -437,12 +438,58 @@ function AddPianoModal({
 }) {
   const availablePianos = pianos.filter(p => !selectedIds.includes(p.id))
 
+  // A11y: dialog focus trap, initial focus, Escape-to-close, focus restore
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previouslyFocused = useRef<HTMLElement | null>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    previouslyFocused.current = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeRef.current()
+        return
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (!first || !last) return
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused.current?.focus?.()
+    }
+  }, [])
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Add piano to comparison"
+        tabIndex={-1}
+        className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden focus:outline-none"
+      >
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-xl font-bold text-gray-900">Add Piano to Comparison</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} aria-label="Close comparison" className="text-gray-400 hover:text-gray-600">
             <X className="h-6 w-6" />
           </button>
         </div>

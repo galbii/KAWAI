@@ -483,6 +483,7 @@ export function BottomLeftPopupBlock({
                 href={ctaLink}
                 target={ctaOpenInNewTab ? '_blank' : undefined}
                 rel={ctaOpenInNewTab ? 'noopener noreferrer' : undefined}
+                aria-label={title ? `${ctaText}: ${title}` : undefined}
                 onClick={() => {
                   trackCTAClick({
                     blockType: 'layout-bottom-left-popup',

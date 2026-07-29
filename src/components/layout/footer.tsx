@@ -248,6 +248,10 @@ export function Footer({
                 Terms of Service
               </Link>
               <span className="hidden md:inline text-kawai-neutral/40">·</span>
+              <Link href="/accessibility" className="hover:text-kawai-red transition-colors">
+                Accessibility
+              </Link>
+              <span className="hidden md:inline text-kawai-neutral/40">·</span>
               <Link href="/return-policy" className="hover:text-kawai-red transition-colors">
                 Return Policy
               </Link>

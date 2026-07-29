@@ -100,7 +100,7 @@ function PianoFilmstripCard({
 
       {/* Info */}
       <div className="px-5 pt-4 pb-5 flex flex-col gap-1">
-        <p className="text-[10px] uppercase tracking-[0.22em] text-kawai-charcoal/45 font-[family-name:var(--font-brand-sans)]">
+        <p className="text-[10px] uppercase tracking-[0.22em] text-kawai-muted font-[family-name:var(--font-brand-sans)]">
           {categoryLabel === 'Other' ? (piano.type ?? 'Piano') : categoryLabel}
         </p>
         <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ function GridAccessoryCard({ accessory, index }: { accessory: AccessoryForPage; 
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#F0EDE8]">
               <Package className="w-10 h-10 text-kawai-charcoal/20" strokeWidth={1} />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-charcoal/30 font-[family-name:var(--font-brand-sans)]">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                 {accessory.model}
               </span>
             </div>
@@ -166,7 +166,7 @@ function GridAccessoryCard({ accessory, index }: { accessory: AccessoryForPage; 
 
         {/* Info */}
         <div className="flex flex-col flex-1 p-6">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-kawai-charcoal/50 mb-1 font-[family-name:var(--font-brand-sans)]">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-kawai-muted mb-1 font-[family-name:var(--font-brand-sans)]">
             {accessory.model}
           </p>
           <h3 className="text-base leading-snug font-[family-name:var(--font-brand-luxury)] text-kawai-black group-hover:text-kawai-red transition-colors duration-200 line-clamp-2 mb-auto">
@@ -183,7 +183,7 @@ function GridAccessoryCard({ accessory, index }: { accessory: AccessoryForPage; 
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+              <p className="text-sm text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                 Contact for Price
               </p>
             )}
@@ -310,7 +310,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
               className="flex items-center gap-2.5 group focus-visible:outline-none"
               aria-expanded={filmstripOpen}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-medium text-kawai-charcoal/50 group-hover:text-kawai-black transition-colors duration-150 font-[family-name:var(--font-brand-sans)]">
+              <span className="text-[10px] uppercase tracking-[0.22em] font-medium text-kawai-muted group-hover:text-kawai-black transition-colors duration-150 font-[family-name:var(--font-brand-sans)]">
                 Filter by Product
               </span>
               <motion.div
@@ -323,12 +323,12 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
 
             {selectedPiano && (
               <div className="flex items-center gap-3">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                   {selectedPiano.model}
                 </span>
                 <button
                   onClick={() => { setSelectedPianoId(null); setActiveAccessoryType(null) }}
-                  className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-kawai-charcoal/40 hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)]"
+                  className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-kawai-muted hover:text-kawai-red transition-colors duration-150 font-[family-name:var(--font-brand-sans)]"
                   aria-label="Clear selection"
                 >
                   <X size={11} />
@@ -412,7 +412,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
               <div className="border-t border-kawai-neutral/40">
                 <div className="max-w-7xl mx-auto px-6 lg:px-10 py-5">
                   {filteredPianos.length === 0 ? (
-                    <p className="py-4 text-center text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)]">
+                    <p className="py-4 text-center text-sm text-kawai-muted font-[family-name:var(--font-brand-sans)]">
                       No models match your search.
                     </p>
                   ) : (
@@ -437,7 +437,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
         {availableTypes.length > 1 && (
           <div className="border-t border-kawai-neutral/40">
             <div className="max-w-7xl mx-auto px-6 lg:px-10 py-2.5 flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <span className="flex-shrink-0 text-[10px] uppercase tracking-[0.2em] text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] mr-3">
+              <span className="flex-shrink-0 text-[10px] uppercase tracking-[0.2em] text-kawai-muted font-[family-name:var(--font-brand-sans)] mr-3">
                 Type
               </span>
               <LayoutGroup id="acc-type-tabs">
@@ -492,7 +492,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
                 <h2 className="text-4xl md:text-5xl font-[family-name:var(--font-brand-luxury)] text-kawai-black leading-none">
                   {selectedPiano ? selectedPiano.model : 'The Collection'}
                 </h2>
-                <span className="hidden md:block text-sm text-kawai-charcoal/40 font-[family-name:var(--font-brand-sans)] pb-1">
+                <span className="hidden md:block text-sm text-kawai-muted font-[family-name:var(--font-brand-sans)] pb-1">
                   {filteredByType.length} {filteredByType.length === 1 ? 'item' : 'items'}
                 </span>
               </div>
@@ -503,7 +503,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
           {/* Grid or empty states */}
           {accessories.length === 0 ? (
             <div className="py-20 text-center">
-              <p className="text-base font-[family-name:var(--font-brand-luxury)] text-kawai-charcoal/40 italic mb-5">
+              <p className="text-base font-[family-name:var(--font-brand-luxury)] text-kawai-muted italic mb-5">
                 No accessories available at this time.
               </p>
               <Link href="/find-a-dealer" className="text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-brand-sans)] text-kawai-red hover:underline">
@@ -512,7 +512,7 @@ export function AccessoriesPageContent({ pianos, accessories }: Props) {
             </div>
           ) : filteredByType.length === 0 ? (
             <div className="py-20 text-center">
-              <p className="text-base font-[family-name:var(--font-brand-luxury)] text-kawai-charcoal/40 italic mb-5">
+              <p className="text-base font-[family-name:var(--font-brand-luxury)] text-kawai-muted italic mb-5">
                 {selectedPiano
                   ? `No ${activeAccessoryType ? (ACCESSORY_TYPE_LABELS[activeAccessoryType] ?? activeAccessoryType).toLowerCase() + 's' : 'accessories'} listed for the ${selectedPiano.model} yet.`
                   : `No ${activeAccessoryType ? (ACCESSORY_TYPE_LABELS[activeAccessoryType] ?? activeAccessoryType).toLowerCase() + 's' : 'accessories'} found.`}

@@ -274,6 +274,7 @@ export function PianoSearchFilter() {
           <input
             type="text"
             placeholder="Search pianos by name, model, or series..."
+            aria-label="Search pianos by name, model, or series"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -324,7 +325,7 @@ export function PianoSearchFilter() {
                   Clear All
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => setShowFilters(false)}>
+              <Button variant="outline" size="sm" onClick={() => setShowFilters(false)} aria-label="Close filters">
                 <X className="h-4 w-4" />
               </Button>
             </div>

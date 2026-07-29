@@ -189,9 +189,9 @@ export function CountdownTimer() {
                     </div>
 
                     {/* CTA */}
-                    <div className="timer-cta-button" onClick={handleBookNowClick}>
+                    <button type="button" className="timer-cta-button block w-full" onClick={handleBookNowClick}>
                       Book Now
-                    </div>
+                    </button>
                   </CardContent>
                 </Card>
               </div>

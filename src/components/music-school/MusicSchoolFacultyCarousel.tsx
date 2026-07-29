@@ -30,6 +30,12 @@ export function MusicSchoolFacultyCarousel({ faculty, schoolName, about, baseUrl
   const animatingRef = useRef(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Auto-advance respects a user-operable play/pause control (WCAG 2.2.2) and
+  // pauses on hover/focus. Reduced-motion users start paused.
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPaused, setIsPaused] = useState(false)
+  const shouldRun = isPlaying && !isPaused
+
   const total = faculty.length
   const member = faculty[index]
 
@@ -52,15 +58,25 @@ export function MusicSchoolFacultyCarousel({ faculty, schoolName, about, baseUrl
     advance(next)
   }
 
-  // Auto-advance: reads ref so it's never stale
+  // Respect prefers-reduced-motion: start paused and follow live changes.
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (mq.matches) setIsPlaying(false)
+    const onChange = (e: MediaQueryListEvent) => setIsPlaying(!e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  // Auto-advance: reads ref so it's never stale (gated on play state + hover/focus)
+  useEffect(() => {
+    if (!shouldRun || total <= 1) return
     timerRef.current = setTimeout(() => {
       if (!animatingRef.current) {
         advance(index + 1)
       }
     }, 3000)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [index]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [index, shouldRun, total]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!member) return null
 
@@ -77,7 +93,13 @@ export function MusicSchoolFacultyCarousel({ faculty, schoolName, about, baseUrl
   const aboutPreview = aboutNeedsExpand ? about!.slice(0, PREVIEW_LENGTH).trimEnd() + '…' : about
 
   return (
-    <div className="grid md:grid-cols-[5fr_6fr] min-h-[600px]">
+    <div
+      className="grid md:grid-cols-[5fr_6fr] min-h-[600px]"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+    >
 
       {/* Photo panel */}
       <div className="relative bg-kawai-black overflow-hidden min-h-[400px] md:min-h-0">
@@ -201,9 +223,26 @@ export function MusicSchoolFacultyCarousel({ faculty, schoolName, about, baseUrl
 
         {/* Bottom row */}
         <div className="flex items-center justify-between mt-12 pt-6 border-t-2 border-kawai-neutral">
-          <span className="text-[12px] font-mono text-kawai-charcoal/40 tracking-widest select-none">
-            {pad(index + 1)} / {pad(total)}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-mono text-kawai-charcoal/40 tracking-widest select-none">
+              {pad(index + 1)} / {pad(total)}
+            </span>
+            <button
+              onClick={() => setIsPlaying((p) => !p)}
+              aria-label={isPlaying ? 'Pause automatic rotation' : 'Play automatic rotation'}
+              className="w-8 h-8 flex items-center justify-center border border-kawai-neutral hover:border-kawai-black text-kawai-charcoal/50 hover:text-kawai-black rounded transition-colors"
+            >
+              {isPlaying ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              )}
+            </button>
+          </div>
 
           <div className="flex items-center gap-3">
             <Link

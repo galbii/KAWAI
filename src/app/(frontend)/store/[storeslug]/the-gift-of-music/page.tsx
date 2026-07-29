@@ -639,10 +639,11 @@ export default function MusicSchoolEnrollmentPage({
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-studentFirstName" className="block text-base font-semibold text-kawai-black mb-2">
                           First Name *
                         </label>
                         <input
+                          id="gift-studentFirstName"
                           type="text"
                           {...register('studentFirstName')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -654,10 +655,11 @@ export default function MusicSchoolEnrollmentPage({
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-studentLastName" className="block text-base font-semibold text-kawai-black mb-2">
                           Last Name *
                         </label>
                         <input
+                          id="gift-studentLastName"
                           type="text"
                           {...register('studentLastName')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -671,10 +673,11 @@ export default function MusicSchoolEnrollmentPage({
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-studentBirthYear" className="block text-base font-semibold text-kawai-black mb-2">
                           Birth Year *
                         </label>
                         <input
+                          id="gift-studentBirthYear"
                           type="text"
                           {...register('studentBirthYear')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -687,10 +690,11 @@ export default function MusicSchoolEnrollmentPage({
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-studentGender" className="block text-base font-semibold text-kawai-black mb-2">
                           Gender *
                         </label>
                         <select
+                          id="gift-studentGender"
                           {...register('studentGender')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                         >
@@ -708,10 +712,11 @@ export default function MusicSchoolEnrollmentPage({
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-schoolGrade" className="block text-base font-semibold text-kawai-black mb-2">
                           School Grade <span className="text-sm font-normal text-gray-500">(if applicable)</span>
                         </label>
                         <input
+                          id="gift-schoolGrade"
                           type="text"
                           {...register('schoolGrade')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -720,10 +725,11 @@ export default function MusicSchoolEnrollmentPage({
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-currentSchool" className="block text-base font-semibold text-kawai-black mb-2">
                           Current School <span className="text-sm font-normal text-gray-500">(if applicable)</span>
                         </label>
                         <input
+                          id="gift-currentSchool"
                           type="text"
                           {...register('currentSchool')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -754,10 +760,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-instrument" className="block text-base font-semibold text-kawai-black mb-2">
                         Instrument of Interest *
                       </label>
                       <select
+                        id="gift-instrument"
                         {...register('instrument')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
@@ -775,10 +782,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-lengthOfPreviousStudy" className="block text-base font-semibold text-kawai-black mb-2">
                         Length of Previous Study *
                       </label>
                       <select
+                        id="gift-lengthOfPreviousStudy"
                         {...register('lengthOfPreviousStudy')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
@@ -848,10 +856,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-lessonPrice" className="block text-base font-semibold text-kawai-black mb-2">
                         Preferred Price Range *
                       </label>
                       <select
+                        id="gift-lessonPrice"
                         {...register('lessonPrice')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
@@ -868,10 +877,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-preferredTime" className="block text-base font-semibold text-kawai-black mb-2">
                         Preferred Lesson Time *
                       </label>
                       <select
+                        id="gift-preferredTime"
                         {...register('preferredTime')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base bg-white cursor-pointer text-kawai-black"
                       >
@@ -889,10 +899,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-notes" className="block text-base font-semibold text-kawai-black mb-2">
                         Additional Notes or Questions <span className="text-sm font-normal text-gray-500">(optional)</span>
                       </label>
                       <textarea
+                        id="gift-notes"
                         {...register('notes')}
                         rows={4}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base resize-none text-kawai-black"
@@ -934,10 +945,11 @@ export default function MusicSchoolEnrollmentPage({
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-emergencyContactFirstName" className="block text-base font-semibold text-kawai-black mb-2">
                           First Name *
                         </label>
                         <input
+                          id="gift-emergencyContactFirstName"
                           type="text"
                           {...register('emergencyContactFirstName')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -949,10 +961,11 @@ export default function MusicSchoolEnrollmentPage({
                       </div>
 
                       <div>
-                        <label className="block text-base font-semibold text-kawai-black mb-2">
+                        <label htmlFor="gift-emergencyContactLastName" className="block text-base font-semibold text-kawai-black mb-2">
                           Last Name *
                         </label>
                         <input
+                          id="gift-emergencyContactLastName"
                           type="text"
                           {...register('emergencyContactLastName')}
                           className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -965,10 +978,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-emergencyContactPhone" className="block text-base font-semibold text-kawai-black mb-2">
                         Phone Number *
                       </label>
                       <input
+                        id="gift-emergencyContactPhone"
                         type="tel"
                         {...register('emergencyContactPhone')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"
@@ -980,10 +994,11 @@ export default function MusicSchoolEnrollmentPage({
                     </div>
 
                     <div>
-                      <label className="block text-base font-semibold text-kawai-black mb-2">
+                      <label htmlFor="gift-emergencyContactEmail" className="block text-base font-semibold text-kawai-black mb-2">
                         Email Address *
                       </label>
                       <input
+                        id="gift-emergencyContactEmail"
                         type="email"
                         {...register('emergencyContactEmail')}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-kawai-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-all text-base text-kawai-black"

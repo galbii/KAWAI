@@ -97,7 +97,7 @@ function SidebarContent({ post }: { post: Post }) {
         </Link>
         <Link
           href="/accessories"
-          className="text-xs text-kawai-charcoal/60 hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
+          className="text-xs text-kawai-muted hover:text-kawai-red transition-colors font-[family-name:var(--font-brand-sans)]"
         >
           Accessories →
         </Link>
@@ -156,7 +156,6 @@ function SidebarContent({ post }: { post: Post }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 group"
-            aria-label="Follow Kawai Pianos US on Instagram"
           >
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
@@ -171,7 +170,7 @@ function SidebarContent({ post }: { post: Post }) {
               <div className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors leading-tight">
                 @kawaipianosus
               </div>
-              <div className="text-xs text-kawai-charcoal/50 mt-0.5">Instagram</div>
+              <div className="text-xs text-kawai-muted mt-0.5">Instagram</div>
             </div>
           </a>
 
@@ -180,7 +179,6 @@ function SidebarContent({ post }: { post: Post }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 group"
-            aria-label="Follow Kawai Pianos US on Facebook"
           >
             <div className="w-9 h-9 rounded-full bg-[#1877F2] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110">
               <FacebookIcon className="w-[18px] h-[18px] text-white" />
@@ -189,7 +187,7 @@ function SidebarContent({ post }: { post: Post }) {
               <div className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors leading-tight">
                 Kawai Pianos US
               </div>
-              <div className="text-xs text-kawai-charcoal/50 mt-0.5">Facebook</div>
+              <div className="text-xs text-kawai-muted mt-0.5">Facebook</div>
             </div>
           </a>
 
@@ -198,7 +196,6 @@ function SidebarContent({ post }: { post: Post }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 group"
-            aria-label="Follow Kawai Pianos US on TikTok"
           >
             <div className="w-9 h-9 rounded-full bg-[#010101] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110">
               <TikTokIcon className="w-[17px] h-[17px] text-white" />
@@ -207,7 +204,7 @@ function SidebarContent({ post }: { post: Post }) {
               <div className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors leading-tight">
                 @kawaipianosus
               </div>
-              <div className="text-xs text-kawai-charcoal/50 mt-0.5">TikTok</div>
+              <div className="text-xs text-kawai-muted mt-0.5">TikTok</div>
             </div>
           </a>
 
@@ -216,7 +213,6 @@ function SidebarContent({ post }: { post: Post }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 group"
-            aria-label="Follow Kawai Pianos US on X"
           >
             <div className="w-9 h-9 rounded-full bg-[#000000] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110">
               <XIcon className="w-[15px] h-[15px] text-white" />
@@ -225,7 +221,7 @@ function SidebarContent({ post }: { post: Post }) {
               <div className="text-sm font-medium text-kawai-black group-hover:text-kawai-red transition-colors leading-tight">
                 @KawaiPianosUS
               </div>
-              <div className="text-xs text-kawai-charcoal/50 mt-0.5">X / Twitter</div>
+              <div className="text-xs text-kawai-muted mt-0.5">X / Twitter</div>
             </div>
           </a>
         </div>

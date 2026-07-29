@@ -79,7 +79,7 @@ function Field({
       />
       <label
         htmlFor={id}
-        className="pointer-events-none absolute left-0 top-5 text-base text-kawai-black/45 transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:uppercase peer-focus:tracking-[0.15em] peer-focus:text-kawai-black/60 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-[0.15em] peer-[:not(:placeholder-shown)]:text-kawai-black/60"
+        className="pointer-events-none absolute left-0 top-5 text-base text-kawai-muted transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:uppercase peer-focus:tracking-[0.15em] peer-focus:text-kawai-black/60 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:uppercase peer-[:not(:placeholder-shown)]:tracking-[0.15em] peer-[:not(:placeholder-shown)]:text-kawai-black/60"
       >
         {label}
       </label>
@@ -176,7 +176,7 @@ export function SimpleCustomerSignupForm({
           {title}
         </DialogTitle>
         <div aria-hidden="true" className="mt-5 h-px w-12 bg-kawai-red" />
-        <DialogDescription className="mt-5 max-w-sm text-sm leading-relaxed text-kawai-black/55">
+        <DialogDescription className="mt-5 max-w-sm text-sm leading-relaxed text-kawai-muted">
           {description}
         </DialogDescription>
       </div>
@@ -235,7 +235,7 @@ export function SimpleCustomerSignupForm({
           {isSubmitting ? 'Submitting' : submitButtonText}
         </button>
 
-        <p className="text-center text-[11px] leading-relaxed tracking-wide text-kawai-black/40">
+        <p className="text-center text-[11px] leading-relaxed tracking-wide text-kawai-muted">
           Your information is kept private and used only to contact you about our pianos.
         </p>
       </form>
