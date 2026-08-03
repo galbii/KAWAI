@@ -16,6 +16,15 @@
   }
 }
 
+/* Lightweight hover preview card — non-interactive so it never traps the cursor */
+.dealer-hover-card {
+  pointer-events: none !important;
+}
+.dealer-hover-card .maplibregl-popup-content {
+  min-width: 220px !important;
+  max-width: 280px !important;
+}
+
 .maplibregl-popup-close-button {
   font-size: 16px !important;
   line-height: 1 !important;
