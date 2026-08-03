@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { lookupSerialNumber } from '@/lib/serial-numbers'
-import type { LookupResult, LookupError } from '@/lib/serial-numbers'
+import type { LookupResult, DisambiguationResult, LookupError, Candidate } from '@/lib/serial-numbers'
 import { cn } from '@/lib/utils'
 
 /* ─── Data ─────────────────────────────────────────────────────────── */
@@ -13,7 +13,7 @@ const COUNTRY_LABEL = {
   Indonesia: 'Indonesia',
 } as const
 
-const EXAMPLES = ['1856250', 'A49071', 'F049000']
+const EXAMPLES = ['1856250', '2500000', 'A49071', 'F049000']
 
 const TIMELINE_START = 1927
 const TIMELINE_END   = 2026
@@ -25,9 +25,28 @@ function pct(year: number) {
   return ((clamped - TIMELINE_START) / (TIMELINE_END - TIMELINE_START)) * 100
 }
 
+/* Boundary cases aren't pinned to one year — show the span of possibility
+   (e.g. "1993–1994") instead of a single year plus a caveat. */
+function yearLabel(year: number, confidence: 'exact' | 'boundary', boundaryYear: number | null) {
+  if (confidence === 'boundary' && boundaryYear != null) {
+    return `${Math.min(year, boundaryYear)}–${Math.max(year, boundaryYear)}`
+  }
+  return String(year)
+}
+
+/* A normalized shape both a confident result and a chosen candidate feed into. */
+interface Readout {
+  year: number
+  confidence: 'exact' | 'boundary'
+  boundaryYear: number | null
+  country: keyof typeof COUNTRY_LABEL
+  seriesLabel: string
+  serialNormalized: string
+}
+
 /* ─── Timeline ───────────────────────────────────────────────────────── */
 /* The 1927–2026 production span as a single track; the result year sits on it
-   as a marker, with a muted second marker for the alternate (ambiguous) year. */
+   as a marker, with a muted second marker for a boundary (adjacent) year. */
 
 function Timeline({ year, altYear }: { year: number; altYear?: number | null }) {
   const pos = pct(year)
@@ -51,7 +70,7 @@ function Timeline({ year, altYear }: { year: number; altYear?: number | null }) 
             style={{ left: `${pct(m)}%` }}
           />
         ))}
-        {/* Alternate-year marker (muted) */}
+        {/* Boundary-year marker (muted) */}
         {altPos != null && (
           <span
             className="absolute top-1/2 z-10 h-2.5 w-2.5 rounded-full border border-kawai-charcoal/40 bg-white"
@@ -121,50 +140,46 @@ function ReadoutField({
   )
 }
 
-function SuccessCard({ result }: { result: LookupResult }) {
-  // Show the year as a range (e.g. "1998–1999") unless the reading is ambiguous
-  // or has no upper bound, in which case a single year is clearer.
-  const yearLabel =
-    !result.isAmbiguous && result.yearEnd && result.yearEnd !== result.year
-      ? `${result.year}–${result.yearEnd}`
-      : String(result.year)
+function ResultCard({ readout, onReset }: { readout: Readout; onReset?: (() => void) | undefined }) {
+  const isBoundary = readout.confidence === 'boundary' && readout.boundaryYear != null
 
   return (
     <div style={{ animation: 'revealUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}>
-      {/* Echo the dated serial — confirms what was looked up */}
-      <div className="flex items-center gap-2 px-6 sm:px-8 pt-5 pb-1">
+      {/* Echo the dated serial + which series it was read against */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-6 sm:px-8 pt-5 pb-1">
         <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-charcoal/55">
           Serial
         </span>
         <span className="font-mono text-sm text-kawai-charcoal tracking-[0.12em]">
-          {result.serialNormalized}
+          {readout.serialNormalized}
         </span>
+        <span className="text-[11px] text-kawai-charcoal/55">· {readout.seriesLabel}</span>
       </div>
 
       {/* Readout: production year + manufacturing country */}
       <div className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] sm:divide-x divide-kawai-neutral/70">
-        <ReadoutField label="Production Year" value={yearLabel} big />
-        <ReadoutField label="Manufacturing Country" value={COUNTRY_LABEL[result.country]} />
+        <ReadoutField
+          label={isBoundary ? 'Production Years' : 'Production Year'}
+          value={yearLabel(readout.year, readout.confidence, readout.boundaryYear)}
+          big
+        />
+        <ReadoutField label="Manufacturing Country" value={COUNTRY_LABEL[readout.country]} />
       </div>
 
       {/* Timeline */}
       <div className="border-t border-kawai-neutral/70">
-        <Timeline year={result.year} altYear={result.isAmbiguous ? result.altYear : null} />
+        <Timeline year={readout.year} altYear={isBoundary ? readout.boundaryYear : null} />
       </div>
 
-      {/* Ambiguity note — quiet, in-system */}
-      {result.isAmbiguous && result.altYear && (
-        <div className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-4 flex gap-3">
-          <span className="mt-0.5 h-3 w-3 shrink-0 rotate-45 bg-kawai-charcoal/45" aria-hidden="true" />
-          <p className="text-sm text-kawai-charcoal/80 leading-relaxed">
-            This number is shared by two Kawai series. Shown is the vintage grand reading; a later
-            (non-grand) model would date to{' '}
-            <span className="font-mono font-medium text-kawai-black">
-              {result.altYear}
-              {result.altYearEnd ? `–${result.altYearEnd}` : ''}
-            </span>
-            . Check the model name on the fallboard to confirm.
-          </p>
+      {/* Back to the other candidates, when this came from a disambiguation */}
+      {onReset && (
+        <div className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-3.5">
+          <button
+            onClick={onReset}
+            className="text-sm text-kawai-red hover:text-kawai-red-700 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red/30 rounded"
+          >
+            ← Not it? See the other matches
+          </button>
         </div>
       )}
 
@@ -178,23 +193,135 @@ function SuccessCard({ result }: { result: LookupResult }) {
   )
 }
 
+/* ─── Disambiguation (prefix required) ───────────────────────────────── */
+
+function PrefixBadge({ prefix }: { prefix: string | null }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded font-mono text-sm font-semibold',
+        prefix
+          ? 'bg-kawai-red/10 text-kawai-red border border-kawai-red/30'
+          : 'bg-kawai-neutral/40 text-kawai-charcoal/70 border border-kawai-neutral text-[10px] leading-tight',
+      )}
+    >
+      {prefix ?? 'None'}
+    </span>
+  )
+}
+
+function DisambiguationCard({
+  result,
+  onChoose,
+}: {
+  result: DisambiguationResult
+  onChoose: (c: Candidate) => void
+}) {
+  return (
+    <div
+      className="border-t border-kawai-neutral/70"
+      style={{ animation: 'revealUp 0.4s cubic-bezier(0.22,1,0.36,1) both' }}
+    >
+      <div className="px-6 sm:px-8 pt-5 pb-3">
+        <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-kawai-red mb-1.5">
+          Prefix needed
+        </p>
+        <p className="text-sm text-kawai-charcoal leading-relaxed">
+          <span className="font-mono text-kawai-black">{result.serialNormalized}</span> appears in
+          more than one Kawai numbering series. Check the plate on your piano for a letter in front of
+          the number, then choose the match below.
+        </p>
+      </div>
+
+      <ul className="divide-y divide-kawai-neutral/70 border-t border-kawai-neutral/70">
+        {result.candidates.map(c => (
+          <li key={c.id}>
+            <button
+              onClick={() => onChoose(c)}
+              className="group flex w-full items-center gap-4 px-6 sm:px-8 py-4 text-left hover:bg-kawai-pearl/60 focus:outline-none focus-visible:bg-kawai-pearl/60 transition-colors"
+            >
+              <PrefixBadge prefix={c.prefix} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-kawai-black">
+                  {c.prefix ? `Prefix “${c.prefix}”` : 'No prefix (plain number)'}
+                </span>
+                <span className="block text-xs text-kawai-charcoal/70 truncate">{c.seriesLabel}</span>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block font-mono text-lg font-medium text-kawai-black tabular-nums">
+                  {yearLabel(c.year, c.confidence, c.boundaryYear)}
+                </span>
+                <span className="block text-[11px] text-kawai-charcoal/55">
+                  {COUNTRY_LABEL[c.country]}
+                </span>
+              </span>
+              <svg
+                className="w-4 h-4 shrink-0 text-kawai-charcoal/30 transition-transform group-hover:translate-x-0.5 group-hover:text-kawai-red"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="border-t border-kawai-neutral/70 px-6 sm:px-8 py-3.5 bg-kawai-pearl/50">
+        <p className="text-xs text-kawai-charcoal/65 leading-relaxed">
+          The letter prefix is stamped on the iron plate alongside the number. If yours has none, use
+          the model name on the fallboard to tell a vintage grand from a newer instrument.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Main component ─────────────────────────────────────────────────── */
 
 export function SerialNumberLookup() {
-  const [input, setInput]     = useState('')
-  const [result, setResult]   = useState<LookupResult | LookupError | null>(null)
-  const [animKey, setAnimKey] = useState(0)
+  const [input, setInput]       = useState('')
+  const [result, setResult]     = useState<LookupResult | DisambiguationResult | LookupError | null>(null)
+  const [chosen, setChosen]     = useState<Readout | null>(null)
+  const [animKey, setAnimKey]   = useState(0)
 
   function submit(value?: string) {
     const serial = (value ?? input).trim()
     if (!serial) return
     if (value) setInput(value)
     setResult(lookupSerialNumber(serial))
+    setChosen(null)
     setAnimKey(k => k + 1)
   }
 
-  const success = result && !('type' in result) ? result : null
-  const error   = result && 'type' in result    ? result : null
+  const error        = result?.kind === 'error' ? result : null
+  const confident    = result?.kind === 'result' ? result : null
+  const disambig     = result?.kind === 'disambiguation' ? result : null
+
+  // A confident result, or a candidate the user picked from a disambiguation.
+  const readout: Readout | null =
+    chosen ??
+    (confident
+      ? {
+          year: confident.year,
+          confidence: confident.confidence,
+          boundaryYear: confident.boundaryYear,
+          country: confident.country,
+          seriesLabel: confident.seriesLabel,
+          serialNormalized: confident.serialNormalized,
+        }
+      : null)
+
+  function chooseCandidate(c: Candidate) {
+    setChosen({
+      year: c.year,
+      confidence: c.confidence,
+      boundaryYear: c.boundaryYear,
+      country: c.country,
+      seriesLabel: c.seriesLabel,
+      serialNormalized: `${c.prefix ?? ''}${disambig?.serialNormalized ?? ''}`,
+    })
+    setAnimKey(k => k + 1)
+  }
 
   return (
     <>
@@ -239,7 +366,7 @@ export function SerialNumberLookup() {
             </h1>
             <p className="mt-4 text-base sm:text-lg text-kawai-charcoal leading-relaxed max-w-lg">
               Find when your piano was built. Enter the serial number stamped on the
-              iron plate or printed on the fallboard.
+              iron plate or printed on the fallboard — include any letter in front of it.
             </p>
           </header>
 
@@ -263,11 +390,12 @@ export function SerialNumberLookup() {
                   value={input}
                   onChange={e => setInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === 'Enter' && submit()}
-                  placeholder="1856250"
+                  placeholder="e.g. 1856250 or A49071"
                   maxLength={12}
                   autoComplete="off"
                   spellCheck={false}
-                  className="flex-1 min-w-0 bg-transparent font-mono text-2xl sm:text-3xl tracking-[0.14em] text-kawai-black placeholder:text-kawai-charcoal/30 px-5 py-4 focus:outline-none"
+                  aria-label="Piano serial number, including any letter prefix"
+                  className="flex-1 min-w-0 bg-transparent font-mono text-2xl sm:text-3xl tracking-[0.14em] text-kawai-black placeholder:text-kawai-charcoal/30 placeholder:text-lg placeholder:tracking-normal px-5 py-4 focus:outline-none"
                 />
                 <button
                   onClick={() => submit()}
@@ -323,10 +451,20 @@ export function SerialNumberLookup() {
               </div>
             )}
 
-            {/* Result */}
-            {success && (
+            {/* Disambiguation — pick the prefix */}
+            {disambig && !chosen && (
+              <div key={`amb-${animKey}`}>
+                <DisambiguationCard result={disambig} onChoose={chooseCandidate} />
+              </div>
+            )}
+
+            {/* Confident result, or a chosen candidate */}
+            {readout && (
               <div key={`res-${animKey}`} className="border-t border-kawai-neutral/70">
-                <SuccessCard result={success} />
+                <ResultCard
+                  readout={readout}
+                  onReset={disambig ? () => { setChosen(null); setAnimKey(k => k + 1) } : undefined}
+                />
               </div>
             )}
           </div>

@@ -1,13 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Kawai Pianos',
   description:
     'Learn how Kawai America Corporation collects, uses, and protects your personal information when you visit or purchase from kawaius.com.',
-  alternates: {
-    canonical: '/privacy',
-  },
+  alternates: getStaticAlternates('/privacy'),
 }
 
 const EFFECTIVE_DATE = 'April 2, 2026'

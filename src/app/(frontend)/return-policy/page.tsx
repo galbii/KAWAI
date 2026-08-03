@@ -1,13 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Return Policy | Kawai Pianos',
   description:
     'Kawai America\'s return policy for instruments purchased directly at kawaius.com — 15-day returns, damage claims, and defective instrument coverage.',
-  alternates: {
-    canonical: '/return-policy',
-  },
+  alternates: getStaticAlternates('/return-policy'),
 }
 
 const EFFECTIVE_DATE = 'April 28, 2026'
