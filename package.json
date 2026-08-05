@@ -28,6 +28,8 @@
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
     "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",
     "migrate:product-featured:dry-run": "tsx scripts/migrate-product-featured.ts --dry-run",
+    "migrate:dealers:rsm": "tsx scripts/migrate-dealers-rsm-list.ts",
+    "migrate:dealers:rsm:dry-run": "tsx scripts/migrate-dealers-rsm-list.ts --dry-run",
     "test:s3": "tsx scripts/test-s3-connection.ts"
   },
   "dependencies": {
@@ -41,6 +43,7 @@
     "@next/third-parties": "^15.5.19",
     "@payloadcms/admin-bar": "3.85.1",
     "@payloadcms/db-mongodb": "3.85.1",
+    "@payloadcms/email-resend": "3.85.1",
     "@payloadcms/live-preview-react": "3.85.1",
     "@payloadcms/next": "3.85.1",
     "@payloadcms/payload-cloud": "3.85.1",

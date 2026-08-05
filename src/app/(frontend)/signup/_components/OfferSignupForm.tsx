@@ -4,9 +4,13 @@ import { BrandEyebrow } from './brand-ui'
 import { offerCopy, hubspotSignupForm } from './scenes'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
+import { notifyRsmOfLead } from '@/lib/actions/notify-rsm-of-lead'
 
 /** Source/campaign tags applied to the Shopify customer for this page. */
 const SHOPIFY_LEAD_TAGS = ['signup', 'summer-savings']
+
+/** Identifies this page in the RSM notification email + Resend dashboard tag. */
+const LEAD_SOURCE = 'signup'
 
 /**
  * The dealer-discount sign-up content: offer copy + the reusable HubSpot
@@ -33,6 +37,8 @@ export function OfferSignupForm() {
         submitLabel={offerCopy.submitLabel}
         onComplete={(data) => {
           void upsertSignupLeadToShopify(data, SHOPIFY_LEAD_TAGS).catch(() => {})
+          // Route the lead to the nearest dealer's Regional Sales Manager.
+          void notifyRsmOfLead(data, LEAD_SOURCE).catch(() => {})
         }}
       />
 

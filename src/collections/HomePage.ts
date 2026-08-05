@@ -21,6 +21,17 @@ export const HomePage: CollectionConfig = {
   fields: [
     // Sidebar Fields
     {
+      name: 'enableRsmLeadNotifications',
+      type: 'checkbox',
+      label: 'RSM Lead Notification Emails',
+      defaultValue: true,
+      admin: {
+        position: 'sidebar',
+        description:
+          'When enabled, signup-offer form submissions (/signup, /signup2) email the nearest dealer\'s Regional Sales Manager via Resend. Disable to pause RSM notifications site-wide (leads still flow to HubSpot and Shopify).',
+      },
+    },
+    {
       name: 'searchQuickLinks',
       type: 'array',
       labels: {

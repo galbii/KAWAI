@@ -18,6 +18,7 @@ interface ThreeDViewerBlockProps {
   enabled?: boolean | null
   modelId: string
   productName?: string | null
+  finishAvailability?: 'GLOBAL' | 'all' | null
   buttonText?: string | null
   buttonPosition?: 'bottom-left' | 'bottom-right' | 'bottom-center' | null
   theme?: 'blue' | 'kawai-red' | 'black' | 'gold' | null

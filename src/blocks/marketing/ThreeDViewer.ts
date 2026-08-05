@@ -41,6 +41,19 @@ export const ThreeDViewer: Block = {
       },
     },
     {
+      name: 'finishAvailability',
+      type: 'select',
+      defaultValue: 'GLOBAL',
+      options: [
+        { label: 'Global lineup only (recommended)', value: 'GLOBAL' },
+        { label: 'All finishes', value: 'all' },
+      ],
+      admin: {
+        description:
+          'Which finishes the 3D viewer offers. "Global lineup only" matches kawai-global.com and hides finishes outside the standard lineup — e.g. it restricts the ES60 to Black instead of also offering White. Choose "All finishes" only if this model genuinely sells here in every finish.',
+      },
+    },
+    {
       type: 'row',
       fields: [
         {

@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useState, useEffect, createElement, useRef } from 'react'
 import { Images, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, Headphones as HeadphonesIcon } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
+import { hasFreeShipping } from '@/lib/free-shipping'
 import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
@@ -370,6 +371,11 @@ export function ProductHeroBlock({
 
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = (product as any).modelLabel || product.model || product.name
+
+  // Free shipping is a US-wide offer; on ca.kawaius.com only specific portable
+  // digital models ship free, so the tile is dropped for everything else.
+  // Match on `model` (the identity key), never `modelLabel` (display-only).
+  const showFreeShipping = hasFreeShipping(product.model, site)
 
   const hasVariations = allVariations.length > 0
 
@@ -1310,14 +1316,16 @@ export function ProductHeroBlock({
               <div className="h-px bg-gradient-to-r from-transparent via-kawai-neutral to-transparent mb-3" />
               <div className="grid grid-cols-2 gap-1.5">
 
-                {/* Free Shipping */}
-                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
-                  <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
-                    <p className="text-[9px] text-kawai-muted mt-1 leading-tight">Ships in 2–3 business days</p>
+                {/* Free Shipping — US always; Canada only on eligible models (see hasFreeShipping) */}
+                {showFreeShipping && (
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
+                    <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
+                      <p className="text-[9px] text-kawai-muted mt-1 leading-tight">Ships in 2–3 business days</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Warranty */}
                 <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
@@ -1338,7 +1346,11 @@ export function ProductHeroBlock({
                 </Link>
 
                 {/* Support */}
-                <Link href="/technical-support-division" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                <Link href="/technical-support-division" className={cn(
+                  "flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group",
+                  // Without the shipping tile only 3 remain — widen the last so row 2 isn't half-empty
+                  !showFreeShipping && "col-span-2"
+                )}>
                   <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Support</p>

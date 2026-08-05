@@ -46,21 +46,28 @@ export function use3DViewer({
       return ''
     }
 
-    // Extract model parameter from modelParams
-    // Expected format: "?model=ca901" or "model=ca901"
-    const params = config.modelParams
-    const modelMatch = params.match(/model=([^&]+)/)
+    // modelParams is a query string, e.g. "?model=ES60&region=GLOBAL&inModal=true"
+    const params = new URLSearchParams(config.modelParams.replace(/^\?/, ''))
+    const modelId = params.get('model')
 
-    if (!modelMatch || !modelMatch[1]) {
-      console.warn('3D Viewer: No model parameter found in modelParams:', params)
+    if (!modelId) {
+      console.warn('3D Viewer: No model parameter found in modelParams:', config.modelParams)
       return ''
     }
 
-    const modelId = modelMatch[1]
+    // Forward every param the upstream viewer supports — not just `model`.
+    // Dropping `region` is what let the ES60 render finishes we don't sell, and
+    // dropping `inModal` left the options panel positioned for a standalone page.
+    // The proxy re-validates this list server-side.
+    const proxyParams = new URLSearchParams({ model: modelId })
+    for (const key of ['region', 'inModal', 'finish', 'pose', 'options']) {
+      const value = params.get(key)
+      if (value) proxyParams.set(key, value)
+    }
 
-    // Use our proxy API route instead of external URL
-    // This bypasses X-Frame-Options header restrictions
-    return `/api/3d-viewer-proxy?model=${encodeURIComponent(modelId)}`
+    // Use our proxy API route instead of the external URL —
+    // this bypasses the upstream X-Frame-Options header.
+    return `/api/3d-viewer-proxy?${proxyParams.toString()}`
   }, [config])
 
   // Determine if viewer should auto-open based on URL parameter
@@ -123,22 +130,13 @@ export function use3DViewer({
     }
   }, [config?.enabled, fullViewerUrl])
 
-  // Handle keyboard shortcuts (optional enhancement)
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      // Press 'V' to toggle viewer (when not in input field)
-      if (
-        event.key.toLowerCase() === 'v' &&
-        !['INPUT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName) &&
-        config?.enabled
-      ) {
-        toggle()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [toggle, config?.enabled])
+  // NOTE: there used to be a global "press V to toggle" shortcut here. It fired on
+  // any keydown outside an <input>/<textarea>, so a bare `v` anywhere on a product
+  // page opened the modal — with no affordance telling anyone the key existed, and
+  // no guard for contentEditable, <select>, or the search overlay. The modal is
+  // reachable from the button and dismissible with Escape; the shortcut was removed
+  // rather than guarded, because there is no reliable way to infer intent from a
+  // single unmodified letter key.
 
   return {
     isOpen,

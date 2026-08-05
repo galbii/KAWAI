@@ -1,4 +1,9 @@
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload'
+import type {
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+  FieldAccess,
+} from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
 import { slugBeforeDuplicate } from '@/lib/payload/fields/slug'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -17,6 +22,16 @@ import { nominatimGeocode } from '@/lib/payload/geocode'
  *   - Address is incomplete (no street, city, or state)
  *   - On create: the admin manually entered coordinates
  */
+/**
+ * Field-level read guard for internal-only data.
+ *
+ * The Dealers collection has public read access (`read: () => true`) so the
+ * dealer finder can query it unauthenticated. Placing a field on the "Internal"
+ * tab hides it in the admin UI only — it is still returned by `/api/dealers`.
+ * Any field carrying non-public business data must use this guard.
+ */
+const internalFieldAccess: FieldAccess = ({ req: { user } }) => Boolean(user)
+
 const geocodeDealerAddress: CollectionBeforeValidateHook = async ({ data, originalDoc, operation }) => {
   if (!data) return data
 
@@ -354,6 +369,15 @@ export const Dealers: CollectionConfig = {
               }
             },
             {
+              name: 'ecommerceDealer',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description:
+                  'Online / e-commerce account rather than an RSM-managed brick-and-mortar dealer (e.g. Sam Ash, Sweetwater, Musician\'s Friend)',
+              }
+            },
+            {
               name: 'shigeruKawaiDealer',
               type: 'checkbox',
               defaultValue: false,
@@ -538,6 +562,17 @@ export const Dealers: CollectionConfig = {
           label: 'Internal',
           description: 'Internal Kawai admin data — not displayed publicly',
           fields: [
+            {
+              name: 'rsmEmail',
+              type: 'email',
+              label: 'RSM Contact Email',
+              access: { read: internalFieldAccess },
+              admin: {
+                description:
+                  'Regional Sales Manager contact email. Internal only — read access is restricted to authenticated users and this field is never returned by the public dealer API.',
+                placeholder: 'kmccoy@kawaius.com'
+              }
+            },
             {
               name: 'region',
               type: 'text',

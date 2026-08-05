@@ -16,6 +16,7 @@ interface ThreeDViewerRendererProps {
   enabled?: boolean | null
   modelId: string
   productName?: string | null
+  finishAvailability?: 'GLOBAL' | 'all' | null
   buttonText?: string | null
   buttonPosition?: 'bottom-left' | 'bottom-right' | 'bottom-center' | null
   theme?: 'blue' | 'kawai-red' | 'black' | 'gold' | null
@@ -38,6 +39,7 @@ interface ThreeDViewerRendererProps {
 export function ThreeDViewerRenderer({
   modelId,
   productName,
+  finishAvailability = 'GLOBAL',
   buttonText = 'View in 3D',
   buttonPosition = 'bottom-left',
   theme = 'kawai-red',
@@ -48,26 +50,26 @@ export function ThreeDViewerRenderer({
 }: ThreeDViewerRendererProps) {
   const searchParams = useSearchParams()
 
-  // Debug logging
-  console.log('🎹 [3D Viewer] Rendering with config:', {
-    modelId,
-    productName,
-    buttonText,
-    buttonPosition,
-    theme,
-    autoOpen,
-    hideOnMobile: layout?.hideOnMobile,
-    zIndex: 10004,
-    mobileBottomSpacing: '80px (bottom-20)',
-    desktopBottomSpacing: '20px (bottom-5)',
-    note: 'z-index above search bar (10003)',
-  })
+  // Build viewer configuration.
+  //
+  // These params mirror what kawai-global.com's own product pages pass. Omitting
+  // them is not cosmetic:
+  //   region=GLOBAL  restricts the finish swatches to the standard lineup. Without
+  //                  it the ES60 offers a White finish alongside Black; with it the
+  //                  viewer resolves to a single variant and hides the swatch bar.
+  //   inModal=true   repositions the options panel so it clears our modal's close
+  //                  button (adds `body.in-modal` upstream).
+  // Blocks saved before `finishAvailability` existed have no value — default those
+  // to GLOBAL, which matches kawai-global's behaviour.
+  const viewerParams = new URLSearchParams({ model: modelId, inModal: 'true' })
+  if ((finishAvailability ?? 'GLOBAL') === 'GLOBAL') {
+    viewerParams.set('region', 'GLOBAL')
+  }
 
-  // Build viewer configuration
   const viewerConfig: Viewer3DConfig = {
     enabled: true,
     viewerUrl: 'https://www.kawai-global.com/modelviewer/index.php',
-    modelParams: `?model=${modelId}`,
+    modelParams: `?${viewerParams.toString()}`,
     autoOpen: autoOpen ?? false,
     buttonText: buttonText || 'View in 3D',
   }

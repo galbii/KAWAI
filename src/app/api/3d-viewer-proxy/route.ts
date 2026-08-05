@@ -20,6 +20,22 @@ import { NextRequest, NextResponse } from 'next/server'
 const VIEWER_ORIGIN = 'https://www.kawai-global.com'
 const VIEWER_BASE = `${VIEWER_ORIGIN}/modelviewer/index.php`
 
+/**
+ * Query params the upstream viewer understands, beyond `model`. Anything not
+ * listed here is dropped rather than forwarded blindly.
+ *
+ * - region   Filters the finish/variant list to what that region sells. Only
+ *            'GLOBAL' is recognised upstream; other values fall through to
+ *            "no restriction" (all finishes shown). Dropping it is what let the
+ *            ES60 offer a White finish we don't sell.
+ * - inModal  Adds `body.in-modal`, which repositions the options panel to clear
+ *            a modal close button. Purely cosmetic but we always frame it in a modal.
+ * - finish   Preselects a variant code (e.g. 'W', 'E/P').
+ * - pose     Preselects a camera pose.
+ * - options  Preselects model option toggles (music rest, stand, ...).
+ */
+const FORWARDED_PARAMS = ['region', 'inModal', 'finish', 'pose', 'options'] as const
+
 export async function GET(request: NextRequest) {
   try {
     // Extract parameters from query string
@@ -112,8 +128,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Construct the target URL for HTML
-    const targetUrl = `https://www.kawai-global.com/modelviewer/index.php?model=${encodeURIComponent(model)}`
+    // Construct the target URL for HTML, forwarding the supported viewer params.
+    const targetParams = new URLSearchParams({ model })
+    for (const key of FORWARDED_PARAMS) {
+      const value = searchParams.get(key)
+      if (value) targetParams.set(key, value)
+    }
+
+    const targetUrl = `${VIEWER_BASE}?${targetParams.toString()}`
 
     console.log('[3D Viewer Proxy] Fetching HTML:', targetUrl)
 

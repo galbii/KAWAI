@@ -1,5 +1,6 @@
 // storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { s3Storage } from '@payloadcms/storage-s3'
@@ -179,6 +180,19 @@ export default buildConfig({
   graphQL: {
     disable: process.env.NODE_ENV === 'production',
   },
+  // Resend email adapter — makes payload.sendEmail() (and Payload's own auth
+  // emails: password reset, verification) actually send. Without an adapter
+  // Payload only logs the recipient + subject. Conditional so local dev without
+  // a RESEND_API_KEY keeps the log-only behavior instead of erroring on send.
+  ...(process.env.RESEND_API_KEY
+    ? {
+        email: resendAdapter({
+          defaultFromAddress: process.env.RESEND_FROM_EMAIL ?? 'noreply@kawaius.com',
+          defaultFromName: 'Kawai America',
+          apiKey: process.env.RESEND_API_KEY,
+        }),
+      }
+    : {}),
   logger: _baseLogger,
   // Enable folders for media organization
   folders: {

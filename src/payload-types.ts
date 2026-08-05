@@ -3750,6 +3750,10 @@ export interface Marketing3DViewerBlock {
    */
   productName?: string | null;
   /**
+   * Which finishes the 3D viewer offers. "Global lineup only" matches kawai-global.com and hides finishes outside the standard lineup — e.g. it restricts the ES60 to Black instead of also offering White. Choose "All finishes" only if this model genuinely sells here in every finish.
+   */
+  finishAvailability?: ('GLOBAL' | 'all') | null;
+  /**
    * Text displayed on the floating 3D viewer button
    */
   buttonText?: string | null;
@@ -8791,6 +8795,10 @@ export interface CtaBlock {
 export interface HomePage {
   id: string;
   /**
+   * When enabled, signup-offer form submissions (/signup, /signup2) email the nearest dealer's Regional Sales Manager via Resend. Disable to pause RSM notifications site-wide (leads still flow to HubSpot and Shopify).
+   */
+  enableRsmLeadNotifications?: boolean | null;
+  /**
    * Quick navigation links displayed in the search overlay welcome screen
    */
   searchQuickLinks?:
@@ -10236,6 +10244,10 @@ export interface Dealer {
    */
   dealerType: 'dealer' | 'branch' | 'technician';
   /**
+   * Online / e-commerce account rather than an RSM-managed brick-and-mortar dealer (e.g. Sam Ash, Sweetwater, Musician's Friend)
+   */
+  ecommerceDealer?: boolean | null;
+  /**
    * Authorized to sell Shigeru Kawai SK Series grands
    */
   shigeruKawaiDealer?: boolean | null;
@@ -10317,6 +10329,10 @@ export interface Dealer {
         }[]
       | null;
   };
+  /**
+   * Regional Sales Manager contact email. Internal only — read access is restricted to authenticated users and this field is never returned by the public dealer API.
+   */
+  rsmEmail?: string | null;
   /**
    * Sales territory / rep name (e.g., "Kerry McCoy", "Western Canada")
    */
@@ -11602,6 +11618,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
+  enableRsmLeadNotifications?: T;
   searchQuickLinks?:
     | T
     | {
@@ -12678,6 +12695,7 @@ export interface DealersSelect<T extends boolean = true> {
         longitude?: T;
       };
   dealerType?: T;
+  ecommerceDealer?: T;
   shigeruKawaiDealer?: T;
   acousticPianoDealer?: T;
   professionalProductDealer?: T;
@@ -12711,6 +12729,7 @@ export interface DealersSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  rsmEmail?: T;
   region?: T;
   paymentTerms?: T;
   seo?:
