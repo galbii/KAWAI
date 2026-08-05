@@ -14,18 +14,23 @@ import { cn } from '@/lib/utils'
  */
 export function ZipTestTool() {
   const [zip, setZip] = useState('')
+  const [password, setPassword] = useState('')
+  const [unlocked, setUnlocked] = useState(false)
   const [result, setResult] = useState<ZipTestResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
 
   const run = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!zip.trim() || loading) return
+    if (!zip.trim() || !password || loading) return
     setLoading(true)
     setResult(null)
     setSelectedDealer(null)
     try {
-      const res = await testRsmRouting(zip)
+      // Password is verified server-side on every call — this state only
+      // controls whether we keep showing the input.
+      const res = await testRsmRouting(zip, password)
+      if (res.success || res.message !== 'Incorrect password.') setUnlocked(true)
       setResult(res)
       setSelectedDealer(res.matchedDealerId ?? null)
     } catch {
@@ -41,7 +46,18 @@ export function ZipTestTool() {
   return (
     <div className="space-y-6">
       {/* — Input — */}
-      <form onSubmit={run} className="flex gap-3">
+      <form onSubmit={run} className="flex flex-wrap gap-3">
+        {!unlocked && (
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-label="Access password"
+            placeholder="Access password"
+            autoComplete="off"
+            className="h-11 w-full max-w-[180px] rounded-md border border-kawai-neutral bg-white px-4 text-sm text-kawai-black outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+          />
+        )}
         <input
           type="text"
           value={zip}

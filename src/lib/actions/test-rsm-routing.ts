@@ -10,9 +10,9 @@
  * ZIP/postal code WOULD have gone.
  *
  * ⚠️ This action intentionally returns internal-only data (`rsmEmail`) to the
- * browser, which the production pipeline never does. It is therefore disabled
- * in production unless ZIP_TEST_TOOL_ENABLED=true is explicitly set. Delete
- * the page + this action when testing wraps up.
+ * browser, which the production pipeline never does. It is therefore
+ * password-gated (checked server-side on every call). Delete the page + this
+ * action when testing wraps up.
  */
 
 import { z } from 'zod'
@@ -53,13 +53,12 @@ export interface ZipTestResult {
 
 const zipSchema = z.string().trim().min(3).max(10)
 
-function isToolEnabled(): boolean {
-  return process.env.NODE_ENV !== 'production' || process.env.ZIP_TEST_TOOL_ENABLED === 'true'
-}
+/** Shared access password for the internal test page (override via env). */
+const TEST_TOOL_PASSWORD = process.env.ZIP_TEST_TOOL_PASSWORD ?? 'Kawai1927'
 
-export async function testRsmRouting(zip: string): Promise<ZipTestResult> {
-  if (!isToolEnabled()) {
-    return { success: false, message: 'Test tool is disabled in production.' }
+export async function testRsmRouting(zip: string, password: string): Promise<ZipTestResult> {
+  if (password !== TEST_TOOL_PASSWORD) {
+    return { success: false, message: 'Incorrect password.' }
   }
 
   const parsed = zipSchema.safeParse(zip)

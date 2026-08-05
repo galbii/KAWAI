@@ -8,8 +8,8 @@ import { ZipTestTool } from './ZipTestTool'
  * notification WOULD be sent (nearest dealer's rsmEmail or the fallback
  * inbox), with the candidate dealers on the find-a-dealer map. Sends nothing.
  *
- * Not linked from anywhere, noindexed, and the backing action is disabled in
- * production unless ZIP_TEST_TOOL_ENABLED=true. Delete after testing.
+ * Not linked from anywhere, noindexed, and the backing action is password-
+ * gated (verified server-side on every call). Delete after testing.
  */
 
 export const metadata: Metadata = {
