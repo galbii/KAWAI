@@ -26,11 +26,14 @@ import { cn } from '@/lib/utils'
  * phone) so they map 1:1; override per-field with `hubspotName` when they differ.
  */
 
+/** Option for a `select` or `checkbox-group` field. `value` must match HubSpot's internal value. */
+export type PreFormOption = { label: string; value: string }
+
 export type PreFormField = {
   /** Field key + react-hook-form name. Defaults to the HubSpot internal name. */
   name: string
   label: string
-  type?: 'text' | 'email' | 'tel'
+  type?: 'text' | 'email' | 'tel' | 'select' | 'checkbox-group'
   placeholder?: string
   required?: boolean
   icon?: React.ComponentType<{ className?: string }>
@@ -39,6 +42,8 @@ export type PreFormField = {
   step?: number
   /** HubSpot field internal name for submission. Defaults to `name`. */
   hubspotName?: string
+  /** Choices for `select` / `checkbox-group`. Ignored by text-style fields. */
+  options?: readonly PreFormOption[]
   /** Validation rules. `email` enforces an email shape; otherwise min-length / pattern. */
   validation?: {
     email?: boolean
@@ -47,7 +52,32 @@ export type PreFormField = {
   }
 }
 
+/**
+ * Values handed to `onComplete` and submitted to HubSpot — always strings.
+ * A `checkbox-group` is flattened to HubSpot's multi-select wire format (a
+ * single semicolon-separated string) before it gets here.
+ */
 export type PreFormValues = Record<string, string>
+
+/** Internal react-hook-form state. Only `checkbox-group` fields hold arrays. */
+type FormState = Record<string, string | string[]>
+
+/** HubSpot represents a multi-checkbox value as one `;`-joined string. */
+const HUBSPOT_MULTI_SEPARATOR = ';'
+
+function isCheckboxGroup(f: PreFormField): boolean {
+  return f.type === 'checkbox-group'
+}
+
+/** Flatten form state into the string-only shape HubSpot (and `onComplete`) expect. */
+function toSubmissionValues(state: FormState): PreFormValues {
+  return Object.fromEntries(
+    Object.entries(state).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value.join(HUBSPOT_MULTI_SEPARATOR) : (value ?? ''),
+    ]),
+  )
+}
 
 type Props = {
   /** HubSpot portal + form GUID the collected values are submitted to. */
@@ -128,11 +158,51 @@ const DEFAULT_FIELDS: PreFormField[] = [
       },
     },
   },
+  {
+    // Required on the HubSpot form — omitting it makes the API reject the whole
+    // submission ("Required field 'piano_type' is missing"), so it must be
+    // required here too. Values must match HubSpot's option values exactly.
+    name: 'piano_type',
+    label: 'What are you shopping for?',
+    type: 'checkbox-group',
+    required: true,
+    step: 1,
+    helpText: 'Select all that interest you.',
+    options: [
+      { label: 'Grand Piano', value: 'Grand Piano' },
+      { label: 'Upright Piano', value: 'Upright Piano' },
+      { label: 'Hybrid Piano', value: 'Hybrid Piano' },
+      { label: 'Digital Piano', value: 'Digital Piano' },
+      { label: 'Accessories', value: 'Accessories' },
+    ],
+  },
+  {
+    // Optional on the HubSpot form — blank values are stripped before the POST.
+    name: 'when_are_you_looking_to_purchase_',
+    label: 'When are you looking to purchase?',
+    type: 'select',
+    placeholder: 'Please select',
+    step: 1,
+    options: [
+      { label: 'Within 30 days', value: 'within_30_days' },
+      { label: '1-3 months', value: '1_3_months' },
+      { label: '3-6 months', value: '3_6_months' },
+      { label: 'Just researching', value: 'just_researching' },
+    ],
+  },
 ]
 
 function buildSchema(fields: PreFormField[]) {
   const shape: Record<string, z.ZodTypeAny> = {}
   for (const f of fields) {
+    if (isCheckboxGroup(f)) {
+      // react-hook-form collects same-named checkboxes into an array of the
+      // checked `value`s, so "required" here means "at least one selected".
+      const arr = z.array(z.string())
+      shape[f.name] = f.required ? arr.min(1, `${f.label} is required`) : arr
+      continue
+    }
+
     let schema: z.ZodString
     if (f.validation?.email) {
       schema = z.string().email('Enter a valid email address')
@@ -159,6 +229,25 @@ const primaryButton = cn(
   'font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-white',
   'transition-all duration-300 hover:bg-kawai-red/90 hover:shadow-[0_8px_32px_rgba(225,25,34,0.45)]',
   'disabled:opacity-60',
+)
+
+/** Matches the `<Label>` used by FormField so all field types read as one form. */
+const fieldLabel = 'flex items-center text-sm leading-none font-medium text-foreground select-none'
+
+/** Mirrors the `<Input>` control styling so the select sits flush with the text fields. */
+const selectControl = cn(
+  'border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] md:text-sm',
+  'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+  'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+)
+
+/** Tappable pill wrapping each checkbox — the whole pill is the label/hit target. */
+const checkboxPill = cn(
+  'inline-flex cursor-pointer items-center gap-2 rounded-full border border-input px-4 py-2',
+  'text-sm text-kawai-charcoal transition-colors duration-200',
+  'hover:border-kawai-red/50 hover:text-kawai-black',
+  'has-[:checked]:border-kawai-red has-[:checked]:bg-kawai-red/5 has-[:checked]:text-kawai-black',
+  'has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50',
 )
 
 const secondaryButton = cn(
@@ -195,8 +284,8 @@ export function TwoStepHubSpotForm({
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const defaultValues = useMemo<PreFormValues>(
-    () => Object.fromEntries(fields.map((f) => [f.name, ''])),
+  const defaultValues = useMemo<FormState>(
+    () => Object.fromEntries(fields.map((f) => [f.name, isCheckboxGroup(f) ? [] : ''])),
     [fields],
   )
 
@@ -205,8 +294,8 @@ export function TwoStepHubSpotForm({
     handleSubmit,
     trigger,
     formState: { errors, isSubmitting },
-  } = useForm<PreFormValues>({
-    resolver: zodResolver(schema) as Resolver<PreFormValues>,
+  } = useForm<FormState>({
+    resolver: zodResolver(schema) as Resolver<FormState>,
     defaultValues,
     mode: 'onBlur',
   })
@@ -220,9 +309,12 @@ export function TwoStepHubSpotForm({
     if (valid) setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
 
-  const finish = async (data: PreFormValues) => {
+  const finish = async (state: FormState) => {
     setSubmitError(null)
     try {
+      // Flatten checkbox arrays to HubSpot's `;`-joined format before anything
+      // downstream sees them, so `onComplete` keeps its string-only contract.
+      const data = toSubmissionValues(state)
       const augmented = (await onComplete?.(data)) ?? undefined
       const finalData = augmented ?? data
 
@@ -312,20 +404,82 @@ export function TwoStepHubSpotForm({
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="space-y-4"
         >
-          {currentStep?.fields.map((f) => (
-            <FormField
-              key={f.name}
-              name={f.name}
-              label={f.label}
-              register={register}
-              error={errors[f.name]}
-              {...(f.type !== undefined && { type: f.type })}
-              {...(f.placeholder !== undefined && { placeholder: f.placeholder })}
-              {...(f.required !== undefined && { required: f.required })}
-              {...(f.icon !== undefined && { icon: f.icon })}
-              {...(f.helpText !== undefined && { helpText: f.helpText })}
-            />
-          ))}
+          {currentStep?.fields.map((f) => {
+            const errorMessage = errors[f.name]?.message as string | undefined
+
+            if (f.type === 'checkbox-group') {
+              return (
+                <fieldset key={f.name} className="space-y-2">
+                  <legend className={fieldLabel}>
+                    {f.label}
+                    {f.required && <span className="ml-1 text-kawai-red">*</span>}
+                  </legend>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {f.options?.map((opt) => (
+                      <label key={opt.value} className={checkboxPill}>
+                        <input
+                          type="checkbox"
+                          value={opt.value}
+                          className="h-4 w-4 shrink-0 accent-kawai-red"
+                          {...register(f.name)}
+                        />
+                        <span>{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {errorMessage ? (
+                    <p className="text-sm text-kawai-red">{errorMessage}</p>
+                  ) : (
+                    f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
+                  )}
+                </fieldset>
+              )
+            }
+
+            if (f.type === 'select') {
+              return (
+                <div key={f.name} className="space-y-2">
+                  <label htmlFor={f.name} className={fieldLabel}>
+                    {f.label}
+                    {f.required && <span className="ml-1 text-kawai-red">*</span>}
+                  </label>
+                  <select
+                    id={f.name}
+                    aria-invalid={!!errorMessage}
+                    className={selectControl}
+                    {...register(f.name)}
+                  >
+                    <option value="">{f.placeholder ?? 'Please select'}</option>
+                    {f.options?.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errorMessage ? (
+                    <p className="text-sm text-kawai-red">{errorMessage}</p>
+                  ) : (
+                    f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
+                  )}
+                </div>
+              )
+            }
+
+            return (
+              <FormField
+                key={f.name}
+                name={f.name}
+                label={f.label}
+                register={register}
+                error={errorMessage}
+                {...(f.type !== undefined && { type: f.type })}
+                {...(f.placeholder !== undefined && { placeholder: f.placeholder })}
+                {...(f.required !== undefined && { required: f.required })}
+                {...(f.icon !== undefined && { icon: f.icon })}
+                {...(f.helpText !== undefined && { helpText: f.helpText })}
+              />
+            )
+          })}
         </motion.div>
       </AnimatePresence>
 
