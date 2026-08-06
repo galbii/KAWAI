@@ -72,11 +72,8 @@ function getVideoId(collection: NavCollection): string | null {
 
 function getCategoryLabel(collection: NavCollection): string {
   if (collection.pianoCategories && collection.pianoCategories.length > 0) {
-    return collection.pianoCategories
-      .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
-      .join(' · ')
+    return collection.pianoCategories.map((c) => CATEGORY_LABELS[c] ?? c).join(' · ')
   }
-  if (collection.productCount > 0) return `${collection.productCount} Models`
   return 'Collection'
 }
 

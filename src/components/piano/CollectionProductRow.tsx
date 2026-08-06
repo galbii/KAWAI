@@ -276,23 +276,28 @@ export function CollectionProductRow({
         <div className="flex-1 h-px bg-kawai-neutral/50" />
       </motion.div>
 
-      {/* Model — primary heading, desktop only */}
+      {/* Full name — primary heading, desktop only. Sized down from the old model
+          heading: names run several words where a model was 3–4 characters. */}
       <motion.h2
         variants={infoChildVariants}
-        className="hidden lg:block text-6xl xl:text-7xl 2xl:text-8xl text-kawai-black leading-[1.0] mb-3"
+        className={cn(
+          'hidden lg:block text-4xl xl:text-5xl 2xl:text-6xl text-kawai-black leading-[1.05]',
+          product.name ? 'mb-3' : 'mb-8',
+        )}
         style={{ fontFamily: 'var(--font-brand-sans)', fontWeight: 700, letterSpacing: '-0.02em' }}
       >
-        {product.model}
+        {product.name || product.model}
       </motion.h2>
 
-      {/* Full name — subtitle, desktop only */}
+      {/* Model — secondary identifier, desktop only. Suppressed when it is already
+          the heading (product has no name). */}
       {product.name && (
         <motion.p
           variants={infoChildVariants}
-          className="hidden lg:block text-base text-kawai-charcoal/40 mb-8"
+          className="hidden lg:block text-xs tracking-[0.25em] uppercase font-semibold text-kawai-charcoal/40 mb-8"
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          {product.name}
+          {product.model}
         </motion.p>
       )}
 
@@ -454,8 +459,12 @@ export function CollectionProductRow({
               exit="exit"
               className="mb-8"
             >
+              {/* Two distinct reasons land here: the finish is genuinely out of stock,
+                  or it has no Shopify variant and simply isn't sold online. */}
               <p className="text-[11px] tracking-[0.12em] uppercase text-kawai-charcoal/40 mb-4" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-                Out of stock — contact an authorized dealer
+                {selectedVariation.available
+                  ? 'Available through authorized dealers'
+                  : 'Out of stock — contact an authorized dealer'}
               </p>
               <Link
                 href="/find-a-dealer"
@@ -476,19 +485,24 @@ export function CollectionProductRow({
             Finish
           </p>
           <div className="flex flex-wrap gap-3">
+            {/* Out-of-stock finishes stay selectable so the image still swaps — matches
+                ProductHeroBlock. The strikethrough is the availability cue; the
+                out-of-stock notice + Find a Dealer CTA renders above once selected. */}
             {product.variations.map((v, i) => (
               <button
                 key={i}
                 type="button"
-                disabled={!v.available}
+                aria-pressed={i === selectedVariationIndex}
+                aria-label={v.available ? v.name : `${v.name} — out of stock`}
                 onClick={() => setSelectedVariationIndex(i === selectedVariationIndex ? -1 : i)}
                 className={cn(
                   'px-6 py-3 text-[11px] font-semibold tracking-[0.14em] uppercase border transition-all duration-300',
+                  !v.available && 'line-through',
                   i === selectedVariationIndex
                     ? 'border-kawai-black bg-kawai-black text-white'
                     : v.available
                       ? 'border-kawai-black/20 text-kawai-charcoal/70 hover:border-kawai-black hover:text-kawai-black'
-                      : 'opacity-30 cursor-not-allowed line-through border-kawai-black/10 text-kawai-charcoal/30',
+                      : 'border-kawai-black/10 text-kawai-charcoal/40 hover:border-kawai-black/40 hover:text-kawai-charcoal/70',
                 )}
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
               >
@@ -530,14 +544,20 @@ export function CollectionProductRow({
           <div className="flex-1 h-px bg-kawai-neutral/40" />
         </div>
         <h2
-          className="text-5xl font-bold text-kawai-black leading-[1.0] mb-2"
+          className={cn(
+            'text-3xl font-bold text-kawai-black leading-[1.1]',
+            product.name ? 'mb-2' : 'mb-5',
+          )}
           style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '-0.02em' }}
         >
-          {product.model}
+          {product.name || product.model}
         </h2>
         {product.name && (
-          <p className="text-sm text-kawai-charcoal/40 mb-5" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-            {product.name}
+          <p
+            className="text-[11px] tracking-[0.25em] uppercase font-semibold text-kawai-charcoal/40 mb-5"
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            {product.model}
           </p>
         )}
         <div className="w-10 h-[1.5px] bg-kawai-red" />

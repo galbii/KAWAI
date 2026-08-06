@@ -7,6 +7,7 @@ import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
+import { sortStandardFirst } from '@/lib/piano/non-standard-model'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
 import { REBATE_BY_MODEL, REBATE_PROGRAM, normalizeModel } from '@/lib/data/rebates'
@@ -1498,6 +1499,11 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
     if (featuredMap.size > 0) {
       result.docs = sortByFeatured(result.docs as Array<{ shopifyCollections?: { handle?: string | null }[] | null }>, featuredMap) as typeof result.docs
     }
+
+    // Derivatives (limited editions, AURES/ATX hybrid variants) sink below the
+    // core lineup. Applied last and stable, so price + featured order still holds
+    // within each group. See non-standard-model.ts for why this isn't a length test.
+    result.docs = sortStandardFirst(result.docs)
 
     // Enrich each product with live Shopify variant prices in parallel
     const shopifyPriceMap = new Map<string, Map<string, { price: number; compareAtPrice: number | null }>>()

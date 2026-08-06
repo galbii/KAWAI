@@ -144,11 +144,11 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
           </div>
         </div>
 
-        {/* ── Bottom: title + count + CTA ── */}
+        {/* ── Bottom: title + CTA ── */}
         <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-          {/* Title */}
+          {/* Title — absorbs the hover spacing the product count used to provide */}
           <h3
-            className="text-white leading-[1.05] mb-2 transition-transform duration-500 group-hover:-translate-y-1"
+            className="text-white leading-[1.05] mb-2 group-hover:mb-4 transition-all duration-500 group-hover:-translate-y-1"
             style={{
               fontFamily: 'var(--font-brand-sans)',
               fontSize: 'clamp(1.25rem, 2.1vw, 1.65rem)',
@@ -159,14 +159,6 @@ function CollectionCard({ collection, index }: { collection: NavCollection; inde
           >
             {displayTitle}
           </h3>
-
-          {/* Product count */}
-          <p
-            className="text-white/75 text-[11.5px] font-semibold uppercase mb-0 transition-all duration-500 group-hover:mb-4"
-            style={{ fontFamily: 'var(--font-brand-sans)', letterSpacing: '0.18em', textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
-          >
-            {collection.productCount > 0 ? `${collection.productCount} Models` : 'Collection'}
-          </p>
 
           {/* Subheading — only shown on hover */}
           {collection.subheading && (
