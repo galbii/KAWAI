@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 const EFFECTIVE_DATE = 'April 28, 2026'
-const LAST_UPDATED = 'April 28, 2026'
+const LAST_UPDATED = 'August 10, 2026'
 
 const sections = [
   { id: 'overview', label: 'Overview' },
@@ -20,6 +20,7 @@ const sections = [
   { id: 'how-to-return', label: 'How to Return' },
   { id: 'refunds', label: 'Refunds' },
   { id: 'exclusions', label: 'Exclusions' },
+  { id: 'canada', label: 'Orders in Canada' },
   { id: 'contact', label: 'Contact Us' },
 ]
 
@@ -64,9 +65,10 @@ export default function ReturnPolicyPage() {
 
             {/* Intro */}
             <div className="bg-white border border-kawai-neutral rounded-xl p-6 text-kawai-charcoal/80 leading-relaxed" id="overview">
-              These policies apply exclusively to instruments purchased directly from Kawai America at{' '}
-              <strong>kawaius.com</strong>. For instruments purchased through an authorized dealer,
-              please contact that dealer directly regarding their return and exchange policies.
+              These policies apply to instruments purchased directly from Kawai America at{' '}
+              <strong>kawaius.com</strong> or <strong>ca.kawaius.com</strong>. For instruments
+              purchased through an authorized dealer, please contact that dealer directly regarding
+              their return and exchange policies.
             </div>
 
             {/* Section: 15-Day Return Policy */}
@@ -249,6 +251,32 @@ export default function ReturnPolicyPage() {
               </div>
             </section>
 
+            {/* Section: Orders in Canada */}
+            <section id="canada" className="scroll-mt-8">
+              <SectionHeading>Orders in Canada</SectionHeading>
+              <div className="bg-white border border-kawai-neutral rounded-xl p-6 space-y-4">
+                <Prose>
+                  <p>
+                    The 15-day return window, shipping damage window, and defective instrument terms
+                    above apply equally to orders placed on <strong>ca.kawaius.com</strong>, with the
+                    following differences:
+                  </p>
+                </Prose>
+                <div className="mt-2 space-y-2">
+                  {[
+                    'Refunds are issued in Canadian dollars to your original payment method',
+                    'Returns ship to our Canadian returns address, which we will provide when you start a return — please do not ship returns across the border to our California address',
+                    'Nothing in this policy limits any right or remedy you have under the consumer protection legislation of your province or territory',
+                  ].map((item) => (
+                    <div key={item} className="flex gap-3 text-[15px] text-kawai-charcoal/80">
+                      <span className="w-1.5 h-1.5 rounded-full bg-kawai-red shrink-0 mt-2" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
             {/* Section: Contact */}
             <section id="contact" className="scroll-mt-8">
               <SectionHeading>Contact Us</SectionHeading>
@@ -272,10 +300,18 @@ export default function ReturnPolicyPage() {
             {/* Footer note */}
             <div className="border-t border-kawai-neutral pt-8 text-sm text-kawai-charcoal/40">
               <p>
-                This policy applies to instruments purchased directly from kawaius.com only. For
-                warranty information, visit our{' '}
+                This policy applies to instruments purchased directly from kawaius.com or
+                ca.kawaius.com. For warranty terms, see our{' '}
+                <Link href="/warranty" className="text-kawai-red hover:underline">
+                  warranty page
+                </Link>{' '}
+                or{' '}
                 <Link href="/warranty-registration" className="text-kawai-red hover:underline">
-                  warranty registration page
+                  register your instrument
+                </Link>
+                . This policy forms part of our{' '}
+                <Link href="/terms" className="text-kawai-red hover:underline">
+                  Terms of Service
                 </Link>
                 . For dealer purchases, contact your dealer directly.
               </p>

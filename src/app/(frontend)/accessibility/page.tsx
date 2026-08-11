@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   alternates: getStaticAlternates('/accessibility'),
 }
 
-const LAST_REVIEWED = 'July 29, 2026'
+const LAST_REVIEWED = 'August 10, 2026'
 
 const SERIF = 'var(--font-buena-park)' // Playfair Display — display headings
 const SANS = 'var(--font-brand-sans)' // Inter — body
@@ -124,19 +124,41 @@ export default function AccessibilityStatementPage() {
 
             <div className="mt-6 pt-6 border-t border-kawai-neutral space-y-1.5 text-[15px] leading-relaxed text-kawai-charcoal">
               <p>
+                <span className="font-semibold text-kawai-black">By email — </span>
+                <a href="mailto:accessibility@kawaius.com" className={LINK}>
+                  accessibility@kawaius.com
+                </a>
+              </p>
+              <p>
                 <span className="font-semibold text-kawai-black">By mail — </span>
                 Kawai America Corporation, Attn: Accessibility, 2055 East University Drive, Rancho
                 Dominguez, CA 90220
               </p>
               <p className="text-kawai-muted">
-                We will do our best to respond to accessibility feedback promptly.
+                We aim to acknowledge accessibility feedback within five business days, and we will
+                tell you what we intend to do about it.
               </p>
             </div>
           </div>
         </Block>
 
+        <Block label="Ongoing Work">
+          <p>
+            Accessibility is not a one-time project. We review this website on an ongoing basis, and
+            we work to address issues as we find them or as they are reported to us. Some content —
+            including older material, embedded third-party media, and content supplied by
+            independent dealers — may not yet meet the standard we are working toward. We welcome
+            reports about any of it.
+          </p>
+          <p className="mt-5">
+            If any part of this website prevents you from finding the information you need, please
+            contact us using the details above and we will work with you to provide that information
+            in another way.
+          </p>
+        </Block>
+
         <p className="pt-4 text-sm text-kawai-muted" style={{ fontFamily: SANS }}>
-          This statement applies to kawaius.com. See also our{' '}
+          This statement applies to kawaius.com and ca.kawaius.com. See also our{' '}
           <Link href="/privacy" className={LINK}>
             Privacy Policy
           </Link>{' '}

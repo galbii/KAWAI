@@ -27,7 +27,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           '/api/*',
           '/_next/data/*',
           '/ingest/*',
-          '/terms',
         ],
       },
       // ─── Google Shopping crawlers ──────────────────────────────────────────────

@@ -1,29 +1,32 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getStaticAlternates } from '@/lib/site-context'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Kawai Pianos',
   description:
     'Read the Terms of Service for kawaius.com — the rules and conditions that govern your use of our website, products, and services.',
-  alternates: {
-    canonical: '/terms',
-  },
+  alternates: getStaticAlternates('/terms'),
 }
 
 const EFFECTIVE_DATE = 'April 2, 2026'
-const LAST_UPDATED = 'April 2, 2026'
+const LAST_UPDATED = 'August 10, 2026'
 
 const sections = [
   { id: 'agreement', label: 'Agreement to Terms' },
   { id: 'use-of-site', label: 'Use of This Site' },
   { id: 'products-pricing', label: 'Products & Pricing' },
   { id: 'purchases-checkout', label: 'Purchases & Checkout' },
+  { id: 'shipping-delivery', label: 'Shipping & Delivery' },
+  { id: 'returns-warranty', label: 'Returns & Warranty' },
   { id: 'dealer-storefronts', label: 'Dealer Storefronts' },
   { id: 'lead-forms', label: 'Forms & Communications' },
   { id: 'intellectual-property', label: 'Intellectual Property' },
+  { id: 'copyright-dmca', label: 'Copyright Complaints (DMCA)' },
   { id: 'third-party-services', label: 'Third-Party Services' },
   { id: 'disclaimers', label: 'Disclaimers & Liability' },
   { id: 'governing-law', label: 'Governing Law' },
+  { id: 'canada', label: 'Customers in Canada' },
   { id: 'changes', label: 'Changes to These Terms' },
   { id: 'contact', label: 'Contact Us' },
 ]
@@ -69,10 +72,10 @@ export default function TermsOfServicePage() {
 
             {/* Intro */}
             <div className="bg-white border border-kawai-neutral rounded-xl p-6 text-kawai-charcoal/80 leading-relaxed">
-              These Terms of Service govern your use of kawaius.com, operated by Kawai America
-              Corporation. By accessing or using this site — including browsing our catalog,
-              submitting a contact form, or purchasing a piano — you agree to these terms. If you
-              don&apos;t agree, please don&apos;t use the site.
+              These Terms of Service govern your use of kawaius.com and ca.kawaius.com, operated by
+              Kawai America Corporation. By accessing or using either site — including browsing our
+              catalog, submitting a contact form, or purchasing a piano — you agree to these terms.
+              If you don&apos;t agree, please don&apos;t use the site.
             </div>
 
             {/* Section: Agreement to Terms */}
@@ -181,7 +184,7 @@ export default function TermsOfServicePage() {
                   ['Cart storage', 'Your cart is saved in your browser\'s local storage for up to 7 days. Clearing browser data will remove it.'],
                   ['Order confirmation', 'A confirmation email will be sent once your order is placed. This constitutes acceptance of your order.'],
                   ['Cancellations', 'Orders may be cancelled before shipment. Contact us immediately if you need to cancel. Once shipped, our return policy applies.'],
-                  ['Returns & warranty', 'Product returns and warranty claims are governed by the warranty documentation included with your instrument. Contact us at contact@kawaius.com for assistance.'],
+                  ['Returns & warranty', 'See the Returns & Warranty section below for full details, including our 15-day return window.'],
                 ].map(([label, desc]) => (
                   <div key={label} className="bg-white border border-kawai-neutral rounded-xl p-4">
                     <p className="font-semibold text-kawai-charcoal text-sm">{label}</p>
@@ -189,6 +192,71 @@ export default function TermsOfServicePage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            {/* Section: Shipping & Delivery */}
+            <section id="shipping-delivery" className="scroll-mt-8">
+              <SectionHeading>Shipping &amp; Delivery</SectionHeading>
+              <Prose>
+                <p>
+                  For orders placed directly on this site, we ship in-stock items within{' '}
+                  <strong>5–10 business days</strong> of order confirmation unless a different
+                  timeframe is stated on the product page at the time you order. Acoustic pianos and
+                  other large instruments ship by freight carrier, and the carrier will contact you
+                  separately to schedule a delivery appointment after the instrument leaves our
+                  warehouse.
+                </p>
+              </Prose>
+              <div className="mt-4 bg-white border border-kawai-neutral rounded-xl p-5">
+                <h3 className="font-semibold text-kawai-charcoal mb-1">If we can&apos;t ship on time</h3>
+                <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                  If we are unable to ship your order within the stated timeframe, we will notify you,
+                  provide a revised shipping date, and give you the option to cancel your order for a
+                  full refund. If we cannot provide a revised date, or if you do not accept the
+                  revised date, we will cancel the order and refund you in full.
+                </p>
+              </div>
+              <Prose>
+                <p className="mt-4">
+                  Delivery timeframes are estimates and do not account for delays caused by the
+                  carrier, weather, or other circumstances outside our control. Risk of loss passes
+                  to you upon delivery.
+                </p>
+              </Prose>
+            </section>
+
+            {/* Section: Returns & Warranty */}
+            <section id="returns-warranty" className="scroll-mt-8">
+              <SectionHeading>Returns &amp; Warranty</SectionHeading>
+              <Prose>
+                <p>
+                  Instruments purchased directly from this site may be returned within{' '}
+                  <strong>15 days of delivery</strong>, subject to the conditions set out in our{' '}
+                  <Link href="/return-policy" className="text-kawai-red hover:underline">
+                    Return Policy
+                  </Link>
+                  , which is incorporated into these Terms. Instruments purchased from an authorized
+                  dealer are subject to that dealer&apos;s return policy, not ours.
+                </p>
+                <p>
+                  Every new Kawai instrument comes with a written manufacturer&apos;s warranty. You
+                  can read the full warranty terms before you buy at{' '}
+                  <Link href="/warranty" className="text-kawai-red hover:underline">
+                    kawaius.com/warranty
+                  </Link>{' '}
+                  —{' '}
+                  <Link href="/warranty/acoustic" className="text-kawai-red hover:underline">
+                    acoustic
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/warranty/digital" className="text-kawai-red hover:underline">
+                    digital
+                  </Link>{' '}
+                  warranties are published separately. You may also request a free printed copy of
+                  any warranty before purchase by writing to us at the address in the Contact
+                  section below.
+                </p>
+              </Prose>
             </section>
 
             {/* Section: Dealer Storefronts */}
@@ -298,6 +366,57 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
+            {/* Section: Copyright Complaints (DMCA) */}
+            <section id="copyright-dmca" className="scroll-mt-8">
+              <SectionHeading>Copyright Complaints (DMCA)</SectionHeading>
+              <Prose>
+                <p>
+                  This site hosts content supplied by authorized dealers, artists, and other third
+                  parties. If you believe material on kawaius.com infringes your copyright, you may
+                  send a notice to our designated copyright agent under the Digital Millennium
+                  Copyright Act.
+                </p>
+                <p>Your notice must include all of the following:</p>
+              </Prose>
+              <div className="mt-4 bg-white border border-kawai-neutral rounded-xl divide-y divide-kawai-neutral">
+                {[
+                  'A physical or electronic signature of the copyright owner or a person authorized to act on their behalf',
+                  'Identification of the copyrighted work you claim has been infringed',
+                  'Identification of the material you claim is infringing, with enough detail for us to locate it (including the URL)',
+                  'Your name, mailing address, telephone number, and email address',
+                  'A statement that you have a good-faith belief the use is not authorized by the copyright owner, its agent, or the law',
+                  'A statement, under penalty of perjury, that the information in your notice is accurate and that you are the copyright owner or authorized to act on their behalf',
+                ].map((item) => (
+                  <div key={item} className="flex gap-3 p-5 text-[15px] text-kawai-charcoal/80 leading-relaxed">
+                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-kawai-red shrink-0" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 bg-white border border-kawai-neutral rounded-xl p-6 space-y-2 text-[15px] text-kawai-charcoal/80">
+                <p className="font-semibold text-kawai-charcoal">Designated Copyright Agent</p>
+                <p>
+                  <span className="font-medium text-kawai-charcoal">Email: </span>
+                  <a href="mailto:copyright@kawaius.com" className="text-kawai-red hover:underline">
+                    copyright@kawaius.com
+                  </a>
+                </p>
+                <p>
+                  <span className="font-medium text-kawai-charcoal">Mail: </span>
+                  Kawai America Corporation, Attn: Copyright Agent, 2055 East University Drive,
+                  Rancho Dominguez, CA 90220
+                </p>
+              </div>
+              <Prose>
+                <p className="mt-4">
+                  We will respond to properly submitted notices by removing or disabling access to
+                  the material in question. If you believe your material was removed in error, you
+                  may submit a counter-notice to the same address. We may terminate the accounts or
+                  storefronts of repeat infringers.
+                </p>
+              </Prose>
+            </section>
+
             {/* Section: Third-Party Services */}
             <section id="third-party-services" className="scroll-mt-8">
               <SectionHeading>Third-Party Services &amp; Embeds</SectionHeading>
@@ -371,6 +490,23 @@ export default function TermsOfServicePage() {
                   purpose, or non-infringement. We do not warrant that the site will be
                   uninterrupted, error-free, or free of viruses or other harmful components.
                 </p>
+                <p>
+                  <strong>
+                    This disclaimer applies to the website and its content — not to the instruments
+                    we sell.
+                  </strong>{' '}
+                  Kawai instruments are covered by a written manufacturer&apos;s warranty, and
+                  nothing in these Terms limits, modifies, or disclaims that warranty or any implied
+                  warranty that accompanies it.
+                </p>
+                <p>
+                  Some states and provinces do not allow the exclusion of implied warranties or the
+                  limitation of incidental or consequential damages, so some of the exclusions and
+                  limitations in this section may not apply to you. In that case, our liability is
+                  limited to the minimum extent permitted by applicable law. This section gives you
+                  specific legal rights, and you may also have other rights that vary by
+                  jurisdiction.
+                </p>
               </Prose>
 
               <SubHeading>Limitation of liability</SubHeading>
@@ -431,6 +567,132 @@ export default function TermsOfServicePage() {
                   </p>
                 </div>
               </div>
+
+              {/*
+                ───────────────────────────────────────────────────────────────────
+                DRAFT — BINDING ARBITRATION & CLASS ACTION WAIVER — NOT YET LIVE
+                ───────────────────────────────────────────────────────────────────
+                Deliberately commented out pending outside-counsel review. Do NOT
+                uncomment without sign-off.
+
+                Why this matters: this is the primary structural defense against
+                privacy class actions (CIPA / wiretap-theory pixel claims), which
+                target California retail sites heavily. The site runs the Meta
+                Pixel on an opt-out basis for US visitors (see
+                src/components/CookieConsentBanner.tsx), which is the exact fact
+                pattern those suits plead.
+
+                IMPORTANT — this clause is close to worthless while the Terms are
+                browsewrap (footer link only). Enforceability depends on assent.
+                Before going live, pair it with clickwrap: a checkbox at checkout
+                and "By submitting, you agree to the Terms" on every lead form.
+                Right now only ContactFormWithUTM.tsx carries that line.
+
+                Counsel should confirm: the 30-day opt-out mechanism (usually what
+                keeps these enforceable), the arbitration provider and rules, who
+                pays fees, and the small-claims carve-out.
+
+                <div className="mt-4 space-y-4">
+                  <div className="bg-white border border-kawai-neutral rounded-xl p-5">
+                    <h3 className="font-semibold text-kawai-charcoal mb-1">
+                      Binding arbitration
+                    </h3>
+                    <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                      Except as set out below, you and Kawai agree that any dispute, claim, or
+                      controversy arising out of or relating to these Terms, your use of this site,
+                      or any product purchased through it will be resolved by binding individual
+                      arbitration administered by [PROVIDER] under its consumer arbitration rules,
+                      rather than in court. The arbitrator, and not any federal, state, or local
+                      court, has exclusive authority to resolve any dispute about the
+                      interpretation, applicability, enforceability, or formation of this
+                      agreement to arbitrate. Judgment on the award may be entered in any court
+                      with jurisdiction.
+                    </p>
+                  </div>
+                  <div className="bg-white border border-kawai-neutral rounded-xl p-5">
+                    <h3 className="font-semibold text-kawai-charcoal mb-1">
+                      Class action waiver
+                    </h3>
+                    <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                      You and Kawai agree that each may bring claims against the other only in an
+                      individual capacity, and not as a plaintiff or class member in any purported
+                      class, collective, consolidated, or representative proceeding. The arbitrator
+                      may not consolidate more than one person&apos;s claims and may not preside
+                      over any form of class or representative proceeding. If this class action
+                      waiver is found to be unenforceable as to a particular claim, that claim —
+                      and only that claim — will be severed and brought in court.
+                    </p>
+                  </div>
+                  <div className="bg-white border border-kawai-neutral rounded-xl p-5">
+                    <h3 className="font-semibold text-kawai-charcoal mb-1">
+                      Your right to opt out
+                    </h3>
+                    <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                      You may opt out of this arbitration agreement within 30 days of first
+                      accepting these Terms by sending written notice to Kawai America
+                      Corporation, Attn: Legal, 2055 East University Drive, Rancho Dominguez, CA
+                      90220, or by emailing legal@kawaius.com with the subject line
+                      &quot;Arbitration Opt-Out.&quot; Your notice must include your name, address,
+                      and a clear statement that you do not wish to resolve disputes through
+                      arbitration. Opting out will not affect any other part of these Terms, and
+                      we will not treat it as a reason to refuse you service.
+                    </p>
+                  </div>
+                  <div className="bg-white border border-kawai-neutral rounded-xl p-5">
+                    <h3 className="font-semibold text-kawai-charcoal mb-1">
+                      Exceptions
+                    </h3>
+                    <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                      Either party may bring an individual claim in small claims court, and either
+                      party may seek injunctive relief in court to protect its intellectual
+                      property rights. Nothing in this section prevents you from reporting a
+                      concern to any government agency, and this arbitration agreement does not
+                      apply where it is prohibited by applicable law — including, without
+                      limitation, for consumers resident in Canada, whose rights are described in
+                      the Customers in Canada section below.
+                    </p>
+                  </div>
+                </div>
+                ───────────────────────────────────────────────────────────────────
+              */}
+            </section>
+
+            {/* Section: Customers in Canada */}
+            <section id="canada" className="scroll-mt-8">
+              <SectionHeading>Customers in Canada</SectionHeading>
+              <Prose>
+                <p>
+                  We operate a Canadian version of this site at{' '}
+                  <strong>ca.kawaius.com</strong>, where prices are shown in Canadian dollars and
+                  checkout is handled through our Canadian store. These Terms apply there as well,
+                  with the following differences.
+                </p>
+              </Prose>
+              <div className="mt-4 space-y-4">
+                {[
+                  {
+                    heading: 'Your consumer rights are not waived',
+                    body: 'Nothing in these Terms limits any right or remedy you have under the consumer protection legislation of your province or territory. Where those laws conflict with these Terms — including the governing law and jurisdiction provisions above — the legislation of your province or territory prevails, and you may bring a claim in the courts of your own province.',
+                  },
+                  {
+                    heading: 'Marketing emails (CASL)',
+                    body: 'We send commercial electronic messages to Canadian recipients only with your consent, or where we have implied consent because of an existing business relationship or a recent inquiry. Every message identifies Kawai America Corporation, includes our contact information, and contains a working unsubscribe link that we honor promptly.',
+                  },
+                  {
+                    heading: 'Privacy',
+                    body: 'Personal information collected from Canadian visitors is handled in accordance with PIPEDA and, for Quebec residents, Quebec\'s Law 25. See our Privacy Policy for your access, correction, and withdrawal-of-consent rights.',
+                  },
+                  {
+                    heading: 'Pricing, duties, and taxes',
+                    body: 'Prices on ca.kawaius.com are in Canadian dollars. Applicable federal and provincial taxes are calculated at checkout. Products ordered from the Canadian store ship within Canada.',
+                  },
+                ].map(({ heading, body }) => (
+                  <div key={heading} className="bg-white border border-kawai-neutral rounded-xl p-5">
+                    <h3 className="font-semibold text-kawai-charcoal mb-1">{heading}</h3>
+                    <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">{body}</p>
+                  </div>
+                ))}
+              </div>
             </section>
 
             {/* Section: Changes */}
@@ -439,10 +701,12 @@ export default function TermsOfServicePage() {
               <Prose>
                 <p>
                   We may update these Terms from time to time. When we do, we will update the
-                  &quot;Last Updated&quot; date at the top of this page. Material changes will be
-                  communicated via email to users with an active account or recent purchase history.
-                  Continued use of kawaius.com after changes are posted constitutes your acceptance
-                  of the updated Terms.
+                  &quot;Last Updated&quot; date at the top of this page. If we make a material
+                  change, we will give reasonable advance notice — by posting a notice on this site
+                  and, where we have your email address and the change affects an order you have
+                  placed, by email. Changes are not retroactive and do not apply to any order placed
+                  before the change took effect. Continued use of the site after changes are posted
+                  constitutes your acceptance of the updated Terms.
                 </p>
                 <p>
                   We encourage you to review these Terms periodically. You can always find the
@@ -478,10 +742,14 @@ export default function TermsOfServicePage() {
             {/* Footer note */}
             <div className="border-t border-kawai-neutral pt-8 text-sm text-kawai-charcoal/40">
               <p>
-                These Terms apply to kawaius.com and all dealer storefronts hosted on this domain.
-                For privacy-related questions, see our{' '}
+                These Terms apply to kawaius.com and ca.kawaius.com, including all dealer
+                storefronts hosted on those domains. For privacy-related questions, see our{' '}
                 <Link href="/privacy" className="text-kawai-red hover:underline">
                   Privacy Policy
+                </Link>
+                . For returns, see our{' '}
+                <Link href="/return-policy" className="text-kawai-red hover:underline">
+                  Return Policy
                 </Link>
                 . For product questions, visit{' '}
                 <Link href="/pianos" className="text-kawai-red hover:underline">

@@ -56,16 +56,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Require Payload dashboard login to view /terms
-  if (pathname === '/terms') {
-    const token = request.cookies.get('payload-token')
-    if (!token) {
-      const loginUrl = new URL('/admin', request.url)
-      loginUrl.searchParams.set('redirect', '/terms')
-      return NextResponse.redirect(loginUrl)
-    }
-  }
-
   // Add the pathname to headers so server components can access it
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
@@ -154,6 +144,5 @@ export const config = {
      */
     '/((?!api|admin|_next/static|_next/image|favicon.ico).*)',
     '/api/access',
-    '/terms',
   ],
 }

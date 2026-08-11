@@ -198,6 +198,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/technical-support-division', { changeFrequency: 'monthly', priority: 0.55, usOnly: true })
     add('/digital-piano-rebate', { changeFrequency: 'monthly', priority: 0.65, usOnly: true })
     add('/privacy', { changeFrequency: 'yearly', priority: 0.3 })
+    add('/terms', { changeFrequency: 'yearly', priority: 0.3 })
     add('/return-policy', { changeFrequency: 'yearly', priority: 0.3 })
     add('/accessibility', { changeFrequency: 'yearly', priority: 0.3 })
 

@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 }
 
 const EFFECTIVE_DATE = 'April 2, 2026'
-const LAST_UPDATED = 'April 2, 2026'
+const LAST_UPDATED = 'August 10, 2026'
 
 const sections = [
   { id: 'who-we-are', label: 'Who We Are' },
   { id: 'what-we-collect', label: 'What We Collect' },
   { id: 'how-we-use-it', label: 'How We Use It' },
-  { id: 'what-we-dont-do', label: "What We Don't Do" },
+  { id: 'what-we-dont-do', label: 'Advertising & Data Sharing' },
   { id: 'third-parties', label: 'Third-Party Services' },
   { id: 'data-retention', label: 'Data Retention' },
   { id: 'your-rights', label: 'Your Rights' },
@@ -83,9 +83,18 @@ export default function PrivacyPolicyPage() {
                   the manufacturer and direct seller of Kawai pianos through kawaius.com.
                 </p>
                 <p>
-                  When you purchase from kawaius.com, you are buying directly from Kawai — not a
-                  third-party retailer or marketplace. Your data is handled by us, not passed
-                  through a dealer network.
+                  When you purchase directly from kawaius.com, you are buying from Kawai — not a
+                  third-party retailer or marketplace, and your order data is handled by us.
+                </p>
+                <p>
+                  One exception worth calling out: if you submit a contact form, appointment request,
+                  or trade-in inquiry through a dealer storefront on this site (for example{' '}
+                  <code className="text-sm bg-kawai-pearl px-1.5 py-0.5 rounded">
+                    kawaius.com/store/dealer-name
+                  </code>
+                  ), we share that submission with the authorized dealer for that location so they
+                  can follow up with you. Dealers are independent businesses and use your
+                  information under their own privacy practices.
                 </p>
               </Prose>
             </section>
@@ -98,7 +107,7 @@ export default function PrivacyPolicyPage() {
               <ul className="space-y-2 text-kawai-charcoal/80 text-[15px] leading-relaxed mb-6 list-none pl-0">
                 {[
                   ['Name, email, phone, address', 'When you make a purchase, fill out a contact form, or sign up for our newsletter'],
-                  ['Payment information', 'Processed securely by Stripe. We never store your full card number.'],
+                  ['Payment information', 'Processed securely by Shopify at checkout. Kawai never receives or stores your full card number.'],
                   ['Order and communication history', 'So we can help you if you need support or have a warranty claim'],
                 ].map(([label, desc]) => (
                   <li key={label} className="flex gap-3 bg-white border border-kawai-neutral rounded-lg p-4">
@@ -162,14 +171,34 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            {/* Section: What We Don't Do */}
+            {/* Section: Advertising & Data Sharing */}
             <section id="what-we-dont-do" className="scroll-mt-8">
-              <SectionHeading>What We Don&apos;t Do</SectionHeading>
-              <div className="bg-white border border-kawai-neutral rounded-xl divide-y divide-kawai-neutral">
+              <SectionHeading>Advertising &amp; Data Sharing</SectionHeading>
+              <Prose>
+                <p>
+                  <strong>We do not sell your personal information for money.</strong> We have never
+                  rented or sold customer lists, and we don&apos;t intend to.
+                </p>
+                <p>
+                  We do, however, use standard advertising and analytics tools — including the Meta
+                  Pixel, the Meta Conversions API, and Google Ads tags — that share limited
+                  information about your visit (such as pages viewed and actions taken) with those
+                  platforms so we can measure our advertising and show you relevant ads. Under
+                  California law and several other state privacy laws, this counts as
+                  &quot;sharing&quot; personal information for cross-context behavioral advertising,
+                  even though no money changes hands.
+                </p>
+                <p>
+                  You can turn this off. Decline marketing cookies in the cookie banner and these
+                  tags stop sending data. See <a href="#your-rights" className="text-kawai-red hover:underline">Your Rights</a>{' '}
+                  below for how to submit a formal opt-out request.
+                </p>
+              </Prose>
+              <div className="mt-4 bg-white border border-kawai-neutral rounded-xl divide-y divide-kawai-neutral">
                 {[
-                  'We do not sell your personal information to third parties. Ever.',
-                  'We do not rent or share your contact information with advertisers.',
-                  'We do not use your data to build advertising profiles for other platforms beyond standard retargeting pixels, which you can opt out of.',
+                  'We do not sell your personal information for money, and we do not rent or trade customer lists.',
+                  'We do not share your contact details with other manufacturers, retailers, or data brokers.',
+                  'We do not use sensitive personal information to infer characteristics about you.',
                 ].map((item) => (
                   <div key={item} className="flex gap-3 p-5 text-[15px] text-kawai-charcoal/80 leading-relaxed">
                     <svg className="w-5 h-5 text-kawai-red shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -201,12 +230,17 @@ export default function PrivacyPolicyPage() {
                   </thead>
                   <tbody className="divide-y divide-kawai-neutral bg-white">
                     {[
-                      ['Stripe', 'Payment processing', 'stripe.com/privacy'],
-                      ['Google Analytics', 'Site analytics', 'policies.google.com/privacy'],
+                      ['Shopify', 'Cart, checkout, payment processing & customer CRM', 'shopify.com/legal/privacy'],
+                      ['Meta (Facebook/Instagram)', 'Advertising pixel and server-side conversion tracking', 'facebook.com/policy'],
+                      ['Google Analytics & Tag Manager', 'Site analytics and tag management', 'policies.google.com/privacy'],
                       ['PostHog', 'Product analytics', 'posthog.com/privacy'],
-                      ['Shopify', 'Order management & CRM', 'shopify.com/legal/privacy'],
-                      ['Google Maps', 'Dealer locator', 'policies.google.com/privacy'],
-                      ['Calendly', 'Consultation scheduling', 'calendly.com/privacy'],
+                      ['Google Maps', 'Dealer locator and map embeds', 'policies.google.com/privacy'],
+                      ['Calendly', 'Consultation and appointment scheduling', 'calendly.com/privacy'],
+                      ['HubSpot', 'Warranty registration forms', 'legal.hubspot.com/privacy-policy'],
+                      ['YouTube', 'Embedded product and brand videos', 'youtube.com/t/terms'],
+                      ['Instagram', 'Embedded social content', 'privacycenter.instagram.com'],
+                      ['SoundCloud', 'Embedded audio playback', 'soundcloud.com/pages/privacy'],
+                      ['Cloudflare', 'Content delivery, security & media storage', 'cloudflare.com/privacypolicy'],
                     ].map(([service, purpose, policyUrl]) => (
                       <tr key={service}>
                         <td className="px-4 py-3 font-medium text-kawai-charcoal">{service}</td>
@@ -270,15 +304,34 @@ export default function PrivacyPolicyPage() {
 
               <div className="mt-6 space-y-4">
                 <div className="bg-white border border-kawai-neutral rounded-xl p-5">
-                  <h3 className="font-semibold text-kawai-charcoal mb-1">California Residents (CCPA)</h3>
+                  <h3 className="font-semibold text-kawai-charcoal mb-1">US State Privacy Laws</h3>
                   <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
-                    You have the right to know what personal information we&apos;ve collected,
-                    request deletion, and opt out of any sale of personal information. To exercise
-                    these rights, email{' '}
+                    If you live in California, Colorado, Connecticut, Virginia, Texas, Oregon, or any
+                    other US state with a comprehensive consumer privacy law, you have the right to
+                    know what personal information we hold, to request its correction or deletion,
+                    and to opt out of the sale or sharing of your personal information for targeted
+                    advertising. We honor these rights for all US residents regardless of state.
+                  </p>
+                  <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed mt-2">
+                    You can opt out of advertising and analytics tracking directly by declining
+                    marketing cookies in our cookie banner, or submit a formal request by emailing{' '}
                     <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
                       contact@kawaius.com
                     </a>
-                    .
+                    . We will not discriminate against you for exercising any of these rights.
+                  </p>
+                </div>
+                <div className="bg-white border border-kawai-neutral rounded-xl p-5">
+                  <h3 className="font-semibold text-kawai-charcoal mb-1">Canadian Residents</h3>
+                  <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
+                    If you are in Canada, your personal information is handled in accordance with
+                    PIPEDA and, for Quebec residents, Quebec&apos;s Law 25. You may request access to
+                    or correction of your personal information, withdraw consent to marketing
+                    communications at any time, and request that we stop using your data. Contact{' '}
+                    <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
+                      contact@kawaius.com
+                    </a>{' '}
+                    to make a request.
                   </p>
                 </div>
                 <div className="bg-white border border-kawai-neutral rounded-xl p-5">
@@ -286,8 +339,9 @@ export default function PrivacyPolicyPage() {
                   <p className="text-kawai-charcoal/70 text-[15px] leading-relaxed">
                     Our legal basis for processing your data is contractual necessity (to fulfill
                     your order), legitimate interest (analytics and fraud prevention), and consent
-                    (marketing). You have the right to lodge a complaint with your local data
-                    protection authority.
+                    (marketing). Visitors in the EEA, UK, and Switzerland are asked for consent
+                    before any analytics or advertising tools load. You have the right to lodge a
+                    complaint with your local data protection authority.
                   </p>
                 </div>
               </div>
@@ -307,7 +361,7 @@ export default function PrivacyPolicyPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
                   'SSL/TLS encryption on all pages',
-                  'Payment data handled by PCI-DSS compliant Stripe — we never touch your card data directly',
+                  'Payment data handled by PCI-DSS compliant Shopify checkout — we never touch your card data directly',
                   'Administrative access to customer data requires multi-factor authentication',
                   'Regular security audits of our infrastructure',
                 ].map((item) => (
@@ -360,12 +414,15 @@ export default function PrivacyPolicyPage() {
                 ))}
               </div>
               <p className="mt-4 text-[15px] text-kawai-charcoal/70">
-                You can manage cookie preferences via the cookie banner on your first visit, or by
-                emailing{' '}
-                <a href="mailto:contact@kawaius.com" className="text-kawai-red hover:underline">
-                  contact@kawaius.com
-                </a>
-                .
+                You can accept or decline optional cookies using the cookie banner shown on your
+                first visit. Declining marketing cookies stops our advertising tags from sending
+                data. You can also change your choice at any time by clearing this site&apos;s
+                cookies in your browser, which will bring the banner back.
+              </p>
+              <p className="mt-3 text-[15px] text-kawai-charcoal/70">
+                Visitors in the EEA, UK, and Switzerland are asked for consent before any analytics
+                or advertising cookies are set. Elsewhere, these tools run by default until you
+                decline.
               </p>
             </section>
 
@@ -405,13 +462,18 @@ export default function PrivacyPolicyPage() {
             {/* Footer note */}
             <div className="border-t border-kawai-neutral pt-8 text-sm text-kawai-charcoal/40">
               <p>
-                This policy applies to kawaius.com only. For questions about our instruments, visit{' '}
+                This policy applies to kawaius.com and ca.kawaius.com, including dealer storefronts
+                hosted on those domains. For questions about our instruments, visit{' '}
                 <Link href="/pianos" className="text-kawai-red hover:underline">
                   our piano catalog
                 </Link>{' '}
                 or{' '}
-                <Link href="/contact" className="text-kawai-red hover:underline">
-                  contact us
+                <Link href="/find-a-dealer" className="text-kawai-red hover:underline">
+                  find a dealer near you
+                </Link>
+                . See also our{' '}
+                <Link href="/terms" className="text-kawai-red hover:underline">
+                  Terms of Service
                 </Link>
                 .
               </p>
