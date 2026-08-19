@@ -1,6 +1,7 @@
 'use server'
 
 import { upsertCustomer, addCustomerLocation } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 import { shopifyAdminClient } from '@/lib/shopify/admin-client'
 
 export interface BookingLeadInput {
@@ -54,6 +55,9 @@ async function setMarketingConsent(customerId: string): Promise<void> {
 export async function captureBookingLead(input: BookingLeadInput): Promise<void> {
   const tags: string[] = [...(input.customTags ?? ['baby-grand'])]
   if (input.storeslug) tags.push(input.storeslug)
+
+  // 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+  tags.push(...(await siteTags()))
 
   try {
     const customer = await upsertCustomer({

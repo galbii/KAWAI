@@ -20,6 +20,7 @@
 import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { geocodeZipCode, searchDealers } from '@/lib/utils/dealer-search'
 import type { Dealer } from '@/payload-types'
@@ -84,7 +85,7 @@ export async function submitLeadContact(formData: FormData): Promise<LeadContact
 
   const { firstName, lastName, email, phone, customTags } = parsed.data
 
-  const tags = ['lead-funnel', 'newsletter', ...parseTags(customTags)]
+  const tags = ['lead-funnel', 'newsletter', ...parseTags(customTags), ...(await siteTags())]
 
   try {
     await upsertCustomer({
@@ -141,7 +142,7 @@ export async function submitLeadEmail(
     return { success: false, message: 'Service unavailable. Please try again later.' }
   }
 
-  const tags = ['lead-funnel', ...parseTags(parsed.data.customTags)]
+  const tags = ['lead-funnel', ...parseTags(parsed.data.customTags), ...(await siteTags())]
 
   try {
     await upsertCustomer({ email: parsed.data.email, tags })
@@ -267,7 +268,7 @@ export async function attachDealerToLead(
     // routing tag to the lead created in step 1.
     await upsertCustomer({
       email: parsed.data.email,
-      tags: [`dealer-${parsed.data.dealerSlug}`],
+      tags: [`dealer-${parsed.data.dealerSlug}`, ...(await siteTags())],
     })
     console.log('[Lead Funnel] Dealer attached:', parsed.data.email, parsed.data.dealerSlug)
     return { success: true }

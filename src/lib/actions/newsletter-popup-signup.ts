@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 
 /**
  * Newsletter Popup Signup Server Action
@@ -67,6 +68,9 @@ export async function submitNewsletterPopupSignup(
       .filter((t) => t.length > 0)
     tags.push(...extras)
   }
+
+  // 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+  tags.push(...(await siteTags()))
 
   try {
     await upsertCustomer({

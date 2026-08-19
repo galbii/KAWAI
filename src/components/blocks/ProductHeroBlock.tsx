@@ -1360,11 +1360,13 @@ export function ProductHeroBlock({
 
               </div>
 
-              {/* Subscription nudge */}
-              <p className="text-center text-[10px] text-kawai-muted mt-2">
+              {/* Subscription nudge + tax notice */}
+              <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center text-[10px] text-kawai-muted mt-2">
                 <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-kawai-neutral hover:decoration-kawai-red">
                   3 Month Subscription with your Product Registration
                 </Link>
+                <span aria-hidden="true" className="text-kawai-neutral">|</span>
+                <span>Purchases are subject to sales tax</span>
               </p>
             </div>
 

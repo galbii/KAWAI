@@ -901,6 +901,10 @@ export function ArtistI2LRenderer({
         {/* Background video — single iframe, swapped via key. No fade. */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute inset-0 overflow-hidden bg-kawai-black">
+            {/* Decorative background video: aria-hidden + tabIndex={-1} keep
+                YouTube's player UI out of the accessibility tree and the tab
+                order (axe: aria-prohibited-attr, aria-allowed-attr and
+                button-name all originate inside this frame). */}
             <iframe
               key={current.youtubeId}
               src={`https://www.youtube.com/embed/${current.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${current.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
@@ -908,6 +912,8 @@ export function ArtistI2LRenderer({
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none border-0"
               style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
               title={current.title}
+              aria-hidden="true"
+              tabIndex={-1}
             />
           </div>
         </div>

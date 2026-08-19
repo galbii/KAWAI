@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 
 /**
  * Signup offer lead → Shopify upsert (additive to the HubSpot submission).
@@ -56,7 +57,10 @@ export async function upsertSignupLeadToShopify(
     }
 
     const { firstname, lastname, email, phone, zip } = parsed.data
-    const mergedTags = [...new Set(tags.map((t) => t.trim()).filter(Boolean))]
+    // siteTags() adds 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+    const mergedTags = [
+      ...new Set([...tags.map((t) => t.trim()).filter(Boolean), ...(await siteTags())]),
+    ]
 
     await upsertCustomer({
       email,

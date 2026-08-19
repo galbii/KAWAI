@@ -216,7 +216,7 @@ function CategoryFilterBar({
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red',
                 isActive
                   ? 'bg-kawai-black text-white'
-                  : 'border border-kawai-neutral text-kawai-charcoal/45 hover:border-kawai-charcoal/30 hover:text-kawai-black',
+                  : 'border border-kawai-neutral text-kawai-muted hover:border-kawai-charcoal/30 hover:text-kawai-black',
               )}
               style={{ fontFamily: 'var(--font-brand-sans)' }}
               aria-pressed={isActive}
@@ -286,7 +286,7 @@ export function FeaturedCollectionsGrid({
               <div className="flex items-center gap-3 mb-4">
                 <span className="block w-6 h-px bg-kawai-red" />
                 <p
-                  className="text-[10px] tracking-[0.3em] uppercase font-medium text-kawai-charcoal/40"
+                  className="text-[10px] tracking-[0.3em] uppercase font-medium text-kawai-muted"
                   style={{ fontFamily: 'var(--font-brand-sans)' }}
                 >
                   {eyebrow}
@@ -311,7 +311,7 @@ export function FeaturedCollectionsGrid({
               className={cn(
                 'hidden sm:inline-flex items-center gap-2 flex-shrink-0 ml-8',
                 'text-[10px] tracking-[0.2em] uppercase font-medium',
-                'text-kawai-charcoal/45 hover:text-kawai-black transition-colors duration-200',
+                'text-kawai-muted hover:text-kawai-black transition-colors duration-200',
               )}
               style={{ fontFamily: 'var(--font-brand-sans)' }}
             >

@@ -55,3 +55,7 @@ public/assets/videos/Hero.mp4
 # Superpowers SDD scratch ledger
 .superpowers/
 .a11y-audit/
+
+# Local env backups — never commit (contain live secrets)
+.env*.bak*
+.env.local.bak-*

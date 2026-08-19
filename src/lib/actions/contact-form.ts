@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 import { sendMetaCAPIEvents, buildLeadEvent } from '@/lib/integrations/meta-capi'
 import { headers } from 'next/headers'
 
@@ -126,6 +127,10 @@ export async function submitContactForm(
       if (storefrontSlug) {
         tags.push(storefrontSlug)
       }
+
+      // 'canada' when submitted on ca.kawaius.com — CRM writes always go to
+      // the US store, so the origin has to be carried as a tag.
+      tags.push(...(await siteTags()))
 
       // Create or update customer in Shopify using optimized upsert
       // This uses the customerSet mutation which handles create/update in ONE API call

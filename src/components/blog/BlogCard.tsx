@@ -139,7 +139,7 @@ export function BlogCard({ post, className, featured }: BlogCardProps) {
             {formattedDate ? (
               <time
                 dateTime={publishedDate ?? undefined}
-                className="text-xs text-kawai-charcoal/50 font-[family-name:var(--font-brand-sans)] tracking-wide"
+                className="text-xs text-kawai-muted font-[family-name:var(--font-brand-sans)] tracking-wide"
               >
                 {formattedDate}
               </time>

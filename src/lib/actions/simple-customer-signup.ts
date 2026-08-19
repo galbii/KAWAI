@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 
 /**
  * Simple Customer Signup Server Action
@@ -104,6 +105,9 @@ export async function submitSimpleCustomerSignup(
           .filter(tag => tag.length > 0)
         tags.push(...customTagsArray)
       }
+
+      // 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+      tags.push(...(await siteTags()))
 
       // Create or update customer in Shopify using optimized upsert
       // This handles both new and existing customers in ONE API call

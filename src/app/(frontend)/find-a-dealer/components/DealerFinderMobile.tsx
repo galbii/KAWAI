@@ -530,23 +530,26 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
   const hasProfessional = dealer.professionalProductDealer === true
 
   return (
-    <button
-      onClick={onSelect}
+    // The card container must stay non-interactive: the dealer name below is a
+    // link, and a <button> wrapping an <a> is invalid HTML — it also trips axe's
+    // nested-interactive rule once per dealer (~195x on the homepage). The
+    // "open details" action lives in its own button below, as a sibling of the
+    // links rather than their ancestor. Desktop (DealerCard.tsx) already does this.
+    <div
       className={cn(
-        "w-full bg-white rounded-2xl p-5 text-left transition-all duration-200 active:scale-[0.98]",
+        "w-full bg-white rounded-2xl transition-all duration-200",
         "border-2",
         isSelected
           ? "border-kawai-charcoal shadow-xl shadow-kawai-charcoal/10"
-          : "border-kawai-neutral shadow-md active:border-kawai-charcoal/30"
+          : "border-kawai-neutral shadow-md"
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 px-5 pt-5 mb-3">
         <div className="flex-1 min-w-0">
           {dealer.source === 'storefront' ? (
             <Link
               href={`/store/${dealer.slug}`}
-              onClick={(e) => e.stopPropagation()}
               className="group/name inline-flex items-center gap-2 mb-1"
             >
               <Image
@@ -564,7 +567,6 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
             <div className="text-base font-semibold text-kawai-charcoal leading-tight mb-1">
               <Link
                 href={`/find-a-dealer/${dealer.slug}`}
-                onClick={(e) => e.stopPropagation()}
                 className="inline-block py-1 -my-1 hover:text-kawai-red transition-colors"
               >
                 {dealer.dealerName}
@@ -586,35 +588,57 @@ function MobileDealerCard({ dealer, isSelected, onSelect }: MobileDealerCardProp
         )}
       </div>
 
-      {/* Dealer Type Badges */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {hasShigeru && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-gold/10 text-kawai-gold-on-light text-xs font-medium rounded-full border border-kawai-gold/25">
-            <Star className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
-            <span>Shigeru Kawai</span>
-          </div>
+      {/* Open-details action. aria-label leads with the visible text ("View
+          details") so the accessible name contains it verbatim (WCAG 2.5.3). */}
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-label={`View details: ${dealer.dealerName}`}
+        className={cn(
+          "w-full text-left px-5 pb-5 rounded-b-2xl",
+          "transition-transform duration-200 active:scale-[0.98]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-inset"
         )}
-        {hasAcoustic && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
-            <Piano className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
-            <span>Acoustic</span>
-          </div>
-        )}
-        {hasDigital && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
-            <Briefcase className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
-            <span>Digital</span>
-          </div>
-        )}
-      </div>
-
-      {/* Distance Badge */}
-      {dealer.distance !== undefined && (
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-red/5 text-kawai-red text-xs font-semibold rounded-lg border border-kawai-red/10">
-          <div className="w-1 h-1 rounded-full bg-kawai-red" />
-          {dealer.distance.toFixed(1)} miles away
+      >
+        {/* Dealer Type Badges */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {hasShigeru && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-gold/10 text-kawai-gold-on-light text-xs font-medium rounded-full border border-kawai-gold/25">
+              <Star className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
+              <span>Shigeru Kawai</span>
+            </div>
+          )}
+          {hasAcoustic && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+              <Piano className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
+              <span>Acoustic</span>
+            </div>
+          )}
+          {hasDigital && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-kawai-charcoal/5 text-kawai-charcoal/85 text-xs font-medium rounded-full border border-kawai-charcoal/10">
+              <Briefcase className="w-3 h-3 flex-shrink-0" strokeWidth={2} />
+              <span>Digital</span>
+            </div>
+          )}
         </div>
-      )}
-    </button>
+
+        <div className="flex items-center justify-between gap-3">
+          {/* Distance Badge */}
+          {dealer.distance !== undefined ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-kawai-red/5 text-kawai-red text-xs font-semibold rounded-lg border border-kawai-red/10">
+              <div className="w-1 h-1 rounded-full bg-kawai-red" />
+              {dealer.distance.toFixed(1)} miles away
+            </div>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+
+          <span className="inline-flex items-center gap-1.5 flex-shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-kawai-muted">
+            View details
+            <ArrowRight className="w-3.5 h-3.5" strokeWidth={2} />
+          </span>
+        </div>
+      </button>
+    </div>
   )
 }

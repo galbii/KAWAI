@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 
 const tradeInSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -63,6 +64,8 @@ export async function submitTradeInInquiry(
       `piano-type:${data.pianoType}`,
       `piano-condition:${data.pianoCondition}`,
       ...(data.targetGrand ? [`interested-in:${data.targetGrand}`] : []),
+      // 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+      ...(await siteTags()),
     ]
 
     const noteLines = [

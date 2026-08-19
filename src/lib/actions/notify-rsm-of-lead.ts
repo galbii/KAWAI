@@ -26,10 +26,14 @@
  * Called fire-and-forget from the form's `onComplete` hook (alongside the
  * Shopify upsert): it never throws — HubSpot is the primary CRM and this
  * notification must never block or fail the submission the visitor sees.
+ *
+ * The email markup lives in `src/lib/rsm/lead-email.ts`, shared with the
+ * internal test tool so the test renders the exact email an RSM receives.
+ * Neither the `nearby` nor `test` option is passed here — production output is
+ * unchanged.
  */
 
 import { createHash } from 'node:crypto'
-import { z } from 'zod'
 import { unstable_cache } from 'next/cache'
 import { Resend } from 'resend'
 import { getPayloadClient } from '@/lib/payload/queries'
@@ -41,18 +45,11 @@ import {
   findNearestRsm,
   type RsmMatch,
 } from '@/lib/rsm/routing'
-
-const leadSchema = z.object({
-  firstname: z.string().trim().optional(),
-  lastname: z.string().trim().optional(),
-  email: z.string().email(),
-  phone: z.string().trim().optional(),
-  zip: z.string().trim().min(3).max(10),
-  piano_type: z.string().trim().optional(),
-  when_are_you_looking_to_purchase_: z.string().trim().optional(),
-})
-
-type LeadValues = z.infer<typeof leadSchema>
+import {
+  leadEmailSchema,
+  buildLeadEmailHtml,
+  buildLeadEmailSubject,
+} from '@/lib/rsm/lead-email'
 
 /**
  * CMS kill switch — "RSM Lead Notification Emails" checkbox in the Home Page
@@ -79,75 +76,6 @@ const isRsmNotificationEnabled = unstable_cache(
   { tags: ['home-page'], revalidate: 300 },
 )
 
-/** Escape user-supplied strings before interpolating into email HTML. */
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
-}
-
-function detailRow(label: string, value: string | undefined): string {
-  if (!value) return ''
-  return `
-    <tr>
-      <td style="padding:6px 16px 6px 0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;vertical-align:top">${label}</td>
-      <td style="padding:6px 0;color:#1E1B16;font-size:14px">${escapeHtml(value)}</td>
-    </tr>`
-}
-
-function buildEmailHtml(lead: LeadValues, match: RsmMatch | null, source: string): string {
-  const name = [lead.firstname, lead.lastname].filter(Boolean).join(' ')
-
-  const dealerSection = match
-    ? `
-      <p style="margin:20px 0 8px;font-weight:700;font-size:14px">Matched dealer (nearest to lead)</p>
-      <table style="border-collapse:collapse">
-        ${detailRow('Dealer', match.dealer.dealerName)}
-        ${detailRow(
-          'Location',
-          [match.dealer.address?.city, match.dealer.address?.state].filter(Boolean).join(', '),
-        )}
-        ${detailRow('Distance', `${Math.round(match.distance * 10) / 10} miles from lead`)}
-        ${detailRow('Territory', match.dealer.region ?? undefined)}
-      </table>`
-    : `
-      <p style="margin:20px 0 0;color:#b45309;font-size:13px">
-        ⚠️ No RSM-managed dealer could be matched to this ZIP/postal code —
-        routed to the fallback inbox. Please forward to the right RSM.
-      </p>`
-
-  return `
-    <!DOCTYPE html>
-    <html>
-      <body style="font-family:'Helvetica Neue',Arial,sans-serif;background:#FAF8F5;padding:40px 20px;color:#1E1B16">
-        <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #DBDBDB;border-radius:8px;overflow:hidden">
-          <div style="background:#1E1B16;padding:24px 32px">
-            <p style="margin:0;color:#E11922;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase">New Sales Lead</p>
-            <h1 style="margin:6px 0 0;color:#fff;font-size:20px;font-weight:700">Dealer Discount Signup</h1>
-          </div>
-          <div style="padding:28px 32px;font-size:14px;line-height:1.6">
-            <p style="margin:0 0 16px">A visitor signed up for the dealer discount offer and is waiting to hear from their local Kawai dealer.</p>
-            <table style="border-collapse:collapse">
-              ${detailRow('Name', name || undefined)}
-              ${detailRow('Email', lead.email)}
-              ${detailRow('Phone', lead.phone)}
-              ${detailRow('ZIP / Postal', lead.zip)}
-              ${detailRow('Shopping for', lead.piano_type?.replaceAll(';', ', '))}
-              ${detailRow('Timeframe', lead.when_are_you_looking_to_purchase_?.replaceAll('_', ' '))}
-            </table>
-            ${dealerSection}
-            <p style="margin:24px 0 0;color:#6b7280;font-size:12px">
-              Source: ${escapeHtml(source)} · Reply to this email to reach the lead directly.
-            </p>
-          </div>
-        </div>
-      </body>
-    </html>`
-}
-
 /**
  * Match a signup lead to the nearest dealer's RSM and email them via Resend.
  *
@@ -173,7 +101,7 @@ export async function notifyRsmOfLead(
       return { success: false }
     }
 
-    const parsed = leadSchema.safeParse(values)
+    const parsed = leadEmailSchema.safeParse(values)
     if (!parsed.success) {
       console.error('[notify-rsm] Invalid lead payload:', parsed.error.issues)
       return { success: false }
@@ -200,10 +128,8 @@ export async function notifyRsmOfLead(
         to: [to],
         ...(match ? { bcc: [fallback] } : {}),
         replyTo: lead.email,
-        subject: match
-          ? `New Kawai lead near ${match.dealer.address?.city ?? lead.zip} — ${lead.zip}`
-          : `New Kawai lead — ${lead.zip} (unmatched)`,
-        html: buildEmailHtml(lead, match, source),
+        subject: buildLeadEmailSubject({ lead, match }),
+        html: buildLeadEmailHtml({ lead, match, source }),
         tags: [{ name: 'source', value: source.replace(/[^A-Za-z0-9_-]/g, '_') }],
       },
       {

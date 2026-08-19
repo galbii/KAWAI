@@ -12,6 +12,7 @@
 'use server'
 
 import { upsertCustomer, CustomerError } from '@/lib/shopify/customers'
+import { siteTags } from '@/lib/shopify/site-tags'
 import { sendMetaCAPIEvents, buildLeadEvent } from '@/lib/integrations/meta-capi'
 import { headers } from 'next/headers'
 
@@ -117,7 +118,10 @@ export async function submitContactFormWithUTM(
     new Date().toISOString().slice(0, 7),
 
     // UTM attribution tags (if present)
-    ...utmTags
+    ...utmTags,
+
+    // 'canada' when submitted on ca.kawaius.com (same US-store CRM)
+    ...(await siteTags()),
   ]
 
   // ============================================================================
@@ -254,7 +258,8 @@ export async function submitContactFormSimple(
         `location-${storefront}`,
         `inquiry-${inquiryType}`,
         'source-contact-form',
-        new Date().toISOString().slice(0, 7)
+        new Date().toISOString().slice(0, 7),
+        ...(await siteTags()),
       ]
     })
 
