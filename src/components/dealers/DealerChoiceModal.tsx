@@ -90,6 +90,12 @@ interface Props {
   /** Geocoded centre of the ZIP, used as the map's opening view. */
   center?: { lat: number; lng: number } | null
   onChoose: (dealerId: string | null) => void
+  /**
+   * Fires whenever the highlighted dealer changes, before any confirmation.
+   * Lets a caller capture a half-made choice — someone who tapped a dealer but
+   * never pressed Confirm still had a preference worth carrying through.
+   */
+  onSelectionChange?: (dealerId: string | null) => void
   onDismiss: () => void
   /** Disables the controls while the caller's submit is in flight. */
   pending?: boolean
@@ -101,6 +107,7 @@ export function DealerChoiceModal({
   dealers,
   center = null,
   onChoose,
+  onSelectionChange,
   onDismiss,
   pending = false,
 }: Props) {
@@ -110,7 +117,13 @@ export function DealerChoiceModal({
   // A fresh open is a fresh decision — otherwise reopening the modal for a
   // different ZIP would carry the previous pick's id into the new list.
   useEffect(() => {
-    if (isOpen) setSelected(null)
+    if (isOpen) {
+      setSelected(null)
+      onSelectionChange?.(null)
+    }
+    // `onSelectionChange` is a notification sink, not an input — including it
+    // would re-run this reset whenever the caller re-renders with a new closure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, zip])
 
   // Choosing opens the map above the list, pushing rows down — without this the
@@ -213,7 +226,10 @@ export function DealerChoiceModal({
                     name="kawai-dealer-choice"
                     value={dealer.id}
                     checked={isSelected}
-                    onChange={() => setSelected(dealer.id)}
+                    onChange={() => {
+                      setSelected(dealer.id)
+                      onSelectionChange?.(dealer.id)
+                    }}
                     className="sr-only"
                   />
 

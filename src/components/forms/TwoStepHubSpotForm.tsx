@@ -90,6 +90,13 @@ type Props = {
    * This is the hook for caller-specific logic (dealer routing, extra fields).
    */
   onComplete?: (data: PreFormValues) => PreFormValues | void | Promise<PreFormValues | void>
+  /**
+   * Fires once the confirmation screen has replaced the form — after HubSpot
+   * has accepted the submission. Use this for anything that should appear *on
+   * top of* the success state (e.g. a follow-up modal); `onComplete` runs
+   * before the submit and would race the confirmation.
+   */
+  onSubmitted?: (data: PreFormValues) => void
   continueLabel?: string
   submitLabel?: string
   className?: string
@@ -97,6 +104,13 @@ type Props = {
   dataLayerEvent?: string
   /** Identifies the form in analytics (event_label) + HubSpot `pageName`. */
   formName?: string
+  /**
+   * Dry-run the submit: run validation and `onComplete`/`onSubmitted` and show
+   * the confirmation, but POST nothing to HubSpot and push no analytics event.
+   * For test variants of a page that must exercise the real flow without
+   * writing junk into the CRM.
+   */
+  skipSubmit?: boolean
   /** GDPR consent text — only pass when the HubSpot form has consent enabled. */
   consentText?: string
   /** Confirmation copy shown after a successful submission. */
@@ -260,11 +274,13 @@ export function TwoStepHubSpotForm({
   form,
   fields = DEFAULT_FIELDS,
   onComplete,
+  onSubmitted,
   continueLabel = 'Continue',
   submitLabel = 'Get My Discount',
   className,
   dataLayerEvent = 'signup_form_submitted',
   formName = 'dealer_discount_signup',
+  skipSubmit = false,
   consentText,
   successTitle = 'You’re all set',
   successBody = 'Thanks for signing up. Your local Authorized Kawai dealer will be in touch shortly.',
@@ -322,10 +338,12 @@ export function TwoStepHubSpotForm({
         .map((f) => ({ name: f.hubspotName ?? f.name, value: finalData[f.name] ?? '' }))
         .filter((f) => f.value !== '')
 
-      await submitHubSpotForm(form, hsFields, {
-        pageName: formName,
-        ...(consentText ? { consent: { consentToProcess: true, text: consentText } } : {}),
-      })
+      if (!skipSubmit) {
+        await submitHubSpotForm(form, hsFields, {
+          pageName: formName,
+          ...(consentText ? { consent: { consentToProcess: true, text: consentText } } : {}),
+        })
+      }
 
       // The conversion signal — GTM keys a Custom Event trigger on this for both
       // GA4 and Google Ads. `user_data` powers Google Ads Enhanced Conversions:
@@ -341,15 +359,18 @@ export function TwoStepHubSpotForm({
       if (finalData.phone) userData.phone_number = finalData.phone
       if (Object.keys(address).length) userData.address = address
 
-      window.dataLayer = window.dataLayer ?? []
-      window.dataLayer.push({
-        event: dataLayerEvent,
-        event_category: 'signup',
-        event_label: formName,
-        ...(Object.keys(userData).length ? { user_data: userData } : {}),
-      })
+      if (!skipSubmit) {
+        window.dataLayer = window.dataLayer ?? []
+        window.dataLayer.push({
+          event: dataLayerEvent,
+          event_category: 'signup',
+          event_label: formName,
+          ...(Object.keys(userData).length ? { user_data: userData } : {}),
+        })
+      }
 
       setSubmitted(true)
+      onSubmitted?.(finalData)
     } catch (err) {
       setSubmitError(
         err instanceof Error && err.message

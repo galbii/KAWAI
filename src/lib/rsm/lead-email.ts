@@ -133,8 +133,8 @@ function testBanner({ label, envelope }: LeadEmailTestOptions): string {
     <div style="background:#b45309;padding:14px 32px;color:#fff">
       <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">⚠️ Test email — not a real lead${which}</p>
       <p style="margin:4px 0 0;font-size:12px;line-height:1.5">
-        Sent from the internal lead-routing test tool. Nothing was written to HubSpot or
-        Shopify, and none of the addresses below were contacted.
+        A test copy of a Kawai lead notification, redirected to this inbox. None of the
+        addresses below were contacted.
       </p>${recipients}
     </div>`
 }

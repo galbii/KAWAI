@@ -88,6 +88,14 @@ import { incrementDealerLeadCount } from '@/lib/rsm/lead-counter'
 const isRsmEmailEnabled = () => process.env.LEAD_NOTIFY_RSM_EMAIL === 'true'
 const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'true'
 
+/**
+ * Global test-inbox valve. When LEAD_NOTIFY_TEST_INBOX is set, every lead email
+ * is re-addressed to it and all Bcc is dropped, so no RSM or dealer can be
+ * reached no matter what the enable flags say. Server-side only — nothing the
+ * browser sends can influence a recipient. Unset it to go live.
+ */
+const testInbox = () => process.env.LEAD_NOTIFY_TEST_INBOX?.trim() || null
+
 /** Recipients of one planned email, for both sending and "would have sent" logs. */
 interface Envelope {
   to: string
@@ -184,6 +192,7 @@ export async function notifyRsmOfLead(
     // is an empty string, which `??` happily passes through — that would put a
     // literal '' in To/Bcc and make Resend reject the whole send.
     const fallback = process.env.LEAD_NOTIFY_FALLBACK_EMAIL?.trim() || fromAddress
+    const redirect = testInbox()
     const leadKey = `${lead.email}|${lead.zip}|${choice ? (choice.dealerId ?? 'unsure') : 'none'}`
     const resend = new Resend(apiKey)
 
@@ -209,12 +218,16 @@ export async function notifyRsmOfLead(
         return false
       }
 
+      // Redirect the envelope, never the log — the log must always record the
+      // real routing decision, not the test detour.
+      const actual: Envelope = redirect ? { to: redirect, bcc: [] } : envelope
+
       try {
         const { data, error } = await resend.emails.send(
           {
             from: fromAddress,
-            to: [envelope.to],
-            ...(envelope.bcc.length > 0 ? { bcc: envelope.bcc } : {}),
+            to: [actual.to],
+            ...(actual.bcc.length > 0 ? { bcc: actual.bcc } : {}),
             // Replies go straight to the customer, for RSM and dealer alike.
             replyTo: lead.email,
             subject,
@@ -233,7 +246,11 @@ export async function notifyRsmOfLead(
           console.error(`[notify-rsm] Resend error on ${kind} email:`, error)
           return false
         }
-        console.log(`[notify-rsm] Sent ${kind} email (${data?.id}) ${describe(envelope)}`)
+        console.log(
+          redirect
+            ? `[notify-rsm] Sent ${kind} email (${data?.id}) to TEST INBOX ${redirect} — live routing would have been ${describe(envelope)}`
+            : `[notify-rsm] Sent ${kind} email (${data?.id}) ${describe(envelope)}`,
+        )
         return true
       } catch (err) {
         console.error(`[notify-rsm] Failed to send ${kind} email:`, err)
@@ -251,13 +268,19 @@ export async function notifyRsmOfLead(
       'rsm',
       isRsmEmailEnabled(),
       rsmEnvelope,
-      buildLeadEmailSubject({ lead, match, ...(dealerChoice ? { choice: dealerChoice } : {}) }),
+      buildLeadEmailSubject({
+        lead,
+        match,
+        ...(dealerChoice ? { choice: dealerChoice } : {}),
+        ...(redirect ? { test: {} } : {}),
+      }),
       buildLeadEmailHtml({
         lead,
         match,
         source,
         nearby,
         ...(dealerChoice ? { choice: dealerChoice } : {}),
+        ...(redirect ? { test: { label: 'RSM notification', envelope: rsmEnvelope } } : {}),
       }),
     )
 
@@ -267,12 +290,20 @@ export async function notifyRsmOfLead(
     let dealerSent = false
 
     if (dealerTo && dealerChoice?.kind === 'selected') {
+      const dealerEnvelope: Envelope = { to: dealerTo, bcc: [rsmEnvelope.to] }
       dealerSent = await deliver(
         'dealer',
         isDealerEmailEnabled(),
-        { to: dealerTo, bcc: [rsmEnvelope.to] },
-        buildDealerEmailSubject({ lead }),
-        buildDealerEmailHtml({ lead, dealer: dealerChoice.dealer, source }),
+        dealerEnvelope,
+        buildDealerEmailSubject({ lead, ...(redirect ? { test: {} } : {}) }),
+        buildDealerEmailHtml({
+          lead,
+          dealer: dealerChoice.dealer,
+          source,
+          ...(redirect
+            ? { test: { label: 'Dealer notification', envelope: dealerEnvelope } }
+            : {}),
+        }),
       )
     } else if (dealerChoice?.kind === 'selected') {
       console.log(
