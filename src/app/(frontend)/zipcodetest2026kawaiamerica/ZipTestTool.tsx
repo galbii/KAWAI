@@ -6,28 +6,31 @@ import {
   sendTestRsmEmail,
   type TestSendResult,
 } from '@/lib/actions/test-rsm-routing'
+import { DealerChoiceModal } from '@/components/dealers/DealerChoiceModal'
 import { DealerMapLibre } from '../find-a-dealer/components/DealerMapLibre'
 import type { DealerWithDistance } from '../find-a-dealer/types'
+import type { NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
 import { cn } from '@/lib/utils'
 
 /**
  * Internal ZIP → RSM routing test tool.
  *
  * Two modes against the same lead payload:
- *   - Dry run   — resolves routing only, sends nothing.
- *   - Send test — emails the real production template (plus the 5 closest
- *     dealers) to the operator-supplied test inboxes, so a tester can see
- *     exactly what an RSM receives. Never emails the real RSM.
+ *   - Dry run — resolves routing only, sends nothing, opens no modal.
+ *   - Simulate lead submission — walks the real visitor flow end to end:
+ *     resolve the 5 nearest dealers, open the post-submit dealer picker, then
+ *     email the resulting production template to the operator's test inboxes.
  *
- * Results render the would-be recipient, per-recipient send outcomes, the
- * shared find-a-dealer map centred on the geocoded ZIP, and the ranked
- * candidate table.
+ * Nothing here can reach a real RSM or dealer. The matched RSM address is
+ * reported on this page only (it is no longer printed in the email body), and
+ * the dealer CC is previewed rather than applied.
  */
 
 const INPUT_CLASS =
   'h-11 w-full rounded-md border border-kawai-neutral bg-white px-3 text-sm text-kawai-black outline-none focus-visible:ring-2 focus-visible:ring-kawai-red'
 
-const LABEL_CLASS = 'mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-kawai-charcoal/60'
+const LABEL_CLASS =
+  'mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-kawai-charcoal/60'
 
 /** Prefilled so a tester can fire a send in two clicks. */
 const DEFAULT_LEAD = {
@@ -46,42 +49,94 @@ export function ZipTestTool() {
   const [password, setPassword] = useState('')
   const [unlocked, setUnlocked] = useState(false)
   const [result, setResult] = useState<TestSendResult | null>(null)
-  const [pending, setPending] = useState<'dry' | 'send' | null>(null)
+  const [pending, setPending] = useState<'dry' | 'lookup' | 'send' | null>(null)
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null)
+  const [pickerDealers, setPickerDealers] = useState<NearbyDealerOption[]>([])
+  const [pickerCenter, setPickerCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   const set = (key: keyof typeof DEFAULT_LEAD) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setLead((prev) => ({ ...prev, [key]: e.target.value }))
 
-  const run = async (mode: 'dry' | 'send') => {
-    if (pending) return
-
-    // Surface what's missing instead of silently no-op'ing — a dead button
-    // reads as a broken tool.
+  /**
+   * Surface what's missing instead of silently no-op'ing — a dead button reads
+   * as a broken tool. Returns true when the run may proceed.
+   */
+  const guard = (needsInbox: boolean): boolean => {
     const missing: string[] = []
     if (!password.trim()) missing.push('access password')
     if (!lead.zip.trim()) missing.push('ZIP / postal code')
-    if (mode === 'send' && !recipients.trim()) missing.push('at least one test inbox')
-    if (missing.length > 0) {
-      setResult({ success: false, message: `Fill in ${missing.join(', ')} first.` })
-      return
-    }
+    if (needsInbox && !recipients.trim()) missing.push('at least one test inbox')
+    if (missing.length === 0) return true
 
-    setPending(mode)
+    setResult({ success: false, message: `Fill in ${missing.join(', ')} first.` })
+    return false
+  }
+
+  /** DRY RUN — routing only. */
+  const runDry = async () => {
+    if (pending || !guard(false)) return
+
+    setPending('dry')
     setResult(null)
     setSelectedDealer(null)
     try {
       // Password is verified server-side on every call — this state only
       // controls whether we keep showing the input.
-      const res =
-        mode === 'dry'
-          ? await testRsmRouting(lead.zip, password)
-          : await sendTestRsmEmail({ ...lead, password, recipients })
-
+      const res = await testRsmRouting(lead.zip, password)
       if (res.success || res.message !== 'Incorrect password.') setUnlocked(true)
       setResult(res)
       setSelectedDealer(res.matchedDealerId ?? null)
     } catch {
       setResult({ success: false, message: 'Something went wrong running the test.' })
+    } finally {
+      setPending(null)
+    }
+  }
+
+  /** Step 1 of the visitor flow — resolve dealers, then open the picker. */
+  const startSimulation = async () => {
+    if (pending || !guard(true)) return
+
+    setPending('lookup')
+    setResult(null)
+    setSelectedDealer(null)
+    try {
+      const res = await testRsmRouting(lead.zip, password)
+      if (res.success || res.message !== 'Incorrect password.') setUnlocked(true)
+      setResult(res)
+      if (!res.success) return
+
+      setSelectedDealer(res.matchedDealerId ?? null)
+      setPickerDealers(res.nearby ?? [])
+      setPickerCenter(res.coords ?? null)
+      setPickerOpen(true)
+    } catch {
+      setResult({ success: false, message: 'Something went wrong resolving nearby dealers.' })
+    } finally {
+      setPending(null)
+    }
+  }
+
+  /** Step 2 — the operator answered the picker; send the resulting email. */
+  const submitChoice = async (dealerId: string | null) => {
+    if (pending) return
+
+    setPending('send')
+    try {
+      const res = await sendTestRsmEmail({
+        ...lead,
+        password,
+        recipients,
+        selectedDealerId: dealerId,
+        dealerChoiceMade: true,
+      })
+      setResult(res)
+      setSelectedDealer(dealerId ?? res.matchedDealerId ?? null)
+      setPickerOpen(false)
+    } catch {
+      setResult({ success: false, message: 'Something went wrong sending the test email.' })
+      setPickerOpen(false)
     } finally {
       setPending(null)
     }
@@ -95,7 +150,7 @@ export function ZipTestTool() {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          void run('dry')
+          void runDry()
         }}
         className="space-y-5 rounded-lg border border-kawai-neutral bg-white p-5"
       >
@@ -123,25 +178,46 @@ export function ZipTestTool() {
               <label className={LABEL_CLASS} htmlFor="zt-firstname">
                 First name
               </label>
-              <input id="zt-firstname" className={INPUT_CLASS} value={lead.firstname} onChange={set('firstname')} />
+              <input
+                id="zt-firstname"
+                className={INPUT_CLASS}
+                value={lead.firstname}
+                onChange={set('firstname')}
+              />
             </div>
             <div>
               <label className={LABEL_CLASS} htmlFor="zt-lastname">
                 Last name
               </label>
-              <input id="zt-lastname" className={INPUT_CLASS} value={lead.lastname} onChange={set('lastname')} />
+              <input
+                id="zt-lastname"
+                className={INPUT_CLASS}
+                value={lead.lastname}
+                onChange={set('lastname')}
+              />
             </div>
             <div>
               <label className={LABEL_CLASS} htmlFor="zt-email">
                 Lead email (becomes Reply-To)
               </label>
-              <input id="zt-email" type="email" className={INPUT_CLASS} value={lead.email} onChange={set('email')} />
+              <input
+                id="zt-email"
+                type="email"
+                className={INPUT_CLASS}
+                value={lead.email}
+                onChange={set('email')}
+              />
             </div>
             <div>
               <label className={LABEL_CLASS} htmlFor="zt-phone">
                 Phone
               </label>
-              <input id="zt-phone" className={INPUT_CLASS} value={lead.phone} onChange={set('phone')} />
+              <input
+                id="zt-phone"
+                className={INPUT_CLASS}
+                value={lead.phone}
+                onChange={set('phone')}
+              />
             </div>
             <div>
               <label className={LABEL_CLASS} htmlFor="zt-zip">
@@ -159,7 +235,12 @@ export function ZipTestTool() {
               <label className={LABEL_CLASS} htmlFor="zt-piano-type">
                 Shopping for
               </label>
-              <input id="zt-piano-type" className={INPUT_CLASS} value={lead.piano_type} onChange={set('piano_type')} />
+              <input
+                id="zt-piano-type"
+                className={INPUT_CLASS}
+                value={lead.piano_type}
+                onChange={set('piano_type')}
+              />
             </div>
             <div>
               <label className={LABEL_CLASS} htmlFor="zt-timeframe">
@@ -188,8 +269,9 @@ export function ZipTestTool() {
             placeholder="you@kawaius.com, someone-else@kawaius.com"
           />
           <p className="mt-1.5 text-xs text-kawai-charcoal/60">
-            The real RSM is never emailed — the matched address is shown inside the email body
-            instead. Each inbox gets its own copy. No HubSpot, no Shopify.
+            Each inbox receives the RSM email, plus the dealer email when you pick a dealer. No
+            real RSM or dealer is addressed, copied or BCC&rsquo;d — the envelopes production
+            would use are reported below. No HubSpot, no Shopify.
           </p>
         </div>
 
@@ -203,14 +285,29 @@ export function ZipTestTool() {
           </button>
           <button
             type="button"
-            onClick={() => void run('send')}
+            onClick={() => void startSimulation()}
             disabled={pending !== null}
             className="h-11 rounded-md bg-kawai-red px-6 text-sm font-semibold text-white transition-colors hover:bg-kawai-red/90 disabled:opacity-60"
           >
-            {pending === 'send' ? 'Sending…' : 'Send test email'}
+            {pending === 'lookup'
+              ? 'Finding dealers…'
+              : pending === 'send'
+                ? 'Sending…'
+                : 'Simulate lead submission'}
           </button>
         </div>
       </form>
+
+      {/* — Post-submit dealer picker, exactly as a visitor would see it — */}
+      <DealerChoiceModal
+        isOpen={pickerOpen}
+        zip={lead.zip}
+        dealers={pickerDealers}
+        center={pickerCenter}
+        onChoose={(dealerId) => void submitChoice(dealerId)}
+        onDismiss={() => setPickerOpen(false)}
+        pending={pending === 'send'}
+      />
 
       {/* — Result — */}
       {result && !result.success && (
@@ -230,16 +327,84 @@ export function ZipTestTool() {
               <p className="mt-1 text-sm text-kawai-charcoal">{result.message}</p>
               <ul className="mt-3 space-y-1.5">
                 {result.sends.map((s) => (
-                  <li key={s.email} className="flex flex-wrap items-baseline gap-2 text-sm">
+                  <li key={`${s.kind}-${s.email}`} className="flex flex-wrap items-baseline gap-2 text-sm">
                     <span className={s.ok ? 'text-emerald-700' : 'text-kawai-red'}>
                       {s.ok ? '✓' : '✕'}
                     </span>
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                        s.kind === 'dealer'
+                          ? 'bg-kawai-red/10 text-kawai-red-700'
+                          : 'bg-kawai-charcoal/10 text-kawai-charcoal',
+                      )}
+                    >
+                      {s.kind === 'dealer' ? 'Dealer email' : 'RSM email'}
+                    </span>
                     <span className="font-mono text-xs text-kawai-black">{s.email}</span>
-                    {s.id && <span className="font-mono text-[11px] text-kawai-charcoal/50">{s.id}</span>}
+                    {s.id && (
+                      <span className="font-mono text-[11px] text-kawai-charcoal/50">{s.id}</span>
+                    )}
                     {s.error && <span className="text-xs text-kawai-red">{s.error}</span>}
                   </li>
                 ))}
               </ul>
+
+              {/* — What the visitor picked — */}
+              <div className="mt-4 border-t border-kawai-neutral/60 pt-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-kawai-charcoal/60">
+                  Visitor&rsquo;s dealer choice
+                </p>
+                <p className="mt-1 text-sm text-kawai-charcoal">
+                  {result.chosenDealer ? (
+                    <>
+                      <strong className="text-kawai-black">{result.chosenDealer.name}</strong>
+                      {result.chosenDealer.location && ` · ${result.chosenDealer.location}`} ·{' '}
+                      {result.chosenDealer.distance.toFixed(1)} mi
+                    </>
+                  ) : (
+                    'Not sure — asked the RSM to recommend from the 5 nearest.'
+                  )}
+                </p>
+              </div>
+
+              {/* — Exactly who production would have delivered to, To and Bcc — */}
+              {result.plan && result.plan.length > 0 && (
+                <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-amber-800">
+                    Live delivery held — nobody real was emailed
+                  </p>
+                  <ul className="mt-2 space-y-2">
+                    {result.plan.map((d) => (
+                      <li key={d.kind} className="text-sm">
+                        <span className="font-semibold text-kawai-black">
+                          {d.kind === 'dealer' ? 'Dealer email' : 'RSM email'}
+                        </span>{' '}
+                        {d.skipped ? (
+                          <span className="text-kawai-charcoal/60">
+                            — not produced ({d.skipped})
+                          </span>
+                        ) : (
+                          <>
+                            <span className="text-kawai-charcoal/70">would go to </span>
+                            <span className="font-mono text-xs text-amber-900">{d.to}</span>
+                            <span className="text-kawai-charcoal/70"> · BCC </span>
+                            <span className="font-mono text-xs text-amber-900">
+                              {d.bcc.length > 0 ? d.bcc.join(', ') : 'none'}
+                            </span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2.5 text-xs text-kawai-charcoal/70">
+                    Production holds both sends too. Enable with{' '}
+                    <code>LEAD_NOTIFY_RSM_EMAIL=true</code> and{' '}
+                    <code>LEAD_NOTIFY_DEALER_EMAIL=true</code> — until then it logs these same
+                    envelopes instead of sending.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -271,6 +436,10 @@ export function ZipTestTool() {
                   {' · '}Geocoded: {result.coords.lat.toFixed(4)}, {result.coords.lng.toFixed(4)}
                 </>
               )}
+            </p>
+            <p className="mt-2 text-xs text-kawai-charcoal/60">
+              Shown here only — the email body no longer names the RSM, because the RSM is the
+              recipient.
             </p>
           </div>
 
@@ -304,6 +473,7 @@ export function ZipTestTool() {
                 <tbody>
                   {result.candidates.map(({ dealer, distance, hasRsmEmail }, i) => {
                     const isMatch = dealer.id === result.matchedDealerId
+                    const isChosen = dealer.id === result.chosenDealer?.id
                     const inEmail = i < 5
                     return (
                       <tr
@@ -317,9 +487,14 @@ export function ZipTestTool() {
                         <td className="px-4 py-3 tabular-nums text-kawai-charcoal/60">{i + 1}</td>
                         <td className="px-4 py-3 font-medium text-kawai-black">
                           {dealer.dealerName}
+                          {isChosen && (
+                            <span className="ml-2 rounded-full bg-kawai-red px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                              Visitor pick
+                            </span>
+                          )}
                           {isMatch && (
                             <span className="ml-2 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
-                              Chosen
+                              Routes to RSM
                             </span>
                           )}
                           {inEmail && (

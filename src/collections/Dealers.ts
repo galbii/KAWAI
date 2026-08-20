@@ -588,6 +588,20 @@ export const Dealers: CollectionConfig = {
                 description: 'Payment terms from KAC/KCM records (e.g., "PAS/Net 30 Days")',
                 placeholder: 'PAS/Net 30 Days'
               }
+            },
+            {
+              name: 'leadCount',
+              type: 'number',
+              label: 'Website Leads Received',
+              defaultValue: 0,
+              min: 0,
+              // Indexed so the dealer list can be sorted by lead volume.
+              index: true,
+              admin: {
+                readOnly: true,
+                description:
+                  'How many website leads have chosen this dealer in the post-signup picker. Incremented automatically by lead routing — edit the database directly if it ever needs correcting.'
+              }
             }
           ]
         },

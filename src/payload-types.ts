@@ -10342,6 +10342,10 @@ export interface Dealer {
    */
   paymentTerms?: string | null;
   /**
+   * How many website leads have chosen this dealer in the post-signup picker. Incremented automatically by lead routing — edit the database directly if it ever needs correcting.
+   */
+  leadCount?: number | null;
+  /**
    * Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
   seo?: {
@@ -12732,6 +12736,7 @@ export interface DealersSelect<T extends boolean = true> {
   rsmEmail?: T;
   region?: T;
   paymentTerms?: T;
+  leadCount?: T;
   seo?:
     | T
     | {

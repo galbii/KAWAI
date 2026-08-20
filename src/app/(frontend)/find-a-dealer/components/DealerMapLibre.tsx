@@ -246,6 +246,18 @@ interface Props {
   onMarkerClick: (dealerId: string | null) => void
   onInteract?: () => void
   site?: 'us' | 'cad'
+  /**
+   * Render as a small embedded locator rather than the full finder.
+   *
+   * The full map's selection camera (zoom 13, 45° tilt, rotated, latitude
+   * nudged north to clear the popup) is tuned for a tall viewport with a popup
+   * card in it. Dropped into a ~200px band it reads as "somewhere near" rather
+   * than "here". Compact mode instead flies flat and closer, dead-centred on
+   * the dealer, and suppresses the popup and hover card — details live in the
+   * surrounding UI, and the popup would both overflow the band and offer
+   * navigation out of whatever flow the visitor is mid-way through.
+   */
+  compact?: boolean
 }
 
 // Default overview centers — US continental center vs. Canadian populated belt
@@ -262,6 +274,7 @@ export function DealerMapLibre({
   onMarkerClick,
   onInteract,
   site = 'us',
+  compact = false,
 }: Props) {
   const defaultView = site === 'cad' ? DEFAULT_VIEW.cad : DEFAULT_VIEW.us
 
@@ -380,26 +393,27 @@ export function DealerMapLibre({
       if (dealer?.coordinates?.latitude && dealer?.coordinates?.longitude) {
         const lat = dealer.coordinates.latitude
         const lng = dealer.coordinates.longitude
-        // Center map on selected dealer with 3D tilt
-        // Offset latitude slightly north so the popup (anchored above the marker)
-        // appears centered in the viewport rather than the raw coordinates.
-        const LAT_OFFSET = 0.022
+
+        // Full finder: tilt into a 3D view and nudge the centre north so the
+        // popup (anchored above the marker) sits centred in a tall viewport.
+        // Compact: no popup to clear and no room for perspective, so fly flat,
+        // closer, and exactly on the pin.
         setViewState(prev => ({
           ...prev,
           longitude: lng,
-          latitude: lat + LAT_OFFSET,
-          zoom: 13,
-          pitch: 45,
-          bearing: -17.6,
+          latitude: compact ? lat : lat + 0.022,
+          zoom: compact ? 15 : 13,
+          pitch: compact ? 0 : 45,
+          bearing: compact ? 0 : -17.6,
         }))
-        // Show popup for selected dealer
-        setActivePopup(selectedDealer)
+
+        if (!compact) setActivePopup(selectedDealer)
       }
     } else {
       // Clear popup when dealer is deselected
       setActivePopup(null)
     }
-  }, [selectedDealer, dealers])
+  }, [selectedDealer, dealers, compact])
 
   const handleMarkerClick = useCallback((dealerId: string, e: any) => {
     e.originalEvent.stopPropagation()
@@ -525,7 +539,7 @@ export function DealerMapLibre({
       })}
 
       {/* Popup Info Window */}
-      {activePopup && dealers.find(d => d.id === activePopup) && (() => {
+      {!compact && activePopup && dealers.find(d => d.id === activePopup) && (() => {
         const dealer = dealers.find(d => d.id === activePopup)!
 
         if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) {
@@ -549,7 +563,7 @@ export function DealerMapLibre({
       })()}
 
       {/* Lightweight hover preview card — non-interactive, click the marker for full details */}
-      {hoverDealer && hoverDealer !== activePopup && dealers.find(d => d.id === hoverDealer) && (() => {
+      {!compact && hoverDealer && hoverDealer !== activePopup && dealers.find(d => d.id === hoverDealer) && (() => {
         const dealer = dealers.find(d => d.id === hoverDealer)!
 
         if (!dealer.coordinates?.latitude || !dealer.coordinates?.longitude) {

@@ -23,14 +23,32 @@
  *      dashboard filtering. Falls back to LEAD_NOTIFY_FALLBACK_EMAIL when no
  *      RSM (or no geocode) is found, so a lead is never silently dropped.
  *
+ * A submission can produce two independent emails:
+ *
+ *   RSM   — the standard notification: lead details, the 5 nearest dealers, and
+ *           which one the visitor chose. Always sent. No dealer is copied.
+ *   Dealer— only when the visitor picked a dealer that has a public email. A
+ *           warmer, narrower note carrying just the lead's details, with the
+ *           RSM BCC'd. It never lists other dealers.
+ *
+ * ⚠️ BOTH sends are held back by default. LEAD_NOTIFY_RSM_EMAIL and
+ * LEAD_NOTIFY_DEALER_EMAIL each default to OFF, so no RSM and no dealer
+ * receives anything until someone explicitly turns them on. While held, the
+ * pipeline still runs end to end and logs the exact recipients — To and Bcc —
+ * that a live send would have used, so routing can be verified from the server
+ * log without a single real email leaving. Flip them independently: the RSM
+ * side is normally enabled first, the dealer side once dealers are briefed.
+ *
+ * The two sends are independent — one failing never suppresses the other.
+ *
  * Called fire-and-forget from the form's `onComplete` hook (alongside the
  * Shopify upsert): it never throws — HubSpot is the primary CRM and this
  * notification must never block or fail the submission the visitor sees.
  *
  * The email markup lives in `src/lib/rsm/lead-email.ts`, shared with the
- * internal test tool so the test renders the exact email an RSM receives.
- * Neither the `nearby` nor `test` option is passed here — production output is
- * unchanged.
+ * internal test tool so the test renders the exact email an RSM receives. Only
+ * the `test` option is withheld here — that one adds the "not a real lead"
+ * banner, which production must never carry.
  */
 
 import { createHash } from 'node:crypto'
@@ -50,6 +68,35 @@ import {
   buildLeadEmailHtml,
   buildLeadEmailSubject,
 } from '@/lib/rsm/lead-email'
+import {
+  buildDealerEmailHtml,
+  buildDealerEmailSubject,
+} from '@/lib/rsm/lead-email'
+import {
+  dealerNotifyAddress,
+  resolveDealerChoice,
+  toNearbyDealerOptions,
+  type LeadDealerChoice,
+  type NearbyDealerOption,
+} from '@/lib/rsm/nearby-dealers'
+import { incrementDealerLeadCount } from '@/lib/rsm/lead-counter'
+
+/**
+ * Delivery kill switches. Both OFF unless explicitly set to the string 'true',
+ * so a missing or malformed env var can never accidentally start sending.
+ */
+const isRsmEmailEnabled = () => process.env.LEAD_NOTIFY_RSM_EMAIL === 'true'
+const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'true'
+
+/** Recipients of one planned email, for both sending and "would have sent" logs. */
+interface Envelope {
+  to: string
+  bcc: string[]
+}
+
+function describe({ to, bcc }: Envelope): string {
+  return `to=${to} bcc=${bcc.length ? bcc.join(',') : 'none'}`
+}
 
 /**
  * CMS kill switch — "RSM Lead Notification Emails" checkbox in the Home Page
@@ -81,12 +128,16 @@ const isRsmNotificationEnabled = unstable_cache(
  *
  * @param values - Raw form values (same shape the Shopify mirror receives).
  * @param source - Page identifier for the Resend tag + email footer (e.g. 'signup').
+ * @param choice - What the visitor picked in the post-submit dealer modal.
+ *                 `{ dealerId: null }` is the explicit "not sure" answer; omit
+ *                 the argument entirely when the modal never ran.
  * @returns `{ success }` — never rejects; failures are logged and swallowed.
  *          Intentionally returns no dealer/RSM data (internal-only fields).
  */
 export async function notifyRsmOfLead(
   values: Record<string, string>,
   source: string = 'signup',
+  choice?: { dealerId: string | null },
 ): Promise<{ success: boolean }> {
   try {
     const apiKey = process.env.RESEND_API_KEY
@@ -109,45 +160,133 @@ export async function notifyRsmOfLead(
     const lead = parsed.data
 
     // Match: geocode → nearest same-country RSM-managed dealer with an rsmEmail.
+    // The same ranked list feeds the 5-nearest table, so what the RSM reads is
+    // exactly what the visitor was offered in the picker.
     let match: RsmMatch | null = null
+    let nearby: NearbyDealerOption[] = []
     const coords = await geocodeZipCode(lead.zip)
     if (coords) {
       const dealers = await getDealersForRsmRouting()
-      match = findNearestRsm(rankRsmCandidates(dealers, coords, classifyLeadCountry(lead.zip)))
+      const ranked = rankRsmCandidates(dealers, coords, classifyLeadCountry(lead.zip))
+      match = findNearestRsm(ranked)
+      nearby = toNearbyDealerOptions(ranked)
     } else {
       console.warn(`[notify-rsm] Could not geocode "${lead.zip}" — using fallback inbox`)
     }
 
-    const fallback = process.env.LEAD_NOTIFY_FALLBACK_EMAIL ?? fromAddress
-    const to = match?.rsmEmail ?? fallback
+    // The id comes from the browser, so it is resolved against the offered list
+    // rather than trusted — an unknown id degrades to "unsure".
+    const dealerChoice: LeadDealerChoice | undefined = choice
+      ? resolveDealerChoice(nearby, choice.dealerId)
+      : undefined
 
+    // `||`, not `??`: an env var that is present but blank (LEAD_NOTIFY_FALLBACK_EMAIL=)
+    // is an empty string, which `??` happily passes through — that would put a
+    // literal '' in To/Bcc and make Resend reject the whole send.
+    const fallback = process.env.LEAD_NOTIFY_FALLBACK_EMAIL?.trim() || fromAddress
+    const leadKey = `${lead.email}|${lead.zip}|${choice ? (choice.dealerId ?? 'unsure') : 'none'}`
     const resend = new Resend(apiKey)
-    const { data, error } = await resend.emails.send(
-      {
-        from: fromAddress,
-        to: [to],
-        ...(match ? { bcc: [fallback] } : {}),
-        replyTo: lead.email,
-        subject: buildLeadEmailSubject({ lead, match }),
-        html: buildLeadEmailHtml({ lead, match, source }),
-        tags: [{ name: 'source', value: source.replace(/[^A-Za-z0-9_-]/g, '_') }],
-      },
-      {
-        // One notification per lead+zip per 24h — a double-fired onComplete
-        // (double click, React strict mode) can't email the RSM twice.
-        idempotencyKey: `rsm-lead/${createHash('sha256').update(`${lead.email}|${lead.zip}`).digest('hex')}`,
-      },
-    )
 
-    if (error) {
-      console.error('[notify-rsm] Resend error:', error)
-      return { success: false }
+    /**
+     * Send one email, or — while its kill switch is off — log the exact
+     * envelope it would have used and send nothing. Returns whether an email
+     * actually went out. Never throws: each delivery is independent, so a
+     * failure on one must not take the other down with it.
+     */
+    const deliver = async (
+      kind: 'rsm' | 'dealer',
+      enabled: boolean,
+      envelope: Envelope,
+      subject: string,
+      html: string,
+    ): Promise<boolean> => {
+      if (!enabled) {
+        const flag = kind === 'rsm' ? 'LEAD_NOTIFY_RSM_EMAIL' : 'LEAD_NOTIFY_DEALER_EMAIL'
+        console.log(
+          `[notify-rsm] HELD — ${kind} email not sent. Would have gone ${describe(envelope)} ` +
+            `(subject: "${subject}"). Set ${flag}=true to deliver.`,
+        )
+        return false
+      }
+
+      try {
+        const { data, error } = await resend.emails.send(
+          {
+            from: fromAddress,
+            to: [envelope.to],
+            ...(envelope.bcc.length > 0 ? { bcc: envelope.bcc } : {}),
+            // Replies go straight to the customer, for RSM and dealer alike.
+            replyTo: lead.email,
+            subject,
+            html,
+            tags: [{ name: 'source', value: source.replace(/[^A-Za-z0-9_-]/g, '_') }],
+          },
+          {
+            // One send per lead+zip+choice per kind per 24h. Guards a
+            // double-fired submit without letting the dealer email dedupe
+            // against the RSM email — note `kind` is part of the hash.
+            idempotencyKey: `${kind}-lead/${createHash('sha256').update(`${kind}|${leadKey}`).digest('hex')}`,
+          },
+        )
+
+        if (error) {
+          console.error(`[notify-rsm] Resend error on ${kind} email:`, error)
+          return false
+        }
+        console.log(`[notify-rsm] Sent ${kind} email (${data?.id}) ${describe(envelope)}`)
+        return true
+      } catch (err) {
+        console.error(`[notify-rsm] Failed to send ${kind} email:`, err)
+        return false
+      }
     }
 
-    console.log(
-      `[notify-rsm] Lead notification sent (${data?.id}) — ${match ? `dealer ${match.dealer.slug}` : 'fallback inbox'}`,
+    // — RSM notification: the standard email. No dealer is copied. —
+    const rsmEnvelope: Envelope = {
+      to: match?.rsmEmail ?? fallback,
+      bcc: match ? [fallback] : [],
+    }
+
+    const rsmSent = await deliver(
+      'rsm',
+      isRsmEmailEnabled(),
+      rsmEnvelope,
+      buildLeadEmailSubject({ lead, match, ...(dealerChoice ? { choice: dealerChoice } : {}) }),
+      buildLeadEmailHtml({
+        lead,
+        match,
+        source,
+        nearby,
+        ...(dealerChoice ? { choice: dealerChoice } : {}),
+      }),
     )
-    return { success: true }
+
+    // — Dealer notification: only when the visitor named a dealer that has a
+    //   public inbox. Warmer, no competitor list, RSM BCC'd. —
+    const dealerTo = dealerNotifyAddress(dealerChoice)
+    let dealerSent = false
+
+    if (dealerTo && dealerChoice?.kind === 'selected') {
+      dealerSent = await deliver(
+        'dealer',
+        isDealerEmailEnabled(),
+        { to: dealerTo, bcc: [rsmEnvelope.to] },
+        buildDealerEmailSubject({ lead }),
+        buildDealerEmailHtml({ lead, dealer: dealerChoice.dealer, source }),
+      )
+    } else if (dealerChoice?.kind === 'selected') {
+      console.log(
+        `[notify-rsm] No dealer email — ${dealerChoice.dealer.name} has no contact email on file.`,
+      )
+    }
+
+    // Attribution is about what the visitor chose, not what we managed to
+    // deliver, so this counts even while the emails are held back.
+    if (dealerChoice?.kind === 'selected') {
+      void incrementDealerLeadCount(dealerChoice.dealer.id)
+    }
+
+    return { success: rsmSent || dealerSent }
   } catch (err) {
     // Fire-and-forget contract: log, never throw — the visitor-facing HubSpot
     // submission must not be affected by a notification failure.
