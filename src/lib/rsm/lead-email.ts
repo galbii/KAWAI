@@ -59,8 +59,13 @@ export interface LeadEmailOptions {
   source: string
   /** What the visitor picked in the post-submit modal. Omit if it didn't run. */
   choice?: LeadDealerChoice
-  /** The nearest-N dealers. Included in production and test alike. */
-  nearby?: NearbyDealerOption[]
+  /**
+   * Whether the chosen dealer is actually being sent their own notification.
+   * Drives what the RSM is told to do next, so it must reflect the real
+   * delivery switch — claiming the dealer was notified when dealer email is
+   * switched off would leave a lead sitting with nobody acting on it.
+   */
+  dealerNotified?: boolean
   /** Test mode banner. Omit in production. */
   test?: LeadEmailTestOptions
 }
@@ -144,7 +149,7 @@ function testBanner({ label, envelope }: LeadEmailTestOptions): string {
 }
 
 /** The dealer the visitor asked to be connected with, with contact details. */
-function chosenDealerSection(dealer: NearbyDealerOption): string {
+function chosenDealerSection(dealer: NearbyDealerOption, dealerNotified: boolean): string {
   const contact = [dealer.phone, dealer.email].filter(Boolean).join(' · ')
 
   return `
@@ -156,8 +161,13 @@ function chosenDealerSection(dealer: NearbyDealerOption): string {
       </p>
       ${contact ? `<p style="margin:6px 0 0;font-size:13px;color:#1E1B16">${escapeHtml(contact)}</p>` : ''}
       <p style="margin:10px 0 0;font-size:12px;color:#6b7280;line-height:1.5">
-        The customer asked to be connected with this location. The dealer has been sent
-        their own notification with the customer's details.
+        ${
+          dealerNotified
+            ? `The customer asked to be connected with this location. The dealer has been sent
+        their own notification with the customer's details.`
+            : `The customer asked to be connected with this location. <strong style="color:#1E1B16">The dealer
+        has not been contacted</strong> &mdash; please make the introduction.`
+        }
       </p>
     </div>`
 }
@@ -168,46 +178,10 @@ function unsureSection(): string {
     <div style="margin:22px 0 0;border-left:3px solid #b45309;background:#fffbeb;padding:14px 18px">
       <p style="margin:0;color:#b45309;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Customer wasn't sure which dealer</p>
       <p style="margin:6px 0 0;font-size:13px;color:#1E1B16;line-height:1.5">
-        They asked for a recommendation instead of picking a location. Their closest
-        options are listed below.
+        They asked for a recommendation instead of picking a location — they are
+        expecting you to point them at the right showroom.
       </p>
     </div>`
-}
-
-/** The nearest-N dealers table. */
-function nearbyDealersSection(nearby: NearbyDealerOption[], chosenId: string | null): string {
-  if (nearby.length === 0) {
-    return `
-      <p style="margin:24px 0 0;color:#b45309;font-size:13px">
-        No eligible dealers were found near this ZIP / postal code.
-      </p>`
-  }
-
-  const rows = nearby
-    .map((dealer, i) => {
-      const isChosen = dealer.id === chosenId
-      return `
-        <tr style="border-bottom:1px solid #eee${isChosen ? ';background:#FAF8F5' : ''}">
-          <td style="padding:8px 12px 8px 0;color:#6b7280;font-size:13px;vertical-align:top">${i + 1}</td>
-          <td style="padding:8px 12px 8px 0;font-size:13px;color:#1E1B16;vertical-align:top">
-            <strong>${escapeHtml(dealer.name)}</strong>${
-              isChosen
-                ? ' <span style="color:#E11922;font-size:11px;font-weight:700">· CHOSEN</span>'
-                : ''
-            }
-            ${dealer.location ? `<br><span style="color:#6b7280">${escapeHtml(dealer.location)}</span>` : ''}
-            ${dealer.phone ? `<br><span style="color:#6b7280">${escapeHtml(dealer.phone)}</span>` : ''}
-          </td>
-          <td style="padding:8px 0;font-size:13px;color:#1E1B16;text-align:right;white-space:nowrap;vertical-align:top">${dealer.distance.toFixed(1)} mi</td>
-        </tr>`
-    })
-    .join('')
-
-  return `
-    <p style="margin:24px 0 8px;font-weight:700;font-size:14px">${nearby.length} closest dealer${nearby.length === 1 ? '' : 's'} to this lead</p>
-    <table style="border-collapse:collapse;width:100%">
-      <tbody>${rows}</tbody>
-    </table>`
 }
 
 /** Full HTML body for the lead notification email. */
@@ -216,18 +190,17 @@ export function buildLeadEmailHtml({
   match,
   source,
   choice,
-  nearby,
+  dealerNotified = false,
   test,
 }: LeadEmailOptions): string {
   const name = [lead.firstname, lead.lastname].filter(Boolean).join(' ')
-  const chosenId = choice?.kind === 'selected' ? choice.dealer.id : null
 
   // With a visitor choice the "nearest dealer" readout is noise — what the
   // customer asked for outranks what the algorithm picked. Without one, fall
   // back to showing the match so the RSM still has a starting point.
   let routingSection: string
   if (choice?.kind === 'selected') {
-    routingSection = chosenDealerSection(choice.dealer)
+    routingSection = chosenDealerSection(choice.dealer, dealerNotified)
   } else if (choice?.kind === 'unsure') {
     routingSection = unsureSection()
   } else if (match) {
@@ -275,7 +248,7 @@ export function buildLeadEmailHtml({
               ${detailRow('Shopping for', lead.piano_type?.replaceAll(';', ', '))}
               ${detailRow('Timeframe', lead.when_are_you_looking_to_purchase_?.replaceAll('_', ' '))}
             </table>
-            ${routingSection}${unmatchedWarning}${nearby ? nearbyDealersSection(nearby, chosenId) : ''}
+            ${routingSection}${unmatchedWarning}
             <p style="margin:24px 0 0;color:#6b7280;font-size:12px">
               Source: ${escapeHtml(source)} · Reply to this email to reach the lead directly.
             </p>

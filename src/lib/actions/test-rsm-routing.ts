@@ -8,14 +8,14 @@
  *
  *   - `testRsmRouting`  — DRY RUN. Runs the exact matching code as
  *     `notifyRsmOfLead` (geocode → rank → walk to first rsmEmail) but sends
- *     NOTHING. Returns the routing decision plus the 5 nearest dealers, so the
+ *     NOTHING. Returns the routing decision plus the 5 nearest dealers (for the
+ *     picker, not the email), so the
  *     page can both show where a submission WOULD go and populate the
  *     post-submit dealer picker.
  *
  *   - `sendTestRsmEmail` — LIVE SEND to operator-supplied test inboxes only.
  *     Renders the real production email — including the visitor's dealer choice
- *     and the 5 closest dealers — so a tester can experience what an RSM
- *     receives. It never emails a real `rsmEmail`, never addresses the chosen
+ *     — so a tester can experience what an RSM receives. It never emails a real `rsmEmail`, never addresses the chosen
  *     dealer, never copies the Kawai corporate inbox, and never touches HubSpot
  *     or Shopify.
  *
@@ -50,7 +50,11 @@ import {
   type LeadDealerChoice,
   type NearbyDealerOption,
 } from '@/lib/rsm/nearby-dealers'
-import { buildLeadEnvelope, type LeadEnvelope } from '@/lib/rsm/lead-envelopes'
+import {
+  buildLeadEnvelope,
+  isDealerEmailEnabled,
+  type LeadEnvelope,
+} from '@/lib/rsm/lead-envelopes'
 import type { DealerRegion } from '@/lib/utils/dealer-country'
 import type { Dealer } from '@/payload-types'
 
@@ -277,7 +281,7 @@ function parseRecipients(raw: string): { emails: string[]; invalid: string[] } {
  * inboxes so a tester can experience both sides of a lead.
  *
  * Sends up to two emails per test inbox, exactly as production composes them:
- *   RSM email    — lead details, the 5 nearest dealers, and the visitor's pick.
+ *   RSM email    — lead details and the visitor's pick. No dealer list.
  *   Dealer email — only when a dealer was chosen and has a public inbox. Warm,
  *                  narrow, no competitor list.
  *
@@ -358,7 +362,11 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
   // Built by the same helper production uses, so the plan this page reports can
   // never drift from the envelopes `notifyRsmOfLead` actually addresses.
   const rsmEnvelope = buildLeadEnvelope(rsmTo)
-  const dealerEnvelope = dealerTo ? buildLeadEnvelope(dealerTo) : null
+  // A dealer address is not the same as a dealer being contacted — the switch
+  // decides that, and the RSM's copy has to match or it will tell them the
+  // dealer already has a lead nobody has actually sent.
+  const dealerEnabled = isDealerEmailEnabled()
+  const dealerEnvelope = dealerTo && dealerEnabled ? buildLeadEnvelope(dealerTo) : null
 
   const plan: PlannedDelivery[] = [
     { kind: 'rsm', ...rsmEnvelope },
@@ -370,9 +378,11 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
           cc: [],
           bcc: [],
           skipped:
-            choice?.kind === 'selected'
-              ? `${choice.dealer.name} has no contact email on file`
-              : 'visitor was not sure, so no dealer is contacted',
+            choice?.kind !== 'selected'
+              ? 'visitor was not sure, so no dealer is contacted'
+              : !dealerTo
+                ? `${choice.dealer.name} has no contact email on file`
+                : 'dealer notifications are switched off (LEAD_NOTIFY_DEALER_EMAIL)',
         },
   ]
 
@@ -384,7 +394,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
     lead,
     match,
     source: 'ziptest',
-    nearby,
+    dealerNotified: Boolean(dealerEnvelope),
     ...(choice ? { choice } : {}),
     test: {
       label: 'RSM notification',

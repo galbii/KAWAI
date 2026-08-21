@@ -16,7 +16,7 @@
 import type { Dealer } from '@/payload-types'
 import type { RankedDealer } from '@/lib/rsm/routing'
 
-/** How many dealers the visitor picks from, and how many the RSM email lists. */
+/** How many dealers the visitor picks from. The RSM email lists none of them. */
 export const NEARBY_DEALER_COUNT = 5
 
 /** One dealer as shown to the visitor and listed in the RSM email. */

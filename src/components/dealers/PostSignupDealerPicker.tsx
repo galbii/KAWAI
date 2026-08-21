@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DealerChoiceModal } from '@/components/dealers/DealerChoiceModal'
 import { getNearbyDealersForLead } from '@/lib/actions/nearby-dealers'
 import { notifyRsmOfLead } from '@/lib/actions/notify-rsm-of-lead'
@@ -29,7 +30,16 @@ import type { NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
  * notification is ever sent. The safety-net paths send the visitor's *current*
  * highlighted selection rather than null, so someone who picked a dealer but
  * never pressed Confirm still has their choice carried through.
+ *
+ * An explicit answer (1) also navigates: to the chosen dealer's page, or to the
+ * dealer finder when the visitor wasn't sure. The other three paths deliberately
+ * do not — a dismissal means "I'm closing this", and yanking someone to another
+ * page after they closed a box (or after a background timer fired while they
+ * were reading) would be hostile.
  */
+
+/** Where "I'm not sure" sends the visitor to browse the full network. */
+const DEALER_FINDER_PATH = '/find-a-dealer'
 
 /**
  * How long to hold the notification waiting for an answer. Generous enough that
@@ -48,6 +58,7 @@ type Props = {
 }
 
 export function PostSignupDealerPicker({ lead, source, armed }: Props) {
+  const router = useRouter()
   const [dealers, setDealers] = useState<NearbyDealerOption[]>([])
   const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -117,15 +128,41 @@ export function PostSignupDealerPicker({ lead, source, armed }: Props) {
     }
   }, [open, notify])
 
-  const choose = useCallback(
+  /**
+   * An explicit answer — either action button. Routes the lead, then takes the
+   * visitor where they asked to go.
+   *
+   * `pending` stays set through the navigation: it swaps the button to
+   * "Connecting…" and locks the modal's dismiss affordances, so the box can't be
+   * closed out from under an answer that is already on its way.
+   */
+  const answer = useCallback(
     (dealerId: string | null) => {
       setPending(true)
       notify(dealerId)
-      setOpen(false)
-      setPending(false)
+
+      // Every dealer the picker offers comes from the `dealers` collection, so
+      // the detail page is always /find-a-dealer/[slug] — storefronts, which
+      // live at /store/[slug], are a separate collection this pipeline never
+      // reads. Falls back to the finder if a slug is somehow missing.
+      const chosen = dealerId ? dealers.find((d) => d.id === dealerId) : undefined
+      const href = chosen?.slug ? `${DEALER_FINDER_PATH}/${chosen.slug}` : DEALER_FINDER_PATH
+
+      // router.push, not window.location: a soft navigation leaves the in-flight
+      // notification request alive, where a full page load could abort it.
+      router.push(href)
     },
-    [notify],
+    [notify, dealers, router],
   )
+
+  /**
+   * X / Esc / overlay. Still routes the lead — a dismissal means "not sure",
+   * never "discard me" — but stays put rather than navigating.
+   */
+  const dismiss = useCallback(() => {
+    notify(selectionRef.current)
+    setOpen(false)
+  }, [notify])
 
   if (!open && !armed) return null
 
@@ -135,12 +172,11 @@ export function PostSignupDealerPicker({ lead, source, armed }: Props) {
       zip={lead.zip ?? ''}
       dealers={dealers}
       center={center}
-      onChoose={choose}
+      onChoose={answer}
       onSelectionChange={(id) => {
         selectionRef.current = id
       }}
-      // A dismissal still routes the lead — it means "not sure", not "forget me".
-      onDismiss={() => choose(selectionRef.current)}
+      onDismiss={dismiss}
       pending={pending}
     />
   )

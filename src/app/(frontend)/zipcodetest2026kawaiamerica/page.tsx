@@ -40,7 +40,8 @@ export default function ZipCodeTestPage() {
           <strong>Simulate lead submission</strong> runs the full visitor flow: the dealer picker
           opens with the 5 closest dealers, and whatever you choose (including
           &ldquo;I&rsquo;m not sure&rdquo;) shapes the emails delivered to your own test inboxes —
-          the RSM notification, plus the dealer&rsquo;s own note when a dealer is picked. No real
+          the RSM notification, plus the dealer&rsquo;s own note when a dealer is picked and dealer
+          email is switched on. No real
           RSM, dealer or corporate inbox is emailed, copied or BCC&rsquo;d; you&rsquo;ll see exactly who production
           would have delivered to. No lead reaches HubSpot or Shopify.
         </p>

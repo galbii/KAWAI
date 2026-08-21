@@ -269,7 +269,8 @@ export function ZipTestTool() {
             placeholder="you@kawaius.com, someone-else@kawaius.com"
           />
           <p className="mt-1.5 text-xs text-kawai-charcoal/60">
-            Each inbox receives the RSM email, plus the dealer email when you pick a dealer. No
+            Each inbox receives the RSM email, plus the dealer email when you pick a dealer and
+            LEAD_NOTIFY_DEALER_EMAIL is on. No
             real RSM, dealer or corporate inbox is addressed, copied or BCC&rsquo;d — the envelopes production
             would use are reported below. No HubSpot, no Shopify.
           </p>
@@ -478,7 +479,8 @@ export function ZipTestTool() {
                   {result.candidates.map(({ dealer, distance, hasRsmEmail }, i) => {
                     const isMatch = dealer.id === result.matchedDealerId
                     const isChosen = dealer.id === result.chosenDealer?.id
-                    const inEmail = i < 5
+                    // The 5 the visitor picks from. The RSM email no longer lists them.
+                    const inPicker = i < 5
                     return (
                       <tr
                         key={dealer.id}
@@ -501,9 +503,9 @@ export function ZipTestTool() {
                               Routes to RSM
                             </span>
                           )}
-                          {inEmail && (
+                          {inPicker && (
                             <span className="ml-2 rounded-full bg-kawai-charcoal/10 px-2 py-0.5 text-[10px] font-bold uppercase text-kawai-charcoal">
-                              In email
+                              In picker
                             </span>
                           )}
                         </td>

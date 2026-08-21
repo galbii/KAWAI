@@ -1,5 +1,5 @@
 /**
- * Recipient envelopes for the two lead notification emails.
+ * Recipient envelopes and delivery switches for the two lead notification emails.
  *
  * Extracted so the live pipeline (`notify-rsm-of-lead`) and the internal test
  * tool (`test-rsm-routing`) build recipients from one implementation. They used
@@ -13,6 +13,17 @@
  * Not a server action — plain helpers, so both `'use server'` modules can
  * import them (a `'use server'` file may only export async functions).
  */
+
+/**
+ * Delivery kill switches. Both OFF unless explicitly set to the string 'true',
+ * so a missing or malformed env var can never accidentally start sending.
+ *
+ * Shared rather than read at each call site because the RSM email's wording
+ * depends on whether the dealer is being notified — if these two disagreed, the
+ * RSM would be told the dealer has the lead when nobody had contacted them.
+ */
+export const isRsmEmailEnabled = () => process.env.LEAD_NOTIFY_RSM_EMAIL === 'true'
+export const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'true'
 
 /** Corporate inbox copied on every lead email. Override with LEAD_NOTIFY_CC_EMAIL. */
 export const DEFAULT_LEAD_CC_EMAIL = 'contact@kawaius.com'

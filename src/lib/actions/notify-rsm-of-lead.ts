@@ -25,8 +25,10 @@
  *
  * A submission can produce two independent emails:
  *
- *   RSM   — the standard notification: lead details, the 5 nearest dealers, and
- *           which one the visitor chose. Always sent. No dealer is copied.
+ *   RSM   — the standard notification: lead details and which dealer the
+ *           visitor chose. Always sent. No dealer is copied, and the nearest-
+ *           dealer list is deliberately omitted — the RSM knows their own
+ *           territory, and the choice is the actionable part.
  *   Dealer— only when the visitor picked a dealer that has a public email. A
  *           warmer, narrower note carrying just the lead's details. It never
  *           lists other dealers, and no RSM address appears on it.
@@ -89,15 +91,10 @@ import { incrementDealerLeadCount } from '@/lib/rsm/lead-counter'
 import {
   buildLeadEnvelope,
   describeEnvelope,
+  isDealerEmailEnabled,
+  isRsmEmailEnabled,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
-
-/**
- * Delivery kill switches. Both OFF unless explicitly set to the string 'true',
- * so a missing or malformed env var can never accidentally start sending.
- */
-const isRsmEmailEnabled = () => process.env.LEAD_NOTIFY_RSM_EMAIL === 'true'
-const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'true'
 
 /**
  * Global test-inbox valve. When LEAD_NOTIFY_TEST_INBOX is set, every lead email
@@ -261,6 +258,12 @@ export async function notifyRsmOfLead(
       }
     }
 
+    // Resolved before the RSM email is composed: its wording depends on whether
+    // the dealer is actually being contacted, and getting that backwards would
+    // tell the RSM to stand down on a lead nobody has picked up.
+    const dealerTo = dealerNotifyAddress(dealerChoice)
+    const dealerNotified = Boolean(dealerTo) && isDealerEmailEnabled()
+
     // — RSM notification: the standard email. Corporate CC'd, no dealer copied. —
     const rsmEnvelope = buildLeadEnvelope(match?.rsmEmail ?? fallback)
 
@@ -278,7 +281,7 @@ export async function notifyRsmOfLead(
         lead,
         match,
         source,
-        nearby,
+        dealerNotified,
         ...(dealerChoice ? { choice: dealerChoice } : {}),
         ...(redirect ? { test: { label: 'RSM notification', envelope: rsmEnvelope } } : {}),
       }),
@@ -287,7 +290,6 @@ export async function notifyRsmOfLead(
     // — Dealer notification: only when the visitor named a dealer that has a
     //   public inbox. Warmer, no competitor list, corporate CC'd. The RSM is
     //   not copied here — their own email already names the chosen dealer. —
-    const dealerTo = dealerNotifyAddress(dealerChoice)
     let dealerSent = false
 
     if (dealerTo && dealerChoice?.kind === 'selected') {
