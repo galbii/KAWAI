@@ -7,15 +7,17 @@ import { notifyRsmOfLead } from '@/lib/actions/notify-rsm-of-lead'
 import type { NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
 
 /**
- * Post-signup dealer picker for /signup3.
+ * Post-signup dealer picker.
  *
  * Bridges a captured lead to the dealer-choice modal, then routes the lead to
- * its RSM carrying whatever the visitor chose.
+ * its RSM carrying whatever the visitor chose. Used by the offer pages that run
+ * the picker (/signup2 and its /signup3 staging copy); shared rather than
+ * page-local so the single-fire guarantees below can't drift between them.
  *
- * The hard requirement here is that a lead can never be lost. /signup and
- * /signup2 notify the RSM the instant the form completes; deferring that until
- * someone answers a modal would drop the notification for anyone who wanders
- * off. So the notification fires on whichever of these happens first:
+ * The hard requirement here is that a lead can never be lost. /signup notifies
+ * the RSM the instant the form completes; deferring that until someone answers
+ * a modal would drop the notification for anyone who wanders off. So the
+ * notification fires on whichever of these happens first:
  *
  *   1. The visitor answers — a dealer, or "I'm not sure".
  *   2. They dismiss the modal (X / Esc / overlay). A dismissal is treated as

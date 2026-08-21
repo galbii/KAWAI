@@ -1,18 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import { BrandEyebrow } from './brand-ui'
 import { offerCopy, hubspotSignupForm } from './scenes'
 import { useOfferModal } from './OfferModalContext'
-import { PostSignupDealerPicker } from './PostSignupDealerPicker'
-import { TwoStepHubSpotForm, type PreFormValues } from '@/components/forms/TwoStepHubSpotForm'
+import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
 
 /** Source/campaign tags applied to the Shopify customer for this page. */
 const SHOPIFY_LEAD_TAGS = ['signup3', 'summer-savings']
-
-/** Identifies this page in the RSM notification email + Resend dashboard tag. */
-const LEAD_SOURCE = 'signup3'
 
 /**
  * The dealer-discount sign-up content: offer copy + the reusable HubSpot
@@ -21,20 +16,19 @@ const LEAD_SOURCE = 'signup3'
  * the OfferModal renders it inside the dialog. Single source of truth for the
  * offer form across every placement on the page.
  *
- * How /signup3 differs from /signup and /signup2:
+ * How /signup3 differs from /signup:
  *
- *   - On success it opens the dealer picker, and the RSM notification is
- *     deferred until the visitor answers so it can carry their choice. See
- *     {@link PostSignupDealerPicker} for the guarantees around never losing a
- *     lead while that question is on screen.
+ *   - On success the submission is handed up to OfferModalProvider, which opens
+ *     the dealer picker and defers the RSM notification until the visitor
+ *     answers so it can carry their choice. The provider owns that, not this
+ *     component — this one is unmounted when the offer modal closes, so it must
+ *     not own anything the lead depends on.
  *   - In test mode (SIGNUP3_TEST_MODE) nothing is written to HubSpot or
  *     Shopify, so the full flow can be exercised without junk in the CRM. Lead
  *     routing still runs, held or redirected by the LEAD_NOTIFY_* switches.
  */
 export function OfferSignupForm() {
-  const { testMode } = useOfferModal()
-  const [lead, setLead] = useState<PreFormValues | null>(null)
-  const [confirmed, setConfirmed] = useState(false)
+  const { testMode, captureLead, confirmLead } = useOfferModal()
 
   return (
     <div>
@@ -60,17 +54,14 @@ export function OfferSignupForm() {
           if (!testMode) {
             void upsertSignupLeadToShopify(data, SHOPIFY_LEAD_TAGS).catch(() => {})
           }
-          // Captured here rather than on `onSubmitted` so the nearby-dealer
-          // lookup runs while HubSpot is still submitting — by the time the
-          // confirmation appears the picker has its list and opens instantly.
-          setLead(data)
+          // Handed up on `onComplete` rather than `onSubmitted` so the
+          // nearby-dealer lookup runs while HubSpot is still submitting — by the
+          // time the confirmation appears the picker has its list and opens
+          // instantly.
+          captureLead(data)
         }}
-        onSubmitted={() => setConfirmed(true)}
+        onSubmitted={confirmLead}
       />
-
-      {lead && (
-        <PostSignupDealerPicker lead={lead} source={LEAD_SOURCE} armed={confirmed} />
-      )}
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
         By submitting this form you agree to be contacted by your local Authorized Kawai

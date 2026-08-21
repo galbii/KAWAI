@@ -15,15 +15,16 @@
  *   - `sendTestRsmEmail` — LIVE SEND to operator-supplied test inboxes only.
  *     Renders the real production email — including the visitor's dealer choice
  *     and the 5 closest dealers — so a tester can experience what an RSM
- *     receives. It never emails a real `rsmEmail`, never CCs the chosen dealer,
- *     never BCCs the fallback inbox, and never touches HubSpot or Shopify.
+ *     receives. It never emails a real `rsmEmail`, never addresses the chosen
+ *     dealer, never copies the Kawai corporate inbox, and never touches HubSpot
+ *     or Shopify.
  *
  * ⚠️ These actions intentionally return internal-only data (`rsmEmail`) to the
  * browser, which the production pipeline never does. Delete the page + this
  * file when testing wraps up.
  */
 
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto'
 import { z } from 'zod'
 import { Resend } from 'resend'
 import { geocodeZipCode } from '@/lib/utils/dealer-search'
@@ -49,6 +50,7 @@ import {
   type LeadDealerChoice,
   type NearbyDealerOption,
 } from '@/lib/rsm/nearby-dealers'
+import { buildLeadEnvelope, type LeadEnvelope } from '@/lib/rsm/lead-envelopes'
 import type { DealerRegion } from '@/lib/utils/dealer-country'
 import type { Dealer } from '@/payload-types'
 
@@ -101,12 +103,10 @@ export interface TestSendRecipient {
 
 /**
  * Who a live send would have delivered to. Reported so an operator can verify
- * routing — including BCC — without a real inbox being touched.
+ * routing — including Cc — without a real inbox being touched.
  */
-export interface PlannedDelivery {
+export interface PlannedDelivery extends LeadEnvelope {
   kind: EmailKind
-  to: string
-  bcc: string[]
   /** Set when this email wouldn't be produced at all, with the reason. */
   skipped?: string
 }
@@ -121,8 +121,31 @@ export interface TestSendResult extends ZipTestResult {
 
 const zipSchema = z.string().trim().min(3).max(10)
 
-/** Shared access password for the internal test page (override via env). */
-const TEST_TOOL_PASSWORD = process.env.ZIP_TEST_TOOL_PASSWORD ?? 'Kawai1927'
+/**
+ * Gate for the internal test page.
+ *
+ * The password lives ONLY in ZIP_TEST_TOOL_PASSWORD. There is deliberately no
+ * hardcoded fallback: this repository is public, so any literal here is a
+ * published credential — and this endpoint exposes internal `rsmEmail` data and
+ * can send mail from the verified Kawai sender, which makes it worth guarding
+ * properly. With the variable unset every attempt is refused, so a missing env
+ * var fails closed (locked out) rather than open (world-readable password).
+ *
+ * Compared in constant time so the gate can't be probed character by character.
+ * Both sides are hashed first, which also sidesteps timingSafeEqual's
+ * equal-length requirement.
+ */
+function isAuthorized(supplied: string): boolean {
+  const expected = process.env.ZIP_TEST_TOOL_PASSWORD?.trim()
+  if (!expected) {
+    console.error('[zip-test] ZIP_TEST_TOOL_PASSWORD is not set — refusing all access')
+    return false
+  }
+  return timingSafeEqual(
+    createHash('sha256').update(supplied).digest(),
+    createHash('sha256').update(expected).digest(),
+  )
+}
 
 function fallbackInbox(): string {
   // `||`, not `??` — a blank env var (LEAD_NOTIFY_FALLBACK_EMAIL=) is an empty
@@ -200,7 +223,7 @@ async function resolveRouting(
 
 /** DRY RUN — resolves routing for a ZIP and sends nothing. */
 export async function testRsmRouting(zip: string, password: string): Promise<ZipTestResult> {
-  if (password !== TEST_TOOL_PASSWORD) {
+  if (!isAuthorized(password)) {
     return { success: false, message: 'Incorrect password.' }
   }
 
@@ -260,8 +283,8 @@ function parseRecipients(raw: string): { emails: string[]; invalid: string[] } {
  *
  * Deliberately diverges from production in four ways, all safety guards:
  *   - Every recipient is an operator test inbox. The matched `rsmEmail`, the
- *     chosen dealer and the fallback inbox are never addressed, copied or
- *     BCC'd — the envelopes production would use come back as `plan` for the
+ *     chosen dealer and the Kawai corporate inbox are never addressed, copied
+ *     or BCC'd — the envelopes production would use come back as `plan` for the
  *     page to display instead.
  *   - Subjects are prefixed `[TEST]` and both bodies carry a warning banner.
  *   - A fresh idempotency key per send, so repeat tests actually resend
@@ -293,7 +316,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
     ...lead
   } = parsed.data
 
-  if (password !== TEST_TOOL_PASSWORD) {
+  if (!isAuthorized(password)) {
     return { success: false, message: 'Incorrect password.' }
   }
 
@@ -332,20 +355,19 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
   const rsmTo = result.wouldSendTo ?? fallbackInbox()
   const dealerTo = dealerNotifyAddress(choice)
 
-  // Exactly the envelopes `notifyRsmOfLead` would build, reported rather than used.
-  const rsmPlan: PlannedDelivery = {
-    kind: 'rsm',
-    to: rsmTo,
-    bcc: match ? [fallbackInbox()] : [],
-  }
+  // Built by the same helper production uses, so the plan this page reports can
+  // never drift from the envelopes `notifyRsmOfLead` actually addresses.
+  const rsmEnvelope = buildLeadEnvelope(rsmTo)
+  const dealerEnvelope = dealerTo ? buildLeadEnvelope(dealerTo) : null
 
   const plan: PlannedDelivery[] = [
-    rsmPlan,
-    dealerTo
-      ? { kind: 'dealer', to: dealerTo, bcc: [rsmTo] }
+    { kind: 'rsm', ...rsmEnvelope },
+    dealerEnvelope
+      ? { kind: 'dealer', ...dealerEnvelope }
       : {
           kind: 'dealer',
           to: '—',
+          cc: [],
           bcc: [],
           skipped:
             choice?.kind === 'selected'
@@ -355,7 +377,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
   ]
 
   // Both emails carry a [TEST] subject and a warning banner that spells out the
-  // exact To/Bcc a live send would have used, so a tester can confirm routing
+  // exact To/Cc/Bcc a live send would have used, so a tester can confirm routing
   // from the message itself. Only test sends carry those addresses.
   const rsmSubject = buildLeadEmailSubject({ lead, match, ...(choice ? { choice } : {}), test: {} })
   const rsmHtml = buildLeadEmailHtml({
@@ -366,12 +388,12 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
     ...(choice ? { choice } : {}),
     test: {
       label: 'RSM notification',
-      envelope: { to: rsmPlan.to, bcc: rsmPlan.bcc },
+      envelope: rsmEnvelope,
     },
   })
 
   const dealerEmail =
-    choice?.kind === 'selected' && dealerTo
+    choice?.kind === 'selected' && dealerEnvelope
       ? {
           subject: buildDealerEmailSubject({ lead, test: {} }),
           html: buildDealerEmailHtml({
@@ -380,7 +402,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
             source: 'ziptest',
             test: {
               label: 'Dealer notification',
-              envelope: { to: dealerTo, bcc: [rsmTo] },
+              envelope: dealerEnvelope,
             },
           }),
         }
@@ -395,7 +417,8 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
       const { data, error } = await resend.emails.send(
         {
           from: fromAddress,
-          // The operator's inbox and nothing else — no dealer, no RSM, no BCC.
+          // The operator's inbox and nothing else — no dealer, no RSM, no
+          // corporate CC, no BCC.
           to: [to],
           replyTo: lead.email,
           subject,

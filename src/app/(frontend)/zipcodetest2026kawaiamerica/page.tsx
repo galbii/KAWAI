@@ -11,8 +11,8 @@ import { ZipTestTool } from './ZipTestTool'
  * Simulate lead submission: walks the whole visitor flow — resolve the 5
  * nearest dealers, open the dealer picker a visitor sees after submitting, then
  * deliver BOTH production emails (the RSM notification and, if a dealer was
- * picked, the dealer's own note) to operator-supplied test inboxes. No real RSM
- * or dealer is addressed, copied or BCC'd; the envelopes production would use
+ * picked, the dealer's own note) to operator-supplied test inboxes. No real RSM,
+ * dealer or corporate inbox is addressed, copied or BCC'd; the envelopes production would use
  * are reported on the page. Neither HubSpot nor Shopify is touched.
  *
  * Not linked from anywhere, noindexed, and the backing action is password-
@@ -41,7 +41,7 @@ export default function ZipCodeTestPage() {
           opens with the 5 closest dealers, and whatever you choose (including
           &ldquo;I&rsquo;m not sure&rdquo;) shapes the emails delivered to your own test inboxes —
           the RSM notification, plus the dealer&rsquo;s own note when a dealer is picked. No real
-          RSM or dealer is emailed, copied or BCC&rsquo;d; you&rsquo;ll see exactly who production
+          RSM, dealer or corporate inbox is emailed, copied or BCC&rsquo;d; you&rsquo;ll see exactly who production
           would have delivered to. No lead reaches HubSpot or Shopify.
         </p>
         <ZipTestTool />

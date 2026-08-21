@@ -22,6 +22,7 @@
 import { z } from 'zod'
 import type { RsmMatch } from '@/lib/rsm/routing'
 import type { LeadDealerChoice, NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
+import type { LeadEnvelope } from '@/lib/rsm/lead-envelopes'
 
 /** Lead payload shape — matches the HubSpot field names the signup form emits. */
 export const leadEmailSchema = z.object({
@@ -48,7 +49,7 @@ export interface LeadEmailTestOptions {
   /** Which of the two emails this is, e.g. "RSM notification". */
   label?: string
   /** Exact recipients a live send would have used for THIS email. */
-  envelope?: { to: string; bcc: string[] }
+  envelope?: LeadEnvelope
 }
 
 export interface LeadEmailOptions {
@@ -103,7 +104,7 @@ export function buildLeadEmailSubject({
     : `${prefix}New Kawai lead — ${lead.zip} (unmatched)`
 }
 
-/** One To/Bcc line in the test banner. */
+/** One To/Cc/Bcc line in the test banner. */
 function envelopeRow(label: string, value: string): string {
   return `
         <tr>
@@ -114,8 +115,10 @@ function envelopeRow(label: string, value: string): string {
 
 /**
  * Banner making it unmistakable that a test send is not a real lead, and
- * spelling out the exact envelope — To and Bcc — a live send would have used,
- * so a tester can confirm routing without leaving the message.
+ * spelling out the exact envelope — To, Cc and Bcc — a live send would have
+ * used, so a tester can confirm routing without leaving the message. Every line
+ * is rendered even when empty: "Bcc: none" is itself the confirmation that
+ * nobody was copied invisibly.
  */
 function testBanner({ label, envelope }: LeadEmailTestOptions): string {
   const which = label ? ` — ${escapeHtml(label)}` : ''
@@ -125,6 +128,7 @@ function testBanner({ label, envelope }: LeadEmailTestOptions): string {
       <p style="margin:10px 0 4px;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase">Live, this would have gone to</p>
       <table style="border-collapse:collapse">
         ${envelopeRow('To:', envelope.to)}
+        ${envelopeRow('Cc:', envelope.cc.length > 0 ? envelope.cc.join(', ') : 'none')}
         ${envelopeRow('Bcc:', envelope.bcc.length > 0 ? envelope.bcc.join(', ') : 'none')}
       </table>`
     : ''
@@ -152,8 +156,8 @@ function chosenDealerSection(dealer: NearbyDealerOption): string {
       </p>
       ${contact ? `<p style="margin:6px 0 0;font-size:13px;color:#1E1B16">${escapeHtml(contact)}</p>` : ''}
       <p style="margin:10px 0 0;font-size:12px;color:#6b7280;line-height:1.5">
-        The customer asked to be connected with this location. The dealer has been notified
-        separately and you are BCC'd on that message.
+        The customer asked to be connected with this location. The dealer has been sent
+        their own notification with the customer's details.
       </p>
     </div>`
 }
@@ -284,10 +288,11 @@ export function buildLeadEmailHtml({
 /* ------------------------------------------------------------------ *
  * Dealer notification — a separate, deliberately narrow email.
  *
- * Sent to the dealer the visitor picked, with the RSM BCC'd. It shares
+ * Sent to the dealer the visitor picked, with Kawai corporate CC'd. It shares
  * nothing with the RSM email beyond the lead's own details: no nearest-dealer
- * list (that would hand a dealer their competitors), no routing internals, no
- * RSM address. Reply-To is the customer, so a dealer can simply hit reply.
+ * list (that would hand a dealer their competitors), no routing internals, and
+ * no RSM address in any header — the RSM is not copied on this message at all.
+ * Reply-To is the customer, so a dealer can simply hit reply.
  * ------------------------------------------------------------------ */
 
 export interface DealerEmailOptions {

@@ -28,14 +28,20 @@
  *   RSM   — the standard notification: lead details, the 5 nearest dealers, and
  *           which one the visitor chose. Always sent. No dealer is copied.
  *   Dealer— only when the visitor picked a dealer that has a public email. A
- *           warmer, narrower note carrying just the lead's details, with the
- *           RSM BCC'd. It never lists other dealers.
+ *           warmer, narrower note carrying just the lead's details. It never
+ *           lists other dealers, and no RSM address appears on it.
+ *
+ * Both are CC'd to the Kawai corporate inbox (LEAD_NOTIFY_CC_EMAIL, default
+ * contact@kawaius.com) so head office has a visible copy of every lead handed
+ * out. Nothing is BCC'd — a recipient can always see who else is on the thread.
+ * The RSM is not copied on the dealer's email; their own notification already
+ * names the dealer the visitor chose.
  *
  * ⚠️ BOTH sends are held back by default. LEAD_NOTIFY_RSM_EMAIL and
  * LEAD_NOTIFY_DEALER_EMAIL each default to OFF, so no RSM and no dealer
  * receives anything until someone explicitly turns them on. While held, the
- * pipeline still runs end to end and logs the exact recipients — To and Bcc —
- * that a live send would have used, so routing can be verified from the server
+ * pipeline still runs end to end and logs the exact recipients — To, Cc and
+ * Bcc — a live send would have used, so routing can be verified from the server
  * log without a single real email leaving. Flip them independently: the RSM
  * side is normally enabled first, the dealer side once dealers are briefed.
  *
@@ -80,6 +86,11 @@ import {
   type NearbyDealerOption,
 } from '@/lib/rsm/nearby-dealers'
 import { incrementDealerLeadCount } from '@/lib/rsm/lead-counter'
+import {
+  buildLeadEnvelope,
+  describeEnvelope,
+  type LeadEnvelope,
+} from '@/lib/rsm/lead-envelopes'
 
 /**
  * Delivery kill switches. Both OFF unless explicitly set to the string 'true',
@@ -90,21 +101,12 @@ const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'tru
 
 /**
  * Global test-inbox valve. When LEAD_NOTIFY_TEST_INBOX is set, every lead email
- * is re-addressed to it and all Bcc is dropped, so no RSM or dealer can be
- * reached no matter what the enable flags say. Server-side only — nothing the
- * browser sends can influence a recipient. Unset it to go live.
+ * is re-addressed to it and all Cc/Bcc is dropped, so no RSM, dealer or
+ * corporate inbox can be reached no matter what the enable flags say.
+ * Server-side only — nothing the browser sends can influence a recipient.
+ * Unset it to go live.
  */
 const testInbox = () => process.env.LEAD_NOTIFY_TEST_INBOX?.trim() || null
-
-/** Recipients of one planned email, for both sending and "would have sent" logs. */
-interface Envelope {
-  to: string
-  bcc: string[]
-}
-
-function describe({ to, bcc }: Envelope): string {
-  return `to=${to} bcc=${bcc.length ? bcc.join(',') : 'none'}`
-}
 
 /**
  * CMS kill switch — "RSM Lead Notification Emails" checkbox in the Home Page
@@ -205,14 +207,14 @@ export async function notifyRsmOfLead(
     const deliver = async (
       kind: 'rsm' | 'dealer',
       enabled: boolean,
-      envelope: Envelope,
+      envelope: LeadEnvelope,
       subject: string,
       html: string,
     ): Promise<boolean> => {
       if (!enabled) {
         const flag = kind === 'rsm' ? 'LEAD_NOTIFY_RSM_EMAIL' : 'LEAD_NOTIFY_DEALER_EMAIL'
         console.log(
-          `[notify-rsm] HELD — ${kind} email not sent. Would have gone ${describe(envelope)} ` +
+          `[notify-rsm] HELD — ${kind} email not sent. Would have gone ${describeEnvelope(envelope)} ` +
             `(subject: "${subject}"). Set ${flag}=true to deliver.`,
         )
         return false
@@ -220,13 +222,14 @@ export async function notifyRsmOfLead(
 
       // Redirect the envelope, never the log — the log must always record the
       // real routing decision, not the test detour.
-      const actual: Envelope = redirect ? { to: redirect, bcc: [] } : envelope
+      const actual: LeadEnvelope = redirect ? { to: redirect, cc: [], bcc: [] } : envelope
 
       try {
         const { data, error } = await resend.emails.send(
           {
             from: fromAddress,
             to: [actual.to],
+            ...(actual.cc.length > 0 ? { cc: actual.cc } : {}),
             ...(actual.bcc.length > 0 ? { bcc: actual.bcc } : {}),
             // Replies go straight to the customer, for RSM and dealer alike.
             replyTo: lead.email,
@@ -248,8 +251,8 @@ export async function notifyRsmOfLead(
         }
         console.log(
           redirect
-            ? `[notify-rsm] Sent ${kind} email (${data?.id}) to TEST INBOX ${redirect} — live routing would have been ${describe(envelope)}`
-            : `[notify-rsm] Sent ${kind} email (${data?.id}) ${describe(envelope)}`,
+            ? `[notify-rsm] Sent ${kind} email (${data?.id}) to TEST INBOX ${redirect} — live routing would have been ${describeEnvelope(envelope)}`
+            : `[notify-rsm] Sent ${kind} email (${data?.id}) ${describeEnvelope(envelope)}`,
         )
         return true
       } catch (err) {
@@ -258,11 +261,8 @@ export async function notifyRsmOfLead(
       }
     }
 
-    // — RSM notification: the standard email. No dealer is copied. —
-    const rsmEnvelope: Envelope = {
-      to: match?.rsmEmail ?? fallback,
-      bcc: match ? [fallback] : [],
-    }
+    // — RSM notification: the standard email. Corporate CC'd, no dealer copied. —
+    const rsmEnvelope = buildLeadEnvelope(match?.rsmEmail ?? fallback)
 
     const rsmSent = await deliver(
       'rsm',
@@ -285,12 +285,13 @@ export async function notifyRsmOfLead(
     )
 
     // — Dealer notification: only when the visitor named a dealer that has a
-    //   public inbox. Warmer, no competitor list, RSM BCC'd. —
+    //   public inbox. Warmer, no competitor list, corporate CC'd. The RSM is
+    //   not copied here — their own email already names the chosen dealer. —
     const dealerTo = dealerNotifyAddress(dealerChoice)
     let dealerSent = false
 
     if (dealerTo && dealerChoice?.kind === 'selected') {
-      const dealerEnvelope: Envelope = { to: dealerTo, bcc: [rsmEnvelope.to] }
+      const dealerEnvelope = buildLeadEnvelope(dealerTo)
       dealerSent = await deliver(
         'dealer',
         isDealerEmailEnabled(),

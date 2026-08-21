@@ -270,7 +270,7 @@ export function ZipTestTool() {
           />
           <p className="mt-1.5 text-xs text-kawai-charcoal/60">
             Each inbox receives the RSM email, plus the dealer email when you pick a dealer. No
-            real RSM or dealer is addressed, copied or BCC&rsquo;d — the envelopes production
+            real RSM, dealer or corporate inbox is addressed, copied or BCC&rsquo;d — the envelopes production
             would use are reported below. No HubSpot, no Shopify.
           </p>
         </div>
@@ -368,7 +368,7 @@ export function ZipTestTool() {
                 </p>
               </div>
 
-              {/* — Exactly who production would have delivered to, To and Bcc — */}
+              {/* — Exactly who production would have delivered to, To/Cc/Bcc — */}
               {result.plan && result.plan.length > 0 && (
                 <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-amber-800">
@@ -388,6 +388,10 @@ export function ZipTestTool() {
                           <>
                             <span className="text-kawai-charcoal/70">would go to </span>
                             <span className="font-mono text-xs text-amber-900">{d.to}</span>
+                            <span className="text-kawai-charcoal/70"> · CC </span>
+                            <span className="font-mono text-xs text-amber-900">
+                              {d.cc.length > 0 ? d.cc.join(', ') : 'none'}
+                            </span>
                             <span className="text-kawai-charcoal/70"> · BCC </span>
                             <span className="font-mono text-xs text-amber-900">
                               {d.bcc.length > 0 ? d.bcc.join(', ') : 'none'}

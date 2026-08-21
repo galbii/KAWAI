@@ -2,15 +2,12 @@
 
 import { BrandEyebrow } from './brand-ui'
 import { offerCopy, hubspotSignupForm } from './scenes'
+import { useOfferModal } from './OfferModalContext'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
-import { notifyRsmOfLead } from '@/lib/actions/notify-rsm-of-lead'
 
 /** Source/campaign tags applied to the Shopify customer for this page. */
 const SHOPIFY_LEAD_TAGS = ['signup2', 'summer-savings']
-
-/** Identifies this page in the RSM notification email + Resend dashboard tag. */
-const LEAD_SOURCE = 'signup2'
 
 /**
  * The dealer-discount sign-up content: offer copy + the reusable HubSpot
@@ -22,8 +19,16 @@ const LEAD_SOURCE = 'signup2'
  * On submit the lead goes to HubSpot (primary CRM) and is additionally mirrored
  * into Shopify via `onComplete` — fire-and-forget so a Shopify hiccup can never
  * block or fail the HubSpot submission the visitor is waiting on.
+ *
+ * Lead routing is deliberately NOT fired here. Unlike /signup, this page asks
+ * the visitor which dealer they want, so the RSM notification is deferred until
+ * they answer and then carries their choice. The submission is handed up to
+ * OfferModalProvider, which owns the picker — this component is unmounted when
+ * the offer modal closes, so it must not own anything the lead depends on.
  */
 export function OfferSignupForm() {
+  const { captureLead, confirmLead } = useOfferModal()
+
   return (
     <div>
       <BrandEyebrow className="text-kawai-red/80">{offerCopy.eyebrow}</BrandEyebrow>
@@ -37,9 +42,13 @@ export function OfferSignupForm() {
         submitLabel={offerCopy.submitLabel}
         onComplete={(data) => {
           void upsertSignupLeadToShopify(data, SHOPIFY_LEAD_TAGS).catch(() => {})
-          // Route the lead to the nearest dealer's Regional Sales Manager.
-          void notifyRsmOfLead(data, LEAD_SOURCE).catch(() => {})
+          // Handed up on `onComplete` rather than `onSubmitted` so the
+          // nearby-dealer lookup runs while HubSpot is still submitting — by the
+          // time the confirmation appears the picker has its list and opens
+          // instantly.
+          captureLead(data)
         }}
+        onSubmitted={confirmLead}
       />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">
