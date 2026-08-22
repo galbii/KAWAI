@@ -15,15 +15,25 @@
  */
 
 /**
- * Delivery kill switches. Both OFF unless explicitly set to the string 'true',
- * so a missing or malformed env var can never accidentally start sending.
+ * Delivery kill switches. Both OFF unless explicitly switched on, so an unset
+ * env var can never accidentally start sending.
  *
  * Shared rather than read at each call site because the RSM email's wording
  * depends on whether the dealer is being notified — if these two disagreed, the
  * RSM would be told the dealer has the lead when nobody had contacted them.
  */
-export const isRsmEmailEnabled = () => process.env.LEAD_NOTIFY_RSM_EMAIL === 'true'
-export const isDealerEmailEnabled = () => process.env.LEAD_NOTIFY_DEALER_EMAIL === 'true'
+/**
+ * Read one switch. Trimmed and lower-cased before comparing, and `1`/`yes`/`on`
+ * count as on: these are hand-typed into a hosting dashboard, and a stray space
+ * or a capitalised `TRUE` silently holding every lead email is a far worse
+ * failure than being liberal about how "on" is spelled. Anything else — unset,
+ * blank, `false`, a typo — is still off.
+ */
+const isOn = (raw: string | undefined): boolean =>
+  ['true', '1', 'yes', 'on'].includes(raw?.trim().toLowerCase() ?? '')
+
+export const isRsmEmailEnabled = () => isOn(process.env.LEAD_NOTIFY_RSM_EMAIL)
+export const isDealerEmailEnabled = () => isOn(process.env.LEAD_NOTIFY_DEALER_EMAIL)
 
 /** Corporate inbox copied on every lead email. Override with LEAD_NOTIFY_CC_EMAIL. */
 export const DEFAULT_LEAD_CC_EMAIL = 'contact@kawaius.com'
