@@ -61,16 +61,6 @@ export default function AccessibilityStatementPage() {
         </div>
       </section>
 
-      {/* ── Signature: piano-key transition (decorative) ─────────────────── */}
-      <div
-        aria-hidden="true"
-        className="h-4 w-full"
-        style={{
-          background:
-            'repeating-linear-gradient(90deg, #FFFFFF 0, #FFFFFF 26px, #1E1B16 26px, #1E1B16 28px)',
-        }}
-      />
-
       {/* ── Statement (headings enlarged) ────────────────────────────────── */}
       <section className="container mx-auto px-6 max-w-2xl py-16 md:py-24 space-y-16">
         <Block label="Our Commitment">

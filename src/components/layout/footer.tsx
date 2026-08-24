@@ -255,6 +255,14 @@ export function Footer({
               <Link href="/return-policy" className="hover:text-kawai-red transition-colors">
                 Return Policy
               </Link>
+              {site !== 'cad' && (
+                <>
+                  <span className="hidden md:inline text-kawai-neutral/40">·</span>
+                  <Link href="/non-profit" className="hover:text-kawai-red transition-colors">
+                    Tax-Exempt Purchases
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Social Links */}
