@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateTag } from 'next/cache'
 import { imageField, videoField } from '@/lib/payload/fields/media'
 
 export const HomePage: CollectionConfig = {
@@ -17,6 +18,27 @@ export const HomePage: CollectionConfig = {
   },
   access: {
     read: () => true, // Public read access for frontend
+  },
+  hooks: {
+    afterChange: [
+      /**
+       * Bust every cache keyed to this singleton.
+       *
+       * Load-bearing for more than page content: `enableRsmLeadNotifications`
+       * (the "RSM Lead Notification Emails" switch in the sidebar) is read
+       * through an `unstable_cache` tagged `home-page`. Without this hook its
+       * only invalidation was the 300s TTL, so flipping the switch appeared to
+       * do nothing for up to five minutes and every lead submitted in that
+       * window was silently dropped instead of reaching an RSM. An operator
+       * toggling a kill switch must see it take effect on the next submission,
+       * not eventually.
+       */
+      ({ doc, req: { payload } }) => {
+        payload.logger.info('Revalidating home page + RSM notification flag')
+        revalidateTag('home-page')
+        return doc
+      },
+    ],
   },
   fields: [
     // Sidebar Fields

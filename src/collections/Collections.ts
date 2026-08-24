@@ -1,4 +1,9 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Condition } from 'payload'
+import { imageField } from '@/lib/payload/fields'
+
+// Shared condition for the Successor Promo tab — fields only appear once the
+// promo is enabled. siblingData is the successorPromo tab's own data.
+const promoEnabled: Condition = (_, siblingData) => Boolean(siblingData?.enabled)
 
 /**
  * Collections Collection
@@ -202,6 +207,104 @@ export const Collections: CollectionConfig = {
               ],
               admin: {
                 description: 'Font family for heading',
+              },
+            },
+          ],
+        },
+
+        // Successor Promo Tab — popup pointing a legacy collection at its replacement
+        {
+          name: 'successorPromo',
+          label: 'Successor Promo',
+          description:
+            'Show a small popup on this collection page that points visitors to its successor (e.g. a discontinued series superseded by a new one)',
+          fields: [
+            {
+              name: 'enabled',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Enable the successor popup on this collection page',
+              },
+            },
+            {
+              name: 'successorCollection',
+              type: 'relationship',
+              relationTo: 'collections',
+              // A collection can't be its own successor
+              filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true),
+              admin: {
+                description: 'The newer collection to promote — the popup links to its page',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'eyebrow',
+              type: 'text',
+              defaultValue: 'The Next Generation',
+              admin: {
+                description: 'Small uppercase label above the popup headline',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'title',
+              type: 'text',
+              admin: {
+                description: 'Popup headline. Leave blank to use "Meet the {successor title}"',
+                placeholder: 'Meet the CA Series',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'message',
+              type: 'textarea',
+              admin: {
+                description: 'Short supporting text under the headline',
+                placeholder:
+                  'This series has been reimagined. Discover its successor — refined sound, upgraded action, and a new design.',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'ctaLabel',
+              type: 'text',
+              defaultValue: 'Explore the New Collection',
+              admin: {
+                description: 'Button label — clicking it navigates to the successor collection page',
+                condition: promoEnabled,
+              },
+            },
+            imageField('image', {
+              admin: {
+                description:
+                  "Optional image override — defaults to the successor collection's Shopify image",
+                condition: promoEnabled,
+              },
+            }),
+            {
+              name: 'displayFrequency',
+              type: 'select',
+              defaultValue: 'session',
+              options: [
+                { label: 'Once per session', value: 'session' },
+                { label: 'Once per visitor (persists across visits)', value: 'visitor' },
+                { label: 'Every page view', value: 'always' },
+              ],
+              admin: {
+                description: 'How often a visitor sees the popup after dismissing it',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'delaySeconds',
+              type: 'number',
+              min: 0,
+              max: 60,
+              defaultValue: 2,
+              admin: {
+                description: 'Seconds to wait before the popup slides in',
+                condition: promoEnabled,
               },
             },
           ],

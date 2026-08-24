@@ -3301,6 +3301,44 @@ export interface Collection {
    * Font family for heading
    */
   fontFamily?: ('serif' | 'sans') | null;
+  successorPromo?: {
+    /**
+     * Enable the successor popup on this collection page
+     */
+    enabled?: boolean | null;
+    /**
+     * The newer collection to promote — the popup links to its page
+     */
+    successorCollection?: (string | null) | Collection;
+    /**
+     * Small uppercase label above the popup headline
+     */
+    eyebrow?: string | null;
+    /**
+     * Popup headline. Leave blank to use "Meet the {successor title}"
+     */
+    title?: string | null;
+    /**
+     * Short supporting text under the headline
+     */
+    message?: string | null;
+    /**
+     * Button label — clicking it navigates to the successor collection page
+     */
+    ctaLabel?: string | null;
+    /**
+     * Optional image override — defaults to the successor collection's Shopify image
+     */
+    image?: (string | null) | Media;
+    /**
+     * How often a visitor sees the popup after dismissing it
+     */
+    displayFrequency?: ('session' | 'visitor' | 'always') | null;
+    /**
+     * Seconds to wait before the popup slides in
+     */
+    delaySeconds?: number | null;
+  };
   /**
    * Show in the navigation mega menu carousel (Featured Collections)
    */
@@ -12649,6 +12687,19 @@ export interface CollectionsSelect<T extends boolean = true> {
   overlayOpacity?: T;
   headingSize?: T;
   fontFamily?: T;
+  successorPromo?:
+    | T
+    | {
+        enabled?: T;
+        successorCollection?: T;
+        eyebrow?: T;
+        title?: T;
+        message?: T;
+        ctaLabel?: T;
+        image?: T;
+        displayFrequency?: T;
+        delaySeconds?: T;
+      };
   featured?: T;
   legacy?: T;
   collectionPriority?: T;

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { CollectionShowcaseBlock } from '@/components/blocks/CollectionShowcaseBlock'
 import { CollectionProductRow } from '@/components/piano/CollectionProductRow'
+import { SuccessorPromoPopup } from '@/components/piano/successor-promo-popup'
 
 export interface CollectionVariation {
   name: string
@@ -167,6 +168,18 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
   const categoryLabel = primaryCategory
     ? (CATEGORY_LABELS[primaryCategory] ?? primaryCategory)
     : null
+
+  // Successor promo — populated at depth 1 by getCollectionByHandle, so the
+  // relationship resolves to the full successor doc (handle/title/imageUrl)
+  const promo = collection.successorPromo
+  const successor =
+    promo?.enabled && promo.successorCollection && typeof promo.successorCollection === 'object'
+      ? promo.successorCollection
+      : null
+  const promoImageUrl =
+    promo?.image && typeof promo.image === 'object' && promo.image?.url
+      ? promo.image.url
+      : (successor?.imageUrl ?? null)
 
   return (
     <div className="min-h-screen bg-white text-kawai-black">
@@ -386,6 +399,23 @@ export function CollectionPageContent({ collection, products, site = 'us' }: Col
 
       {/* ── Media gallery bento grid ────────────────────────────────────────── */}
       <CollectionBentoGrid products={products} />
+
+      {/* ── Successor promo popup ───────────────────────────────────────────── */}
+      {successor?.handle && (
+        <SuccessorPromoPopup
+          currentHandle={collection.handle}
+          currentTitle={collection.title}
+          successorHandle={successor.handle}
+          successorTitle={successor.title}
+          imageUrl={promoImageUrl}
+          eyebrow={promo.eyebrow}
+          title={promo.title}
+          message={promo.message}
+          ctaLabel={promo.ctaLabel}
+          frequency={promo.displayFrequency}
+          delaySeconds={promo.delaySeconds}
+        />
+      )}
 
       {/* ── Bottom CTA ──────────────────────────────────────────────────────── */}
       <section className="bg-kawai-black text-white py-28 mt-4">
