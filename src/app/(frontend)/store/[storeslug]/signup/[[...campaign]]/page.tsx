@@ -12,6 +12,9 @@ import { SignupLockup } from '@/components/signup/SignupLockup'
 import { SignupHero } from '@/components/signup/SignupHero'
 import { SignupBlocks } from '@/components/signup/SignupBlocks'
 import { SignupEndedPanel } from '@/components/signup/SignupEndedPanel'
+import { SignupRail } from '@/components/signup/SignupRail'
+import { SignupMobileBar } from '@/components/signup/SignupMobileBar'
+import type { SignupQuestion } from '@/lib/signup/types'
 
 export const revalidate = 3600
 export const dynamicParams = true
@@ -99,9 +102,24 @@ export default async function SignupCampaignPage({ params }: { params: Promise<P
               school={school}
             />
           </div>
-          {/* Form rail mounts here */}
+          <SignupRail
+            campaignSlug={campaign.slug}
+            storeslug={resolved.storeslug}
+            title={campaign.form?.title ?? 'Reserve your spot'}
+            subtitle={campaign.form?.subtitle}
+            submitLabel={campaign.form?.submitLabel ?? 'Save My Spot'}
+            finePrint={campaign.form?.finePrint}
+            core={{
+              collectPhone: Boolean(campaign.form?.collectPhone),
+              requirePhone: Boolean(campaign.form?.requirePhone),
+              collectZip: Boolean(campaign.form?.collectZip),
+              requireZip: Boolean(campaign.form?.requireZip),
+            }}
+            questions={(campaign.form?.questions ?? []) as unknown as SignupQuestion[]}
+          />
         </div>
       </main>
+      <SignupMobileBar label={campaign.form?.submitLabel ?? 'Save My Spot'} />
     </>
   )
 }
