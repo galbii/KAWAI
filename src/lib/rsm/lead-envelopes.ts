@@ -82,3 +82,74 @@ export function describeEnvelope({ to, cc, bcc }: LeadEnvelope): string {
     ` bcc=${bcc.length ? bcc.join(',') : 'none'}`
   )
 }
+
+/* ------------------------------------------------------------------ *
+ * Canada override
+ *
+ * Canadian dealers are managed centrally rather than by the territorial RSMs
+ * the `rsmEmail` field models, so nearest-dealer matching gives a poor (often
+ * empty) answer north of the border. Every lead with a Canadian postal code is
+ * therefore addressed to one national inbox instead, whatever the matcher
+ * found. The corporate CC above still applies.
+ *
+ * The matcher still runs for Canadian leads — the nearest-dealer readout in the
+ * email body and the visitor's dealer picker both stay useful — only the
+ * recipient is overridden.
+ * ------------------------------------------------------------------ */
+
+/** Where every Canadian lead goes. Override with LEAD_NOTIFY_CANADA_EMAIL. */
+export const DEFAULT_CANADA_LEAD_EMAIL = 'dmitchell@kawaius.com'
+
+/**
+ * `||`, not `??`: a present-but-blank env var (LEAD_NOTIFY_CANADA_EMAIL=) is an
+ * empty string, which `??` would pass through as a literal '' recipient and
+ * make Resend reject the whole send.
+ */
+export function canadaLeadInbox(): string {
+  return process.env.LEAD_NOTIFY_CANADA_EMAIL?.trim() || DEFAULT_CANADA_LEAD_EMAIL
+}
+
+/**
+ * A real Canadian postal code — full (`A1A 1A1`, `a1a1a1`, `A1A-1A1`) or the
+ * 3-character FSA (`A1A`) some visitors type.
+ *
+ * Deliberately stricter than `classifyLeadCountry` in ./routing, which calls
+ * anything that isn't a US ZIP "canada" so ranking has a country to filter by.
+ * That looser rule is fine for *filtering* but wrong for *addressing*: it would
+ * hand every typo'd ZIP to the Canadian inbox. Only a genuine postal code
+ * overrides the recipient; junk still falls through to the match/fallback path.
+ */
+const CANADIAN_POSTAL_RE = /^[A-Za-z]\d[A-Za-z]([ -]?\d[A-Za-z]\d)?$/
+
+export function isCanadianLeadZip(zip: string): boolean {
+  return CANADIAN_POSTAL_RE.test(zip.trim())
+}
+
+/** Where a lead notification is addressed, and why. */
+export interface RsmRecipient {
+  to: string
+  /** True when the Canada override chose this address over the match. */
+  canadaOverride: boolean
+}
+
+/**
+ * Resolve the RSM notification's To address: Canadian postal codes go to the
+ * national inbox, everyone else to the matched RSM, falling back when unmatched.
+ *
+ * Takes the matched address rather than the `RsmMatch` so this module stays
+ * free of ./routing — which pulls in the Payload Local API and can't be
+ * imported outside a server runtime.
+ *
+ * Shared by the live send and the test tool so the dry run can never report a
+ * recipient production wouldn't use.
+ */
+export function resolveRsmRecipient(
+  zip: string,
+  matchedEmail: string | null | undefined,
+  fallback: string,
+): RsmRecipient {
+  if (isCanadianLeadZip(zip)) {
+    return { to: canadaLeadInbox(), canadaOverride: true }
+  }
+  return { to: matchedEmail ?? fallback, canadaOverride: false }
+}

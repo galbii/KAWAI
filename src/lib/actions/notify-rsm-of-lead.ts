@@ -18,6 +18,11 @@
  *   4. Sort by haversine distance and walk the list until a dealer with an
  *      `rsmEmail` is found — RSMs are territorial, so the 2nd-nearest dealer's
  *      RSM is almost always the same person.
+ *   4b. Canada override: a lead whose postal code is Canadian is addressed to
+ *      the national Canadian inbox (LEAD_NOTIFY_CANADA_EMAIL, default
+ *      dmitchell@kawaius.com) regardless of what step 4 matched — Canadian
+ *      dealers aren't covered by the territorial `rsmEmail` scheme. The match
+ *      itself still runs and still appears in the email body.
  *   5. Send via Resend with `replyTo` = the lead, an idempotency key so a
  *      double-fired submit can't email the RSM twice, and a `source` tag for
  *      dashboard filtering. Falls back to LEAD_NOTIFY_FALLBACK_EMAIL when no
@@ -93,6 +98,7 @@ import {
   describeEnvelope,
   isDealerEmailEnabled,
   isRsmEmailEnabled,
+  resolveRsmRecipient,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
 
@@ -265,7 +271,16 @@ export async function notifyRsmOfLead(
     const dealerNotified = Boolean(dealerTo) && isDealerEmailEnabled()
 
     // — RSM notification: the standard email. Corporate CC'd, no dealer copied. —
-    const rsmEnvelope = buildLeadEnvelope(match?.rsmEmail ?? fallback)
+    // Canadian postal codes bypass the match and go to the national inbox; see
+    // `resolveRsmRecipient`.
+    const recipient = resolveRsmRecipient(lead.zip, match?.rsmEmail, fallback)
+    if (recipient.canadaOverride) {
+      console.log(
+        `[notify-rsm] Canadian lead "${lead.zip}" — routing to ${recipient.to} instead of ` +
+          `${match?.rsmEmail ?? 'the fallback inbox'}.`,
+      )
+    }
+    const rsmEnvelope = buildLeadEnvelope(recipient.to)
 
     const rsmSent = await deliver(
       'rsm',

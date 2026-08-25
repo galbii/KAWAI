@@ -53,6 +53,7 @@ import {
 import {
   buildLeadEnvelope,
   isDealerEmailEnabled,
+  resolveRsmRecipient,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
 import type { DealerRegion } from '@/lib/utils/dealer-country'
@@ -85,6 +86,8 @@ export interface ZipTestResult {
   wouldSendTo?: string
   /** True when no candidate had an rsmEmail (or geocoding failed). */
   usedFallback?: boolean
+  /** True when the Canada override picked the recipient over the match. */
+  canadaOverride?: boolean
   /** id of the dealer whose RSM would be emailed. */
   matchedDealerId?: string | null
   candidates?: ZipTestCandidate[]
@@ -174,16 +177,22 @@ async function resolveRouting(
   const coords = await geocodeZipCode(zip)
 
   if (!coords) {
+    // Resolved even with no coords: a Canadian postal code routes to the
+    // national inbox whether or not geocoding worked.
+    const unmatched = resolveRsmRecipient(zip, null, fallback)
     return {
       match: null,
       nearby: [],
       result: {
         success: true,
-        message: `Could not geocode "${zip}" — the real pipeline would route this lead to the fallback inbox.`,
+        message: unmatched.canadaOverride
+          ? `Could not geocode "${zip}", but it is a Canadian postal code — the real pipeline would route this lead to the Canadian inbox.`
+          : `Could not geocode "${zip}" — the real pipeline would route this lead to the fallback inbox.`,
         zip,
         country,
-        wouldSendTo: fallback,
+        wouldSendTo: unmatched.to,
         usedFallback: true,
+        canadaOverride: unmatched.canadaOverride,
         matchedDealerId: null,
         candidates: [],
         totalCandidates: 0,
@@ -205,6 +214,7 @@ async function resolveRouting(
     }))
 
   const nearby = toNearbyDealerOptions(ranked, NEARBY_DEALER_COUNT)
+  const recipient = resolveRsmRecipient(zip, match?.rsmEmail, fallback)
 
   return {
     match,
@@ -215,8 +225,11 @@ async function resolveRouting(
       zip,
       country,
       coords,
-      wouldSendTo: match?.rsmEmail ?? fallback,
-      usedFallback: !match,
+      wouldSendTo: recipient.to,
+      // A Canada-routed lead isn't "unmatched" — it's deliberately addressed
+      // elsewhere — so it must not be flagged as having fallen back.
+      usedFallback: !match && !recipient.canadaOverride,
+      canadaOverride: recipient.canadaOverride,
       matchedDealerId: match?.dealer.id ?? null,
       candidates,
       totalCandidates: ranked.length,

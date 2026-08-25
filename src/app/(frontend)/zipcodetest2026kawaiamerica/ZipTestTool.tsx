@@ -428,12 +428,14 @@ export function ZipTestTool() {
               {result.wouldSendTo}
             </p>
             <p className="mt-2 text-sm text-kawai-charcoal">
-              {result.usedFallback
-                ? result.message ||
-                  'No nearby dealer has an RSM email — this would go to the fallback inbox.'
-                : `Nearest dealer with an RSM: ${
-                    mapDealers.find((d) => d.id === result.matchedDealerId)?.dealerName ?? '—'
-                  }`}
+              {result.canadaOverride
+                ? 'Canadian postal code — every CA lead is routed to the national Canadian inbox, whatever the nearest-dealer match below says.'
+                : result.usedFallback
+                  ? result.message ||
+                    'No nearby dealer has an RSM email — this would go to the fallback inbox.'
+                  : `Nearest dealer with an RSM: ${
+                      mapDealers.find((d) => d.id === result.matchedDealerId)?.dealerName ?? '—'
+                    }`}
               {' · '}
               Detected country: <strong>{result.country === 'canada' ? 'Canada' : 'US'}</strong>
               {result.coords && (
