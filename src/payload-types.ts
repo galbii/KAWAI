@@ -66,6 +66,9 @@ export interface Config {
     users: UserAuthOperations;
   };
   blocks: {
+    'signup-instructors': SignupInstructorsBlock;
+    'signup-details': SignupDetailsBlock;
+    'signup-location': SignupLocationBlock;
     'content-text': ContentTextBlock;
     'content-image': ContentImageBlock;
     'content-video': ContentVideoBlock;
@@ -168,6 +171,8 @@ export interface Config {
     'constant-contact-custom-fields': ConstantContactCustomField;
     jobs: Job;
     'job-applications': JobApplication;
+    'signup-campaigns': SignupCampaign;
+    'signup-leads': SignupLead;
     redirects: Redirect;
     exports: Export;
     imports: Import;
@@ -207,6 +212,8 @@ export interface Config {
     'constant-contact-custom-fields': ConstantContactCustomFieldsSelect<false> | ConstantContactCustomFieldsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     'job-applications': JobApplicationsSelect<false> | JobApplicationsSelect<true>;
+    'signup-campaigns': SignupCampaignsSelect<false> | SignupCampaignsSelect<true>;
+    'signup-leads': SignupLeadsSelect<false> | SignupLeadsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
@@ -264,6 +271,55 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SignupInstructorsBlock".
+ */
+export interface SignupInstructorsBlock {
+  heading?: string | null;
+  intro?: string | null;
+  /**
+   * Maximum faculty to show. Pulled from the linked Music School.
+   */
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'signup-instructors';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SignupDetailsBlock".
+ */
+export interface SignupDetailsBlock {
+  heading?: string | null;
+  items?:
+    | {
+        icon?: ('calendar' | 'clock' | 'price' | 'people' | 'pin' | 'note') | null;
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'signup-details';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SignupLocationBlock".
+ */
+export interface SignupLocationBlock {
+  heading?: string | null;
+  showMap?: boolean | null;
+  showHours?: boolean | null;
+  /**
+   * Address and hours come from the Storefront record automatically.
+   */
+  parkingNote?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'signup-location';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -10928,6 +10984,237 @@ export interface JobApplication {
   createdAt: string;
 }
 /**
+ * Promo signup landing pages served at /store/{store}/signup
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signup-campaigns".
+ */
+export interface SignupCampaign {
+  id: string;
+  title: string;
+  /**
+   * URL segment, e.g. fall-open-house
+   */
+  slug: string;
+  /**
+   * Which storefronts this campaign runs at
+   */
+  stores: (string | Storefront)[];
+  isActive?: boolean | null;
+  /**
+   * Serve this campaign at the bare /signup URL
+   */
+  isDefault?: boolean | null;
+  startDate?: string | null;
+  /**
+   * Leave empty for open-ended. After this date the page shows an "ended" panel.
+   */
+  endDate?: string | null;
+  hero: {
+    /**
+     * Small line above the headline
+     */
+    kicker?: string | null;
+    /**
+     * The page H1. Exactly one per page — do not add another in a block.
+     */
+    heading: string;
+    subheading?: string | null;
+    /**
+     * Image or video behind the hero
+     */
+    background?: (string | null) | Media;
+    /**
+     * Darkening behind hero text. Must keep text at 4.5:1 — check visually.
+     */
+    scrim?: ('light' | 'medium' | 'heavy') | null;
+  };
+  blocks?:
+    | (
+        | ContentRichTextBlock
+        | ContentImageBlock
+        | ContentVideoBlock
+        | ContentBannerBlock
+        | LayoutColumnsBlock
+        | LayoutSpacerBlock
+        | LayoutDividerBlock
+        | SignupInstructorsBlock
+        | SignupDetailsBlock
+        | SignupLocationBlock
+      )[]
+    | null;
+  form?: {
+    title?: string | null;
+    subtitle?: string | null;
+    submitLabel?: string | null;
+    finePrint?: string | null;
+    collectPhone?: boolean | null;
+    requirePhone?: boolean | null;
+    collectZip?: boolean | null;
+    requireZip?: boolean | null;
+    /**
+     * Campaign-specific questions. The first 4 render in the sticky rail; the rest open in a second step.
+     */
+    questions?:
+      | {
+          type: 'text' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date';
+          label: string;
+          /**
+           * Field key, lowercase, no spaces. Unique within this campaign.
+           */
+          name: string;
+          required?: boolean | null;
+          options?:
+            | {
+                label: string;
+                value: string;
+                id?: string | null;
+              }[]
+            | null;
+          helpText?: string | null;
+          width?: ('full' | 'half') | null;
+          id?: string | null;
+        }[]
+      | null;
+    successMode?: ('message' | 'redirect') | null;
+    successMessage?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    redirectUrl?: string | null;
+  };
+  notify?: {
+    /**
+     * Who receives each lead
+     */
+    recipients?:
+      | {
+          email: string;
+          id?: string | null;
+        }[]
+      | null;
+    includeStorefrontEmail?: boolean | null;
+    includeSchoolEmail?: boolean | null;
+    /**
+     * NOT YET WIRED. The ZIP-to-RSM matching still lives inside notify-rsm-of-lead.ts and has not been extracted. Hidden so it cannot be switched on with no effect.
+     */
+    autoRouteToRSM?: boolean | null;
+    cc?:
+      | {
+          email: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Supports {{campaign}}, {{store}}, {{firstName}}
+     */
+    subjectTemplate?: string | null;
+    /**
+     * OFF by default. While off, recipients are logged but no email is sent.
+     */
+    liveSendEnabled?: boolean | null;
+    sendConfirmationToLead?: boolean | null;
+    confirmationSubject?: string | null;
+    confirmationBody?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  shopify?: {
+    enableSync?: boolean | null;
+    /**
+     * signup-{slug} and store-{storeslug} are added automatically
+     */
+    tags?:
+      | {
+          tag: string;
+          id?: string | null;
+        }[]
+      | null;
+    acceptsMarketing?: boolean | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    image?: (string | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Submissions from store signup campaign pages
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signup-leads".
+ */
+export interface SignupLead {
+  id: string;
+  campaign?: (string | null) | SignupCampaign;
+  /**
+   * Denormalized — survives deletion of the campaign
+   */
+  campaignSlug?: string | null;
+  storefront?: (string | null) | Storefront;
+  storeslug?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  zip?: string | null;
+  /**
+   * Campaign questions as they read at submission time. Never rewrite these when the campaign changes.
+   */
+  answers?:
+    | {
+        name?: string | null;
+        label?: string | null;
+        value?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  utm?: {
+    source?: string | null;
+    medium?: string | null;
+    campaign?: string | null;
+    term?: string | null;
+    content?: string | null;
+  };
+  sourceUrl?: string | null;
+  userAgent?: string | null;
+  ipAddress?: string | null;
+  submittedAt?: string | null;
+  resendStatus?: ('pending' | 'sent' | 'failed' | 'held') | null;
+  resendEmailId?: string | null;
+  confirmationStatus?: ('pending' | 'sent' | 'failed' | 'skipped') | null;
+  confirmationEmailId?: string | null;
+  shopifyStatus?: ('pending' | 'synced' | 'failed' | 'skipped') | null;
+  shopifyCustomerId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage URL redirects. Changes take effect within 30 seconds.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11381,6 +11668,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'job-applications';
         value: string | JobApplication;
+      } | null)
+    | ({
+        relationTo: 'signup-campaigns';
+        value: string | SignupCampaign;
+      } | null)
+    | ({
+        relationTo: 'signup-leads';
+        value: string | SignupLead;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -13089,6 +13384,151 @@ export interface JobApplicationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signup-campaigns_select".
+ */
+export interface SignupCampaignsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  stores?: T;
+  isActive?: T;
+  isDefault?: T;
+  startDate?: T;
+  endDate?: T;
+  hero?:
+    | T
+    | {
+        kicker?: T;
+        heading?: T;
+        subheading?: T;
+        background?: T;
+        scrim?: T;
+      };
+  blocks?: T | {};
+  form?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        submitLabel?: T;
+        finePrint?: T;
+        collectPhone?: T;
+        requirePhone?: T;
+        collectZip?: T;
+        requireZip?: T;
+        questions?:
+          | T
+          | {
+              type?: T;
+              label?: T;
+              name?: T;
+              required?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              helpText?: T;
+              width?: T;
+              id?: T;
+            };
+        successMode?: T;
+        successMessage?: T;
+        redirectUrl?: T;
+      };
+  notify?:
+    | T
+    | {
+        recipients?:
+          | T
+          | {
+              email?: T;
+              id?: T;
+            };
+        includeStorefrontEmail?: T;
+        includeSchoolEmail?: T;
+        autoRouteToRSM?: T;
+        cc?:
+          | T
+          | {
+              email?: T;
+              id?: T;
+            };
+        subjectTemplate?: T;
+        liveSendEnabled?: T;
+        sendConfirmationToLead?: T;
+        confirmationSubject?: T;
+        confirmationBody?: T;
+      };
+  shopify?:
+    | T
+    | {
+        enableSync?: T;
+        tags?:
+          | T
+          | {
+              tag?: T;
+              id?: T;
+            };
+        acceptsMarketing?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "signup-leads_select".
+ */
+export interface SignupLeadsSelect<T extends boolean = true> {
+  campaign?: T;
+  campaignSlug?: T;
+  storefront?: T;
+  storeslug?: T;
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  phone?: T;
+  zip?: T;
+  answers?:
+    | T
+    | {
+        name?: T;
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  utm?:
+    | T
+    | {
+        source?: T;
+        medium?: T;
+        campaign?: T;
+        term?: T;
+        content?: T;
+      };
+  sourceUrl?: T;
+  userAgent?: T;
+  ipAddress?: T;
+  submittedAt?: T;
+  resendStatus?: T;
+  resendEmailId?: T;
+  confirmationStatus?: T;
+  confirmationEmailId?: T;
+  shopifyStatus?: T;
+  shopifyCustomerId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -13392,6 +13832,8 @@ export interface TaskCreateCollectionExport {
       | 'constant-contact-custom-fields'
       | 'jobs'
       | 'job-applications'
+      | 'signup-campaigns'
+      | 'signup-leads'
       | 'redirects'
       | 'exports'
       | 'imports';

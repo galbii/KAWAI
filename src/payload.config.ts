@@ -37,6 +37,9 @@ import { MusicSchools } from './collections/MusicSchools'
 import { Jobs } from './collections/Jobs'
 import { JobApplications } from './collections/JobApplications'
 import { Redirects } from './collections/Redirects'
+import { SignupInstructors, SignupDetails, SignupLocation } from './blocks/signup'
+import { SignupCampaigns } from './collections/SignupCampaigns'
+import { SignupLeads } from './collections/SignupLeads'
 import { HeaderSettings } from './globals/HeaderSettings'
 import {
   // Content blocks
@@ -328,6 +331,10 @@ export default buildConfig({
     Jobs,
     JobApplications,
 
+    // Signup Campaigns
+    SignupCampaigns,
+    SignupLeads,
+
     // Settings
     Redirects,
   ],
@@ -336,6 +343,11 @@ export default buildConfig({
   ],
   // Define blocks at root level for performance optimization using blockReferences
   blocks: [
+    // Signup campaign blocks
+    SignupInstructors,
+    SignupDetails,
+    SignupLocation,
+
     // Content blocks (for blog articles)
     Text,
     Image,
