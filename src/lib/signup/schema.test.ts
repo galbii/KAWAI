@@ -75,6 +75,27 @@ describe('buildSignupSchema — campaign questions', () => {
     expect(schema.parse({ ...VALID_CORE, updates: true }).updates).toBe(true)
   })
 
+  it('coerces string checkbox values with allowlist', () => {
+    const schema = buildSignupSchema(CORE, [
+      { type: 'checkbox', label: 'Send me updates', name: 'updates' },
+    ])
+    expect(schema.parse({ ...VALID_CORE, updates: 'false' }).updates).toBe(false)
+    expect(schema.parse({ ...VALID_CORE, updates: 'true' }).updates).toBe(true)
+    expect(schema.parse({ ...VALID_CORE, updates: 'on' }).updates).toBe(true)
+    expect(schema.parse({ ...VALID_CORE, updates: 'anything else' }).updates).toBe(false)
+  })
+
+  it('enforces required checkbox and rejects string "false"', () => {
+    const schema = buildSignupSchema(CORE, [
+      { type: 'checkbox', label: 'I agree to terms', name: 'agree', required: true },
+    ])
+    expect(schema.safeParse({ ...VALID_CORE, agree: true }).success).toBe(true)
+    expect(schema.safeParse({ ...VALID_CORE, agree: 'true' }).success).toBe(true)
+    expect(schema.safeParse({ ...VALID_CORE, agree: 'on' }).success).toBe(true)
+    expect(schema.safeParse({ ...VALID_CORE, agree: false }).success).toBe(false)
+    expect(schema.safeParse({ ...VALID_CORE, agree: 'false' }).success).toBe(false)
+  })
+
   it('validates a date question as ISO YYYY-MM-DD', () => {
     const schema = buildSignupSchema(CORE, [
       { type: 'date', label: 'Preferred day', name: 'day', required: true },

@@ -48,7 +48,13 @@ function questionSchema(question: SignupQuestion): z.ZodTypeAny {
   if (question.type === 'checkbox') {
     // Unchecked boxes are simply absent from a form POST, so a checkbox is
     // never "missing" — it is false. A required checkbox means "must be ticked".
-    const box = z.coerce.boolean().default(false)
+    // Use explicit allowlist to avoid JS truthiness footgun: z.coerce.boolean()
+    // would coerce the string "false" to true, inverting semantics if form data
+    // is string-encoded rather than native JSON.
+    const box = z.preprocess(
+      (v) => v === true || v === 'true' || v === 'on',
+      z.boolean(),
+    ).default(false)
     return required
       ? box.refine((v) => v === true, { message: `${question.label} is required` })
       : box
