@@ -17,6 +17,7 @@ import type {
   PianosPage,
   HomePage,
   Media,
+  SignupCampaign,
 } from '@/payload-types'
 import type { NewsItem, HomePageData } from '@/lib/types/homepage'
 
@@ -2695,4 +2696,78 @@ export async function getMusicSchoolByStorefrontSlug(storefrontSlug: string): Pr
     console.error(`Error fetching music school for storefront "${storefrontSlug}":`, error)
     return null
   }
+}
+
+// ---------------------------------------------------------------------------
+// Signup campaigns
+// ---------------------------------------------------------------------------
+
+type SignupCampaignList = SignupCampaign[]
+
+/**
+ * All active campaigns attached to a storefront.
+ *
+ * Resolution (default vs named, date windows) deliberately lives in
+ * `resolveCampaign` in `src/lib/signup/resolve.ts` so every boundary case stays
+ * unit-testable without a database.
+ *
+ * depth: 1 populates hero media and block images. depth: 2 would inspect those
+ * Media docs for relationships they do not have — dozens of wasted round-trips
+ * on a block-heavy document.
+ */
+export function getSignupCampaignsForStore(storeslug: string) {
+  return unstable_cache(
+    async (): Promise<SignupCampaignList> => {
+      const payload = await getPayloadClient()
+      const storefront = await payload.find({
+        collection: 'storefronts',
+        where: { slug: { equals: storeslug } },
+        select: { slug: true },
+        depth: 0,
+        limit: 1,
+      })
+
+      const storefrontId = storefront.docs[0]?.id
+      if (!storefrontId) return []
+
+      const result = await payload.find({
+        collection: 'signup-campaigns',
+        where: {
+          and: [{ stores: { contains: storefrontId } }, { isActive: { equals: true } }],
+        },
+        depth: 1,
+        limit: 50,
+      })
+
+      return result.docs
+    },
+    [`signup-campaigns-${storeslug}`],
+    { tags: [`signup-campaigns-${storeslug}`, 'signup-campaigns'], revalidate: 3600 },
+  )()
+}
+
+/** Every active campaign × store pair, for generateStaticParams. */
+export async function getAllSignupCampaignParams(): Promise<
+  { storeslug: string; campaign: string[] }[]
+> {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'signup-campaigns',
+    where: { isActive: { equals: true } },
+    select: { slug: true, stores: true },
+    depth: 1,
+    limit: 200,
+  })
+
+  const params: { storeslug: string; campaign: string[] }[] = []
+
+  for (const campaign of result.docs) {
+    for (const store of campaign.stores ?? []) {
+      const storeslug = typeof store === 'object' && store !== null ? store.slug : null
+      if (!storeslug) continue
+      params.push({ storeslug, campaign: [campaign.slug] })
+    }
+  }
+
+  return params
 }
