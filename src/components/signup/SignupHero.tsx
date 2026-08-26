@@ -17,21 +17,25 @@ const SCRIM = {
  */
 export function SignupHero({ hero }: { hero: SignupCampaign['hero'] }) {
   const scrim = SCRIM[hero?.scrim ?? 'medium'] ?? SCRIM.medium
-  const image = getImagePropsWithFallback(
-    hero?.background ?? null,
-    '/images/defaults/piano-fallback.jpg',
-    'hero',
-    { priority: true, sizes: '100vw' },
-  )
+  // No background is a legitimate campaign choice, not a missing asset — the
+  // section's solid bg-kawai-black carries the hero on its own. Rendering an
+  // <Image> anyway would point at a fallback file that does not exist in
+  // public/, and the browser paints a broken-image glyph over the hero.
+  const background = hero?.background ?? null
+  const image = background
+    ? getImagePropsWithFallback(background, '', 'hero', { priority: true, sizes: '100vw' })
+    : null
 
   return (
     <section className="relative isolate overflow-hidden bg-kawai-black">
-      <Image
-        {...image}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      {image ? (
+        <Image
+          {...image}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       <div className={`absolute inset-0 bg-gradient-to-b ${scrim}`} aria-hidden="true" />
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
         {hero?.kicker ? (

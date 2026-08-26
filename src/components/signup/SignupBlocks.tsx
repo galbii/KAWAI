@@ -164,7 +164,7 @@ function LocationBlock({ block, storefront }: { block: any; storefront: any }) {
           {hours.map((row: any, i: number) => (
             <div key={row.id ?? i} className="flex justify-between gap-4">
               <dt className="text-kawai-charcoal/70">{row.day}</dt>
-              <dd className="text-kawai-black">{row.hoursOpen ?? row.hours}</dd>
+              <dd className="text-kawai-black">{row.time}</dd>
             </div>
           ))}
         </dl>
