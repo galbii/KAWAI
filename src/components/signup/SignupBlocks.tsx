@@ -95,29 +95,17 @@ function renderBlock(block: Block, storefront: any, school: any) {
 /* ------------------------------------------------------------------ shell */
 
 /**
- * One octave of a piano keyboard, drawn in CSS across the top edge of a card.
+ * Shared card shell for the three signup blocks.
  *
- * The stops are the real semitone layout, not a decorative dash pattern: seven
- * 8px white keys per 56px octave, with black keys straddling the C–D, D–E and
- * F–G, G–A, A–B boundaries. The two wide white runs (E–F and B–C) are what make
- * the eye read 2-then-3 and recognise it as a keybed rather than a dotted rule.
- *
- * This is the only ornament on these cards, which is the point — it identifies
- * a music school without an image request or an icon library.
+ * The single kawai-red rule across the top edge is the only ornament, and it is
+ * the brand mark doing the work rather than an illustration of the subject. It
+ * is decorative — the heading beneath it carries the meaning — so it is hidden
+ * from assistive tech and never used to distinguish one card from another.
  */
-const KEYBED =
-  'repeating-linear-gradient(90deg,' +
-  '#FAF8F5 0 5.5px, #1E1B16 5.5px 10.5px,' +
-  '#FAF8F5 10.5px 13.5px, #1E1B16 13.5px 18.5px,' +
-  '#FAF8F5 18.5px 29.5px, #1E1B16 29.5px 34.5px,' +
-  '#FAF8F5 34.5px 37.5px, #1E1B16 37.5px 42.5px,' +
-  '#FAF8F5 42.5px 45.5px, #1E1B16 45.5px 50.5px,' +
-  '#FAF8F5 50.5px 56px)'
-
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <section className="overflow-hidden rounded-xl border border-kawai-neutral bg-white shadow-[0_1px_2px_rgba(30,27,22,0.04),0_10px_28px_-14px_rgba(30,27,22,0.18)]">
-      <div aria-hidden="true" className="h-1.5 w-full" style={{ backgroundImage: KEYBED }} />
+      <div aria-hidden="true" className="h-1 w-full bg-kawai-red" />
       <div className="p-5 sm:p-6">{children}</div>
     </section>
   )
