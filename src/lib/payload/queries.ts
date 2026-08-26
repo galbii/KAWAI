@@ -2746,6 +2746,41 @@ export function getSignupCampaignsForStore(storeslug: string) {
   )()
 }
 
+/**
+ * The one campaign, if any, that should open as a popup on a store's music
+ * school page.
+ *
+ * Builds on the already-cached store campaign list rather than issuing its own
+ * query, so both share a cache entry and a revalidation tag. An expired or
+ * not-yet-started campaign never pops up — the landing page shows those an
+ * "ended" panel because printed flyers point at it, but there is no equivalent
+ * reason to interrupt a school-page visitor with a dead offer.
+ *
+ * Several campaigns having the flag on is a marketer mistake, not a crash: the
+ * soonest-ending one wins, since it is the one whose window is closing.
+ */
+export async function getPromoModalCampaignForStore(
+  storeslug: string,
+): Promise<SignupCampaign | null> {
+  const campaigns = await getSignupCampaignsForStore(storeslug)
+  const now = Date.now()
+
+  const eligible = campaigns.filter((c) => {
+    if (!c.promoModal?.enabled) return false
+    if (c.startDate && new Date(c.startDate).getTime() > now) return false
+    if (c.endDate && new Date(c.endDate).getTime() < now) return false
+    return true
+  })
+
+  eligible.sort((a, b) => {
+    const aEnd = a.endDate ? new Date(a.endDate).getTime() : Number.POSITIVE_INFINITY
+    const bEnd = b.endDate ? new Date(b.endDate).getTime() : Number.POSITIVE_INFINITY
+    return aEnd - bEnd
+  })
+
+  return eligible[0] ?? null
+}
+
 /** Every active campaign × store pair, for generateStaticParams. */
 export async function getAllSignupCampaignParams(): Promise<
   { storeslug: string; campaign: string[] }[]

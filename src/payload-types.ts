@@ -11094,6 +11094,28 @@ export interface SignupCampaign {
     } | null;
     redirectUrl?: string | null;
   };
+  promoModal?: {
+    /**
+     * Show this campaign as a popup on /store/{store}/music-school. Only one campaign per store should have this on — if several do, the soonest-ending one wins.
+     */
+    enabled?: boolean | null;
+    /**
+     * Defaults to the hero heading if left empty.
+     */
+    heading?: string | null;
+    /**
+     * Defaults to the hero subheading if left empty.
+     */
+    body?: string | null;
+    /**
+     * Seconds on the page before the popup opens. 0 opens immediately.
+     */
+    delaySeconds?: number | null;
+    /**
+     * A popup that reopens on every visit is the fastest way to train people to dismiss it. "Every page view" is for testing.
+     */
+    frequency?: ('session' | 'once' | 'always') | null;
+  };
   notify?: {
     /**
      * Who receives each lead
@@ -13436,6 +13458,15 @@ export interface SignupCampaignsSelect<T extends boolean = true> {
         successMode?: T;
         successMessage?: T;
         redirectUrl?: T;
+      };
+  promoModal?:
+    | T
+    | {
+        enabled?: T;
+        heading?: T;
+        body?: T;
+        delaySeconds?: T;
+        frequency?: T;
       };
   notify?:
     | T

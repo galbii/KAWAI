@@ -1,12 +1,17 @@
 import Image from 'next/image'
 import { getImagePropsWithFallback } from '@/lib/media/r2-utils'
-import type { SignupCampaign } from '@/payload-types'
+import { SignupHeroVideo } from './SignupHeroVideo'
+import type { Media, SignupCampaign } from '@/payload-types'
 
 const SCRIM = {
   light: 'from-black/30 to-black/45',
   medium: 'from-black/40 to-black/60',
   heavy: 'from-black/55 to-black/75',
 } as const
+
+function isMedia(value: unknown): value is Media {
+  return typeof value === 'object' && value !== null && 'url' in value
+}
 
 /**
  * Owns the page's single <h1>. No block may emit another.
@@ -17,17 +22,33 @@ const SCRIM = {
  */
 export function SignupHero({ hero }: { hero: SignupCampaign['hero'] }) {
   const scrim = SCRIM[hero?.scrim ?? 'medium'] ?? SCRIM.medium
+
   // No background is a legitimate campaign choice, not a missing asset — the
   // section's solid bg-kawai-black carries the hero on its own. Rendering an
   // <Image> anyway would point at a fallback file that does not exist in
   // public/, and the browser paints a broken-image glyph over the hero.
   const background = hero?.background ?? null
-  const image = background
-    ? getImagePropsWithFallback(background, '', 'hero', { priority: true, sizes: '100vw' })
-    : null
+
+  // The background field accepts video as well as stills, so branch on the
+  // stored mimeType rather than assuming an image. Feeding a .mp4 to next/image
+  // yields a broken <img>, which is what happened before this branch existed.
+  const media = isMedia(background) ? background : null
+  const isVideo = Boolean(media?.mimeType?.startsWith('video/'))
+
+  const image =
+    background && !isVideo
+      ? getImagePropsWithFallback(background, '', 'hero', { priority: true, sizes: '100vw' })
+      : null
 
   return (
     <section className="relative isolate overflow-hidden bg-kawai-black">
+      {isVideo && media?.url ? (
+        <SignupHeroVideo
+          src={media.url}
+          type={media.mimeType ?? 'video/mp4'}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       {image ? (
         <Image
           {...image}

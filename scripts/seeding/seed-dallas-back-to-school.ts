@@ -151,7 +151,18 @@ async function main() {
       successMode: 'message',
     },
 
+    promoModal: {
+      enabled: true,
+      heading: 'Back to School, Back to Music!',
+      body: 'Free trial lesson, no enrollment fee, and student discounts toward piano purchase and rental. Piano and voice.',
+      delaySeconds: 6,
+      frequency: 'session',
+    },
+
     notify: {
+      // Add the addresses that should receive each lead here, or in the admin
+      // under Notifications → Recipients. Empty means the pipeline falls back
+      // to LEAD_NOTIFY_FALLBACK_EMAIL rather than dropping the lead.
       recipients: [],
       cc: [],
       includeStorefrontEmail: false,

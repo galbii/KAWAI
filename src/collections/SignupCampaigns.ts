@@ -229,6 +229,70 @@ export const SignupCampaigns: CollectionConfig = {
           ],
         },
         {
+          label: 'Popup',
+          fields: [
+            {
+              name: 'promoModal',
+              type: 'group',
+              label: 'Music school popup',
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  index: true,
+                  admin: {
+                    description:
+                      'Show this campaign as a popup on /store/{store}/music-school. Only one campaign per store should have this on — if several do, the soonest-ending one wins.',
+                  },
+                },
+                {
+                  name: 'heading',
+                  type: 'text',
+                  admin: {
+                    description: 'Defaults to the hero heading if left empty.',
+                    condition: (_, sibling) => Boolean(sibling?.enabled),
+                  },
+                },
+                {
+                  name: 'body',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Defaults to the hero subheading if left empty.',
+                    condition: (_, sibling) => Boolean(sibling?.enabled),
+                  },
+                },
+                {
+                  name: 'delaySeconds',
+                  type: 'number',
+                  defaultValue: 6,
+                  min: 0,
+                  max: 120,
+                  admin: {
+                    description: 'Seconds on the page before the popup opens. 0 opens immediately.',
+                    condition: (_, sibling) => Boolean(sibling?.enabled),
+                  },
+                },
+                {
+                  name: 'frequency',
+                  type: 'select',
+                  defaultValue: 'session',
+                  options: [
+                    { label: 'Once per browser session', value: 'session' },
+                    { label: 'Once, until they clear site data', value: 'once' },
+                    { label: 'Every page view', value: 'always' },
+                  ],
+                  admin: {
+                    description:
+                      'A popup that reopens on every visit is the fastest way to train people to dismiss it. "Every page view" is for testing.',
+                    condition: (_, sibling) => Boolean(sibling?.enabled),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
           label: 'Notifications',
           fields: [
             {

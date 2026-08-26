@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getMusicSchoolByStorefrontSlug } from '@/lib/payload/queries'
+import { SignupPromoModalMount } from '@/components/signup/SignupPromoModalMount'
 import { MusicSchoolFacultyCarousel } from '@/components/music-school/MusicSchoolFacultyCarousel'
 import type { Media } from '@/payload-types'
 
@@ -316,6 +318,12 @@ export default async function MusicSchoolPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* Renders nothing unless a campaign has its popup switched on for this
+          store. Suspended so its query never blocks the page. */}
+      <Suspense fallback={null}>
+        <SignupPromoModalMount storeslug={storeslug} />
+      </Suspense>
     </div>
   )
 }
