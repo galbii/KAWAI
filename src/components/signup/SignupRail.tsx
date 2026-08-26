@@ -1,6 +1,7 @@
 'use client'
 
-import { SignupForm, RAIL_QUESTION_LIMIT } from './SignupForm'
+import { SignupForm } from './SignupForm'
+import { RAIL_QUESTION_LIMIT } from '@/lib/signup/overflow'
 import { useSignupForm } from './SignupFormProvider'
 import { SignupSuccessMessage } from './SignupSuccessMessage'
 

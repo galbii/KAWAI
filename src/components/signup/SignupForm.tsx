@@ -7,16 +7,9 @@ import { buildSignupSchema } from '@/lib/signup/schema'
 import type { SignupCoreConfig, SignupQuestion } from '@/lib/signup/types'
 import { SignupQuestionField } from './SignupQuestionField'
 import { submitSignupCampaign } from '@/lib/actions/signup-campaign-submit'
+import { RAIL_QUESTION_LIMIT, hiddenQuestions, requiresOverflowStep } from '@/lib/signup/overflow'
 
-/**
- * How many campaign questions render inline in the sticky rail.
- *
- * Past this, the rail's form would grow taller than the viewport and "sticky"
- * would quietly stop meaning anything — the card would just scroll away with
- * the page, removing the entire reason to choose this layout. The overflow
- * opens in a modal instead.
- */
-export const RAIL_QUESTION_LIMIT = 4
+export { RAIL_QUESTION_LIMIT }
 
 export interface SignupSuccess {
   mode: 'message' | 'redirect'
@@ -120,8 +113,12 @@ export function SignupForm({
     ...(defaultValues ? { defaultValues } : {}),
   })
 
-  const overflow = questions.length > RAIL_QUESTION_LIMIT
   const shown = inlineOnly ? questions.slice(0, RAIL_QUESTION_LIMIT) : questions
+
+  // Only a REQUIRED question past the fold earns the extra screen. Optional
+  // ones are dropped rather than charged for — see lib/signup/overflow.ts.
+  const mustStepThrough = inlineOnly && requiresOverflowStep(questions)
+  const skippedOptional = inlineOnly && !mustStepThrough ? hiddenQuestions(questions) : []
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null)
@@ -248,7 +245,7 @@ export function SignupForm({
         </p>
       ) : null}
 
-      {inlineOnly && overflow ? (
+      {mustStepThrough ? (
         <button
           type="button"
           // Hand over the current values, not the click event.
@@ -273,6 +270,19 @@ export function SignupForm({
           )}
         </button>
       )}
+
+      {skippedOptional.length > 0 ? (
+        // These questions are configured but never rendered in the rail. Without
+        // this the marketer's fifth question would silently do nothing, so the
+        // way to reach it stays available — as a quiet link, not a second step.
+        <button
+          type="button"
+          onClick={() => onOverflow?.(getValues())}
+          className="mx-auto block text-xs font-medium text-kawai-charcoal underline underline-offset-2 hover:text-kawai-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
+        >
+          Add more details (optional)
+        </button>
+      ) : null}
 
       {finePrint ? (
         <p className="text-center text-[11px] leading-snug text-kawai-charcoal/60">{finePrint}</p>
