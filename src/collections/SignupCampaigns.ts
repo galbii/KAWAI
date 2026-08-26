@@ -95,6 +95,20 @@ export const SignupCampaigns: CollectionConfig = {
                   },
                 },
                 { name: 'subheading', type: 'textarea' },
+                {
+                  name: 'backgroundColor',
+                  type: 'select',
+                  defaultValue: 'black',
+                  options: [
+                    { label: 'Black', value: 'black' },
+                    { label: 'Kawai Red', value: 'red' },
+                    { label: 'Charcoal', value: 'charcoal' },
+                  ],
+                  admin: {
+                    description:
+                      'Solid colour behind the hero. Shows on its own when no image or video is set, and fills any gap around one that does not cover.',
+                  },
+                },
                 mediaField('background', {
                   admin: { description: 'Image or video behind the hero' },
                 }),
@@ -108,8 +122,9 @@ export const SignupCampaigns: CollectionConfig = {
                     { label: 'Heavy', value: 'heavy' },
                   ],
                   admin: {
+                    condition: (_, sibling) => Boolean(sibling?.background),
                     description:
-                      'Darkening behind hero text. Must keep text at 4.5:1 — check visually.',
+                      'Darkening behind hero text, over the image or video. Must keep text at 4.5:1 — check visually.',
                   },
                 },
               ],

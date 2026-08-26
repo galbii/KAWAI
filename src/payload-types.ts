@@ -11019,11 +11019,15 @@ export interface SignupCampaign {
     heading: string;
     subheading?: string | null;
     /**
+     * Solid colour behind the hero. Shows on its own when no image or video is set, and fills any gap around one that does not cover.
+     */
+    backgroundColor?: ('black' | 'red' | 'charcoal') | null;
+    /**
      * Image or video behind the hero
      */
     background?: (string | null) | Media;
     /**
-     * Darkening behind hero text. Must keep text at 4.5:1 — check visually.
+     * Darkening behind hero text, over the image or video. Must keep text at 4.5:1 — check visually.
      */
     scrim?: ('light' | 'medium' | 'heavy') | null;
   };
@@ -13365,6 +13369,7 @@ export interface SignupCampaignsSelect<T extends boolean = true> {
         kicker?: T;
         heading?: T;
         subheading?: T;
+        backgroundColor?: T;
         background?: T;
         scrim?: T;
       };
