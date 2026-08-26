@@ -1,56 +1,28 @@
 'use client'
 
-import { useState } from 'react'
-import { Modal } from '@/components/ui/modal'
-import { useModal } from '@/hooks/useModal'
-import { SignupForm, RAIL_QUESTION_LIMIT, type SignupSuccess } from './SignupForm'
-import type { SignupCoreConfig, SignupQuestion } from '@/lib/signup/types'
+import { SignupForm, RAIL_QUESTION_LIMIT } from './SignupForm'
+import { useSignupForm } from './SignupFormProvider'
 
-interface Props {
-  campaignSlug: string
-  storeslug: string
-  title: string
-  subtitle?: string | null | undefined
-  submitLabel: string
-  finePrint?: string | null | undefined
-  core: SignupCoreConfig
-  questions: SignupQuestion[]
-}
+/**
+ * Sticky sidebar card holding the inline form.
+ *
+ * Modal state and the submitted flag come from SignupFormProvider rather than
+ * living here, because the sticky mobile bar opens the same popup and must see
+ * the same result.
+ */
+export function SignupRail({ subtitle }: { subtitle?: string | null | undefined }) {
+  const { openForm, done, onSuccess, config } = useSignupForm()
 
-const DEFAULT_SUCCESS = "Thanks — you're all set. Check your email for a confirmation."
-
-export function SignupRail(props: Props) {
-  const { isOpen, open, close } = useModal()
-  const [done, setDone] = useState<string | null>(null)
-
-  const overflow = props.questions.length > RAIL_QUESTION_LIMIT
-
-  const onSuccess = (result: SignupSuccess) => {
-    if (result.mode === 'redirect' && result.redirectUrl) {
-      window.location.assign(result.redirectUrl)
-      return
-    }
-    close()
-    setDone(result.message ?? DEFAULT_SUCCESS)
-  }
-
-  const formProps = {
-    campaignSlug: props.campaignSlug,
-    storeslug: props.storeslug,
-    core: props.core,
-    questions: props.questions,
-    submitLabel: props.submitLabel,
-    finePrint: props.finePrint,
-  }
+  const overflow = config.questions.length > RAIL_QUESTION_LIMIT
 
   return (
     <aside id="signup-form" className="mt-8 lg:sticky lg:top-6 lg:mt-0">
-      <div className="overflow-hidden rounded-lg border border-kawai-neutral bg-white shadow-lg">
+      <div className="overflow-hidden rounded-xl border border-kawai-neutral bg-white shadow-[0_1px_2px_rgba(30,27,22,0.04),0_10px_28px_-14px_rgba(30,27,22,0.18)]">
         <div className="bg-kawai-black px-4 py-3">
-          <p className="text-base font-bold text-kawai-pearl">{props.title}</p>
-          {props.subtitle ? (
+          <p className="text-base font-bold text-kawai-pearl">{config.title}</p>
+          {subtitle ? (
             <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-kawai-gold">
-              {props.subtitle}
+              {subtitle}
             </p>
           ) : null}
         </div>
@@ -60,19 +32,20 @@ export function SignupRail(props: Props) {
               {done}
             </p>
           ) : (
-            <SignupForm {...formProps} inlineOnly={overflow} onOverflow={open} onSuccess={onSuccess} />
+            <SignupForm
+              campaignSlug={config.campaignSlug}
+              storeslug={config.storeslug}
+              core={config.core}
+              questions={config.questions}
+              submitLabel={config.submitLabel}
+              finePrint={config.finePrint}
+              inlineOnly={overflow}
+              onOverflow={openForm}
+              onSuccess={onSuccess}
+            />
           )}
         </div>
       </div>
-
-      {overflow ? (
-        <Modal isOpen={isOpen} onClose={close}>
-          <div className="max-h-[80vh] overflow-y-auto p-5">
-            <h2 className="mb-4 text-xl font-bold text-kawai-black">{props.title}</h2>
-            <SignupForm {...formProps} inlineOnly={false} onSuccess={onSuccess} />
-          </div>
-        </Modal>
-      ) : null}
     </aside>
   )
 }

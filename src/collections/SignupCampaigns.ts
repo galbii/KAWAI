@@ -130,6 +130,21 @@ export const SignupCampaigns: CollectionConfig = {
               ],
             },
             {
+              name: 'bodyBackground',
+              type: 'select',
+              defaultValue: 'white',
+              options: [
+                { label: 'White', value: 'white' },
+                { label: 'Pearl', value: 'pearl' },
+                { label: 'Kawai Red', value: 'red' },
+                { label: 'Black', value: 'black' },
+              ],
+              admin: {
+                description:
+                  'Colour of the section below the hero, behind the content and the form. On Kawai Red or Black, rich text blocks are placed on a white card so they stay readable.',
+              },
+            },
+            {
               name: 'blocks',
               type: 'blocks',
               blockReferences: [

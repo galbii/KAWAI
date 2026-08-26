@@ -13,7 +13,9 @@ import { SignupHero } from '@/components/signup/SignupHero'
 import { SignupBlocks } from '@/components/signup/SignupBlocks'
 import { SignupEndedPanel } from '@/components/signup/SignupEndedPanel'
 import { SignupRail } from '@/components/signup/SignupRail'
+import { SignupFormProvider } from '@/components/signup/SignupFormProvider'
 import { SignupMobileBar } from '@/components/signup/SignupMobileBar'
+import { BODY_SURFACE } from '@/components/signup/surfaces'
 import type { SignupQuestion } from '@/lib/signup/types'
 
 export const revalidate = 3600
@@ -88,38 +90,50 @@ export default async function SignupCampaignPage({ params }: { params: Promise<P
   }
 
   const school = await getMusicSchoolByStorefrontSlug(resolved.storeslug)
+  const body = BODY_SURFACE[campaign.bodyBackground ?? 'white'] ?? BODY_SURFACE.white
 
   return (
     <>
       <SignupLockup storeName={storeName} />
       <SignupHero hero={campaign.hero} />
-      <main className="mx-auto max-w-7xl px-4 py-10 pb-20 sm:px-6 lg:pb-10">
-        <div className="lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-start lg:gap-8">
-          <div className="space-y-4">
-            <SignupBlocks
-              blocks={campaign.blocks ?? []}
-              storefront={storefront}
-              school={school}
-            />
+      <SignupFormProvider
+        config={{
+          campaignSlug: campaign.slug,
+          storeslug: resolved.storeslug,
+          title: campaign.form?.title ?? 'Reserve your spot',
+          submitLabel: campaign.form?.submitLabel ?? 'Save My Spot',
+          finePrint: campaign.form?.finePrint,
+          core: {
+            collectPhone: Boolean(campaign.form?.collectPhone),
+            requirePhone: Boolean(campaign.form?.requirePhone),
+            collectZip: Boolean(campaign.form?.collectZip),
+            requireZip: Boolean(campaign.form?.requireZip),
+          },
+          questions: (campaign.form?.questions ?? []) as unknown as SignupQuestion[],
+        }}
+      >
+        {/* A <div>, not <main> — the frontend layout already renders
+            main#main-content around this page, and a second main landmark
+            makes assistive tech ask the user which one they meant. The colour
+            lives here so it runs full-bleed; the inner div keeps the content at
+            the same measure it had before. */}
+        <div className={body.bg}>
+          <div className="mx-auto max-w-7xl px-4 py-10 pb-20 sm:px-6 lg:pb-10">
+            <div className="lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-start lg:gap-8">
+              <div className="space-y-4">
+                <SignupBlocks
+                  blocks={campaign.blocks ?? []}
+                  storefront={storefront}
+                  school={school}
+                  surface={body.tone}
+                />
+              </div>
+              <SignupRail subtitle={campaign.form?.subtitle} />
+            </div>
           </div>
-          <SignupRail
-            campaignSlug={campaign.slug}
-            storeslug={resolved.storeslug}
-            title={campaign.form?.title ?? 'Reserve your spot'}
-            subtitle={campaign.form?.subtitle}
-            submitLabel={campaign.form?.submitLabel ?? 'Save My Spot'}
-            finePrint={campaign.form?.finePrint}
-            core={{
-              collectPhone: Boolean(campaign.form?.collectPhone),
-              requirePhone: Boolean(campaign.form?.requirePhone),
-              collectZip: Boolean(campaign.form?.collectZip),
-              requireZip: Boolean(campaign.form?.requireZip),
-            }}
-            questions={(campaign.form?.questions ?? []) as unknown as SignupQuestion[]}
-          />
         </div>
-      </main>
-      <SignupMobileBar label={campaign.form?.submitLabel ?? 'Save My Spot'} />
+        <SignupMobileBar label={campaign.form?.submitLabel ?? 'Save My Spot'} />
+      </SignupFormProvider>
     </>
   )
 }

@@ -11031,6 +11031,10 @@ export interface SignupCampaign {
      */
     scrim?: ('light' | 'medium' | 'heavy') | null;
   };
+  /**
+   * Colour of the section below the hero, behind the content and the form. On Kawai Red or Black, rich text blocks are placed on a white card so they stay readable.
+   */
+  bodyBackground?: ('white' | 'pearl' | 'red' | 'black') | null;
   blocks?:
     | (
         | ContentRichTextBlock
@@ -13373,6 +13377,7 @@ export interface SignupCampaignsSelect<T extends boolean = true> {
         background?: T;
         scrim?: T;
       };
+  bodyBackground?: T;
   blocks?: T | {};
   form?:
     | T

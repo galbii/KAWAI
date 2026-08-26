@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from 'react'
 import { createPortal } from 'react-dom'
+import { hidesMobileSearch } from '@/lib/search/mobile-search-visibility'
 import { Search, X, Loader2 } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -79,21 +80,11 @@ interface QuickLink {
 
 type CategoryFilter = 'all' | 'storefronts' | 'products' | 'collections' | 'pages'
 
-/**
- * Route prefixes where the mobile floating search bar is hidden. Matched with
- * `startsWith`, so a prefix also covers nested/suffixed routes — '/signup' hides
- * '/signup', '/signup2', etc. To hide it on a new lead or campaign page, add one
- * line here.
- *   /find-a-dealer — has its own dedicated search
- *   /signup        — lead pages keep focus on the offer form
- */
-const MOBILE_SEARCH_HIDDEN_PREFIXES = ['/find-a-dealer', '/signup']
-
 export function SearchBar({ className, onOpenChange }: SearchBarProps) {
   const pathname = usePathname()
-  const hideMobileSearch = MOBILE_SEARCH_HIDDEN_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
-  )
+  // Route list and matching rules live in lib/search so they can be tested
+  // without mounting this component. See mobile-search-visibility.ts.
+  const hideMobileSearch = hidesMobileSearch(pathname)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
