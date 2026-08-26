@@ -36,6 +36,53 @@ interface NotificationInput {
   sourceUrl?: string | undefined
 }
 
+/* ------------------------------------------------------------------ *
+ * Branded shell.
+ *
+ * Matches the RSM lead emails sent from /signup and /signup2
+ * (src/lib/rsm/lead-email.ts) — same pearl page, same white card, same black
+ * header band with a red eyebrow — so a recipient who gets both does not see
+ * two different companies. The values are duplicated rather than imported
+ * because that module builds whole documents, not a shell; if the two ever
+ * need to move together, extracting a shared one is the fix.
+ *
+ * Table-based rows and fully inline styles are not stylistic choices: email
+ * clients strip <style> blocks and have no flexbox worth relying on.
+ * ------------------------------------------------------------------ */
+
+function emailShell({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow: string
+  title: string
+  body: string
+}): string {
+  return `<!DOCTYPE html>
+<html>
+  <body style="font-family:'Helvetica Neue',Arial,sans-serif;background:#FAF8F5;padding:40px 20px;color:#1E1B16">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #DBDBDB;border-radius:8px;overflow:hidden">
+      <div style="background:#1E1B16;padding:24px 32px">
+        <p style="margin:0;color:#E11922;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase">${escapeHtml(eyebrow)}</p>
+        <h1 style="margin:6px 0 0;color:#fff;font-size:20px;font-weight:700">${escapeHtml(title)}</h1>
+      </div>
+      <div style="padding:28px 32px;font-size:14px;line-height:1.6">${body}</div>
+    </div>
+  </body>
+</html>`
+}
+
+/** A label/value row. Labels here are marketer-authored, so they are escaped too. */
+function detailRow(label: string, value: string): string {
+  return `<tr><td style="padding:6px 16px 6px 0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:6px 0;color:#1E1B16;font-size:14px">${escapeHtml(value)}</td></tr>`
+}
+
+/** Section label, styled like the red eyebrows in the RSM emails. */
+function sectionLabel(text: string): string {
+  return `<p style="margin:24px 0 8px;color:#E11922;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">${escapeHtml(text)}</p>`
+}
+
 /** Every interpolated value is escaped — a lead's name reaches a human inbox. */
 export function buildNotificationHtml(input: NotificationInput): string {
   const rows: [string, string][] = [
@@ -45,29 +92,23 @@ export function buildNotificationHtml(input: NotificationInput): string {
   if (input.phone) rows.push(['Phone', input.phone])
   if (input.zip) rows.push(['ZIP', input.zip])
 
-  const contact = rows
-    .map(
-      ([k, v]) =>
-        `<tr><td style="padding:4px 12px 4px 0;color:#6b655c">${escapeHtml(k)}</td><td style="padding:4px 0"><strong>${escapeHtml(v)}</strong></td></tr>`,
-    )
-    .join('')
+  const contact = rows.map(([k, v]) => detailRow(k, v)).join('')
 
   const answers = input.answers.length
-    ? `<h3 style="margin:20px 0 6px;font-size:14px">Responses</h3><table style="border-collapse:collapse;font-size:14px">${input.answers
-        .map(
-          (a) =>
-            `<tr><td style="padding:4px 12px 4px 0;color:#6b655c">${escapeHtml(a.label)}</td><td style="padding:4px 0"><strong>${escapeHtml(a.value)}</strong></td></tr>`,
-        )
+    ? `${sectionLabel('Responses')}<table style="border-collapse:collapse">${input.answers
+        .map((a) => detailRow(a.label, a.value))
         .join('')}</table>`
     : ''
 
-  return `<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#1E1B16">
-<h2 style="margin:0 0 4px;font-size:18px">New signup — ${escapeHtml(input.campaignTitle)}</h2>
-<p style="margin:0 0 16px;color:#6b655c;font-size:13px">${escapeHtml(input.storeName)}</p>
-<table style="border-collapse:collapse;font-size:14px">${contact}</table>
+  return emailShell({
+    // The store is the letterhead; the heading keeps the existing sentence
+    // intact rather than being split across the two slots.
+    eyebrow: input.storeName,
+    title: `New signup — ${input.campaignTitle}`,
+    body: `<table style="border-collapse:collapse">${contact}</table>
 ${answers}
-${input.sourceUrl ? `<p style="margin-top:20px;font-size:12px;color:#a39c92">Submitted from ${escapeHtml(input.sourceUrl)}</p>` : ''}
-</div>`
+${input.sourceUrl ? `<p style="margin:24px 0 0;color:#6b7280;font-size:12px">Submitted from ${escapeHtml(input.sourceUrl)}</p>` : ''}`,
+  })
 }
 
 /** Resend tag values accept only ASCII letters, numbers, underscores and dashes. */
@@ -107,9 +148,11 @@ export function buildConfirmationHtml(input: {
     input.body ||
     `We've received your signup for ${input.campaignTitle} at ${input.storeName}. We'll be in touch shortly with the details.`
 
-  return `<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#1E1B16;line-height:1.6">
-<p style="margin:0 0 12px">Hi ${escapeHtml(input.firstName)},</p>
+  return emailShell({
+    eyebrow: input.storeName,
+    title: input.campaignTitle,
+    body: `<p style="margin:0 0 12px">Hi ${escapeHtml(input.firstName)},</p>
 <p style="margin:0 0 12px">${escapeHtml(body)}</p>
-<p style="margin:24px 0 0;color:#6b655c;font-size:13px">${escapeHtml(input.storeName)}</p>
-</div>`
+<p style="margin:24px 0 0;color:#6b7280;font-size:12px">${escapeHtml(input.storeName)}</p>`,
+  })
 }
