@@ -1322,7 +1322,6 @@ export function ProductHeroBlock({
                     <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Free Shipping</p>
-                      <p className="text-[9px] text-kawai-muted mt-1 leading-tight">Ships in 2–3 business days</p>
                     </div>
                   </div>
                 )}

@@ -2,13 +2,13 @@
 
 import { headers } from 'next/headers'
 import {
-  getPayloadClient,
   getSignupCampaignsForStore,
   getStorefrontBySlugDirect,
   getMusicSchoolByStorefrontSlug,
 } from '@/lib/payload/queries'
 import { buildSignupSchema } from '@/lib/signup/schema'
 import { denormalizeAnswers } from '@/lib/signup/answers'
+import { buildSubmissionId } from '@/lib/signup/submission-id'
 import { resolveCampaign, type ResolvableCampaign } from '@/lib/signup/resolve'
 import { sendSignupNotification, sendLeadConfirmation } from '@/lib/signup/notify'
 import { lexicalToPlainText } from '@/lib/signup/notify-format'
@@ -32,15 +32,23 @@ const GENERIC_SUCCESS = "Thanks — you're all set. Check your email for a confi
 /**
  * Handle one campaign form submission.
  *
- * Order is deliberate. The campaign is re-fetched server-side and the schema
- * derived from THAT — never from anything the client sent. If the client could
- * supply field definitions, a crafted POST would bypass every `required` rule
- * and every option whitelist.
+ * The campaign is re-fetched server-side and the schema derived from THAT —
+ * never from anything the client sent. If the client could supply field
+ * definitions, a crafted POST would bypass every `required` rule and every
+ * option whitelist.
  *
- * The lead is written before any outbound call, so the visitor's data is durable
- * before anything that can fail over the network is attempted. Notification,
- * confirmation and Shopify sync are independent: each records its own status on
- * the lead and none can fail the submission or suppress the others.
+ * Nothing is persisted in the CMS by design: Shopify is the system of record
+ * for a lead and the notification email is the working copy, so keeping a third
+ * copy of the same personal data here would be retention without a purpose.
+ *
+ * The tradeoff that buys is real and worth naming. There is no longer a durable
+ * row written before the network calls, so a submission where BOTH the email
+ * and the Shopify sync fail survives only in the server log. That is why the
+ * failure branch below logs the full submission at error level rather than a
+ * bare status — it is the last remaining copy.
+ *
+ * Notification, confirmation and Shopify sync stay independent: each catches
+ * its own failure, and none can fail the submission or suppress the others.
  */
 export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitResult> {
   try {
@@ -91,7 +99,6 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
     const values = parsed.data as Record<string, unknown>
     const answers = denormalizeAnswers(questions, values)
     const headerList = await headers()
-    const payload = await getPayloadClient()
 
     const firstName = String(values.firstName ?? '')
     const lastName = String(values.lastName ?? '')
@@ -100,25 +107,9 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
     const zip = values.zip ? String(values.zip) : undefined
     const storeName: string = storefront.locationName ?? input.storeslug
 
-    const lead = await payload.create({
-      collection: 'signup-leads',
-      data: {
-        campaign: campaign.id,
-        campaignSlug: campaign.slug,
-        storefront: storefront.id,
-        storeslug: input.storeslug,
-        firstName,
-        lastName,
-        email,
-        ...(phone ? { phone } : {}),
-        ...(zip ? { zip } : {}),
-        answers,
-        sourceUrl: headerList.get('referer') ?? null,
-        userAgent: headerList.get('user-agent') ?? null,
-        ipAddress: headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
-        submittedAt: new Date().toISOString(),
-      },
-    })
+    // Content-derived, so a double-fired submit still collapses to one send
+    // without a database row to key on.
+    const submissionId = buildSubmissionId(campaign.slug, email, answers)
 
     const notify = campaign.notify
     const liveSendEnabled = Boolean(notify?.liveSendEnabled)
@@ -127,7 +118,7 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
       : null
 
     const notification = await sendSignupNotification({
-      leadId: String(lead.id),
+      submissionId,
       campaignSlug: campaign.slug,
       storeslug: input.storeslug,
       campaignTitle: campaign.title,
@@ -161,7 +152,7 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
 
     const confirmation = notify?.sendConfirmationToLead
       ? await sendLeadConfirmation({
-          leadId: String(lead.id),
+          submissionId,
           to: email,
           firstName,
           campaignTitle: campaign.title,
@@ -196,25 +187,34 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
         })
       : { status: 'skipped' as const }
 
-    await payload.update({
-      collection: 'signup-leads',
-      id: lead.id,
-      data: {
-        resendStatus: notification.status,
-        ...('emailId' in notification && notification.emailId
-          ? { resendEmailId: notification.emailId }
-          : {}),
-        confirmationStatus: confirmation.status,
-        ...('emailId' in confirmation && confirmation.emailId
-          ? { confirmationEmailId: confirmation.emailId }
-          : {}),
-        shopifyStatus: shopifyResult.status,
-        ...('customerId' in shopifyResult && shopifyResult.customerId
-          ? { shopifyCustomerId: shopifyResult.customerId }
-          : {}),
-      },
-      context: { skipHook: true },
-    })
+    // With nothing persisted, a submission that reached neither the inbox nor
+    // Shopify would otherwise vanish. 'held' and 'skipped' are deliberate
+    // configuration, not failure, so only a genuine failure on every live
+    // channel trips this.
+    const notifyLost = notification.status === 'failed'
+    const shopifyLost = shopifyResult.status === 'failed' || shopifyResult.status === 'skipped'
+
+    if (notifyLost && shopifyLost) {
+      console.error(
+        '[signup] UNDELIVERED — no channel accepted this submission. This log is the only copy:',
+        JSON.stringify({
+          submissionId,
+          campaignSlug: campaign.slug,
+          storeslug: input.storeslug,
+          firstName,
+          lastName,
+          email,
+          phone,
+          zip,
+          answers,
+          submittedAt: new Date().toISOString(),
+        }),
+      )
+    } else {
+      console.info(
+        `[signup] ${submissionId} campaign=${campaign.slug} store=${input.storeslug} notify=${notification.status} confirm=${confirmation.status} shopify=${shopifyResult.status}`,
+      )
+    }
 
     if (campaign.form?.successMode === 'redirect' && campaign.form.redirectUrl) {
       return { success: true, mode: 'redirect', redirectUrl: campaign.form.redirectUrl }

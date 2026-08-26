@@ -22,7 +22,7 @@ interface NotificationInput {
 }
 
 interface SendInput extends NotificationInput {
-  leadId: string
+  submissionId: string
   campaignSlug: string
   storeslug: string
   subjectTemplate: string
@@ -41,7 +41,7 @@ export async function sendSignupNotification(
   // real email leaves. Mirrors notify-rsm-of-lead.ts.
   if (!input.liveSendEnabled) {
     console.info(
-      `[signup] HELD — would notify To: ${to.join(', ')} Cc: ${cc.join(', ') || '(none)'} for lead ${input.leadId}`,
+      `[signup] HELD — would notify To: ${to.join(', ')} Cc: ${cc.join(', ') || '(none)'} for submission ${input.submissionId}`,
     )
     return { status: 'held' }
   }
@@ -73,7 +73,7 @@ export async function sendSignupNotification(
       },
       // Expires after 24h; pattern is <event-type>/<entity-id>. A double-fired
       // submit cannot notify twice.
-      { idempotencyKey: `signup-lead/${input.leadId}` },
+      { idempotencyKey: `signup-lead/${input.submissionId}` },
     )
 
     if (error) {
@@ -95,7 +95,7 @@ export async function sendSignupNotification(
  * turning a campaign live is one decision, not two.
  */
 export async function sendLeadConfirmation(input: {
-  leadId: string
+  submissionId: string
   to: string
   firstName: string
   campaignTitle: string
@@ -105,7 +105,7 @@ export async function sendLeadConfirmation(input: {
   liveSendEnabled: boolean
 }): Promise<{ status: 'sent' | 'failed' | 'skipped'; emailId?: string }> {
   if (!input.liveSendEnabled) {
-    console.info(`[signup] HELD — would confirm to ${input.to} for lead ${input.leadId}`)
+    console.info(`[signup] HELD — would confirm to ${input.to} for submission ${input.submissionId}`)
     return { status: 'skipped' }
   }
 
@@ -126,7 +126,7 @@ export async function sendLeadConfirmation(input: {
           body: input.body,
         }),
       },
-      { idempotencyKey: `signup-confirm/${input.leadId}` },
+      { idempotencyKey: `signup-confirm/${input.submissionId}` },
     )
 
     if (error) {

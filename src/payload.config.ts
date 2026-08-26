@@ -39,7 +39,6 @@ import { JobApplications } from './collections/JobApplications'
 import { Redirects } from './collections/Redirects'
 import { SignupInstructors, SignupDetails, SignupLocation } from './blocks/signup'
 import { SignupCampaigns } from './collections/SignupCampaigns'
-import { SignupLeads } from './collections/SignupLeads'
 import { HeaderSettings } from './globals/HeaderSettings'
 import {
   // Content blocks
@@ -333,7 +332,6 @@ export default buildConfig({
 
     // Signup Campaigns
     SignupCampaigns,
-    SignupLeads,
 
     // Settings
     Redirects,

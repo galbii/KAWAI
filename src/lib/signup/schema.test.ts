@@ -117,3 +117,65 @@ describe('buildSignupSchema — campaign questions', () => {
     expect(schema.safeParse({ ...VALID_CORE, broken: 'anything' }).success).toBe(true)
   })
 })
+
+describe('optional fields left untouched', () => {
+  // Regression: an untouched <select> posts "" — not undefined. Plain
+  // .optional() rejected that as "Invalid option" and blocked the submission
+  // even though the question was optional.
+  const optionalSelect: SignupQuestion = {
+    type: 'select',
+    label: 'Experience level',
+    name: 'experience',
+    required: false,
+    options: [
+      { label: 'Beginner', value: 'beginner' },
+      { label: 'Advanced', value: 'advanced' },
+    ],
+  }
+
+  const core = { collectPhone: false, requirePhone: false, collectZip: false, requireZip: false }
+  const base = { firstName: 'A', lastName: 'B', email: 'a@example.com' }
+
+  it('accepts an unselected optional dropdown', () => {
+    const result = buildSignupSchema(core, [optionalSelect]).safeParse({
+      ...base,
+      experience: '',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('still accepts a real selection', () => {
+    const result = buildSignupSchema(core, [optionalSelect]).safeParse({
+      ...base,
+      experience: 'advanced',
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('still rejects a value outside the options', () => {
+    const result = buildSignupSchema(core, [optionalSelect]).safeParse({
+      ...base,
+      experience: 'not-an-option',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('still requires a required dropdown to be answered', () => {
+    const result = buildSignupSchema(core, [{ ...optionalSelect, required: true }]).safeParse({
+      ...base,
+      experience: '',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts an empty optional date', () => {
+    const date: SignupQuestion = {
+      type: 'date',
+      label: 'Preferred start',
+      name: 'startDate',
+      required: false,
+    }
+    const result = buildSignupSchema(core, [date]).safeParse({ ...base, startDate: '' })
+    expect(result.success).toBe(true)
+  })
+})

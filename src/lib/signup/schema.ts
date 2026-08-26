@@ -42,6 +42,22 @@ export function buildSignupSchema(
   return z.object(shape)
 }
 
+/**
+ * Treat an empty string as "not answered" before validating.
+ *
+ * An untouched `<select>` posts `""`, not `undefined`, and an empty date input
+ * does the same. Plain `.optional()` only permits `undefined`, so an OPTIONAL
+ * dropdown that the visitor simply left alone failed with "Invalid option" and
+ * blocked the whole submission. Only correct for optional fields — a required
+ * one must still reject blank.
+ */
+function blankAsMissing(schema: z.ZodTypeAny): z.ZodTypeAny {
+  return z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    schema.optional(),
+  )
+}
+
 function questionSchema(question: SignupQuestion): z.ZodTypeAny {
   const required = question.required === true
 
@@ -62,7 +78,7 @@ function questionSchema(question: SignupQuestion): z.ZodTypeAny {
 
   if (question.type === 'date') {
     const date = z.iso.date('Please enter a valid date')
-    return required ? date : date.optional()
+    return required ? date : blankAsMissing(date)
   }
 
   if (question.type === 'select' || question.type === 'radio') {
@@ -74,7 +90,7 @@ function questionSchema(question: SignupQuestion): z.ZodTypeAny {
       return required ? free.min(1, `${question.label} is required`) : free.optional()
     }
     const choice = z.enum(values as [string, ...string[]])
-    return required ? choice : choice.optional()
+    return required ? choice : blankAsMissing(choice)
   }
 
   const text = z.string().trim()

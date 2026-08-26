@@ -172,7 +172,6 @@ export interface Config {
     jobs: Job;
     'job-applications': JobApplication;
     'signup-campaigns': SignupCampaign;
-    'signup-leads': SignupLead;
     redirects: Redirect;
     exports: Export;
     imports: Import;
@@ -213,7 +212,6 @@ export interface Config {
     jobs: JobsSelect<false> | JobsSelect<true>;
     'job-applications': JobApplicationsSelect<false> | JobApplicationsSelect<true>;
     'signup-campaigns': SignupCampaignsSelect<false> | SignupCampaignsSelect<true>;
-    'signup-leads': SignupLeadsSelect<false> | SignupLeadsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
@@ -11186,57 +11184,6 @@ export interface SignupCampaign {
   createdAt: string;
 }
 /**
- * Submissions from store signup campaign pages
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "signup-leads".
- */
-export interface SignupLead {
-  id: string;
-  campaign?: (string | null) | SignupCampaign;
-  /**
-   * Denormalized — survives deletion of the campaign
-   */
-  campaignSlug?: string | null;
-  storefront?: (string | null) | Storefront;
-  storeslug?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  email: string;
-  phone?: string | null;
-  zip?: string | null;
-  /**
-   * Campaign questions as they read at submission time. Never rewrite these when the campaign changes.
-   */
-  answers?:
-    | {
-        name?: string | null;
-        label?: string | null;
-        value?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  utm?: {
-    source?: string | null;
-    medium?: string | null;
-    campaign?: string | null;
-    term?: string | null;
-    content?: string | null;
-  };
-  sourceUrl?: string | null;
-  userAgent?: string | null;
-  ipAddress?: string | null;
-  submittedAt?: string | null;
-  resendStatus?: ('pending' | 'sent' | 'failed' | 'held') | null;
-  resendEmailId?: string | null;
-  confirmationStatus?: ('pending' | 'sent' | 'failed' | 'skipped') | null;
-  confirmationEmailId?: string | null;
-  shopifyStatus?: ('pending' | 'synced' | 'failed' | 'skipped') | null;
-  shopifyCustomerId?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage URL redirects. Changes take effect within 30 seconds.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11694,10 +11641,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'signup-campaigns';
         value: string | SignupCampaign;
-      } | null)
-    | ({
-        relationTo: 'signup-leads';
-        value: string | SignupLead;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -13516,50 +13459,6 @@ export interface SignupCampaignsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "signup-leads_select".
- */
-export interface SignupLeadsSelect<T extends boolean = true> {
-  campaign?: T;
-  campaignSlug?: T;
-  storefront?: T;
-  storeslug?: T;
-  firstName?: T;
-  lastName?: T;
-  email?: T;
-  phone?: T;
-  zip?: T;
-  answers?:
-    | T
-    | {
-        name?: T;
-        label?: T;
-        value?: T;
-        id?: T;
-      };
-  utm?:
-    | T
-    | {
-        source?: T;
-        medium?: T;
-        campaign?: T;
-        term?: T;
-        content?: T;
-      };
-  sourceUrl?: T;
-  userAgent?: T;
-  ipAddress?: T;
-  submittedAt?: T;
-  resendStatus?: T;
-  resendEmailId?: T;
-  confirmationStatus?: T;
-  confirmationEmailId?: T;
-  shopifyStatus?: T;
-  shopifyCustomerId?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -13864,7 +13763,6 @@ export interface TaskCreateCollectionExport {
       | 'jobs'
       | 'job-applications'
       | 'signup-campaigns'
-      | 'signup-leads'
       | 'redirects'
       | 'exports'
       | 'imports';
