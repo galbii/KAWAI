@@ -39,7 +39,14 @@ interface Props {
    * would mean fields sliding around during the reader's first scroll.
    */
   animateIn?: boolean
-  onOverflow?: () => void
+  /**
+   * Called with everything typed so far when the visitor hits Continue. The
+   * values must travel — the popup is a different form instance, so without
+   * them the visitor watches their own answers get thrown away.
+   */
+  onOverflow?: (values: Record<string, unknown>) => void
+  /** Seeds the popup with what was already entered in the rail. */
+  defaultValues?: Record<string, unknown> | undefined
   onSuccess: (result: SignupSuccess) => void
 }
 
@@ -103,12 +110,14 @@ export function SignupForm({
   inlineOnly = false,
   animateIn = false,
   onOverflow,
+  defaultValues,
   onSuccess,
 }: Props) {
   const [serverError, setServerError] = useState<string | null>(null)
   const schema = buildSignupSchema(core, questions)
-  const { register, handleSubmit, formState } = useForm<Record<string, unknown>>({
+  const { register, handleSubmit, getValues, formState } = useForm<Record<string, unknown>>({
     resolver: zodResolver(schema as never),
+    ...(defaultValues ? { defaultValues } : {}),
   })
 
   const overflow = questions.length > RAIL_QUESTION_LIMIT
@@ -242,7 +251,8 @@ export function SignupForm({
       {inlineOnly && overflow ? (
         <button
           type="button"
-          onClick={onOverflow}
+          // Hand over the current values, not the click event.
+          onClick={() => onOverflow?.(getValues())}
           className="w-full rounded bg-kawai-red px-4 py-3 font-bold text-white transition-[background-color,transform] duration-150 hover:bg-kawai-red-600 active:scale-[0.99]"
         >
           Continue

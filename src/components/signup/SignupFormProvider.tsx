@@ -19,7 +19,8 @@ export interface SignupFormConfig {
 }
 
 interface SignupFormContext {
-  openForm: () => void
+  /** Optionally seeded with values already entered elsewhere on the page. */
+  openForm: (values?: Record<string, unknown>) => void
   /** Success message once submitted, from either the rail or the modal. */
   done: string | null
   onSuccess: (result: SignupSuccess) => void
@@ -54,6 +55,16 @@ export function SignupFormProvider({
 }) {
   const { isOpen, open, close } = useModal()
   const [done, setDone] = useState<string | null>(null)
+  const [prefill, setPrefill] = useState<Record<string, unknown> | undefined>(undefined)
+  // Bumped on every open so the popup's form remounts and actually picks up the
+  // latest prefill — react-hook-form reads defaultValues once, at mount.
+  const [openSeq, setOpenSeq] = useState(0)
+
+  const openForm = (values?: Record<string, unknown>) => {
+    setPrefill(values)
+    setOpenSeq((n) => n + 1)
+    open()
+  }
 
   const onSuccess = (result: SignupSuccess) => {
     if (result.mode === 'redirect' && result.redirectUrl) {
@@ -65,7 +76,7 @@ export function SignupFormProvider({
   }
 
   return (
-    <Ctx.Provider value={{ openForm: open, done, onSuccess, config }}>
+    <Ctx.Provider value={{ openForm, done, onSuccess, config }}>
       {children}
       <Modal isOpen={isOpen} onClose={close} size="lg">
         <div className="max-h-[80vh] overflow-y-auto p-1">
@@ -75,6 +86,8 @@ export function SignupFormProvider({
             <SignupSuccessMessage message={done} />
           ) : (
             <SignupForm
+              key={openSeq}
+              defaultValues={prefill}
               campaignSlug={config.campaignSlug}
               storeslug={config.storeslug}
               core={config.core}

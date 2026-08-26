@@ -41,7 +41,7 @@ export function SignupMobileBar({ label }: { label: string }) {
     >
       <button
         type="button"
-        onClick={openForm}
+        onClick={() => openForm()}
         tabIndex={visible ? 0 : -1}
         className="block w-full rounded bg-kawai-red px-4 py-3 text-center font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
       >
