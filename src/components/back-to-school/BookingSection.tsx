@@ -25,7 +25,7 @@ export function BookingSection({ locationName, calendlyUrl, storeslug }: Booking
       <section id="book" className="relative bg-kawai-black overflow-hidden scroll-mt-24">
         <RuledGround tone="dark" marginRule={false} />
 
-        <div className="relative max-w-3xl mx-auto px-6 py-24 md:py-32 text-center">
+        <div className="relative max-w-3xl mx-auto px-6 py-20 md:py-28 text-center">
 
           <span
             className="block text-kawai-red-400 uppercase mb-7"

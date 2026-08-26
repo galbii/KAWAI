@@ -7,12 +7,12 @@ import {
   getRebateShowcase,
 } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
-import { HowItWorks } from '@/components/trade-in/HowItWorks'
 import {
   BackToSchoolHero,
   WhyNowSection,
   RebateSection,
   TradeInBand,
+  HowItWorksStrip,
   VisitSection,
   BookingSection,
   DeadlineDock,
@@ -100,10 +100,7 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
 
       <TradeInBand phone={phone} calendlyUrl={calendlyUrl} locationName={locationName} />
 
-      {/* Trade-in mechanics — shared with the spring campaign and the /trade page. */}
-      <div className="bg-kawai-pearl">
-        <HowItWorks phone={phone} ctaHref="#book" ctaLabel="Book an Appointment" />
-      </div>
+      <HowItWorksStrip phone={phone} />
 
       <VisitSection
         locationName={locationName}

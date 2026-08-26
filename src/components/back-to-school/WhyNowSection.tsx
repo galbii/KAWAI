@@ -29,7 +29,7 @@ export function WhyNowSection() {
     <section className="relative bg-kawai-pearl border-t border-kawai-black/10">
       <RuledGround />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-20 md:py-28">
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-16 md:py-20">
 
         {/* The eyebrow is the section's real heading — as a styled <span> it left
             the three reason headings skipping straight from h1 to h3. */}

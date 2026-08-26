@@ -56,7 +56,7 @@ export function VisitSection({
       <section className="relative bg-kawai-pearl border-t border-kawai-black/10">
         <RuledGround />
 
-        <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-20 md:py-28">
+        <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-16 md:py-24">
 
           <div className="flex items-center gap-3 mb-10">
             <span className="w-6 h-px bg-kawai-red" aria-hidden />

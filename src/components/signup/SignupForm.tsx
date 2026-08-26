@@ -8,6 +8,7 @@ import type { SignupCoreConfig, SignupQuestion } from '@/lib/signup/types'
 import { SignupQuestionField } from './SignupQuestionField'
 import { submitSignupCampaign } from '@/lib/actions/signup-campaign-submit'
 import { RAIL_QUESTION_LIMIT, hiddenQuestions, requiresOverflowStep } from '@/lib/signup/overflow'
+import { pushSignupFormSubmitted } from '@/lib/signup/analytics'
 
 export { RAIL_QUESTION_LIMIT }
 
@@ -127,6 +128,26 @@ export function SignupForm({
       setServerError(result.error)
       return
     }
+
+    // A honeypot hit also returns success, so the bot learns nothing from the
+    // response. It is not a lead though, and counting it would inflate the
+    // conversion number the ad spend is judged against. The client already
+    // knows what it submitted, so it can skip the event without the response
+    // giving the game away.
+    const trippedHoneypot = typeof values.company === 'string' && values.company.trim() !== ''
+
+    // Fired before onSuccess because a redirect-mode campaign navigates away
+    // there, and the push would never run.
+    if (!trippedHoneypot) {
+      pushSignupFormSubmitted({
+        campaignSlug,
+        storeslug,
+        email: String(values.email ?? ''),
+        phone: values.phone ? String(values.phone) : undefined,
+        zip: values.zip ? String(values.zip) : undefined,
+      })
+    }
+
     onSuccess({ mode: result.mode, message: result.message, redirectUrl: result.redirectUrl })
   })
 
