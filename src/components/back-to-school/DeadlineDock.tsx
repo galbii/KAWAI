@@ -16,7 +16,10 @@ interface DeadlineDockProps {
  * The spring campaign's floating button opened a panel of links before it opened
  * anything useful. This one carries the single piece of information the page is
  * built around — how long is left — and its only action is the conversion.
- * Appears after the hero scrolls past so it never competes with the calendar.
+ *
+ * Visible only between the rebate ledger and the closing #book section: earlier
+ * it sits on top of the hero calendar's circled deadline (the thing it restates),
+ * and past #book it duplicates a full-size Book button 100px away.
  */
 export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineDockProps) {
   const [visible, setVisible] = useState(false)
@@ -27,7 +30,13 @@ export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineD
     setDaysLeft(daysUntilDeadline())
 
     function onScroll() {
-      setVisible(window.scrollY > window.innerHeight * 0.8)
+      const rebates = document.getElementById('rebates')
+      const book = document.getElementById('book')
+      const pastRebates = rebates
+        ? rebates.getBoundingClientRect().top < window.innerHeight * 0.5
+        : window.scrollY > window.innerHeight * 0.8
+      const beforeBook = book ? book.getBoundingClientRect().top > window.innerHeight * 0.85 : true
+      setVisible(pastRebates && beforeBook)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -36,8 +45,9 @@ export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineD
 
   return (
     <>
+      {/* bottom-24 on mobile clears the site's floating search pill */}
       <div
-        className={`fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9005] transition-all duration-300 ${
+        className={`fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[9005] transition-all duration-300 ${
           visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
         }`}
         aria-hidden={!visible}

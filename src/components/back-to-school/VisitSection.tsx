@@ -125,7 +125,7 @@ export function VisitSection({
                   )}
                 </div>
 
-                <div className="mt-9 space-y-3">
+                <div className="mt-9 space-y-4">
                   <button
                     onClick={() => setBookingOpen(true)}
                     className="w-full inline-flex items-center justify-center px-6 py-4 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm"
@@ -137,7 +137,7 @@ export function VisitSection({
                       href={resolvedDirections}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 border border-kawai-black/20 hover:border-kawai-black/45 text-kawai-black text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm"
+                      className="w-full inline-flex items-center justify-center gap-2 text-kawai-black/70 hover:text-kawai-red text-sm tracking-[0.1em] uppercase font-medium underline underline-offset-4 decoration-kawai-black/25 hover:decoration-kawai-red transition-colors"
                     >
                       <MapPinIcon className="w-4 h-4" aria-hidden />
                       Get directions

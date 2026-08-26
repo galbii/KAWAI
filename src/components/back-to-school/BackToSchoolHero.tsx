@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { SeptemberCalendar } from './SeptemberCalendar'
 import { DATE_RANGE, OFFERS } from './campaign'
 import { RuledGround } from './RuledGround'
@@ -8,7 +7,7 @@ interface BackToSchoolHeroProps {
 }
 
 /**
- * Hero — server-rendered so the headline and wordmark are in the initial HTML.
+ * Hero — server-rendered so the headline is in the initial HTML.
  * The only client JS in here is the calendar's date-dependent strip.
  */
 export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
@@ -35,16 +34,11 @@ export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
 
             {/* ── Left: the pitch ── */}
             <div>
-              <div className="bts-r1 flex items-center gap-4 mb-8">
-                <Image
-                  src="/images/logos/kawai-logo-red-2x.png"
-                  alt="Kawai"
-                  width={104}
-                  height={21}
-                  className="object-contain"
-                  priority
-                />
-                <span className="h-4 w-px bg-kawai-black/20" aria-hidden />
+              {/* No in-page wordmark — the site header 100px above already says
+                  KAWAI. The eyebrow matches the red-dash pattern every other
+                  section uses. */}
+              <div className="bts-r1 flex items-center gap-3 mb-8">
+                <span className="w-6 h-px bg-kawai-red" aria-hidden />
                 <span
                   className="text-kawai-charcoal/55 uppercase"
                   style={{
@@ -117,7 +111,9 @@ export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
                 ))}
               </ul>
 
-              <div className="bts-r5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-8">
+              {/* One button. The booking path stays one line of quiet text — the
+                  page repeats it at full weight where booking is the next step. */}
+              <div className="bts-r5 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mt-8">
                 <a
                   href="#rebates"
                   className="inline-flex items-center justify-center px-8 py-4 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm"
@@ -126,9 +122,9 @@ export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
                 </a>
                 <a
                   href="#book"
-                  className="inline-flex items-center justify-center px-8 py-4 border border-kawai-black/25 hover:border-kawai-black/50 text-kawai-black text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm"
+                  className="inline-flex items-center justify-center sm:justify-start gap-2 text-kawai-black/70 hover:text-kawai-red text-sm tracking-[0.1em] uppercase font-medium underline underline-offset-4 decoration-kawai-black/25 hover:decoration-kawai-red transition-colors"
                 >
-                  Book an appointment
+                  Or book an appointment
                 </a>
               </div>
             </div>
