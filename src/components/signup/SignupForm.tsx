@@ -33,13 +33,65 @@ interface Props {
   finePrint?: string | null | undefined
   /** Render only the first RAIL_QUESTION_LIMIT questions; the rest live in the modal. */
   inlineOnly?: boolean
+  /**
+   * Stagger the fields in on mount. Only for the popup, which mounts on a
+   * deliberate action — the rail is present from page load, so animating it
+   * would mean fields sliding around during the reader's first scroll.
+   */
+  animateIn?: boolean
   onOverflow?: () => void
   onSuccess: (result: SignupSuccess) => void
 }
 
 const CONTROL =
-  'mt-1 w-full rounded border border-kawai-neutral bg-white px-3 py-2 text-sm text-kawai-black focus:border-kawai-red focus:outline-none focus:ring-2 focus:ring-kawai-red/30'
+  'mt-1 w-full rounded border border-kawai-neutral bg-white px-3 py-2 text-sm text-kawai-black transition-colors focus:border-kawai-red focus:outline-none focus:ring-2 focus:ring-kawai-red/30'
 const LABEL = 'block text-xs font-semibold uppercase tracking-[0.12em] text-kawai-charcoal'
+const ERROR = 'mt-1 animate-signup-error-in text-xs text-kawai-red'
+
+/**
+ * Staggers one field group into view. The cap keeps a long campaign form from
+ * making the last question wait — past eight groups every remaining one shares
+ * the same delay rather than compounding into a wait the visitor can feel.
+ */
+function Reveal({
+  on,
+  index,
+  children,
+}: {
+  on: boolean
+  index: number
+  children: React.ReactNode
+}) {
+  if (!on) return <>{children}</>
+  return (
+    <div
+      className="animate-signup-field-in"
+      style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function Spinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
 
 export function SignupForm({
   campaignSlug,
@@ -49,6 +101,7 @@ export function SignupForm({
   submitLabel,
   finePrint,
   inlineOnly = false,
+  animateIn = false,
   onOverflow,
   onSuccess,
 }: Props) {
@@ -89,6 +142,7 @@ export function SignupForm({
         className="absolute left-[-9999px] h-0 w-0 opacity-0"
       />
 
+      <Reveal on={animateIn} index={0}>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor="firstName" className={LABEL}>
@@ -96,7 +150,7 @@ export function SignupForm({
           </label>
           <input id="firstName" autoComplete="given-name" {...register('firstName')} className={CONTROL} />
           {fieldError('firstName') ? (
-            <p role="alert" className="mt-1 text-xs text-kawai-red">
+            <p role="alert" className={ERROR}>
               {fieldError('firstName')}
             </p>
           ) : null}
@@ -107,26 +161,30 @@ export function SignupForm({
           </label>
           <input id="lastName" autoComplete="family-name" {...register('lastName')} className={CONTROL} />
           {fieldError('lastName') ? (
-            <p role="alert" className="mt-1 text-xs text-kawai-red">
+            <p role="alert" className={ERROR}>
               {fieldError('lastName')}
             </p>
           ) : null}
         </div>
       </div>
+      </Reveal>
 
+      <Reveal on={animateIn} index={1}>
       <div>
         <label htmlFor="email" className={LABEL}>
           Email *
         </label>
         <input id="email" type="email" autoComplete="email" {...register('email')} className={CONTROL} />
         {fieldError('email') ? (
-          <p role="alert" className="mt-1 text-xs text-kawai-red">
+          <p role="alert" className={ERROR}>
             {fieldError('email')}
           </p>
         ) : null}
       </div>
+      </Reveal>
 
       {core.collectPhone || core.collectZip ? (
+        <Reveal on={animateIn} index={2}>
         <div className="grid grid-cols-2 gap-3">
           {core.collectPhone ? (
             <div>
@@ -135,7 +193,7 @@ export function SignupForm({
               </label>
               <input id="phone" type="tel" autoComplete="tel" {...register('phone')} className={CONTROL} />
               {fieldError('phone') ? (
-                <p role="alert" className="mt-1 text-xs text-kawai-red">
+                <p role="alert" className={ERROR}>
                   {fieldError('phone')}
                 </p>
               ) : null}
@@ -148,30 +206,35 @@ export function SignupForm({
               </label>
               <input id="zip" autoComplete="postal-code" {...register('zip')} className={CONTROL} />
               {fieldError('zip') ? (
-                <p role="alert" className="mt-1 text-xs text-kawai-red">
+                <p role="alert" className={ERROR}>
                   {fieldError('zip')}
                 </p>
               ) : null}
             </div>
           ) : null}
         </div>
+        </Reveal>
       ) : null}
 
       {shown.length > 0 ? (
         <div className="space-y-3 border-t border-kawai-neutral/60 pt-3">
-          {shown.map((q) => (
-            <SignupQuestionField
-              key={q.name}
-              question={q}
-              register={register}
-              error={formState.errors[q.name] as never}
-            />
+          {shown.map((q, i) => (
+            <Reveal key={q.name} on={animateIn} index={3 + i}>
+              <SignupQuestionField
+                question={q}
+                register={register}
+                error={formState.errors[q.name] as never}
+              />
+            </Reveal>
           ))}
         </div>
       ) : null}
 
       {serverError ? (
-        <p role="alert" className="rounded bg-kawai-red/10 px-3 py-2 text-sm text-kawai-red">
+        <p
+          role="alert"
+          className="animate-signup-error-in rounded bg-kawai-red/10 px-3 py-2 text-sm text-kawai-red"
+        >
           {serverError}
         </p>
       ) : null}
@@ -180,7 +243,7 @@ export function SignupForm({
         <button
           type="button"
           onClick={onOverflow}
-          className="w-full rounded bg-kawai-red px-4 py-3 font-bold text-white transition-colors hover:bg-kawai-red-600"
+          className="w-full rounded bg-kawai-red px-4 py-3 font-bold text-white transition-[background-color,transform] duration-150 hover:bg-kawai-red-600 active:scale-[0.99]"
         >
           Continue
         </button>
@@ -188,9 +251,16 @@ export function SignupForm({
         <button
           type="submit"
           disabled={formState.isSubmitting}
-          className="w-full rounded bg-kawai-red px-4 py-3 font-bold text-white transition-colors hover:bg-kawai-red-600 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded bg-kawai-red px-4 py-3 font-bold text-white transition-[background-color,transform] duration-150 hover:bg-kawai-red-600 active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100"
         >
-          {formState.isSubmitting ? 'Sending…' : submitLabel}
+          {formState.isSubmitting ? (
+            <>
+              <Spinner />
+              Sending…
+            </>
+          ) : (
+            submitLabel
+          )}
         </button>
       )}
 

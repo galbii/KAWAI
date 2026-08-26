@@ -143,6 +143,15 @@
   /* Video Background Block Animations */
   --animate-scroll-bounce: scroll-bounce 2s ease-in-out infinite;
 
+  /* Signup campaign form. fill-mode: both is required, not stylistic — the
+     reduced-motion rule clamps duration to 0.01ms rather than removing the
+     animation, so without it the element would land back on its 0% frame
+     (opacity 0, undrawn tick) and simply never appear. */
+  --animate-signup-field-in: signup-field-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-signup-error-in: signup-error-in 200ms ease-out both;
+  --animate-signup-badge-in: signup-badge-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-signup-check-draw: signup-check-draw 420ms cubic-bezier(0.65, 0, 0.35, 1) 140ms both;
+
   /* Shadow Scale */
   --shadow-brand-subtle: 0 2px 8px rgb(30 27 22 / 0.04), 0 1px 3px rgb(30 27 22 / 0.08);
   --shadow-brand-medium: 0 4px 16px rgb(30 27 22 / 0.08), 0 2px 6px rgb(30 27 22 / 0.12);
@@ -578,6 +587,30 @@ body.viewer-modal-open [data-hide-on-3d-viewer] {
 @keyframes price-badge-in {
   0%   { opacity: 0; transform: translateY(0.25rem) scale(0.96); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ------------------------------------------------------------ */
+/* Signup campaign form. One easing family, short durations —    */
+/* the fields settle, the tick is the only moment that performs. */
+/* ------------------------------------------------------------ */
+@keyframes signup-field-in {
+  from { opacity: 0; transform: translateY(0.375rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes signup-error-in {
+  from { opacity: 0; transform: translateY(-0.1875rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes signup-badge-in {
+  0%   { opacity: 0; transform: scale(0.8); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes signup-check-draw {
+  to { stroke-dashoffset: 0; }
 }
 
 /* ============================================================ */

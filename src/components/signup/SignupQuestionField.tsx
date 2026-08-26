@@ -34,7 +34,7 @@ export function SignupQuestionField({ question, register, error }: Props) {
   ) : null
 
   const errorEl = error ? (
-    <p id={`${id}-error`} role="alert" className="mt-1 text-xs text-kawai-red">
+    <p id={`${id}-error`} role="alert" className="mt-1 animate-signup-error-in text-xs text-kawai-red">
       {error.message}
     </p>
   ) : null

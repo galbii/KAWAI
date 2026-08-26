@@ -4,6 +4,7 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
 import { Modal } from '@/components/ui/modal'
 import { useModal } from '@/hooks/useModal'
 import { SignupForm, type SignupSuccess } from './SignupForm'
+import { SignupSuccessMessage } from './SignupSuccessMessage'
 import type { SignupCoreConfig, SignupQuestion } from '@/lib/signup/types'
 
 export interface SignupFormConfig {
@@ -71,9 +72,7 @@ export function SignupFormProvider({
           {/* h2, not h1 — SignupHero owns the page's only h1. */}
           <h2 className="mb-4 text-xl font-bold text-kawai-black">{config.title}</h2>
           {done ? (
-            <p role="status" className="py-6 text-center text-sm text-kawai-black">
-              {done}
-            </p>
+            <SignupSuccessMessage message={done} />
           ) : (
             <SignupForm
               campaignSlug={config.campaignSlug}
@@ -83,6 +82,7 @@ export function SignupFormProvider({
               submitLabel={config.submitLabel}
               finePrint={config.finePrint}
               inlineOnly={false}
+              animateIn
               onSuccess={onSuccess}
             />
           )}

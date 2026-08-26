@@ -2,6 +2,7 @@
 
 import { SignupForm, RAIL_QUESTION_LIMIT } from './SignupForm'
 import { useSignupForm } from './SignupFormProvider'
+import { SignupSuccessMessage } from './SignupSuccessMessage'
 
 /**
  * Sticky sidebar card holding the inline form.
@@ -28,9 +29,7 @@ export function SignupRail({ subtitle }: { subtitle?: string | null | undefined 
         </div>
         <div className="px-4 py-4">
           {done ? (
-            <p role="status" className="py-6 text-center text-sm text-kawai-black">
-              {done}
-            </p>
+            <SignupSuccessMessage message={done} />
           ) : (
             <SignupForm
               campaignSlug={config.campaignSlug}
