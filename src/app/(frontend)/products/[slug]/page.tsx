@@ -4,6 +4,7 @@ import { getProductBySlugDirect } from '@/lib/payload/queries'
 const getCachedProduct = cache(getProductBySlugDirect)
 import { resolveMediaUrl } from '@/lib/payload'
 import { ProductPageRenderer } from '@/components/products/ProductPageRenderer'
+import { ProductPromoPopup } from '@/components/products/ProductPromoPopup'
 import { ProductErrorFallback } from '@/components/products/ProductErrorFallback'
 import { ProductLivePreview } from '@/components/products/ProductLivePreview'
 import { ErrorBoundary } from '@/components/ui/error-boundary'
@@ -167,6 +168,7 @@ export default async function ProductPage(props: PageProps) {
         <ErrorBoundary fallback={ProductErrorFallback}>
           <ProductPageRenderer product={product} />
         </ErrorBoundary>
+        <ProductPromoPopup product={product} />
       </div>
     )
   } catch (error) {

@@ -282,6 +282,19 @@ function validateRelatedProductsBlock(block: any, result: BlockValidationResult)
   if (block.displayMode && !['collection', 'accessories', 'both'].includes(block.displayMode)) {
     result.warnings.push('RelatedProducts: displayMode should be collection, accessories, or both')
   }
+
+  if (block.selectionMode && !['auto', 'curated', 'curatedPlusAuto'].includes(block.selectionMode)) {
+    result.warnings.push('RelatedProducts: selectionMode should be auto, curated, or curatedPlusAuto')
+  }
+
+  if (
+    (block.selectionMode === 'curated' || block.selectionMode === 'curatedPlusAuto') &&
+    (!Array.isArray(block.curatedProducts) || block.curatedProducts.length === 0)
+  ) {
+    result.warnings.push(
+      'RelatedProducts: curated selection mode is set but no curated products are picked',
+    )
+  }
 }
 
 /**

@@ -5,7 +5,15 @@ import { ArrowRight } from 'lucide-react'
 import type { Product } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { formatPrice } from '@/lib/utils'
+import {
+  dedupeWithLimit,
+  extractRelationshipIds,
+  mergeCuratedWithAuto,
+  nonAccessoriesFirst,
+  orderByIds,
+} from '@/lib/products/related-selection'
 import { RelatedProductsCarousel } from './RelatedProductsCarousel'
+import { Reveal, RevealRule } from './RelatedProductsMotion'
 
 // -------------------------------------------------------------------
 // Types
@@ -19,6 +27,8 @@ interface SectionHeader {
 
 interface RelatedProductsBlockData {
   sectionHeader?: SectionHeader | null
+  selectionMode?: 'auto' | 'curated' | 'curatedPlusAuto' | null
+  curatedProducts?: (string | Product)[] | null
   displayMode?: 'collection' | 'accessories' | 'both' | null
   maxProducts?: number | null
   layout?: 'grid' | 'carousel' | null
@@ -79,8 +89,6 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
 
   const numColor = isDark ? 'text-white/20' : 'text-kawai-muted'
   const imgBg = isDark ? 'bg-[#252220]' : 'bg-white'
-  const nameColor = 'text-white'
-  const modelColor = 'text-white/60' // ≥4.5:1 on kawai-black/95 (WCAG 1.4.3 — /40 failed)
 
   const typeLabel = formatCategory(product.type)
 
@@ -99,94 +107,99 @@ function ProductCard({ product, showPrice, isDark, index }: ProductCardProps) {
   const displayCompare = isOnSale ? compareAtPrice : null
 
   return (
-    <article className="group flex flex-col">
-      {/* Index number — sits above the card */}
-      <p className={`text-[10px] tracking-[0.35em] font-medium mb-3 select-none ${numColor}`}>
-        {num}
-      </p>
+    <Link
+      href={href}
+      className="group block h-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
+    >
+      <article className="flex flex-col h-full transition-transform duration-500 ease-[var(--ease-elegant)] group-hover:-translate-y-1">
+        {/* Index number — encodes curated/display order */}
+        <p className={`text-[10px] tracking-[0.35em] font-medium mb-3 select-none ${numColor}`}>
+          {num}
+        </p>
 
-      {/* Image zone — own link, not nested with the button below */}
-      <Link
-        href={href}
-        className={`block relative aspect-[4/3] overflow-hidden ${imgBg} flex-shrink-0`}
-        tabIndex={-1}
-        aria-hidden="true"
-      >
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name ?? product.model ?? 'Piano'}
-            fill
-            className="object-cover object-center transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-105"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <svg
-              className={`w-14 h-14 ${isDark ? 'text-white/10' : 'text-kawai-neutral'}`}
-              viewBox="0 0 48 36"
-              fill="none"
-              aria-hidden="true"
-            >
-              <rect x="1" y="14" width="46" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              {[6, 12, 19, 26, 33, 39].map((x) => (
-                <rect key={x} x={x} y="6" width="4" height="9" rx="1" fill="currentColor" />
-              ))}
-            </svg>
-          </div>
-        )}
+        {/* Image zone */}
+        <div className={`relative aspect-[4/3] overflow-hidden ${imgBg} flex-shrink-0`}>
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.name ?? product.model ?? 'Piano'}
+              fill
+              className="object-cover object-center transition-transform duration-700 ease-[var(--ease-elegant)] group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg
+                className={`w-14 h-14 ${isDark ? 'text-white/10' : 'text-kawai-neutral'}`}
+                viewBox="0 0 48 36"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect x="1" y="14" width="46" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                {[6, 12, 19, 26, 33, 39].map((x) => (
+                  <rect key={x} x={x} y="6" width="4" height="9" rx="1" fill="currentColor" />
+                ))}
+              </svg>
+            </div>
+          )}
 
-        {/* Price overlay — bottom-right */}
-        {showPrice && displayPrice !== null && (
-          <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
-            {displayCompare !== null && (
-              <span className="bg-kawai-black/60 backdrop-blur-sm text-white/60 text-[10px] px-2 py-0.5 line-through">
-                {formatPrice(displayCompare, product.price?.currency ?? 'USD')}
+          {/* Price overlay — bottom-right */}
+          {showPrice && displayPrice !== null && (
+            <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
+              {displayCompare !== null && (
+                <span className="bg-kawai-black/60 backdrop-blur-sm text-white/60 text-[10px] px-2 py-0.5 line-through">
+                  {formatPrice(displayCompare, product.price?.currency ?? 'USD')}
+                </span>
+              )}
+              <span
+                className={`backdrop-blur-sm text-[12px] font-medium px-2.5 py-1 ${
+                  isOnSale
+                    ? 'bg-kawai-red text-white'
+                    : 'bg-kawai-black/70 text-white'
+                }`}
+              >
+                {formatPrice(displayPrice, product.price?.currency ?? 'USD')}
               </span>
-            )}
-            <span
-              className={`backdrop-blur-sm text-[12px] font-medium px-2.5 py-1 ${
-                isOnSale
-                  ? 'bg-kawai-red text-white'
-                  : 'bg-kawai-black/70 text-white'
-              }`}
-            >
-              {formatPrice(displayPrice, product.price?.currency ?? 'USD')}
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.04] transition-colors duration-500 pointer-events-none" />
+        </div>
+
+        {/* Bottom panel — single slab: type, name, then model + explore on one baseline */}
+        <div className="bg-kawai-black/95 px-5 pt-4 pb-5 flex flex-col flex-1">
+          {/* Type */}
+          {typeLabel && (
+            <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red-400 mb-1.5">
+              {typeLabel}
+            </p>
+          )}
+
+          {/* Name */}
+          <h3 className="font-[family-name:var(--font-brand-luxury)] text-[1.1rem] leading-tight text-white">
+            {product.name ?? product.model}
+          </h3>
+
+          {/* Model + Explore — shared baseline row */}
+          <div className="mt-auto pt-4 flex items-end justify-between gap-3">
+            {/* white/60 ≥4.5:1 on kawai-black/95 (WCAG 1.4.3 — /40 failed) */}
+            <p className="text-[10px] tracking-[0.25em] uppercase text-white/60">
+              {product.model}
+            </p>
+
+            <span className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase font-medium text-white/70 group-hover:text-white transition-colors duration-300">
+              <span className="relative">
+                Explore
+                <span
+                  className="absolute -bottom-1 left-0 h-px w-full bg-kawai-red scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-[var(--ease-elegant)]"
+                  aria-hidden="true"
+                />
+              </span>
+              <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </div>
-        )}
-
-        <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.04] transition-colors duration-500 pointer-events-none" />
-      </Link>
-
-      {/* Bottom panel — footer grey */}
-      <div className="bg-kawai-black/95 px-4 pt-4 pb-4 flex flex-col flex-1">
-        {/* Type */}
-        {typeLabel && (
-          <p className="text-[9px] tracking-[0.4em] uppercase font-medium text-kawai-red-400 mb-1.5">
-            {typeLabel}
-          </p>
-        )}
-
-        {/* Name */}
-        <h3 className={`font-[family-name:var(--font-brand-luxury)] text-[1.1rem] leading-tight mb-1 ${nameColor}`}>
-          {product.name ?? product.model}
-        </h3>
-
-        {/* Model */}
-        <p className={`text-[10px] tracking-[0.25em] uppercase ${modelColor}`}>
-          {product.model}
-        </p>
-      </div>
-
-      {/* Explore button — below the card */}
-      <Link
-        href={href}
-        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-kawai-black text-white text-[10px] tracking-[0.2em] uppercase font-medium transition-colors duration-300 hover:bg-kawai-red mt-3"
-      >
-        <span>Explore</span>
-        <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
-      </Link>
-    </article>
+        </div>
+      </article>
+    </Link>
   )
 }
 
@@ -209,7 +222,6 @@ function renderSection({
   layout = 'grid',
   showPrice = true,
   theme = 'light',
-  limit,
 }: RenderSectionArgs) {
   const isDark = theme === 'dark'
   const sectionBg = isDark ? 'bg-kawai-black' : 'bg-kawai-pearl'
@@ -225,62 +237,66 @@ function renderSection({
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
 
         {/* ── Section Header ────────────────────────────────────── */}
-        <div className="flex items-end justify-between mb-2">
-          <div>
-            {/* Eyebrow */}
-            <div className="flex items-center gap-3 mb-4">
-              <span className="block w-5 h-px bg-kawai-red" aria-hidden="true" />
-              <p className="text-[10px] tracking-[0.4em] uppercase font-medium text-kawai-red">
-                {sectionHeader?.eyebrow ?? 'Explore More'}
-              </p>
+        <Reveal>
+          <div className="flex items-end justify-between mb-2">
+            <div>
+              {/* Eyebrow */}
+              <div className="flex items-center gap-3 mb-4">
+                <span className="block w-5 h-px bg-kawai-red" aria-hidden="true" />
+                <p className="text-[10px] tracking-[0.4em] uppercase font-medium text-kawai-red">
+                  {sectionHeader?.eyebrow ?? 'Explore More'}
+                </p>
+              </div>
+
+              {/* Heading */}
+              <h2
+                className={`text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] leading-tight ${headingColor}`}
+              >
+                {sectionHeader?.heading ?? 'You May Also Like'}
+              </h2>
+
+              {/* Subheading */}
+              {sectionHeader?.subheading && (
+                <p className={`mt-2 text-sm leading-relaxed ${subColor}`}>
+                  {sectionHeader.subheading}
+                </p>
+              )}
             </div>
 
-            {/* Heading */}
-            <h2
-              className={`text-3xl md:text-[2.5rem] font-[family-name:var(--font-brand-luxury)] leading-tight ${headingColor}`}
-            >
-              {sectionHeader?.heading ?? 'You May Also Like'}
-            </h2>
-
-            {/* Subheading */}
-            {sectionHeader?.subheading && (
-              <p className={`mt-2 text-sm leading-relaxed ${subColor}`}>
-                {sectionHeader.subheading}
-              </p>
-            )}
+            {/* Item count — right-aligned, subtle */}
+            <p className={`text-[11px] tracking-[0.3em] uppercase font-medium pb-1 ${countColor}`}>
+              {count}&thinsp;{count === 1 ? 'item' : 'items'}
+            </p>
           </div>
+        </Reveal>
 
-          {/* Item count — right-aligned, subtle */}
-          <p className={`text-[11px] tracking-[0.3em] uppercase font-medium pb-1 ${countColor}`}>
-            {count}&thinsp;{count === 1 ? 'item' : 'items'}
-          </p>
-        </div>
+        {/* Full-width rule — draws in from the left */}
+        <RevealRule className={`w-full h-px ${dividerColor} mt-6 mb-12`} />
 
-        {/* Full-width rule */}
-        <div className={`w-full h-px ${dividerColor} mt-6 mb-12`} />
-
-        {/* ── Cards ─────────────────────────────────────────────── */}
+        {/* ── Cards — staggered keyfall reveal ──────────────────── */}
         {layout === 'carousel' ? (
           <RelatedProductsCarousel isDark={isDark}>
             {allProducts.map((rp, i) => (
-              <div
+              <Reveal
                 key={rp.id}
+                delay={Math.min(i, 3) * 0.08}
                 className="snap-start flex-shrink-0 w-[72vw] sm:w-[42vw] md:w-[30vw] lg:w-[22vw]"
               >
                 <ProductCard product={rp} showPrice={showPrice ?? true} isDark={isDark} index={i} />
-              </div>
+              </Reveal>
             ))}
           </RelatedProductsCarousel>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-8 md:gap-y-16 items-start">
             {allProducts.map((rp, i) => (
-              <ProductCard
-                key={rp.id}
-                product={rp}
-                showPrice={showPrice ?? true}
-                isDark={isDark}
-                index={i}
-              />
+              <Reveal key={rp.id} delay={Math.min(i, 7) * 0.07}>
+                <ProductCard
+                  product={rp}
+                  showPrice={showPrice ?? true}
+                  isDark={isDark}
+                  index={i}
+                />
+              </Reveal>
             ))}
           </div>
         )}
@@ -308,43 +324,14 @@ const SELECT_FIELDS = {
   variants: true,
 } as any
 
-function extractId(val: unknown): string | null {
-  if (!val) return null
-  if (typeof val === 'string') return val
-  if (typeof val === 'object' && val !== null && 'id' in val) {
-    const id = (val as { id: unknown }).id
-    return typeof id === 'string' ? id : typeof id === 'number' ? String(id) : null
-  }
-  return null
-}
-
-function dedupe(products: RelatedProduct[], limit: number): RelatedProduct[] {
-  const seen = new Set<string>()
-  const result: RelatedProduct[] = []
-  for (const p of products) {
-    if (!seen.has(p.id) && result.length < limit) {
-      seen.add(p.id)
-      result.push(p)
-    }
-  }
-  return result
-}
-
-/** Sort so non-accessories come first — pianos fill visible slots before accessories */
-function nonAccessoriesFirst(products: RelatedProduct[]): RelatedProduct[] {
-  return [...products].sort((a, b) => {
-    const aIsAccessory = a.type === 'accessory' ? 1 : 0
-    const bIsAccessory = b.type === 'accessory' ? 1 : 0
-    return aIsAccessory - bIsAccessory
-  })
-}
-
 // -------------------------------------------------------------------
 // Main Renderer (async Server Component)
 // -------------------------------------------------------------------
 
 export async function RelatedProductsRenderer({
   sectionHeader,
+  selectionMode = 'auto',
+  curatedProducts,
   displayMode = 'collection',
   maxProducts = 4,
   layout = 'grid',
@@ -357,36 +344,71 @@ export async function RelatedProductsRenderer({
   if (!product) return null
 
   const limit = Math.min(Math.max(maxProducts ?? 4, 2), 8)
+  const selection = selectionMode ?? 'auto'
   const payload = await getPayloadClient()
+
+  const sectionArgs = {
+    sectionHeader,
+    layout,
+    showPrice: effectiveShowPrice,
+    theme,
+    limit,
+  }
+
+  // ── Curated picks — fetched in editor order, never the current product ──
+  const curatedIds =
+    selection === 'auto'
+      ? []
+      : extractRelationshipIds(curatedProducts).filter((id) => id !== String(product.id))
+  const curatedIdSet = new Set(curatedIds)
+
+  let curated: RelatedProduct[] = []
+  if (curatedIds.length > 0) {
+    try {
+      const { docs } = await payload.find({
+        collection: 'products',
+        where: { and: [{ id: { in: curatedIds } }, { status: { equals: 'active' } }] },
+        select: SELECT_FIELDS,
+        depth: 0,
+        limit: curatedIds.length,
+      })
+      curated = orderByIds(docs as RelatedProduct[], curatedIds)
+    } catch { /* silent */ }
+  }
+
+  // ── Curated Only: the picked list replaces all auto-discovery ─────
+  if (selection === 'curated') {
+    const picks = dedupeWithLimit(curated, limit)
+    if (picks.length === 0) return null
+    return renderSection({ allProducts: picks, ...sectionArgs })
+  }
 
   // ── 0. Accessory page: show explicitly-linked compatible pianos ────
   if (product.type === 'accessory') {
-    const compatibleIds = ((product as any).compatibleProducts as unknown[])
-      ?.map(extractId)
-      .filter((id): id is string => id !== null) ?? []
+    const compatibleIds = extractRelationshipIds((product as any).compatibleProducts)
 
+    let pianos: RelatedProduct[] = []
     if (compatibleIds.length > 0) {
-      let pianos: RelatedProduct[] = []
       try {
         const { docs } = await payload.find({
           collection: 'products',
           where: { and: [{ id: { in: compatibleIds } }, { status: { equals: 'active' } }] },
           select: SELECT_FIELDS,
           depth: 0,
-          limit,
+          limit: limit + curated.length,
         })
-        pianos = dedupe(docs as RelatedProduct[], limit)
+        pianos = docs as RelatedProduct[]
       } catch { /* silent */ }
-
-      if (pianos.length === 0) return null
-      return renderSection({ allProducts: pianos, sectionHeader, layout, showPrice: effectiveShowPrice, theme, limit })
     }
 
-    return null
+    const combined = mergeCuratedWithAuto(curated, pianos, limit)
+    if (combined.length === 0) return null
+    return renderSection({ allProducts: combined, ...sectionArgs })
   }
 
   // ── 1. Same-collection products ───────────────────────────────────
   const collectionProducts: RelatedProduct[] = []
+  const autoFetchLimit = limit + curated.length
 
   if (displayMode === 'collection' || displayMode === 'both') {
     const shopifyCollectionIds = (product.shopifyCollections ?? [])
@@ -406,7 +428,7 @@ export async function RelatedProductsRenderer({
           },
           select: SELECT_FIELDS,
           depth: 0,
-          limit,
+          limit: autoFetchLimit,
         })
         collectionProducts.push(...(docs as RelatedProduct[]))
       } catch {
@@ -423,7 +445,7 @@ export async function RelatedProductsRenderer({
               },
               select: SELECT_FIELDS,
               depth: 0,
-              limit,
+              limit: autoFetchLimit,
             })
             collectionProducts.push(...(docs as RelatedProduct[]))
           } catch { /* silent */ }
@@ -442,7 +464,7 @@ export async function RelatedProductsRenderer({
           },
           select: SELECT_FIELDS,
           depth: 0,
-          limit,
+          limit: autoFetchLimit,
         })
         collectionProducts.push(...(docs as RelatedProduct[]))
       } catch { /* silent */ }
@@ -464,36 +486,42 @@ export async function RelatedProductsRenderer({
         },
         select: SELECT_FIELDS,
         depth: 0,
-        limit,
+        limit: autoFetchLimit,
       })
       accessories.push(...(docs as RelatedProduct[]))
     } catch { /* silent */ }
   }
 
   // ── 3. Render two independent sections ────────────────────────────
-  const collectionSlice = dedupe(nonAccessoriesFirst(collectionProducts), limit)
-  const accessoriesSlice = dedupe(accessories, limit)
+  // Curated picks lead the main section in editor order; auto results fill
+  // the rest. The accessories section never repeats a curated pick.
+  const mainSlice = mergeCuratedWithAuto(
+    curated,
+    nonAccessoriesFirst(collectionProducts),
+    limit,
+  )
+  const accessoriesSlice = dedupeWithLimit(
+    accessories.filter((a) => !curatedIdSet.has(a.id)),
+    limit,
+  )
 
-  if (collectionSlice.length === 0 && accessoriesSlice.length === 0) return null
+  if (mainSlice.length === 0 && accessoriesSlice.length === 0) return null
 
-  const collectionSection = collectionSlice.length > 0
-    ? renderSection({ allProducts: collectionSlice, sectionHeader, layout, showPrice: effectiveShowPrice, theme, limit })
+  const mainSection = mainSlice.length > 0
+    ? renderSection({ allProducts: mainSlice, ...sectionArgs })
     : null
 
   const accessoriesSection = accessoriesSlice.length > 0
     ? renderSection({
+        ...sectionArgs,
         allProducts: accessoriesSlice,
         sectionHeader: { eyebrow: 'Accessories', heading: 'Compatible Accessories' },
-        layout,
-        showPrice: effectiveShowPrice,
-        theme,
-        limit,
       })
     : null
 
   return (
     <>
-      {collectionSection}
+      {mainSection}
       {accessoriesSection}
     </>
   )

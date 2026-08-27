@@ -2597,6 +2597,56 @@ export interface Product {
         | Marketing3DViewerBlock
       )[]
     | null;
+  promo?: {
+    /**
+     * Enable the promo popup on this product page
+     */
+    enabled?: boolean | null;
+    /**
+     * What the popup CTA links to
+     */
+    linkType?: ('product' | 'collection' | 'custom') | null;
+    /**
+     * The product to promote — the popup links to its page
+     */
+    linkedProduct?: (string | null) | Product;
+    /**
+     * The collection to promote — the popup links to its page
+     */
+    linkedCollection?: (string | null) | Collection;
+    /**
+     * Destination URL (e.g. /pianos/digital or https://...)
+     */
+    customUrl?: string | null;
+    /**
+     * Small uppercase label above the popup headline
+     */
+    eyebrow?: string | null;
+    /**
+     * Popup headline. Leave blank to use "Meet the {linked product/collection name}" — required for Custom URL promos
+     */
+    title?: string | null;
+    /**
+     * Short supporting text under the headline
+     */
+    message?: string | null;
+    /**
+     * Button label — clicking it navigates to the promo link
+     */
+    ctaLabel?: string | null;
+    /**
+     * Optional image override — defaults to the linked product's or collection's image
+     */
+    image?: (string | null) | Media;
+    /**
+     * How often a visitor sees the popup after dismissing it
+     */
+    displayFrequency?: ('session' | 'visitor' | 'always') | null;
+    /**
+     * Seconds to wait before the popup slides in
+     */
+    delaySeconds?: number | null;
+  };
   /**
    * SEO and social media optimization. Switch the locale (top of page) to override these fields for ca.kawaius.com. Blank CA values fall back to the US value.
    */
@@ -3622,7 +3672,15 @@ export interface ProductRelatedProductsBlock {
     subheading?: string | null;
   };
   /**
-   * Which related products to show — "Same Collection" finds products from the same Shopify series, "Accessories" shows add-ons, "Both" combines them
+   * Automatic discovers related products for you. Curated Only shows exactly the products you pick below, in that order. Curated + Automatic shows your picks first, then fills remaining slots automatically.
+   */
+  selectionMode?: ('auto' | 'curated' | 'curatedPlusAuto') | null;
+  /**
+   * Hand-pick any products — pianos, accessories, software. They display in the order you add them here.
+   */
+  curatedProducts?: (string | Product)[] | null;
+  /**
+   * Which related products to auto-discover — "Same Collection" finds products from the same Shopify series, "Accessories" shows add-ons, "Both" combines them. Hidden in Curated Only mode.
    */
   displayMode?: ('collection' | 'accessories' | 'both') | null;
   /**
@@ -12889,6 +12947,22 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   pageContent?: T | {};
+  promo?:
+    | T
+    | {
+        enabled?: T;
+        linkType?: T;
+        linkedProduct?: T;
+        linkedCollection?: T;
+        customUrl?: T;
+        eyebrow?: T;
+        title?: T;
+        message?: T;
+        ctaLabel?: T;
+        image?: T;
+        displayFrequency?: T;
+        delaySeconds?: T;
+      };
   seo?:
     | T
     | {

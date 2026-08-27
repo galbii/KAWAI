@@ -44,7 +44,37 @@ export const RelatedProducts: Block = {
       ],
     },
 
-    // Display Mode
+    // Selection Mode — automatic discovery vs hand-picked products
+    {
+      name: 'selectionMode',
+      type: 'select',
+      defaultValue: 'auto',
+      options: [
+        { label: 'Automatic (discover by collection/compatibility)', value: 'auto' },
+        { label: 'Curated Only (hand-picked products replace automatic)', value: 'curated' },
+        { label: 'Curated + Automatic (picks first, auto fills the rest)', value: 'curatedPlusAuto' },
+      ],
+      admin: {
+        description:
+          'Automatic discovers related products for you. Curated Only shows exactly the products you pick below, in that order. Curated + Automatic shows your picks first, then fills remaining slots automatically.',
+      },
+    },
+
+    // Curated Products — only shown for curated modes
+    {
+      name: 'curatedProducts',
+      type: 'relationship',
+      relationTo: 'products',
+      hasMany: true,
+      admin: {
+        condition: (_, siblingData) =>
+          siblingData?.selectionMode === 'curated' || siblingData?.selectionMode === 'curatedPlusAuto',
+        description:
+          'Hand-pick any products — pianos, accessories, software. They display in the order you add them here.',
+      },
+    },
+
+    // Display Mode — applies to the automatic portion only
     {
       name: 'displayMode',
       type: 'select',
@@ -55,8 +85,9 @@ export const RelatedProducts: Block = {
         { label: 'Both (Collection + Accessories)', value: 'both' },
       ],
       admin: {
+        condition: (_, siblingData) => siblingData?.selectionMode !== 'curated',
         description:
-          'Which related products to show — "Same Collection" finds products from the same Shopify series, "Accessories" shows add-ons, "Both" combines them',
+          'Which related products to auto-discover — "Same Collection" finds products from the same Shopify series, "Accessories" shows add-ons, "Both" combines them. Hidden in Curated Only mode.',
       },
     },
 

@@ -1,4 +1,4 @@
-import type { CollectionConfig, CollectionAfterChangeHook, Endpoint } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook, Condition, Endpoint } from 'payload'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { syncShopifyDataToProduct, shouldSyncProduct, mapShopifyProductTypeToPayloadType, fetchCAPricing } from '@/lib/shopify/sync-to-payload'
 import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-products'
@@ -7,6 +7,14 @@ import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
 import { imageField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
+
+// Shared conditions for the Promo tab — fields only appear once the promo is
+// enabled. siblingData is the promo tab's own data.
+const promoEnabled: Condition = (_, siblingData) => Boolean(siblingData?.enabled)
+const promoLinkType =
+  (linkType: 'product' | 'collection' | 'custom'): Condition =>
+  (_, siblingData) =>
+    Boolean(siblingData?.enabled) && siblingData?.linkType === linkType
 
 /**
  * Transform Shopify product data to Payload CMS product format
@@ -1100,6 +1108,136 @@ export const Products: CollectionConfig = {
           ]
         },
 
+        // Promo Tab — popup promoting another product, a collection, or any URL
+        {
+          name: 'promo',
+          label: 'Promo',
+          description:
+            'Show a small popup on this product page promoting another product, a collection, or a custom link (e.g. a successor model, a sale, or a campaign page)',
+          fields: [
+            {
+              name: 'enabled',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Enable the promo popup on this product page',
+              },
+            },
+            {
+              name: 'linkType',
+              type: 'select',
+              defaultValue: 'product',
+              options: [
+                { label: 'Product', value: 'product' },
+                { label: 'Collection', value: 'collection' },
+                { label: 'Custom URL', value: 'custom' },
+              ],
+              admin: {
+                description: 'What the popup CTA links to',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'linkedProduct',
+              type: 'relationship',
+              relationTo: 'products',
+              // A product can't promote itself
+              filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true),
+              admin: {
+                description: 'The product to promote — the popup links to its page',
+                condition: promoLinkType('product'),
+              },
+            },
+            {
+              name: 'linkedCollection',
+              type: 'relationship',
+              relationTo: 'collections',
+              admin: {
+                description: 'The collection to promote — the popup links to its page',
+                condition: promoLinkType('collection'),
+              },
+            },
+            {
+              name: 'customUrl',
+              type: 'text',
+              admin: {
+                description: 'Destination URL (e.g. /pianos/digital or https://...)',
+                placeholder: '/pianos/digital',
+                condition: promoLinkType('custom'),
+              },
+            },
+            {
+              name: 'eyebrow',
+              type: 'text',
+              defaultValue: 'Special Offer',
+              admin: {
+                description: 'Small uppercase label above the popup headline',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'title',
+              type: 'text',
+              admin: {
+                description:
+                  'Popup headline. Leave blank to use "Meet the {linked product/collection name}" — required for Custom URL promos',
+                placeholder: 'Meet the CA901',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'message',
+              type: 'textarea',
+              admin: {
+                description: 'Short supporting text under the headline',
+                placeholder:
+                  'Discover the next step up — refined sound, upgraded action, and a new design.',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'ctaLabel',
+              type: 'text',
+              defaultValue: 'Learn More',
+              admin: {
+                description: 'Button label — clicking it navigates to the promo link',
+                condition: promoEnabled,
+              },
+            },
+            imageField('image', {
+              admin: {
+                description:
+                  "Optional image override — defaults to the linked product's or collection's image",
+                condition: promoEnabled,
+              },
+            }),
+            {
+              name: 'displayFrequency',
+              type: 'select',
+              defaultValue: 'session',
+              options: [
+                { label: 'Once per session', value: 'session' },
+                { label: 'Once per visitor (persists across visits)', value: 'visitor' },
+                { label: 'Every page view', value: 'always' },
+              ],
+              admin: {
+                description: 'How often a visitor sees the popup after dismissing it',
+                condition: promoEnabled,
+              },
+            },
+            {
+              name: 'delaySeconds',
+              type: 'number',
+              min: 0,
+              max: 60,
+              defaultValue: 2,
+              admin: {
+                description: 'Seconds to wait before the popup slides in',
+                condition: promoEnabled,
+              },
+            },
+          ],
+        },
 
         // SEO & Meta Tab
         {
