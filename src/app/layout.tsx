@@ -105,7 +105,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    // Font variable classes live on <html>, not <body>: the @theme aliases in
+    // globals.css (--font-family-cormorant, --font-brand-serif, …) are defined
+    // on :root and reference these next/font variables, and a :root-level
+    // var() can only resolve variables that are set on <html> itself.
+    <html
+      lang="en"
+      className={`scroll-smooth ${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable}`}
+    >
       <head>
         <link
           rel="preload"
@@ -127,7 +134,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://stats.g.doubleclick.net" />
         <link rel="dns-prefetch" href="https://us.posthog.com" />
       </head>
-      <body className={`${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} antialiased bg-kawai-black text-kawai-pearl`}>
+      <body className="antialiased bg-kawai-black text-kawai-pearl">
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
             Opt-out model: granted by default worldwide (US/Canada + rest), EXCEPT the
             EEA, UK, and Switzerland where GDPR/UK-GDPR/FADP require prior opt-in — those

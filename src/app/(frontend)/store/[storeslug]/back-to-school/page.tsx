@@ -87,20 +87,7 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
 
   return (
     <>
-      <BackToSchoolHero locationName={locationName} />
-
-      <WhyNowSection />
-
-      <RebateSection
-        data={rebates}
-        locationName={locationName}
-        calendlyUrl={calendlyUrl}
-        storeslug={storeslug}
-      />
-
-      <TradeInBand phone={phone} calendlyUrl={calendlyUrl} locationName={locationName} />
-
-      <HowItWorksStrip phone={phone} />
+      <BackToSchoolHero storeslug={storeslug} locationName={locationName} hours={hours} />
 
       <VisitSection
         locationName={locationName}
@@ -110,19 +97,31 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
         mapApiKey={mapApiKey}
         directionsLink={directionsLink}
         storeslug={storeslug}
-        calendlyUrl={calendlyUrl}
       />
+
+      <WhyNowSection />
+
+      <RebateSection
+        data={rebates}
+        locationName={locationName}
+        hours={hours}
+        storeslug={storeslug}
+      />
+
+      <TradeInBand phone={phone} calendlyUrl={calendlyUrl} locationName={locationName} />
+
+      <HowItWorksStrip phone={phone} />
 
       <BookingSection
         locationName={locationName}
-        calendlyUrl={calendlyUrl}
+        hours={hours}
         storeslug={storeslug}
       />
 
       <DeadlineDock
         storeslug={storeslug}
         locationName={locationName}
-        calendlyUrl={calendlyUrl}
+        hours={hours}
       />
     </>
   )

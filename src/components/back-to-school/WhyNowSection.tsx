@@ -1,28 +1,10 @@
-import { DEADLINE_LONG } from './campaign'
+import { OFFERS } from './campaign'
 import { RuledGround } from './RuledGround'
 
 /**
- * Three reasons September is the month to buy. Not a sequence — a family can
- * care about any one of these on its own — so the columns carry short label
- * words rather than 01/02/03 markers.
+ * The three offers as full-width columns — the same OFFERS trio the hero lists
+ * in its ruled rows, restated at section scale for simplicity and consistency.
  */
-const REASONS = [
-  {
-    label: 'Timing',
-    heading: 'Lessons fill up in September',
-    body: 'Teachers set their fall schedules in the first weeks of the term. Having a piano at home by week one is the difference between practicing and meaning to.',
-  },
-  {
-    label: 'Price',
-    heading: 'The rebate comes off at the counter',
-    body: `No mail-in form, no waiting on a check — the rebate is taken off the price the day you buy. On ${DEADLINE_LONG} the program closes and prices return to normal.`,
-  },
-  {
-    label: 'Instrument',
-    heading: 'A keyboard is not a piano',
-    body: 'Eighty-eight weighted keys with real hammer action teach a hand what a spring-loaded keyboard never will. Technique built on the wrong touch has to be unlearned later.',
-  },
-] as const
 
 export function WhyNowSection() {
   return (
@@ -44,7 +26,7 @@ export function WhyNowSection() {
         </h2>
 
         <div className="grid md:grid-cols-3 gap-y-12 md:gap-y-0">
-          {REASONS.map(({ label, heading, body }, i) => (
+          {OFFERS.map(({ value, label, detail }, i) => (
             <div
               key={label}
               className={
@@ -68,15 +50,15 @@ export function WhyNowSection() {
                 className="text-kawai-black leading-[1.15] mb-4"
                 style={{
                   fontFamily: 'var(--font-family-cormorant), Georgia, serif',
-                  fontSize: 'clamp(1.5rem, 2.6vw, 1.9rem)',
+                  fontSize: 'clamp(1.9rem, 3.2vw, 2.4rem)',
                   fontWeight: 500,
                 }}
               >
-                {heading}
+                {value}
               </h3>
 
               <p className="text-kawai-charcoal/65 text-[0.95rem] leading-relaxed">
-                {body}
+                {detail}
               </p>
             </div>
           ))}

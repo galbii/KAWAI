@@ -1,18 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookingModal } from '@/components/trade-in/BookingModal'
+import { BookingModal } from './BookingModal'
 import { DEADLINE_LONG, OFFER_PILLS, daysUntilDeadline } from './campaign'
 import { RuledGround } from './RuledGround'
+import type { HoursEntry } from './schedule'
 
 interface BookingSectionProps {
   locationName?: string | null
-  calendlyUrl?: string | null
+  hours?: HoursEntry[] | null
   storeslug: string
 }
 
 /** Closing CTA. Restates the deadline as a count, which is the only new information left to give. */
-export function BookingSection({ locationName, calendlyUrl, storeslug }: BookingSectionProps) {
+export function BookingSection({ locationName, hours, storeslug }: BookingSectionProps) {
   const [open, setOpen] = useState(false)
   const [daysLeft, setDaysLeft] = useState<number | null>(null)
 
@@ -81,8 +82,8 @@ export function BookingSection({ locationName, calendlyUrl, storeslug }: Booking
       <BookingModal
         open={open}
         onClose={() => setOpen(false)}
-        calendlyUrl={calendlyUrl}
         locationName={locationName}
+        hours={hours}
         storeslug={storeslug}
       />
     </>

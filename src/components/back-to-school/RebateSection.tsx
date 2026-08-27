@@ -1,18 +1,19 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import RebateModelModal from '@/components/rebates/RebateModelModal'
-import { BookingModal } from '@/components/trade-in/BookingModal'
+import { BookingModal } from './BookingModal'
 import { formatPrice } from '@/lib/utils'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
 import { DEADLINE_LONG, DATE_RANGE } from './campaign'
 import { RuledGround } from './RuledGround'
+import type { HoursEntry } from './schedule'
 
 interface RebateSectionProps {
   data: RebateCategory[]
   locationName?: string | null
-  calendlyUrl?: string | null
+  hours?: HoursEntry[] | null
   storeslug: string
 }
 
@@ -29,13 +30,36 @@ type SelectedModel = { product: RebateProduct; categoryLabel: string; isShigeru:
  * reconciles with the two prices beside it; the instant-rebate breakdown is in
  * the modal and the footnote.
  */
-export function RebateSection({ data, locationName, calendlyUrl, storeslug }: RebateSectionProps) {
+export function RebateSection({ data, locationName, hours, storeslug }: RebateSectionProps) {
   const [selected, setSelected] = useState<SelectedModel | null>(null)
   const [bookingOpen, setBookingOpen] = useState(false)
+  const [activeSlug, setActiveSlug] = useState<string>('all')
+  const filterBarRef = useRef<HTMLDivElement>(null)
 
-  const modelCount = useMemo(
-    () => data.reduce((n, category) => n + category.products.length, 0),
-    [data],
+  // Switching to a shorter category while deep in the table would strand the
+  // visitor below it — snap back to the top of the ledger whenever the bar is
+  // in its stuck state (i.e. they've scrolled into the list).
+  function selectCategory(slug: string) {
+    setActiveSlug(slug)
+    const bar = filterBarRef.current
+    if (bar && bar.getBoundingClientRect().top <= 72) {
+      document.getElementById('rebates')?.scrollIntoView({ behavior: 'auto' })
+    }
+  }
+
+  // Category filter + cheapest-first sort. 'all' keeps every group visible so
+  // the ledger still reads as the full program at a glance.
+  const visibleData = useMemo(() => {
+    const filtered = activeSlug === 'all' ? data : data.filter((c) => c.slug === activeSlug)
+    return filtered.map((category) => ({
+      ...category,
+      products: [...category.products].sort((a, b) => a.yourPrice - b.yourPrice),
+    }))
+  }, [data, activeSlug])
+
+  const visibleCount = useMemo(
+    () => visibleData.reduce((n, category) => n + category.products.length, 0),
+    [visibleData],
   )
 
   if (data.length === 0) return null
@@ -87,12 +111,54 @@ export function RebateSection({ data, locationName, calendlyUrl, storeslug }: Re
                 letterSpacing: '0.2em',
               }}
             >
-              {modelCount} models · Rebates end {DEADLINE_LONG}
+              {visibleCount} {visibleCount === 1 ? 'model' : 'models'} · Rebates end {DEADLINE_LONG}
             </p>
           </div>
 
-          <div className="bg-white border border-kawai-neutral/70 rounded-sm overflow-hidden shadow-[0_18px_50px_rgba(30,27,22,0.08)]">
-            {data.map((category) => (
+          {/* Segmented category bar, fused to the top of the ledger. Sticky at
+              70px — the site header is fixed at 71px tall, so the bar tucks in
+              just under it and stays reachable while scrolling the table. It
+              must live OUTSIDE the ledger's overflow-hidden card or sticky
+              would be inert. */}
+          <div
+            ref={filterBarRef}
+            role="group"
+            aria-label="Filter models by category"
+            className="sticky top-[70px] z-20 grid bg-white border border-kawai-neutral/70 rounded-t-sm overflow-hidden shadow-[0_10px_24px_rgba(30,27,22,0.10)]"
+            style={{ gridTemplateColumns: `repeat(${data.length + 1}, minmax(0, 1fr))` }}
+          >
+            {[
+              { slug: 'all', label: 'All', count: data.reduce((n, c) => n + c.products.length, 0) },
+              ...data.map((c) => ({ slug: c.slug, label: c.label, count: c.products.length })),
+            ].map((tab) => {
+              const active = activeSlug === tab.slug
+              return (
+                <button
+                  key={tab.slug}
+                  type="button"
+                  onClick={() => selectCategory(tab.slug)}
+                  aria-pressed={active}
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 py-3 sm:py-4 uppercase border-r border-kawai-neutral/60 last:border-r-0 transition-colors ${
+                    active
+                      ? 'bg-kawai-black text-kawai-pearl'
+                      : 'bg-white text-kawai-charcoal/70 hover:bg-kawai-pearl/70 hover:text-kawai-black'
+                  }`}
+                  style={{ fontFamily: 'var(--font-oswald), sans-serif', fontSize: '0.7rem', letterSpacing: '0.14em' }}
+                >
+                  {tab.label}
+                  <span
+                    className={active ? 'text-kawai-red-400' : 'text-kawai-charcoal/40'}
+                    style={{ fontSize: '0.66rem' }}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="bg-white border border-t-0 border-kawai-neutral/70 rounded-b-sm overflow-hidden shadow-[0_18px_50px_rgba(30,27,22,0.08)]">
+            {visibleData.map((category) => (
               <div key={category.slug}>
                 <h3 className="flex items-baseline justify-between gap-4 px-5 sm:px-8 py-3 bg-kawai-pearl/70 border-b border-kawai-neutral/60">
                   <span
@@ -234,8 +300,8 @@ export function RebateSection({ data, locationName, calendlyUrl, storeslug }: Re
       <BookingModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
-        calendlyUrl={calendlyUrl}
         locationName={locationName}
+        hours={hours}
         storeslug={storeslug}
       />
     </>

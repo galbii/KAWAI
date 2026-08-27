@@ -10,6 +10,7 @@ import { PianoRentalsSection } from '@/components/storefronts/piano-rentals-sect
 import { FacilityRentalsSection } from '@/components/storefronts/facility-rentals-section'
 import { TuningRepairSection } from '@/components/storefronts/tuning-repair-section'
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
+import { DeadlineDock, BackToSchoolPromo } from "@/components/back-to-school";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
@@ -290,6 +291,14 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         {/* News Carousel Section */}
         <NewsCarousel {...(storefrontData?.newsCarouselSection && { data: storefrontData.newsCarouselSection })} />
 
+        {/* Back to School campaign promo — under the hero; books in place,
+            links to this store's campaign page; renders nothing after Sept 30 */}
+        <BackToSchoolPromo
+          storeslug={storeslug}
+          locationName={rawStorefrontData?.showroomInfo?.name ?? rawStorefrontData?.locationName ?? null}
+          hours={rawStorefrontData?.hours ?? null}
+        />
+
         {/* Showroom Location Section */}
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
@@ -314,6 +323,16 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         {/* Contact Form Section */}
         <ContactForm {...(storefrontData?.contactFormSection && { data: storefrontData.contactFormSection })} />
       </div>
+
+      {/* Back to School floating book button — countdown links to the campaign
+          page, Book opens the Calendly modal directly. Self-hides after Sept 30
+          via its own daysUntilDeadline copy; remove with the campaign. */}
+      <DeadlineDock
+        storeslug={storeslug}
+        locationName={rawStorefrontData?.showroomInfo?.name ?? rawStorefrontData?.locationName ?? null}
+        hours={rawStorefrontData?.hours ?? null}
+        campaignHref={`/store/${storeslug}/back-to-school`}
+      />
     </>
   );
 }

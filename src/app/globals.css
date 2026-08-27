@@ -17,7 +17,12 @@
   }
 }
 
-@theme {
+/* `static` forces every token below to be emitted as a :root CSS variable even
+   when no utility class uses it. Without it Tailwind v4 prunes unused tokens,
+   which silently broke every inline `var(--font-family-cormorant)` /
+   `var(--font-brand-serif)` reference across the site (headings fell back to
+   the default sans). Do not remove the keyword. */
+@theme static {
   /* Official Kawai Brand Colors - Standard Namespace for Auto-generation */
   --color-kawai-red: #E11922;        /* Official Kawai Red */
   --color-kawai-black: #1E1B16;      /* Deep Black */

@@ -8,12 +8,38 @@ import { trackLead, trackSchedule } from '@/components/MetaPixel'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * Campaign-specific copy and analytics labels. The modal is shared across
+ * campaign pages (grand-spring-sale, back-to-school, …), so anything that names
+ * the offer lives here instead of being hardcoded — otherwise one campaign's
+ * dates leak into another's booking flow.
+ */
+export interface BookingCampaignCopy {
+  /** Stem for pixel/GTM labels, e.g. 'Back to School' → 'Back to School Appointment'. */
+  name: string
+  /** Deadline reminder under the step-1 CTA. */
+  reminder: string
+  /** Offer card title on the no-Calendly confirmation screen. */
+  offerTitle: string
+  /** Offer card detail line on the no-Calendly confirmation screen. */
+  offerNote: string
+}
+
+const SPRING_CAMPAIGN: BookingCampaignCopy = {
+  name: 'Grand Spring Sale',
+  reminder: 'Spring offer ends May 17, 2026',
+  offerTitle: 'Spring Trade-In Bonus',
+  offerNote: 'Up to $500 over any appraisal · ends May 17',
+}
+
 export interface BookingModalProps {
   open: boolean
   onClose: () => void
   calendlyUrl?: string | null | undefined
   locationName?: string | null | undefined
   storeslug?: string | null | undefined
+  /** Defaults to the spring campaign so existing call sites are unchanged. */
+  campaign?: BookingCampaignCopy | undefined
 }
 
 interface ContactForm {
@@ -49,6 +75,33 @@ function buildCalendlyUrl(base: string, form: ContactForm): string {
     embed_domain: window.location.hostname,
   })
   return `${base}${base.includes('?') ? '&' : '?'}${params.toString()}`
+}
+
+/**
+ * Push the SAME conversion event the sign-up forms fire (TwoStepHubSpotForm),
+ * so a completed Calendly appointment counts as the same GA4 / Google Ads
+ * conversion as a form submission — GTM keys its Custom Event trigger on the
+ * `signup_form_submitted` event name. `user_data` matches the form's Enhanced
+ * Conversions shape; GTM/Google hashes it client-side before it leaves the page.
+ */
+function pushSignupConversion(form: ContactForm) {
+  const address: Record<string, string> = {}
+  if (form.firstName) address.first_name = form.firstName
+  if (form.lastName) address.last_name = form.lastName
+
+  const userData: Record<string, unknown> = {}
+  if (form.email) userData.email = form.email
+  const phone = toE164US(form.phone)
+  if (phone) userData.phone_number = phone
+  if (Object.keys(address).length) userData.address = address
+
+  window.dataLayer = window.dataLayer ?? []
+  window.dataLayer.push({
+    event: 'signup_form_submitted',
+    event_category: 'signup',
+    event_label: 'booking_modal_calendly',
+    ...(Object.keys(userData).length ? { user_data: userData } : {}),
+  })
 }
 
 function validate(form: ContactForm): FormErrors {
@@ -149,7 +202,7 @@ function SakuraMark() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function BookingModal({ open, onClose, calendlyUrl, locationName, storeslug }: BookingModalProps) {
+export function BookingModal({ open, onClose, calendlyUrl, locationName, storeslug, campaign = SPRING_CAMPAIGN }: BookingModalProps) {
   const [step, setStep] = useState<1 | 2>(1)
   const [form, setForm] = useState<ContactForm>({ firstName: '', lastName: '', email: '', phone: '' })
   const [errors, setErrors] = useState<FormErrors>({})
@@ -185,19 +238,21 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
 
       if (data.event === 'calendly.event_scheduled' && !pixelFiredRef.current) {
         pixelFiredRef.current = true
-        trackSchedule(locationName ? { content_name: 'Grand Spring Sale Appointment', content_category: locationName } : { content_name: 'Grand Spring Sale Appointment' })
+        trackSchedule(locationName ? { content_name: `${campaign.name} Appointment`, content_category: locationName } : { content_name: `${campaign.name} Appointment` })
         window.dataLayer = window.dataLayer ?? []
         window.dataLayer.push({
           event: 'calendly_booking_confirmed',
           event_category: 'booking',
-          event_label: locationName ?? 'Grand Spring Sale Appointment',
+          event_label: locationName ?? `${campaign.name} Appointment`,
         })
+        // The appointment is the conversion — count it like a form submission.
+        pushSignupConversion(form)
       }
     }
 
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [open, step, calendlyUrl, locationName])
+  }, [open, step, calendlyUrl, locationName, campaign, form])
 
   if (!open || !mounted) return null
 
@@ -226,10 +281,14 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
       storeslug,
     })
     // Lead fires here — contact info submitted, customer entering the funnel
-    trackLead(locationName ? { content_name: 'Grand Spring Sale Booking', content_category: locationName } : { content_name: 'Grand Spring Sale Booking' })
-    // No Calendly configured — confirmation screen is the terminal state, fire Schedule now
-    if (!calendlyUrl) {
-      trackSchedule({ content_name: 'Grand Spring Sale Appointment', ...(locationName ? { content_category: locationName } : {}) })
+    trackLead(locationName ? { content_name: `${campaign.name} Booking`, content_category: locationName } : { content_name: `${campaign.name} Booking` })
+    // No Calendly configured — confirmation screen is the terminal state, fire
+    // Schedule + the form-conversion event now (guarded so Back → Continue
+    // doesn't double-count).
+    if (!calendlyUrl && !pixelFiredRef.current) {
+      pixelFiredRef.current = true
+      trackSchedule({ content_name: `${campaign.name} Appointment`, ...(locationName ? { content_category: locationName } : {}) })
+      pushSignupConversion(form)
     }
   }
 
@@ -432,7 +491,7 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="w-1 h-1 rounded-full bg-kawai-red animate-pulse" />
                 <p className="text-kawai-charcoal/35 text-[0.65rem] tracking-[0.1em] uppercase">
-                  Spring offer ends May 17, 2026
+                  {campaign.reminder}
                 </p>
               </div>
             </div>
@@ -487,8 +546,8 @@ export function BookingModal({ open, onClose, calendlyUrl, locationName, storesl
                   <div className="flex items-center gap-3 bg-kawai-pearl/60 border border-kawai-neutral/60 rounded-lg px-4 py-3 mb-8 text-left">
                     <SakuraMark />
                     <div>
-                      <p className="text-kawai-black text-xs font-semibold">Spring Trade-In Bonus</p>
-                      <p className="text-kawai-charcoal/50 text-xs">Up to $500 over any appraisal · ends May 17</p>
+                      <p className="text-kawai-black text-xs font-semibold">{campaign.offerTitle}</p>
+                      <p className="text-kawai-charcoal/50 text-xs">{campaign.offerNote}</p>
                     </div>
                   </div>
 

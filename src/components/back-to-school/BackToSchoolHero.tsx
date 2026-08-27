@@ -1,16 +1,20 @@
 import { SeptemberCalendar } from './SeptemberCalendar'
 import { DATE_RANGE, OFFERS } from './campaign'
 import { RuledGround } from './RuledGround'
+import { HeroCtas } from './HeroCtas'
+import type { HoursEntry } from './schedule'
 
 interface BackToSchoolHeroProps {
+  storeslug: string
   locationName?: string | null
+  hours?: HoursEntry[] | null
 }
 
 /**
  * Hero — server-rendered so the headline is in the initial HTML.
- * The only client JS in here is the calendar's date-dependent strip.
+ * Client JS is limited to the calendar's date strip and the booking CTA.
  */
-export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
+export function BackToSchoolHero({ storeslug, locationName, hours }: BackToSchoolHeroProps) {
   return (
     <>
       <style>{`
@@ -71,21 +75,15 @@ export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
                   fontSize: 'clamp(1.25rem, 2.2vw, 1.6rem)',
                 }}
               >
-                Practice goes better on an instrument that answers back.
+                Official Kawai{locationName ? ` ${locationName}` : ''} Showroom sale.
               </p>
 
-              <p className="bts-r3 text-kawai-charcoal/65 text-base leading-relaxed mt-5 max-w-lg">
-                Every Kawai in the September rebate program comes down at the counter — up to
-                $4,500 off — and pairs with 0% financing for 36 months. Trade in the piano you
-                have and we&apos;ll beat any independent appraisal by $500.
-                {locationName ? <> All of it, in person at {locationName}.</> : null}
-              </p>
-
-              {/* Offers — ruled rows rather than cards, so they sit on the paper */}
+              {/* Offers — ruled rows rather than cards, so they sit on the paper.
+                  They lead the description: the numbers are the pitch. */}
               {/* The value stays readable text rather than aria-hidden decoration, so
                   a screen reader gets "0% — Financing — 36 months, no interest" in
                   one pass instead of the value twice. */}
-              <ul className="bts-r4 mt-8 border-t border-kawai-black/12 max-w-lg">
+              <ul className="bts-r3 mt-8 border-t border-kawai-black/12 max-w-lg">
                 {OFFERS.map(({ value, label, detail }) => (
                   <li
                     key={label}
@@ -111,21 +109,15 @@ export function BackToSchoolHero({ locationName }: BackToSchoolHeroProps) {
                 ))}
               </ul>
 
-              {/* One button. The booking path stays one line of quiet text — the
-                  page repeats it at full weight where booking is the next step. */}
-              <div className="bts-r5 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 mt-8">
-                <a
-                  href="#rebates"
-                  className="inline-flex items-center justify-center px-8 py-4 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm"
-                >
-                  See the rebates
-                </a>
-                <a
-                  href="#book"
-                  className="inline-flex items-center justify-center sm:justify-start gap-2 text-kawai-black/70 hover:text-kawai-red text-sm tracking-[0.1em] uppercase font-medium underline underline-offset-4 decoration-kawai-black/25 hover:decoration-kawai-red transition-colors"
-                >
-                  Or book an appointment
-                </a>
+              <p className="bts-r4 text-kawai-charcoal/65 text-base leading-relaxed mt-6 max-w-lg">
+                Every Kawai in the September rebate program comes down at the counter — up to
+                $4,500 off — and pairs with 0% financing for 36 months. Trade in the piano you
+                have and we&apos;ll beat any independent appraisal by $500.
+                {locationName ? <> All of it, in person at {locationName}.</> : null}
+              </p>
+
+              <div className="bts-r5 mt-8">
+                <HeroCtas storeslug={storeslug} locationName={locationName ?? null} hours={hours ?? null} />
               </div>
             </div>
 

@@ -2,14 +2,10 @@
 
 import { useState } from 'react'
 import { MapPinIcon, PhoneIcon, ClockIcon } from '@heroicons/react/24/outline'
-import { BookingModal } from '@/components/trade-in/BookingModal'
+import { BookingModal } from './BookingModal'
 import { DATE_RANGE } from './campaign'
 import { RuledGround } from './RuledGround'
-
-interface HoursEntry {
-  day?: string | null
-  time?: string | null
-}
+import type { HoursEntry } from './schedule'
 
 interface VisitSectionProps {
   locationName?: string | null
@@ -19,7 +15,6 @@ interface VisitSectionProps {
   mapApiKey?: string | null
   directionsLink?: string | null
   storeslug: string
-  calendlyUrl?: string | null
 }
 
 function buildMapEmbedUrl(address: string, apiKey?: string | null): string {
@@ -41,7 +36,6 @@ export function VisitSection({
   mapApiKey,
   directionsLink,
   storeslug,
-  calendlyUrl,
 }: VisitSectionProps) {
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState(false)
@@ -185,8 +179,8 @@ export function VisitSection({
       <BookingModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
-        calendlyUrl={calendlyUrl}
         locationName={locationName}
+        hours={hours}
         storeslug={storeslug}
       />
     </>

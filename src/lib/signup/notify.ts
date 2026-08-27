@@ -105,6 +105,12 @@ export async function sendLeadConfirmation(input: {
   body: string
   details?: ConfirmationDetails | null | undefined
   location?: ConfirmationLocation | null | undefined
+  /** Link back to the store's page on the site, rendered after the location card. */
+  storefrontUrl?: string | null | undefined
+  /** Where a customer's reply should land — the store inbox, not the noreply sender. */
+  replyTo?: string | undefined
+  /** Header eyebrow override — defaults to the store name. */
+  eyebrow?: string | undefined
   liveSendEnabled: boolean
 }): Promise<{ status: 'sent' | 'failed' | 'skipped'; emailId?: string }> {
   if (!input.liveSendEnabled) {
@@ -121,6 +127,7 @@ export async function sendLeadConfirmation(input: {
       {
         from: process.env.RESEND_FROM_EMAIL ?? 'noreply@kawaius.com',
         to: [input.to],
+        ...(input.replyTo ? { replyTo: input.replyTo } : {}),
         subject: input.subject,
         html: buildConfirmationHtml({
           firstName: input.firstName,
@@ -129,6 +136,8 @@ export async function sendLeadConfirmation(input: {
           body: input.body,
           details: input.details,
           location: input.location,
+          storefrontUrl: input.storefrontUrl,
+          eyebrow: input.eyebrow,
         }),
       },
       { idempotencyKey: `signup-confirm/${input.submissionId}` },

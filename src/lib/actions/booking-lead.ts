@@ -60,14 +60,28 @@ export async function captureBookingLead(input: BookingLeadInput): Promise<void>
   tags.push(...(await siteTags()))
 
   try {
-    const customer = await upsertCustomer({
+    const base = {
       email: input.email,
       firstName: input.firstName,
       lastName: input.lastName,
-      ...(input.phone ? { phone: input.phone } : {}),
       tags,
       note: input.note ?? 'Booking appointment inquiry',
-    })
+    }
+
+    let customer
+    try {
+      customer = await upsertCustomer({
+        ...base,
+        ...(input.phone ? { phone: input.phone } : {}),
+      })
+    } catch (error) {
+      // Shopify validates phone numbers and rejects the whole upsert over a bad
+      // one. A typo'd phone must not cost us the lead — retry without it.
+      const message = error instanceof Error ? error.message : ''
+      if (!input.phone || !/phone/i.test(message)) throw error
+      console.warn('[BookingLead] Shopify rejected the phone — retrying without it')
+      customer = await upsertCustomer(base)
+    }
 
     const promises: Promise<unknown>[] = [setMarketingConsent(customer.id)]
 

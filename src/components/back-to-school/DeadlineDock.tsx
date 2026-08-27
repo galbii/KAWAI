@@ -1,13 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookingModal } from '@/components/trade-in/BookingModal'
+import Link from 'next/link'
+import { BookingModal } from './BookingModal'
 import { DEADLINE_SHORT, daysUntilDeadline } from './campaign'
+import type { HoursEntry } from './schedule'
 
 interface DeadlineDockProps {
   storeslug: string
   locationName?: string | null
-  calendlyUrl?: string | null
+  hours?: HoursEntry[] | null
+  /**
+   * When set (the main storefront page), the countdown label links to the
+   * campaign page so the dock doubles as the entry point; Book still opens the
+   * modal in one tap. On the campaign page itself, leave unset.
+   */
+  campaignHref?: string
 }
 
 /**
@@ -17,11 +25,13 @@ interface DeadlineDockProps {
  * anything useful. This one carries the single piece of information the page is
  * built around — how long is left — and its only action is the conversion.
  *
- * Visible only between the rebate ledger and the closing #book section: earlier
- * it sits on top of the hero calendar's circled deadline (the thing it restates),
- * and past #book it duplicates a full-size Book button 100px away.
+ * On the campaign page it's visible only between the rebate ledger and the
+ * closing #book section: earlier it sits on top of the hero calendar's circled
+ * deadline (the thing it restates), and past #book it duplicates a full-size
+ * Book button 100px away. On pages without those anchors (the storefront home),
+ * it appears once the visitor has scrolled most of the first viewport.
  */
-export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineDockProps) {
+export function DeadlineDock({ storeslug, locationName, hours, campaignHref }: DeadlineDockProps) {
   const [visible, setVisible] = useState(false)
   const [bookingOpen, setBookingOpen] = useState(false)
   const [daysLeft, setDaysLeft] = useState<number | null>(null)
@@ -43,6 +53,10 @@ export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineD
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Once the program is over the dock vanishes everywhere it's mounted — the
+  // storefront home keeps it in its tree year-round, so this is the off switch.
+  if (daysLeft !== null && daysLeft <= 0) return null
+
   return (
     <>
       {/* bottom-24 on mobile clears the site's floating search pill */}
@@ -55,14 +69,30 @@ export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineD
         {/* The border matters on the dark sections, where a bare kawai-black pill
             would dissolve into the background and leave the text floating. */}
         <div className="flex items-stretch bg-kawai-black border border-white/20 rounded-full overflow-hidden shadow-[0_10px_32px_rgba(30,27,22,0.32)]">
-          <span className="flex items-center gap-2 pl-5 pr-4 py-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-kawai-red-400 flex-shrink-0" aria-hidden />
-            <span className="text-kawai-pearl/85 text-xs tracking-[0.1em] whitespace-nowrap">
-              {daysLeft !== null && daysLeft > 0
-                ? `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`
-                : `Ends ${DEADLINE_SHORT}`}
-            </span>
-          </span>
+          {(() => {
+            const label = (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-kawai-red-400 flex-shrink-0" aria-hidden />
+                <span className="text-kawai-pearl/85 text-xs tracking-[0.1em] whitespace-nowrap">
+                  {daysLeft !== null && daysLeft > 0
+                    ? `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`
+                    : `Ends ${DEADLINE_SHORT}`}
+                </span>
+              </>
+            )
+            return campaignHref ? (
+              <Link
+                href={campaignHref}
+                className="flex items-center gap-2 pl-5 pr-4 py-3 hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                tabIndex={visible ? 0 : -1}
+                aria-label="See the Back to School rebates"
+              >
+                {label}
+              </Link>
+            ) : (
+              <span className="flex items-center gap-2 pl-5 pr-4 py-3">{label}</span>
+            )
+          })()}
 
           <button
             onClick={() => setBookingOpen(true)}
@@ -77,8 +107,8 @@ export function DeadlineDock({ storeslug, locationName, calendlyUrl }: DeadlineD
       <BookingModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
-        calendlyUrl={calendlyUrl}
         locationName={locationName}
+        hours={hours}
         storeslug={storeslug}
       />
     </>

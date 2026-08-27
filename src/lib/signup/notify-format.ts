@@ -198,6 +198,10 @@ export function buildConfirmationHtml(input: {
   body: string
   details?: ConfirmationDetails | null | undefined
   location?: ConfirmationLocation | null | undefined
+  /** Link back to the store's page on the site, rendered after the location card. */
+  storefrontUrl?: string | null | undefined
+  /** Header eyebrow override — defaults to the store name. */
+  eyebrow?: string | undefined
 }): string {
   const body =
     input.body ||
@@ -230,13 +234,18 @@ export function buildConfirmationHtml(input: {
 </div>`
     : ''
 
+  const storefrontLink = input.storefrontUrl
+    ? `<p style="margin:20px 0 0;font-size:14px"><a href="${escapeHtml(input.storefrontUrl)}" style="color:#E11922;font-weight:700;text-decoration:none">Visit the ${escapeHtml(input.storeName)} showroom online &rarr;</a></p>`
+    : ''
+
   return emailShell({
-    eyebrow: input.storeName,
+    eyebrow: input.eyebrow ?? input.storeName,
     title: input.campaignTitle,
     body: `<p style="margin:0 0 12px">Hi ${escapeHtml(input.firstName)},</p>
 <p style="margin:0 0 12px">${escapeHtml(body)}</p>
 ${details}
 ${location}
+${storefrontLink}
 <p style="margin:24px 0 0;color:#6b7280;font-size:12px">${escapeHtml(input.storeName)}</p>`,
   })
 }
