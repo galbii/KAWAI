@@ -12,6 +12,10 @@ import { buildSubmissionId } from '@/lib/signup/submission-id'
 import { resolveCampaign, type ResolvableCampaign } from '@/lib/signup/resolve'
 import { sendSignupNotification, sendLeadConfirmation } from '@/lib/signup/notify'
 import { lexicalToPlainText } from '@/lib/signup/notify-format'
+import {
+  extractConfirmationDetails,
+  extractConfirmationLocation,
+} from '@/lib/signup/confirmation-content'
 import { buildSignupTags } from '@/lib/signup/shopify-tags'
 import { syncSignupLeadToShopify } from '@/lib/signup/shopify'
 import { siteTags } from '@/lib/shopify/site-tags'
@@ -159,6 +163,10 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
           storeName,
           subject: notify.confirmationSubject ?? "Thanks — we've got your spot",
           body: lexicalToPlainText(notify.confirmationBody),
+          // Read off the same campaign and storefront records the page renders,
+          // so what lands in the inbox cannot drift from what was promised.
+          details: extractConfirmationDetails(campaign.blocks),
+          location: extractConfirmationLocation(storefront, campaign.blocks),
           liveSendEnabled,
         }).catch((error) => {
           console.error('[signup] Confirmation dispatch failed:', error)

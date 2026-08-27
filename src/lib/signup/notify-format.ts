@@ -7,6 +7,7 @@
  * every test in this file unrunnable.
  */
 import { escapeHtml } from '@/lib/rsm/lead-email'
+import type { ConfirmationDetails, ConfirmationLocation } from './confirmation-content'
 import type { SignupAnswer } from './types'
 
 interface SubjectVars {
@@ -163,22 +164,79 @@ export function lexicalToPlainText(doc: unknown): string {
   return out.join(' ').replace(/\s+/g, ' ').trim()
 }
 
-/** Confirmation email sent to the person who signed up. */
+/** A value-prop row: the promise on the left, the specific on the right. */
+function includedRow(label: string, value: string): string {
+  return `<tr>
+  <td style="padding:0 14px 10px 0;vertical-align:top;white-space:nowrap"><span style="color:#E11922;font-size:14px;font-weight:700">&#10003;</span></td>
+  <td style="padding:0 0 10px 0;vertical-align:top">
+    <div style="color:#1E1B16;font-size:14px;font-weight:600;line-height:1.4">${escapeHtml(label)}</div>
+    <div style="margin-top:1px;color:#6b7280;font-size:14px;line-height:1.5">${escapeHtml(value)}</div>
+  </td>
+</tr>`
+}
+
+/** One opening-hours line. */
+function hoursRow(day: string, time: string): string {
+  return `<tr><td style="padding:2px 16px 2px 0;color:#6b7280;font-size:13px;white-space:nowrap">${escapeHtml(day)}</td><td style="padding:2px 0;color:#1E1B16;font-size:13px">${escapeHtml(time)}</td></tr>`
+}
+
+/**
+ * Confirmation email sent to the person who signed up.
+ *
+ * Carries the campaign's value props and the showroom address, so the thing
+ * sitting in the lead's inbox on the day still tells them what they signed up
+ * for and where to go. Both sections are optional — a campaign with no Event
+ * Details block, or a storefront with no address, simply renders without them
+ * rather than showing an empty heading.
+ *
+ * The marketer's `body` copy is untouched and stays the first thing read.
+ */
 export function buildConfirmationHtml(input: {
   firstName: string
   campaignTitle: string
   storeName: string
   body: string
+  details?: ConfirmationDetails | null | undefined
+  location?: ConfirmationLocation | null | undefined
 }): string {
   const body =
     input.body ||
     `We've received your signup for ${input.campaignTitle} at ${input.storeName}. We'll be in touch shortly with the details.`
+
+  const details = input.details
+    ? `${sectionLabel(input.details.heading)}<table width="100%" style="width:100%;border-collapse:collapse">${input.details.items
+        .map((i) => includedRow(i.label, i.value))
+        .join('')}</table>`
+    : ''
+
+  const loc = input.location
+  const hours =
+    loc && loc.hours.length
+      ? `<p style="margin:14px 0 4px;color:#6b7280;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Opening hours</p>
+<table style="border-collapse:collapse">${loc.hours.map((h) => hoursRow(h.day, h.time)).join('')}</table>`
+      : ''
+
+  // The address is a real <address> element and the phone a tel: link — on a
+  // phone, which is where most of these are read, that is the difference
+  // between tapping to call and copying digits by hand.
+  const location = loc
+    ? `${sectionLabel('Where to find us')}
+<div style="border:1px solid #DBDBDB;border-radius:6px;padding:16px">
+  <div style="color:#1E1B16;font-size:14px;font-weight:600">Kawai ${escapeHtml(loc.storeName)}</div>
+  <address style="margin:4px 0 0;color:#6b7280;font-size:14px;font-style:normal;line-height:1.5">${escapeHtml(loc.address)}</address>
+  ${loc.phone ? `<div style="margin-top:4px;font-size:14px"><a href="tel:${escapeHtml(loc.phone.replace(/[^\d+]/g, ''))}" style="color:#1E1B16;text-decoration:none">${escapeHtml(loc.phone)}</a></div>` : ''}
+  <div style="margin-top:12px"><a href="${escapeHtml(loc.directionsUrl)}" style="display:inline-block;background:#E11922;color:#ffffff;font-size:13px;font-weight:700;text-decoration:none;padding:9px 16px;border-radius:4px">Get directions</a></div>
+  ${hours}
+</div>`
+    : ''
 
   return emailShell({
     eyebrow: input.storeName,
     title: input.campaignTitle,
     body: `<p style="margin:0 0 12px">Hi ${escapeHtml(input.firstName)},</p>
 <p style="margin:0 0 12px">${escapeHtml(body)}</p>
+${details}
+${location}
 <p style="margin:24px 0 0;color:#6b7280;font-size:12px">${escapeHtml(input.storeName)}</p>`,
   })
 }

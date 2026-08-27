@@ -7,6 +7,7 @@ import {
   buildConfirmationHtml,
   sanitizeTag,
 } from './notify-format'
+import type { ConfirmationDetails, ConfirmationLocation } from './confirmation-content'
 import type { SignupAnswer } from './types'
 
 interface NotificationInput {
@@ -102,6 +103,8 @@ export async function sendLeadConfirmation(input: {
   storeName: string
   subject: string
   body: string
+  details?: ConfirmationDetails | null | undefined
+  location?: ConfirmationLocation | null | undefined
   liveSendEnabled: boolean
 }): Promise<{ status: 'sent' | 'failed' | 'skipped'; emailId?: string }> {
   if (!input.liveSendEnabled) {
@@ -124,6 +127,8 @@ export async function sendLeadConfirmation(input: {
           campaignTitle: input.campaignTitle,
           storeName: input.storeName,
           body: input.body,
+          details: input.details,
+          location: input.location,
         }),
       },
       { idempotencyKey: `signup-confirm/${input.submissionId}` },

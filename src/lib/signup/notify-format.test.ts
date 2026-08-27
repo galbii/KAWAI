@@ -153,6 +153,79 @@ describe('campaign answers render as readable rows', () => {
   })
 })
 
+// The confirmation is what sits in the lead's inbox on the day. It has to
+// still say what they signed up for and where to go.
+describe('confirmation carries the value props and the address', () => {
+  const conf = buildConfirmationHtml({
+    firstName: 'Dana',
+    campaignTitle: 'Back to School, Back to Music!',
+    storeName: 'Dallas',
+    body: 'See you at the bench.',
+    details: {
+      heading: "What's included",
+      items: [
+        { label: 'Trial lesson', value: 'Free — no obligation' },
+        { label: 'Enrollment fee', value: 'Waived — $0 to start' },
+      ],
+    },
+    location: {
+      storeName: 'Dallas',
+      address: '601 W Plano Pkwy, Ste 153, Plano, TX 75075',
+      phone: '(972) 379-2200',
+      directionsUrl: 'https://www.google.com/maps/dir/?api=1&destination=601%20W%20Plano%20Pkwy',
+      hours: [{ day: 'Tuesday', time: '10:00 am–6:30 pm' }],
+    },
+  })
+
+  it('keeps the marketer copy first', () => {
+    expect(conf).toContain('Hi Dana,')
+    expect(conf).toContain('See you at the bench.')
+    // Apostrophes arrive escaped; see the note on the default-body test above.
+    expect(conf.indexOf('See you at the bench.')).toBeLessThan(conf.indexOf('What&#39;s included'))
+  })
+
+  it('lists every value prop', () => {
+    expect(conf).toContain('What&#39;s included')
+    expect(conf).toContain('Trial lesson')
+    expect(conf).toContain('Free — no obligation')
+    expect(conf).toContain('Waived — $0 to start')
+  })
+
+  it('gives the address, a tappable phone number and directions', () => {
+    expect(conf).toContain('601 W Plano Pkwy, Ste 153, Plano, TX 75075')
+    // Punctuation stripped so a phone actually dials it.
+    expect(conf).toContain('href="tel:9723792200"')
+    expect(conf).toContain('Get directions')
+    expect(conf).toContain('Tuesday')
+  })
+
+  // A campaign with no Event Details block, or a storefront with no address,
+  // must not render an empty heading over nothing.
+  it('omits both sections rather than showing empty ones', () => {
+    const bare = buildConfirmationHtml({
+      firstName: 'Dana',
+      campaignTitle: 'Fall Open House',
+      storeName: 'Houston',
+      body: 'Thanks!',
+    })
+    expect(bare).not.toContain('Where to find us')
+    expect(bare).not.toContain('Get directions')
+    expect(bare).toContain('Thanks!')
+  })
+
+  it('escapes the CMS-authored value props', () => {
+    const nasty = buildConfirmationHtml({
+      firstName: 'Dana',
+      campaignTitle: 'X',
+      storeName: 'Y',
+      body: '',
+      details: { heading: '<script>a</script>', items: [{ label: '<img onerror=x>', value: 'v' }] },
+    })
+    expect(nasty).not.toContain('<script>a')
+    expect(nasty).not.toContain('<img onerror')
+  })
+})
+
 describe('untouched helpers', () => {
   it('sanitizeTag still strips non-ASCII', () => {
     expect(sanitizeTag('back-to-school — Dallas')).toBe('back-to-school---Dallas')
