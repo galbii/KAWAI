@@ -73,9 +73,35 @@ function emailShell({
 </html>`
 }
 
-/** A label/value row. Labels here are marketer-authored, so they are escaped too. */
+/**
+ * A two-column label/value row.
+ *
+ * Only for the fixed contact fields — Name, Email, Phone, ZIP. Their labels are
+ * one short word, so `nowrap` costs nothing and the columns stay aligned.
+ */
 function detailRow(label: string, value: string): string {
   return `<tr><td style="padding:6px 16px 6px 0;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:6px 0;color:#1E1B16;font-size:14px">${escapeHtml(value)}</td></tr>`
+}
+
+/**
+ * A stacked label/value row for a campaign question.
+ *
+ * Question labels are whole sentences a marketer typed — "Which would you like
+ * to study?", "I'm also interested in piano rental or purchase options" — not
+ * one-word field names. Rendering those through `detailRow` put a ~400px
+ * nowrap, uppercased sentence in the label column of a 520px card, leaving the
+ * answer a sliver of width or pushing it out of the card entirely, depending on
+ * the client. Stacking gives the label the full width to wrap into and puts the
+ * answer on its own line, where it is the thing that reads first.
+ *
+ * `width="100%"` is an attribute as well as a style because Outlook's Word
+ * renderer ignores CSS widths on tables.
+ */
+function answerRow(label: string, value: string): string {
+  return `<tr><td style="padding:0 0 14px 0">
+  <div style="color:#6b7280;font-size:12px;line-height:1.4">${escapeHtml(label)}</div>
+  <div style="margin-top:2px;color:#1E1B16;font-size:15px;font-weight:600;line-height:1.5">${escapeHtml(value)}</div>
+</td></tr>`
 }
 
 /** Section label, styled like the red eyebrows in the RSM emails. */
@@ -95,8 +121,8 @@ export function buildNotificationHtml(input: NotificationInput): string {
   const contact = rows.map(([k, v]) => detailRow(k, v)).join('')
 
   const answers = input.answers.length
-    ? `${sectionLabel('Responses')}<table style="border-collapse:collapse">${input.answers
-        .map((a) => detailRow(a.label, a.value))
+    ? `${sectionLabel('Responses')}<table width="100%" style="width:100%;border-collapse:collapse">${input.answers
+        .map((a) => answerRow(a.label, a.value))
         .join('')}</table>`
     : ''
 

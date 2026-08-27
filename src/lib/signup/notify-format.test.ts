@@ -112,6 +112,47 @@ describe('branded shell', () => {
   })
 })
 
+// Question labels are sentences a marketer typed, not one-word field names.
+// Rendering them through the contact-row style put a ~400px nowrap uppercase
+// sentence in the label column of a 520px card and squeezed the answer out.
+describe('campaign answers render as readable rows', () => {
+  const html = buildNotificationHtml({
+    ...notification,
+    answers: [
+      { name: 'instrument', label: 'Which would you like to study?', value: 'Piano' },
+      { name: 'ageGroup', label: 'Student age group', value: '9–12' },
+      {
+        name: 'wantsPianoInfo',
+        label: 'I’m also interested in piano rental or purchase options',
+        value: 'Yes',
+      },
+    ],
+  })
+
+  it('shows every answer with the label it was asked under', () => {
+    for (const [label, value] of [
+      ['Which would you like to study?', 'Piano'],
+      ['Student age group', '9–12'],
+      ['I’m also interested in piano rental or purchase options', 'Yes'],
+    ]) {
+      expect(html).toContain(label as string)
+      expect(html).toContain(value as string)
+    }
+  })
+
+  it('lets a sentence-length question label wrap instead of forcing the row wide', () => {
+    // Isolate the Responses section — the contact table above it legitimately
+    // still uses nowrap on its one-word labels.
+    const responses = html.slice(html.indexOf('Responses'))
+    expect(responses).not.toContain('white-space:nowrap')
+    expect(responses).not.toContain('text-transform:uppercase')
+  })
+
+  it('keeps the answer table inside the card in Outlook', () => {
+    expect(html).toContain('<table width="100%"')
+  })
+})
+
 describe('untouched helpers', () => {
   it('sanitizeTag still strips non-ASCII', () => {
     expect(sanitizeTag('back-to-school — Dallas')).toBe('back-to-school---Dallas')
