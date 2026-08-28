@@ -280,7 +280,10 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
             <p className="text-kawai-charcoal/50 text-xs leading-relaxed max-w-2xl">
               Savings shown are off MSRP and include the instant rebate, taken off the price at the
               counter on qualifying new Kawai pianos
-              {locationName ? ` at ${locationName}` : ''}. Back to School program runs {DATE_RANGE};
+              {locationName
+                ? ` at ${locationName.includes('Kawai') ? locationName : `Kawai ${locationName}`}`
+                : ''}
+              . Back to School program runs {DATE_RANGE};
               rebates end {DEADLINE_LONG}. 0% financing for 36 months is subject to credit approval.
               Trade-in bonus requires a written independent appraisal.
             </p>
