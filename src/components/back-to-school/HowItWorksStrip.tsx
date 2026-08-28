@@ -15,7 +15,7 @@ const STEPS = [
   {
     number: '01',
     heading: 'Estimate the value',
-    body: 'Use the calculator above or call us — we’ll give you a number based on the age, condition, and market value of your current piano.',
+    body: 'Call us — we’ll give you a number based on the age, condition, and market value of your current piano.',
   },
   {
     number: '02',

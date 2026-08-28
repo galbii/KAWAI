@@ -83,7 +83,6 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
   const mapApiKey: string | null =
     storefront.mapApiKey ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? null
   const directionsLink: string | null = storefront.showroomCtas?.directionsLink ?? null
-  const calendlyUrl: string | null = storefront.calendlyUrl ?? null
 
   return (
     <>
@@ -108,7 +107,7 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
         storeslug={storeslug}
       />
 
-      <TradeInBand phone={phone} calendlyUrl={calendlyUrl} locationName={locationName} />
+      <TradeInBand phone={phone} />
 
       <HowItWorksStrip phone={phone} />
 
