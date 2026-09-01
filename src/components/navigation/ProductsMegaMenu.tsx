@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useQueryStates, parseAsString } from 'nuqs'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, Music2 } from 'lucide-react'
+import { motion, AnimatePresence, useInView, useReducedMotion } from 'framer-motion'
+import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, ChevronDown, ChevronUp, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
@@ -262,99 +262,248 @@ function ProductCard({ product, onClose }: { product: NavProduct; onClose: () =>
   )
 }
 
-// ─── Collection Top Banner ────────────────────────────────────────────────────
-// Cinematic hero shown at the TOP of CategoryView when a collection tab is active.
+// ─── Collection Stage ─────────────────────────────────────────────────────────
+// Full-bleed cinematic frame shown when a collection pill is active. The video
+// takes the whole panel; a drawer-pull tab seated on its bottom edge reveals the
+// models below. The tab is painted in the panel's bone tone so it reads as the
+// drawer underneath peeking up through the video.
 
-function CollectionTopBanner({ collection, onClose }: { collection: NavCollection; onClose: () => void }) {
+const STAGE_EASE = [0.22, 0.61, 0.36, 1] as const
+const SCROLLER_ATTR = 'data-mega-scroller'
+
+// A YouTube player accepts exactly one `listening` handshake; a second one is
+// answered with `alreadyInitialized` and the player then stays silent. React
+// StrictMode double-invokes effects in dev, so track which player windows have
+// already been greeted. Messages are posted to the whole parent window, so a
+// later listener still receives them even though an earlier effect registered.
+const greetedPlayers = new WeakSet<Window>()
+
+// scrollIntoView walks every scrollable ancestor and fights scroll-snap, so move
+// the panel's own scroller by the exact delta instead. Mandatory snap re-targets
+// a programmatic smooth scroll and strands it part-way, so lift snapping for the
+// duration of the move and hand control back once it settles.
+function scrollPanelTo(target: Element | null | undefined, smooth: boolean) {
+  if (!target) return
+  const scroller = target.closest<HTMLElement>(`[${SCROLLER_ATTR}]`)
+  if (!scroller) return
+  const top = scroller.scrollTop + (target.getBoundingClientRect().top - scroller.getBoundingClientRect().top)
+
+  const previousSnap = scroller.style.scrollSnapType
+  scroller.style.scrollSnapType = 'none'
+  scroller.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' })
+
+  if (!smooth) {
+    scroller.style.scrollSnapType = previousSnap
+    return
+  }
+  // `scrollend` can fire before the smooth scroll gets going, and restoring
+  // mandatory snap part-way drags the panel straight back to where it started.
+  // Wait until we've actually arrived instead.
+  const deadline = 1200
+  const startedAt = performance.now()
+  const settle = () => {
+    const arrived = Math.abs(scroller.scrollTop - top) < 2
+    if (arrived || performance.now() - startedAt > deadline) {
+      scroller.style.scrollSnapType = previousSnap
+      return
+    }
+    requestAnimationFrame(settle)
+  }
+  requestAnimationFrame(settle)
+}
+
+function modelsLabel(count: number): string {
+  if (count === 1) return 'Scroll to see 1 model'
+  if (count > 1) return `Scroll to see ${count} models`
+  return 'Scroll to see the models'
+}
+
+function CollectionStage({ collection, onClose, onReveal, tabHidden }: {
+  collection: NavCollection
+  onClose: () => void
+  onReveal: () => void
+  tabHidden: boolean
+}) {
+  const prefersReducedMotion = useReducedMotion()
   const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null
-  const imageUrl = collection.mediaUrl ?? thumbnail ?? collection.imageUrl ?? null
+
+  // maxresdefault 404s for videos never published at 1080p — fall back to hqdefault,
+  // which YouTube always generates.
+  const [posterFailed, setPosterFailed] = useState(false)
+  const ytPoster = videoId
+    ? `https://img.youtube.com/vi/${videoId}/${posterFailed ? 'hqdefault' : 'maxresdefault'}.jpg`
+    : null
+  const posterUrl = collection.mediaUrl ?? collection.imageUrl ?? ytPoster
+
+  // Defer the iframe so clicking through pills doesn't spawn and destroy players.
+  const [showVideo, setShowVideo] = useState(false)
+  const [frameLoaded, setFrameLoaded] = useState(false)
+  const [playing, setPlaying] = useState(false)
+  const frameRef = useRef<HTMLIFrameElement>(null)
+  useEffect(() => {
+    if (!videoId || prefersReducedMotion) return
+    const t = setTimeout(() => setShowVideo(true), 180)
+    return () => clearTimeout(t)
+  }, [videoId, prefersReducedMotion])
+
+  // The player's state channel does two jobs: hold the poster until real frames
+  // are painting (an iframe `load` fires long before that, so the viewer would
+  // otherwise watch YouTube's black-and-spinner), and restart the film the
+  // instant it ends so the "More videos" grid never appears inside the nav.
+  useEffect(() => {
+    if (!frameLoaded || !videoId) return
+    const frame = frameRef.current
+    const player = frame?.contentWindow
+    if (!frame || !player) return
+
+    const send = (func: string, args: unknown[] = []) =>
+      player.postMessage(JSON.stringify({ event: 'command', func, args }), '*')
+
+    let heard = false
+    const onMessage = (event: MessageEvent) => {
+      if (event.source !== player) return
+      let state: unknown
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+        heard = true
+        state = data?.info?.playerState
+      } catch {
+        return
+      }
+      if (typeof state !== 'number') return
+      if (state === 1) setPlaying(true)
+      if (state === 0) {
+        send('seekTo', [0, true])
+        send('playVideo')
+      }
+    }
+    window.addEventListener('message', onMessage)
+
+    if (!greetedPlayers.has(player)) {
+      greetedPlayers.add(player)
+      player.postMessage(JSON.stringify({ event: 'listening', id: frame.id, channel: 'widget' }), '*')
+    }
+
+    // If the channel never opens we keep the still rather than reveal a black
+    // player mid-buffer — but don't hold a working video hostage to silence.
+    const giveUp = window.setTimeout(() => { if (!heard) setPlaying(true) }, 6000)
+
+    return () => {
+      window.removeEventListener('message', onMessage)
+      window.clearTimeout(giveUp)
+    }
+  }, [frameLoaded, videoId])
+
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
 
   return (
-    <motion.div
-      key={collection.handle}
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative h-72 -mx-14 -mt-10 mb-8 overflow-hidden bg-[#111]"
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: STAGE_EASE }}
+      aria-label={`${displayTitle} collection`}
+      className="relative h-full w-full flex-none snap-start overflow-hidden bg-[#0B0A09]"
     >
-      {/* Background image */}
-      {imageUrl && (
+      {/* Poster paints instantly; the player crossfades over it once ready. */}
+      {posterUrl && (
         <Image
-          src={imageUrl}
-          alt={displayTitle}
+          src={posterUrl}
+          alt=""
           fill
-          sizes="100vw"
+          sizes="95vw"
+          priority
+          onError={() => setPosterFailed(true)}
           className="object-cover"
         />
       )}
-      {!imageUrl && <div className="absolute inset-0 bg-gradient-to-br from-[#1E1B16] to-[#3a3530]" />}
 
-      {/* Cinematic gradient — heavy left, fades right */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/10 pointer-events-none" />
-      {/* Subtle bottom vignette for grounding */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+      {showVideo && videoId && (
+        <iframe
+          ref={frameRef}
+          id={`nav-film-${videoId}`}
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&enablejsapi=1`}
+          title={`${displayTitle} film`}
+          tabIndex={-1}
+          aria-hidden="true"
+          allow="autoplay; encrypted-media"
+          onLoad={() => setFrameLoaded(true)}
+          className={cn(
+            'pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 transition-opacity duration-700',
+            playing ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+      )}
 
-      {/* Content */}
-      <div className="absolute inset-0 flex items-center justify-between px-8">
-        {/* Left — identity */}
-        <div className="flex flex-col gap-1.5">
+      {/* Scrim — dense enough under the title block to hold 4.5:1, clearing fast so
+          the footage itself still reads. One gradient, not two: the title sits in
+          the bottom band, so a second left-hand wash only muddied the image. */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+      {/* Identity block */}
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-10 px-14 pb-24">
+        <div className="min-w-0">
           {collection.productCount > 0 && (
-            <motion.p
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.08, duration: 0.22 }}
-              className="text-xs font-bold tracking-[0.28em] uppercase text-white/60 mb-0.5"
+            <p
+              className="mb-3 text-[11px] font-bold uppercase tracking-[0.32em] text-white/65"
               style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}
             >
               {collection.productCount} Models
-            </motion.p>
+            </p>
           )}
-          <motion.h3
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.12, duration: 0.26 }}
-            className="text-4xl font-bold text-white font-serif leading-tight"
-            style={{ textShadow: '0 2px 20px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.5)' }}
+          <h3
+            className="font-serif text-5xl font-bold leading-[1.05] text-white"
+            style={{ textShadow: '0 2px 24px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.6)' }}
           >
             {displayTitle}
-          </motion.h3>
+          </h3>
           {collection.subheading && (
-            <motion.p
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.16, duration: 0.22 }}
-              className="text-base text-white/70 leading-relaxed max-w-sm line-clamp-1 mt-1"
-              style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
+            <p
+              className="mt-3 max-w-xl text-[17px] leading-relaxed text-white/80 line-clamp-2"
+              style={{ textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}
             >
               {collection.subheading}
-            </motion.p>
+            </p>
           )}
         </div>
 
-        {/* Right — CTA */}
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.24 }}
+        <Link
+          href={collectionHref}
+          onClick={onClose}
+          className="group flex flex-shrink-0 items-center gap-3 rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-[15px] font-semibold tracking-wide text-white backdrop-blur-sm transition-colors duration-200 hover:border-[#A01829] hover:bg-[#A01829] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
-          <Link
-            href={collectionHref}
-            onClick={onClose}
-            className="group flex items-center gap-3 px-7 py-3.5 rounded-full border border-white/30 bg-white/10 hover:bg-[#A01829] hover:border-[#A01829] text-white text-[15px] font-semibold transition-all duration-200 backdrop-blur-sm flex-shrink-0 tracking-wide"
-          >
-            View Collection
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-          </Link>
-        </motion.div>
+          View Collection
+          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </Link>
       </div>
 
-      {/* Thin red accent line at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#A01829] via-[#A01829]/60 to-transparent" />
-    </motion.div>
+      {/* Drawer pull — same bone as the panel chrome, so it reads as the models
+          drawer showing through the film. Fades out once they're in view. */}
+      <motion.button
+        type="button"
+        onClick={onReveal}
+        animate={{ opacity: tabHidden ? 0 : 1, y: tabHidden ? 12 : 0 }}
+        transition={{ duration: 0.28, ease: STAGE_EASE }}
+        className={cn(
+          'group/pull absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2.5 rounded-t-xl bg-[#FAF9F7] px-6 pb-3.5 pt-3 text-[13px] font-semibold tracking-[0.01em] text-[#1E1B16] shadow-[0_-6px_24px_rgba(0,0,0,0.4)] transition-colors duration-150 hover:text-[#A01829] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#A01829]',
+          tabHidden && 'pointer-events-none'
+        )}
+      >
+        <motion.span
+          aria-hidden="true"
+          className="flex"
+          {...(prefersReducedMotion
+            ? {}
+            : {
+                animate: { y: [0, 3, 0] },
+                transition: { duration: 1.1, repeat: 2, repeatDelay: 0.6, ease: 'easeInOut' as const },
+              })}
+        >
+          <ChevronDown className="h-4 w-4 text-[#A01829]" />
+        </motion.span>
+        {modelsLabel(collection.productCount)}
+      </motion.button>
+    </motion.section>
   )
 }
 
@@ -420,15 +569,11 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-44', exte
   )
 }
 
-// ─── Category View ─────────────────────────────────────────────────────────────
-// Shown when a sidebar category is selected.
-// Pill tabs: "All" (featured products) + one per tagged collection (fetched on demand).
-// Bottom: video banner for the active collection.
+// ─── Collection Pill Rail ─────────────────────────────────────────────────────
+// Fixed strip of collection pills directly under the tab bar. Lives outside the
+// scroll area so it stays put while the stage and model rail scroll beneath it.
 
-// ─── Collection Footer ────────────────────────────────────────────────────────
-// Sticky footer strip showing collection pills. Lives outside the scroll area.
-
-function CollectionFooter({ collections, activeHandle, onSelect, onClose, categoryHref, categoryLabel }: {
+function CollectionPillRail({ collections, activeHandle, onSelect, onClose, categoryHref, categoryLabel }: {
   collections: NavCollection[]
   activeHandle: string
   onSelect: (handle: string) => void
@@ -454,9 +599,11 @@ function CollectionFooter({ collections, activeHandle, onSelect, onClose, catego
             return (
               <button
                 key={col.id}
+                type="button"
+                aria-pressed={isActive}
                 onClick={() => onSelect(isActive ? 'all' : col.handle)}
                 className={cn(
-                  'px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150',
+                  'px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A01829] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]',
                   isActive ? 'bg-[#A01829] text-white' : 'bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]'
                 )}
               >
@@ -481,21 +628,27 @@ function CollectionFooter({ collections, activeHandle, onSelect, onClose, catego
 }
 
 // ─── Category View ─────────────────────────────────────────────────────────────
+// With a collection pill active, the stage fills the panel and the model rail sits
+// one scroll below it. On "All", the rail is the whole view.
 
-function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, label, onClose, activeCollectionHandle }: {
-  sidebarKey: string
+function CategoryView({ collections, allTabProducts, categoryHref, label, onClose, onBack, activeCollectionHandle, stageCollection }: {
   collections: NavCollection[]
   allTabProducts: NavProduct[]
   categoryHref: string
   label: string
   onClose: () => void
+  onBack: () => void
   activeCollectionHandle: string
+  stageCollection: NavCollection | null
 }) {
   const [fetchedProducts, setFetchedProducts] = useState<NavProduct[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const productsRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  const productsInView = useInView(productsRef, { amount: 0.2 })
 
   useEffect(() => {
     if (activeCollectionHandle === 'all') { setFetchedProducts([]); return }
@@ -509,7 +662,6 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
   }, [activeCollectionHandle])
 
   const displayProducts = activeCollectionHandle === 'all' ? allTabProducts : fetchedProducts
-  const activeCollection = collections.find((c) => c.handle === activeCollectionHandle)
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current
@@ -534,59 +686,132 @@ function CategoryView({ sidebarKey, collections, allTabProducts, categoryHref, l
     el.scrollBy({ left: dir * ((el.offsetWidth - 56) / 3 + 28), behavior: 'smooth' })
   }, [])
 
+  const revealProducts = useCallback(() => {
+    scrollPanelTo(productsRef.current, !prefersReducedMotion)
+  }, [prefersReducedMotion])
+
+  // The stage is the drawer's previous sibling — both are direct children of the
+  // scroller, so scrolling it back into view snaps the film into place.
+  const returnToStage = useCallback(() => {
+    scrollPanelTo(productsRef.current?.previousElementSibling, !prefersReducedMotion)
+  }, [prefersReducedMotion])
+
+  // The rail deals itself in once the drawer lands — left to right, the order you read.
+  const railVariants = { hidden: {}, shown: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } } }
+  const cardVariants = prefersReducedMotion
+    ? { hidden: { opacity: 0 }, shown: { opacity: 1, transition: { duration: 0.2 } } }
+    : {
+        hidden: { opacity: 0, y: 28, scale: 0.97 },
+        shown: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: STAGE_EASE } },
+      }
+  // Without a stage there's nothing to reveal — the rail is already the view.
+  const railShown = stageCollection ? productsInView : true
+
   return (
-    <div>
-      {/* Collection banner — top, shown when a collection is selected */}
+    <>
       <AnimatePresence mode="wait">
-        {activeCollectionHandle !== 'all' && activeCollection && !isLoadingProducts && (
-          <CollectionTopBanner key={activeCollection.handle} collection={activeCollection} onClose={onClose} />
+        {stageCollection && (
+          <CollectionStage
+            key={stageCollection.handle}
+            collection={stageCollection}
+            onClose={onClose}
+            onReveal={revealProducts}
+            tabHidden={productsInView}
+          />
         )}
       </AnimatePresence>
 
-      {/* Product scroll */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={activeCollectionHandle}
-          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-        >
-          {isLoadingProducts ? (
-            <div className="flex gap-7">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="min-w-[calc((100%-56px)/3)] flex-shrink-0 space-y-3">
-                  <div className="aspect-[4/3] bg-[#EDE9E3] rounded-2xl animate-pulse" />
-                  <div className="h-3.5 w-28 bg-[#EDE9E3] rounded animate-pulse" />
-                </div>
-              ))}
-            </div>
-          ) : displayProducts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-sm text-[#B8AFA6] mb-4">No products found.</p>
-              <Link href={categoryHref} onClick={onClose} className="text-sm font-medium text-[#A01829] hover:underline">
-                Browse all {label} pianos →
-              </Link>
-            </div>
-          ) : (
-            <div className="relative">
-              <AnimatePresence>
-                {canScrollLeft && <NavArrow dir="left" onClick={() => scrollBy(-1)} />}
-              </AnimatePresence>
-              <div ref={scrollRef} className={SCROLL_CLASS}>
-                {displayProducts.map((product) => (
-                  <div key={product.id} className="min-w-[calc((100%-56px)/3)] snap-start flex-shrink-0">
-                    <ProductCard product={product} onClose={onClose} />
+      <div
+        ref={productsRef}
+        className={cn(
+          'relative bg-white px-14 py-10',
+          // A full-panel drawer, so its snap point is actually reachable and the
+          // rail sits centred rather than pinned under the film.
+          stageCollection && 'flex min-h-full snap-start flex-col justify-center pt-24'
+        )}
+      >
+        {stageCollection && (
+          <>
+            {/* The pull, mirrored: a dark tab dropping out of the film above.
+                Fades in as the drawer lands, exactly as the down-tab fades out. */}
+            <motion.button
+              type="button"
+              onClick={returnToStage}
+              animate={{ opacity: productsInView ? 1 : 0, y: productsInView ? 0 : -12 }}
+              transition={{ duration: 0.28, ease: STAGE_EASE }}
+              className={cn(
+                'absolute left-1/2 top-0 z-20 flex -translate-x-1/2 items-center gap-2.5 rounded-b-xl bg-[#1E1B16] px-6 pb-3 pt-3.5 text-[13px] font-semibold tracking-[0.01em] text-white shadow-[0_6px_24px_rgba(0,0,0,0.28)] transition-colors duration-150 hover:bg-[#A01829] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white',
+                !productsInView && 'pointer-events-none'
+              )}
+            >
+              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+              Back to the top
+            </motion.button>
+
+            {/* Leaving the collection entirely, not just scrolling back up. */}
+            <button
+              type="button"
+              onClick={onBack}
+              className="absolute left-14 top-8 inline-flex items-center gap-1.5 rounded-full text-[13px] font-medium text-[#8A8078] transition-colors duration-150 hover:text-[#A01829] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A01829] focus-visible:ring-offset-4 focus-visible:ring-offset-white"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              All collections
+            </button>
+          </>
+        )}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeCollectionHandle}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          >
+            {isLoadingProducts ? (
+              <div className="flex gap-7">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="min-w-[calc((100%-56px)/3)] flex-shrink-0 space-y-3">
+                    <div className="aspect-[4/3] bg-[#EDE9E3] rounded-2xl animate-pulse" />
+                    <div className="h-3.5 w-28 bg-[#EDE9E3] rounded animate-pulse" />
                   </div>
                 ))}
               </div>
-              <AnimatePresence>
-                {canScrollRight && <NavArrow dir="right" onClick={() => scrollBy(1)} offset="-right-5" />}
-              </AnimatePresence>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-    </div>
+            ) : displayProducts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-sm text-[#B8AFA6] mb-4">No products found.</p>
+                <Link href={categoryHref} onClick={onClose} className="text-sm font-medium text-[#A01829] hover:underline">
+                  Browse all {label} pianos →
+                </Link>
+              </div>
+            ) : (
+              <div className="relative">
+                <AnimatePresence>
+                  {canScrollLeft && <NavArrow dir="left" onClick={() => scrollBy(-1)} />}
+                </AnimatePresence>
+                <motion.div
+                  ref={scrollRef}
+                  className={SCROLL_CLASS}
+                  variants={railVariants}
+                  initial="hidden"
+                  animate={railShown ? 'shown' : 'hidden'}
+                >
+                  {displayProducts.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      variants={cardVariants}
+                      className="min-w-[calc((100%-56px)/3)] snap-start flex-shrink-0"
+                    >
+                      <ProductCard product={product} onClose={onClose} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+                <AnimatePresence>
+                  {canScrollRight && <NavArrow dir="right" onClick={() => scrollBy(1)} offset="-right-5" />}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </>
   )
 }
 
@@ -1042,6 +1267,28 @@ export function ProductsMegaMenu({
     return pool.find((c) => c.handle === activeCollectionHandle) ?? null
   }, [selectedKey, activeCollectionHandle, allCollections, collections])
 
+  // The collection whose film fills the panel. Needs media to be worth a stage —
+  // without it we'd show a black void, so fall through to the plain model rail.
+  const stageCollection = useMemo(() => {
+    if (activeCollectionHandle === 'all') return null
+    if (selectedCat && 'bannerOnly' in selectedCat) return null
+    const col =
+      selectedKey === null
+        ? allViewActiveCollection
+        : (selectedCollections.find((c) => c.handle === activeCollectionHandle) ?? null)
+    if (!col) return null
+    return col.youtubeUrl || col.mediaUrl || col.imageUrl ? col : null
+  }, [activeCollectionHandle, selectedCat, selectedKey, allViewActiveCollection, selectedCollections])
+
+  const stageActive = stageCollection !== null
+
+  // Every pill press opens on the film, never mid-drawer.
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const stageHandle = stageCollection?.handle ?? null
+  useEffect(() => {
+    scrollerRef.current?.scrollTo({ top: 0 })
+  }, [stageHandle])
+
   // Matches --header-bottom: 64px utility bar + 48px compact nav or 56px full nav.
   const topOffset = isHeaderScrolled
     ? 'calc(112px + var(--announcement-bar-height, 0px) + var(--admin-bar-height, 0px))'
@@ -1061,14 +1308,16 @@ export function ProductsMegaMenu({
         >
           <div className="h-px w-full bg-gradient-to-r from-transparent via-[#A01829]/30 to-transparent" />
 
-          <div className="flex flex-col max-h-[75vh]">
+          {/* Fixed height, always: the panel resizing per tab reads as a jolt, and a
+              stage needs a definite height for its `h-full` to resolve against. */}
+          <div className="flex h-[75vh] flex-col">
             {isLoading ? (
               <LoadingSkeleton />
             ) : (
               <>
                 <TopTabBar selectedKey={selectedKey} onSelect={setSelectedKey} onClose={onClose} productTypes={productTypes} />
 
-                <CollectionFooter
+                <CollectionPillRail
                   collections={footerCollections}
                   activeHandle={activeCollectionHandle}
                   onSelect={setActiveCollectionHandle}
@@ -1077,27 +1326,38 @@ export function ProductsMegaMenu({
                   categoryLabel={selectedCat ? selectedCat.label : null}
                 />
 
-                <div className="min-w-0 px-14 py-10 bg-white overflow-y-auto flex-1">
+                <div
+                  ref={scrollerRef}
+                  data-mega-scroller=""
+                  className={cn(
+                    'min-w-0 flex-1 overflow-y-auto bg-white',
+                    // Inserting a full-panel stage above existing content makes the
+                    // browser anchor-scroll away from it; opt out and reset instead.
+                    stageActive && 'snap-y snap-mandatory [overflow-anchor:none]'
+                  )}
+                >
                   <AnimatePresence mode="wait" initial={false}>
                     {selectedKey === null && allViewActiveCollection ? (
                       <motion.div
                         key={`all-collection-${activeCollectionHandle}`}
+                        className={cn(stageActive && 'h-full')}
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
                         <CategoryView
-                          sidebarKey=""
                           collections={allCollections ?? collections}
                           allTabProducts={[]}
                           categoryHref={`/pianos/${activeCollectionHandle}`}
                           label={allViewActiveCollection.heading || allViewActiveCollection.title}
                           onClose={onClose}
+                          onBack={() => setActiveCollectionHandle('all')}
                           activeCollectionHandle={activeCollectionHandle}
+                          stageCollection={stageCollection}
                         />
                       </motion.div>
                     ) : selectedKey === null ? (
                       <motion.div
-                        key="carousel"
+                        key="carousel" className="px-14 py-10"
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
@@ -1105,7 +1365,7 @@ export function ProductsMegaMenu({
                       </motion.div>
                     ) : selectedCat && 'appsPanel' in selectedCat ? (
                       <motion.div
-                        key="apps-panel"
+                        key="apps-panel" className="px-14 py-10"
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
@@ -1113,7 +1373,7 @@ export function ProductsMegaMenu({
                       </motion.div>
                     ) : selectedCat && 'accessoriesPanel' in selectedCat ? (
                       <motion.div
-                        key="accessories-panel"
+                        key="accessories-panel" className="px-14 py-10"
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
@@ -1121,7 +1381,7 @@ export function ProductsMegaMenu({
                       </motion.div>
                     ) : selectedCat && 'bannerOnly' in selectedCat ? (
                       <motion.div
-                        key={`banner-${selectedKey}`}
+                        key={`banner-${selectedKey}`} className="px-14 py-10"
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
@@ -1138,18 +1398,20 @@ export function ProductsMegaMenu({
                     ) : (
                       <motion.div
                         key={`category-${selectedKey}`}
+                        className={cn(stageActive && 'h-full')}
                         initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                       >
                         {selectedCat && (
                           <CategoryView
-                            sidebarKey={selectedKey}
                             collections={selectedCollections}
                             allTabProducts={selectedProducts}
                             categoryHref={selectedCat.href}
                             label={selectedCat.label}
                             onClose={onClose}
+                            onBack={() => setActiveCollectionHandle('all')}
                             activeCollectionHandle={activeCollectionHandle}
+                            stageCollection={stageCollection}
                           />
                         )}
                       </motion.div>
