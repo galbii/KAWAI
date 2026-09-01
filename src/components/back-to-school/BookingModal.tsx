@@ -285,8 +285,14 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
       return
     }
     setStep(2)
-    // Capture the lead now, before the calendar — an abandoned scheduling step
-    // still puts the customer in Shopify, tagged with the sale and the store.
+    // Capture the lead in the CRM now, before the calendar — an abandoned
+    // scheduling step still puts the customer in Shopify, tagged with the sale
+    // and the store, so the showroom can follow up.
+    //
+    // No ad-platform conversion fires here. Reaching the calendar is not a
+    // lead: anyone who fills in step 1, sees the calendar and closes the modal
+    // would otherwise be counted. Meta's Lead fires in handleConfirm, once an
+    // appointment actually exists.
     void captureBookingLead({
       firstName: form.firstName,
       lastName: form.lastName,
@@ -295,10 +301,6 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
       storeslug,
       customTags: ['back-to-school'],
       note: 'Back to School booking started',
-    })
-    trackLead({
-      content_name: 'Back to School Booking',
-      ...(locationName ? { content_category: locationName } : {}),
     })
   }
 
@@ -328,6 +330,11 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
     setBooked(true)
     trackSchedule({
       content_name: 'Back to School Appointment',
+      ...(locationName ? { content_category: locationName } : {}),
+    })
+    // The booked appointment is the lead — see handleContinue.
+    trackLead({
+      content_name: 'Back to School Booking',
       ...(locationName ? { content_category: locationName } : {}),
     })
     window.dataLayer = window.dataLayer ?? []
