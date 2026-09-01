@@ -8,6 +8,8 @@ interface HeroCtasProps {
   storeslug: string
   locationName?: string | null
   hours?: HoursEntry[] | null
+  /** 'dark' when the row sits over the hero video rather than on the paper. */
+  tone?: 'light' | 'dark'
 }
 
 /**
@@ -15,8 +17,15 @@ interface HeroCtasProps {
  * modal in place; the rebate ledger further down the page is the secondary,
  * reached by anchor.
  */
-export function HeroCtas({ storeslug, locationName, hours }: HeroCtasProps) {
+export function HeroCtas({ storeslug, locationName, hours, tone = 'light' }: HeroCtasProps) {
   const [open, setOpen] = useState(false)
+
+  // The secondary link is plain text, so it carries the tone; the primary button
+  // is a red fill that reads on either ground.
+  const secondary =
+    tone === 'dark'
+      ? 'text-kawai-pearl/85 hover:text-kawai-red-400 decoration-kawai-pearl/35 hover:decoration-kawai-red-400'
+      : 'text-kawai-black/70 hover:text-kawai-red decoration-kawai-black/25 hover:decoration-kawai-red'
 
   return (
     <>
@@ -32,7 +41,7 @@ export function HeroCtas({ storeslug, locationName, hours }: HeroCtasProps) {
         </button>
         <a
           href="#rebates"
-          className="inline-flex items-center justify-center sm:justify-start gap-2 text-kawai-black/70 hover:text-kawai-red text-sm tracking-[0.1em] uppercase font-medium underline underline-offset-4 decoration-kawai-black/25 hover:decoration-kawai-red transition-colors"
+          className={`inline-flex items-center justify-center sm:justify-start gap-2 text-sm tracking-[0.1em] uppercase font-medium underline underline-offset-4 transition-colors ${secondary}`}
         >
           Or see the rebates
         </a>

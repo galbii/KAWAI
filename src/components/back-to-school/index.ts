@@ -1,5 +1,4 @@
 export { BackToSchoolHero } from './BackToSchoolHero'
-export { SeptemberCalendar } from './SeptemberCalendar'
 export { WhyNowSection } from './WhyNowSection'
 export { RebateSection } from './RebateSection'
 export { TradeInBand } from './TradeInBand'
