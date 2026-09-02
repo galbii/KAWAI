@@ -7,7 +7,11 @@ import {
   buildConfirmationHtml,
   sanitizeTag,
 } from './notify-format'
-import type { ConfirmationDetails, ConfirmationLocation } from './confirmation-content'
+import type {
+  ConfirmationAppointment,
+  ConfirmationDetails,
+  ConfirmationLocation,
+} from './confirmation-content'
 import type { SignupAnswer } from './types'
 
 interface NotificationInput {
@@ -103,6 +107,8 @@ export async function sendLeadConfirmation(input: {
   storeName: string
   subject: string
   body: string
+  /** Booked date + time, rendered as the invitation card under the intro. */
+  appointment?: ConfirmationAppointment | null | undefined
   details?: ConfirmationDetails | null | undefined
   location?: ConfirmationLocation | null | undefined
   /** Link back to the store's page on the site, rendered after the location card. */
@@ -134,6 +140,7 @@ export async function sendLeadConfirmation(input: {
           campaignTitle: input.campaignTitle,
           storeName: input.storeName,
           body: input.body,
+          appointment: input.appointment,
           details: input.details,
           location: input.location,
           storefrontUrl: input.storefrontUrl,

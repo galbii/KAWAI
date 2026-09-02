@@ -5,7 +5,8 @@ import { Resend } from 'resend'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { captureBookingLead } from './booking-lead'
 import { sendLeadConfirmation } from '@/lib/signup/notify'
-import { DEADLINE_LONG } from '@/components/back-to-school/campaign'
+import { DEADLINE_LONG, DATE_RANGE } from '@/components/back-to-school/campaign'
+import { appointmentIcsUrl, googleCalendarUrl } from '@/components/back-to-school/calendar'
 import {
   slotsForDate,
   parseCampaignDate,
@@ -216,25 +217,56 @@ export async function bookBackToSchoolAppointment(
       (address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : '')
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kawaius.com'
 
+    // The store's own name usually already carries "Kawai" — don't double it.
+    const brandedStore = /kawai/i.test(storeName) ? storeName : `Kawai ${storeName}`
+    const dateLabel = formatLongDate(date)
+    const icsUrl = appointmentIcsUrl(
+      { storeslug: input.storeslug, isoDate: input.date, time: input.time },
+      siteUrl,
+    )
+    const googleUrl = googleCalendarUrl({
+      storeName,
+      isoDate: input.date,
+      time: input.time,
+      address: address || null,
+      details: `Your Back to School appointment at ${brandedStore}. The pianos will be uncovered and in tune when you arrive.`,
+    })
+
     await sendLeadConfirmation({
       submissionId: crypto.randomUUID(),
       to: input.email,
       firstName: input.firstName,
-      campaignTitle: `Official Kawai ${storeName} Showroom Sale`,
-      eyebrow: 'Back to School',
+      campaignTitle: `You're invited to ${brandedStore}`,
+      eyebrow: 'Back to School · Official Invitation',
       storeName,
-      subject: `You're on the calendar — ${when}`,
+      subject: `Your invitation — ${when} at ${brandedStore}`,
       body:
-        `We've got you down for ${when} at ${storeName}, and we'll have pianos uncovered ` +
-        `and in tune when you arrive. The showroom will reply shortly to confirm your time — ` +
-        `if anything changes, just answer this email.`,
+        `This is your official invitation to the Back to School Piano Sale Event at ` +
+        `${brandedStore}. We have you down for ${when}, and the pianos will be uncovered and ` +
+        `in tune when you arrive. Reply to this email with anything you'd like set aside to ` +
+        `play, and the showroom will confirm your time shortly.`,
+      appointment: {
+        dateLabel,
+        timeLabel: input.time,
+        storeName: brandedStore,
+        eyebrow: 'Official Invitation',
+        icsUrl,
+        ...(googleUrl ? { googleUrl } : {}),
+      },
       details: {
-        heading: 'Your appointment',
+        heading: 'What to expect',
         items: [
-          { label: when, value: 'Come play a few — no obligation, nothing to sign.' },
+          {
+            label: 'An hour with the pianos, not a pitch',
+            value: 'Nothing to sign, no obligation — play as many as you like.',
+          },
           {
             label: 'Your rebate is held',
-            value: `Back to School pricing is locked for you through ${DEADLINE_LONG}.`,
+            value: `Back to School pricing runs ${DATE_RANGE} and is locked for you through ${DEADLINE_LONG}.`,
+          },
+          {
+            label: 'Bring an appraisal if you have one',
+            value: 'We beat any written independent appraisal on your trade-in by $500.',
           },
         ],
       },

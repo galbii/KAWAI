@@ -26,10 +26,22 @@ type Props = {
   categoryLabel: string
   /** Shigeru leans further into the gold treatment. */
   isShigeru: boolean
+  /**
+   * Which house style the card is dressed in.
+   *
+   * 'gold' is the /signup treatment — serif display, gold savings figure,
+   * rounded shell. 'campaign' matches the Back to School page: condensed caps,
+   * a red savings figure, square corners and a red edge. The two pages sit in
+   * different type systems, and a card that opens out of a ledger row should
+   * look like the ledger it came from.
+   */
+  variant?: 'gold' | 'campaign'
   /** Opens the dealer sign-up offer popup (closes this modal first). */
   onSignUp: () => void
   onClose: () => void
 }
+
+const OSWALD = 'var(--font-oswald), sans-serif'
 
 function parseYouTubeId(url: string | null): string | null {
   if (!url) return null
@@ -85,30 +97,54 @@ function FilmBackground({
   )
 }
 
-/** MSRP struck, savings reward in gold serif, resulting price. */
-function RebateReveal({ product }: { product: RebateProduct }) {
+/** MSRP struck, the savings reward at display scale, then the resulting price. */
+function RebateReveal({ product, campaign }: { product: RebateProduct; campaign: boolean }) {
+  const accent = campaign ? 'text-kawai-red-400' : 'text-kawai-gold'
+  const accentSoft = campaign ? 'text-kawai-red-400/85' : 'text-kawai-gold/80'
+  const label = campaign
+    ? cn(LABEL, 'font-[family-name:var(--font-oswald)] tracking-[0.24em]')
+    : LABEL
   return (
     <div>
       <div className="flex items-baseline gap-2">
-        <span className={LABEL}>MSRP</span>
+        <span className={label}>MSRP</span>
         <span className="text-base text-white/55 line-through">
           {formatPrice(product.msrp, product.currency)}
         </span>
       </div>
       <div className="mt-3">
-        <span className={cn(LABEL, 'text-kawai-gold/80')}>You save</span>
-        <div className="mt-1 font-[family-name:var(--font-brand-serif)] text-[3.75rem] font-light leading-[0.95] tracking-tight text-kawai-gold">
+        <span className={cn(label, accentSoft)}>You save</span>
+        <div
+          className={cn('mt-1 leading-[0.9]', accent)}
+          style={
+            campaign
+              ? { fontFamily: OSWALD, fontSize: '4rem', fontWeight: 600, letterSpacing: '-0.015em' }
+              : {
+                  fontFamily: 'var(--font-brand-serif)',
+                  fontSize: '3.75rem',
+                  fontWeight: 300,
+                  letterSpacing: '-0.02em',
+                }
+          }
+        >
           {formatPrice(Math.max(product.msrp - product.yourPrice, 0), product.currency)}
         </div>
       </div>
       <div className="mt-3 flex items-baseline gap-2">
-        <span className={LABEL}>Your price</span>
-        <span className="font-[family-name:var(--font-brand-serif)] text-2xl font-medium text-white">
+        <span className={label}>Your price</span>
+        <span
+          className="text-2xl text-white"
+          style={
+            campaign
+              ? { fontFamily: OSWALD, fontWeight: 500 }
+              : { fontFamily: 'var(--font-brand-serif)', fontWeight: 500 }
+          }
+        >
           {formatPrice(product.yourPrice, product.currency)}
         </span>
       </div>
       {product.rebate > 0 && product.msrp - product.yourPrice > product.rebate ? (
-        <p className="mt-2.5 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.12em] text-kawai-gold/90">
+        <p className={cn('mt-2.5 text-xs font-semibold uppercase tracking-[0.14em]', campaign ? 'text-kawai-red-400/90' : 'text-kawai-gold/90')} style={campaign ? { fontFamily: OSWALD } : undefined}>
           Includes {formatPrice(product.rebate, product.currency)} instant rebate
         </p>
       ) : null}
@@ -126,10 +162,12 @@ export default function RebateModelModal({
   isOpen,
   categoryLabel,
   isShigeru,
+  variant = 'gold',
   onSignUp,
   onClose,
 }: Props) {
   const reduce = useReducedMotion() ?? false
+  const campaign = variant === 'campaign'
 
   // Retain the last product so the close animation has content to render.
   const [shown, setShown] = useState<RebateProduct | null>(product)
@@ -226,8 +264,13 @@ export default function RebateModelModal({
     onSignUp()
   }
 
-  const signUpPill =
-    'group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-kawai-red px-6 py-3.5 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-white transition-all duration-300 hover:bg-kawai-red/90 hover:shadow-[0_8px_28px_rgba(225,25,34,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+  // Square and heavier on the campaign page — the same button the page's own
+  // sections use, so the card doesn't hand off to a differently-shaped CTA.
+  const signUpPill = campaign
+    ? 'group inline-flex w-full items-center justify-center gap-2.5 bg-kawai-red px-6 py-4 font-[family-name:var(--font-oswald)] text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-kawai-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+    : 'group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-kawai-red px-6 py-3.5 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-white transition-all duration-300 hover:bg-kawai-red/90 hover:shadow-[0_8px_28px_rgba(225,25,34,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+
+  const ctaLabel = campaign ? 'Book an appointment' : 'Sign Up Now'
 
   return (
     <Modal
@@ -264,12 +307,24 @@ export default function RebateModelModal({
         {/* Control panel — model, the savings reward, the section rail, the CTA */}
         <aside className="relative z-20 flex flex-shrink-0 flex-col gap-5 bg-gradient-to-b from-black/70 to-black/35 p-6 backdrop-blur-md lg:w-[360px] lg:gap-7 lg:bg-black/40 lg:p-8">
           <div className="pr-8">
-            <p className={cn(EYEBROW, isShigeru ? 'text-kawai-gold' : 'text-kawai-red')}>
+            <p
+              className={cn(
+                EYEBROW,
+                campaign
+                  ? 'font-[family-name:var(--font-oswald)] text-kawai-red-400'
+                  : isShigeru
+                    ? 'text-kawai-gold'
+                    : 'text-kawai-red',
+              )}
+            >
               {categoryLabel}
             </p>
             <h2
               className={cn(
-                'mt-2 font-[family-name:var(--font-brand-serif)] font-medium leading-tight tracking-tight text-white transition-all duration-300 sm:text-4xl lg:!text-4xl',
+                'mt-2 leading-tight text-white transition-all duration-300 sm:text-4xl lg:!text-4xl',
+                campaign
+                  ? 'font-[family-name:var(--font-oswald)] font-semibold uppercase !leading-[0.92] tracking-[-0.01em]'
+                  : 'font-[family-name:var(--font-brand-serif)] font-medium tracking-tight',
                 pricingOpen ? 'text-[2rem]' : 'text-2xl',
               )}
             >
@@ -287,7 +342,7 @@ export default function RebateModelModal({
             )}
           >
             <div className="overflow-hidden">
-              <RebateReveal product={p} />
+              <RebateReveal product={p} campaign={campaign} />
             </div>
           </div>
 
@@ -321,13 +376,21 @@ export default function RebateModelModal({
                 >
                   <span
                     className={cn(
-                      'block w-px flex-shrink-0 transition-all duration-300',
-                      active ? 'h-8 bg-kawai-red' : 'h-5 bg-white/25 group-hover:bg-white/55',
+                      'block flex-shrink-0 transition-all duration-300',
+                      campaign && active ? 'w-[2px]' : 'w-px',
+                      active
+                        ? campaign
+                          ? 'h-8 bg-kawai-red-400'
+                          : 'h-8 bg-kawai-red'
+                        : 'h-5 bg-white/25 group-hover:bg-white/55',
                     )}
                   />
                   <span
                     className={cn(
-                      'font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.18em] transition-colors',
+                      'text-xs font-semibold uppercase transition-colors',
+                      campaign
+                        ? 'font-[family-name:var(--font-oswald)] tracking-[0.22em]'
+                        : 'font-[family-name:var(--font-brand-sans)] tracking-[0.18em]',
                       active ? 'text-white' : 'text-white/55 group-hover:text-white/85',
                     )}
                   >
@@ -341,7 +404,7 @@ export default function RebateModelModal({
           {/* CTA (desktop, pinned to the panel bottom) */}
           <div className="mt-auto hidden lg:block">
             <button type="button" onClick={handleSignUp} className={signUpPill}>
-              Sign Up Now
+              {ctaLabel}
               {ARROW}
             </button>
             <Link
@@ -367,8 +430,18 @@ export default function RebateModelModal({
                     aria-pressed={active}
                     onClick={() => { setActiveKey(s.key); setPricingOpen(false) }}
                     className={cn(
-                      'shrink-0 whitespace-nowrap rounded-full px-4 py-2 font-[family-name:var(--font-brand-sans)] text-xs font-semibold uppercase tracking-[0.14em] transition-colors',
-                      active ? 'bg-white text-kawai-black' : 'bg-white/15 text-white/80',
+                      'shrink-0 whitespace-nowrap text-xs font-semibold uppercase transition-colors',
+                      campaign
+                        ? cn(
+                            'border-b-2 px-3 py-2 font-[family-name:var(--font-oswald)] tracking-[0.18em]',
+                            active
+                              ? 'border-kawai-red text-white'
+                              : 'border-transparent text-white/55 hover:text-white/85',
+                          )
+                        : cn(
+                            'rounded-full px-4 py-2 font-[family-name:var(--font-brand-sans)] tracking-[0.14em]',
+                            active ? 'bg-white text-kawai-black' : 'bg-white/15 text-white/80',
+                          ),
                     )}
                   >
                     {s.label}
@@ -396,7 +469,14 @@ export default function RebateModelModal({
               </div>
             ) : showMedia ? (
               <div key="details" className="flex h-full animate-fade-in flex-col">
-                <h3 className="px-6 pt-6 font-[family-name:var(--font-brand-serif)] text-4xl font-light uppercase tracking-[0.06em] text-kawai-black sm:px-8 sm:pt-8 sm:text-5xl lg:px-10 lg:pt-10 lg:text-6xl">
+                <h3
+                  className={cn(
+                    'px-6 pt-6 text-4xl uppercase text-kawai-black sm:px-8 sm:pt-8 sm:text-5xl lg:px-10 lg:pt-10 lg:text-6xl',
+                    campaign
+                      ? 'font-[family-name:var(--font-oswald)] font-semibold tracking-[-0.01em]'
+                      : 'font-[family-name:var(--font-brand-serif)] font-light tracking-[0.06em]',
+                  )}
+                >
                   Details
                 </h3>
                 <div className="relative mt-3 flex min-h-0 flex-1 items-center justify-center">
@@ -456,7 +536,14 @@ export default function RebateModelModal({
               </div>
             ) : activeSpec ? (
               <div key={activeKey} className="animate-fade-in">
-                <h3 className="max-w-2xl font-[family-name:var(--font-brand-serif)] text-4xl font-light uppercase tracking-[0.06em] text-white sm:text-5xl lg:text-6xl">
+                <h3
+                  className={cn(
+                    'max-w-2xl text-4xl uppercase text-white sm:text-5xl lg:text-6xl',
+                    campaign
+                      ? 'font-[family-name:var(--font-oswald)] font-semibold tracking-[-0.01em]'
+                      : 'font-[family-name:var(--font-brand-serif)] font-light tracking-[0.06em]',
+                  )}
+                >
                   {activeLabel}
                 </h3>
                 <ul className="mt-8 max-w-xl space-y-4">
@@ -468,8 +555,9 @@ export default function RebateModelModal({
                       <span
                         aria-hidden
                         className={cn(
-                          'mt-[0.6em] block h-1.5 w-1.5 flex-shrink-0 rounded-full',
-                          isShigeru ? 'bg-kawai-gold' : 'bg-kawai-red',
+                          'mt-[0.6em] block h-1.5 w-1.5 flex-shrink-0',
+                          campaign ? 'bg-kawai-red-400' : 'rounded-full',
+                          !campaign && (isShigeru ? 'bg-kawai-gold' : 'bg-kawai-red'),
                         )}
                       />
                       {item}
@@ -495,7 +583,7 @@ export default function RebateModelModal({
           {/* CTA (mobile, sticky to the modal bottom) */}
           <div className="border-t border-white/10 bg-black/70 p-4 backdrop-blur-md lg:hidden">
             <button type="button" onClick={handleSignUp} className={signUpPill}>
-              Sign Up Now
+              {ctaLabel}
               {ARROW}
             </button>
           </div>

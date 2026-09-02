@@ -35,6 +35,24 @@ export interface ConfirmationLocation {
   hours: ConfirmationHours[]
 }
 
+/**
+ * A booked appointment, rendered as the invitation card at the top of the
+ * confirmation. Only campaigns that actually schedule a time pass this — a
+ * signup with no appointment simply renders without it.
+ */
+export interface ConfirmationAppointment {
+  /** 'Saturday, September 12, 2026' — already formatted for the reader. */
+  dateLabel: string
+  /** '11:00 AM'. */
+  timeLabel: string
+  storeName: string
+  /** Label above the date. Defaults to 'Your appointment'. */
+  eyebrow?: string | undefined
+  /** Absolute URL to the .ics — relative links do not work in an inbox. */
+  icsUrl?: string | undefined
+  googleUrl?: string | undefined
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }

@@ -1,15 +1,21 @@
-import { RuledGround } from './RuledGround'
+import { RuledGround, BTS_CONTAINER } from './RuledGround'
+import { SectionHead } from './SectionHead'
+import { Reveal } from './Choreography'
 
 interface HowItWorksStripProps {
   phone?: string | null
 }
 
 /**
- * Trade-in mechanics as a slim three-step strip. Replaces the shared trade-in
+ * Trade-in mechanics as a three-step strip. Replaces the shared trade-in
  * HowItWorks on this page: that component is a different visual language
  * (rounded number chips, 1,200px for three sentences) and its step copy asks
  * visitors to "bring your trade-in invitation" — a spring-campaign artifact
  * that doesn't exist in this program.
+ *
+ * These really are a sequence — call, book, claim — so the numerals earn their
+ * place. They are set outlined at display scale: loud enough to carry the
+ * order at a glance without competing with the step headings.
  */
 const STEPS = [
   {
@@ -25,63 +31,53 @@ const STEPS = [
   {
     number: '03',
     heading: 'Claim it at the counter',
-    body: 'We beat any independent appraisal by $500, applied to your new Kawai — on top of the instant rebate and 0% financing.',
+    body: 'We beat any independent appraisal by $500, applied to your new Kawai — on top of the rebate and 0% financing.',
   },
 ] as const
 
 export function HowItWorksStrip({ phone }: HowItWorksStripProps) {
   return (
     <section className="relative bg-kawai-pearl border-t border-kawai-black/10">
-      <RuledGround />
+      <RuledGround animate />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-16 md:py-20">
+      <div className={`relative ${BTS_CONTAINER} py-16 md:py-24`}>
+        <SectionHead
+          eyebrow="How the trade-in works"
+          title="Three steps"
+          aside="Start with a phone call — most of it is settled before you drive over."
+          className="mb-12"
+        />
 
-        <h2 className="flex items-center gap-3 mb-10">
-          <span className="w-6 h-px bg-kawai-red" aria-hidden />
-          <span
-            className="text-kawai-charcoal/50 uppercase"
-            style={{ fontFamily: 'var(--font-oswald), sans-serif', fontSize: '0.7rem', letterSpacing: '0.24em' }}
-          >
-            How the trade-in works
-          </span>
-        </h2>
-
-        <ol className="grid md:grid-cols-3 gap-y-10 md:gap-y-0">
+        <ol className="grid md:grid-cols-3 gap-y-12 md:gap-y-0">
           {STEPS.map(({ number, heading, body }, i) => (
             <li
               key={number}
               className={i === 0 ? 'md:pr-10' : 'md:px-10 md:border-l md:border-kawai-black/12'}
             >
-              <span
-                className="block text-kawai-red leading-none mb-4"
-                style={{
-                  fontFamily: 'var(--font-oswald), sans-serif',
-                  fontSize: '1.4rem',
-                  letterSpacing: '0.08em',
-                }}
+              <Reveal
+                delay={i * 0.08}
+                className="bts-display bts-outline text-kawai-red leading-none mb-5"
+                style={{ fontSize: 'clamp(2.6rem, 6vw, 4.4rem)' }}
                 aria-hidden
               >
                 {number}
-              </span>
+              </Reveal>
 
-              <h3
-                className="text-kawai-black leading-[1.15] mb-3"
-                style={{
-                  fontFamily: 'var(--font-family-cormorant), Georgia, serif',
-                  fontSize: 'clamp(1.35rem, 2.2vw, 1.6rem)',
-                  fontWeight: 500,
-                }}
-              >
-                {heading}
+              <h3 className="bts-display text-kawai-black mb-3" style={{ fontSize: 'clamp(1.25rem, 2.1vw, 1.6rem)' }}>
+                <Reveal as="span" variant="line" delay={i * 0.08 + 0.06} className="block">
+                  {heading}
+                </Reveal>
               </h3>
 
-              <p className="text-kawai-charcoal/65 text-[0.95rem] leading-relaxed">{body}</p>
+              <Reveal as="p" delay={i * 0.08 + 0.14} className="text-kawai-charcoal/70 text-[0.98rem] leading-relaxed">
+                {body}
+              </Reveal>
             </li>
           ))}
         </ol>
 
         {phone && (
-          <p className="mt-10 text-kawai-charcoal/55 text-sm">
+          <Reveal as="p" delay={0.3} className="mt-12 text-kawai-charcoal/60 text-sm">
             Questions about a specific piano?{' '}
             <a
               href={`tel:${phone.replace(/\D/g, '')}`}
@@ -89,9 +85,8 @@ export function HowItWorksStrip({ phone }: HowItWorksStripProps) {
             >
               Call {phone}
             </a>
-          </p>
+          </Reveal>
         )}
-
       </div>
     </section>
   )

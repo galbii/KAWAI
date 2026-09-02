@@ -9,13 +9,15 @@ import {
 import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import {
   BackToSchoolHero,
-  WhyNowSection,
+  OffersSection,
   RebateSection,
   TradeInBand,
   HowItWorksStrip,
   VisitSection,
   BookingSection,
   DeadlineDock,
+  CampaignStyles,
+  CampaignNoScript,
 } from '@/components/back-to-school'
 import { DATE_RANGE, DEADLINE_LONG } from '@/components/back-to-school/campaign'
 
@@ -98,7 +100,7 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
         storeslug={storeslug}
       />
 
-      <WhyNowSection />
+      <OffersSection />
 
       <RebateSection
         data={rebates}
@@ -135,6 +137,10 @@ export default async function BackToSchoolPage({
 
   return (
     <div className="bg-kawai-pearl">
+      {/* One style block for the whole campaign — the type scale, the hero's
+          entrance keyframes, and the scroll-reveal transitions. */}
+      <CampaignStyles />
+      <CampaignNoScript />
       <Suspense>
         <BackToSchoolContent storeslug={storeslug} />
       </Suspense>

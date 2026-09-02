@@ -7,7 +7,9 @@ import { BookingModal } from './BookingModal'
 import { formatPrice } from '@/lib/utils'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
 import { DEADLINE_LONG, DATE_RANGE } from './campaign'
-import { RuledGround } from './RuledGround'
+import { RuledGround, BTS_CONTAINER } from './RuledGround'
+import { SectionHead } from './SectionHead'
+import { Reveal } from './Choreography'
 import type { HoursEntry } from './schedule'
 
 interface RebateSectionProps {
@@ -27,8 +29,12 @@ type SelectedModel = { product: RebateProduct; categoryLabel: string; isShigeru:
  * Photography lives in the detail modal, one tap away on every row.
  *
  * Each row shows a single savings figure (MSRP − final price) so the math
- * reconciles with the two prices beside it; the instant-rebate breakdown is in
- * the modal and the footnote.
+ * reconciles with the two prices beside it; the rebate breakdown is in the
+ * modal and the footnote.
+ *
+ * Rows reveal in a short stagger as the ledger arrives, and re-stagger when the
+ * category changes — the filter reads as the table being re-set rather than
+ * swapped.
  */
 export function RebateSection({ data, locationName, hours, storeslug }: RebateSectionProps) {
   const [selected, setSelected] = useState<SelectedModel | null>(null)
@@ -75,45 +81,16 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
         id="rebates"
         className="relative bg-kawai-pearl border-t border-kawai-black/10 scroll-mt-24"
       >
-        <RuledGround />
+        <RuledGround animate />
 
-        <div className="relative max-w-6xl mx-auto px-6 sm:px-12 lg:px-16 py-16 md:py-20">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="w-6 h-px bg-kawai-red" aria-hidden />
-            <span
-              className="text-kawai-charcoal/50 uppercase"
-              style={{
-                fontFamily: 'var(--font-oswald), sans-serif',
-                fontSize: '0.7rem',
-                letterSpacing: '0.24em',
-              }}
-            >
-              Instant Rebates
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-3 mb-10">
-            <h2
-              className="text-kawai-black leading-[1.1]"
-              style={{
-                fontFamily: 'var(--font-family-cormorant), Georgia, serif',
-                fontSize: 'clamp(1.9rem, 4vw, 2.8rem)',
-                fontWeight: 500,
-              }}
-            >
-              Every model in the program.
-            </h2>
-            <p
-              className="text-kawai-red uppercase pb-1.5"
-              style={{
-                fontFamily: 'var(--font-oswald), sans-serif',
-                fontSize: '0.75rem',
-                letterSpacing: '0.2em',
-              }}
-            >
-              {visibleCount} {visibleCount === 1 ? 'model' : 'models'} · Rebates end {DEADLINE_LONG}
-            </p>
-          </div>
+        <div className={`relative ${BTS_CONTAINER} py-16 md:py-24`}>
+          <SectionHead
+            eyebrow="Instant Rebates"
+            title="Additional rebates on new products"
+            subhead="From 10–15% off"
+            meta={`${visibleCount} ${visibleCount === 1 ? 'model' : 'models'} · Ends ${DEADLINE_LONG}`}
+            className="mb-10"
+          />
 
           {/* Segmented category bar, fused to the top of the ledger. Sticky at
               70px — the site header is fixed at 71px tall, so the bar tucks in
@@ -124,7 +101,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
             ref={filterBarRef}
             role="group"
             aria-label="Filter models by category"
-            className="sticky top-[70px] z-20 grid bg-white border border-kawai-neutral/70 rounded-t-sm overflow-hidden shadow-[0_10px_24px_rgba(30,27,22,0.10)]"
+            className="sticky top-[70px] z-20 grid bg-kawai-black shadow-[0_12px_28px_rgba(30,27,22,0.22)]"
             style={{ gridTemplateColumns: `repeat(${data.length + 1}, minmax(0, 1fr))` }}
           >
             {[
@@ -138,49 +115,66 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                   type="button"
                   onClick={() => selectCategory(tab.slug)}
                   aria-pressed={active}
-                  className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-1 py-3 sm:py-4 uppercase border-r border-kawai-neutral/60 last:border-r-0 transition-colors ${
+                  className={`relative flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2.5 px-1 py-3.5 sm:py-5 uppercase border-r border-kawai-pearl/15 last:border-r-0 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-kawai-red-400 ${
                     active
-                      ? 'bg-kawai-black text-kawai-pearl'
-                      : 'bg-white text-kawai-charcoal/70 hover:bg-kawai-pearl/70 hover:text-kawai-black'
+                      ? 'text-kawai-pearl'
+                      : 'text-kawai-pearl/50 hover:text-kawai-pearl hover:bg-white/5'
                   }`}
-                  style={{ fontFamily: 'var(--font-oswald), sans-serif', fontSize: '0.7rem', letterSpacing: '0.14em' }}
+                  style={{
+                    fontFamily: 'var(--font-oswald), sans-serif',
+                    fontSize: '0.78rem',
+                    letterSpacing: '0.18em',
+                  }}
                 >
                   {tab.label}
                   <span
-                    className={active ? 'text-kawai-red-400' : 'text-kawai-charcoal/40'}
-                    style={{ fontSize: '0.66rem' }}
+                    className={active ? 'text-kawai-red-400' : 'text-kawai-pearl/30'}
+                    style={{ fontSize: '0.68rem' }}
                   >
                     {tab.count}
                   </span>
+                  <span
+                    className={`absolute inset-x-0 bottom-0 h-[3px] bg-kawai-red transition-transform duration-300 ${
+                      active ? 'scale-x-100' : 'scale-x-0'
+                    }`}
+                    aria-hidden
+                  />
                 </button>
               )
             })}
           </div>
 
-          <div className="bg-white border border-t-0 border-kawai-neutral/70 rounded-b-sm overflow-hidden shadow-[0_18px_50px_rgba(30,27,22,0.08)]">
+          <div className="bg-white border border-kawai-black/12 border-t-0 shadow-[0_18px_50px_rgba(30,27,22,0.08)]">
             {visibleData.map((category) => (
               <div key={category.slug}>
-                <h3 className="flex items-baseline justify-between gap-4 px-5 sm:px-8 py-3 bg-kawai-pearl/70 border-b border-kawai-neutral/60">
+                <h3 className="flex items-baseline justify-between gap-4 px-5 sm:px-8 py-3.5 bg-kawai-pearl border-y border-kawai-black/10">
                   <span
                     className="text-kawai-black uppercase"
                     style={{
                       fontFamily: 'var(--font-oswald), sans-serif',
-                      fontSize: '0.8rem',
-                      letterSpacing: '0.2em',
+                      fontSize: '0.85rem',
+                      letterSpacing: '0.24em',
                     }}
                   >
                     {category.label}
                   </span>
-                  <span className="text-kawai-charcoal/45 text-xs tracking-[0.12em] uppercase">
+                  <span className="text-kawai-charcoal/45 text-xs tracking-[0.14em] uppercase">
                     {category.products.length} {category.products.length === 1 ? 'model' : 'models'}
                   </span>
                 </h3>
 
                 <ul>
-                  {category.products.map((product) => {
+                  {category.products.map((product, i) => {
                     const saving = Math.max(product.msrp - product.yourPrice, 0)
                     return (
-                      <li key={product.slug} className="border-b border-kawai-neutral/50 last:border-b-0">
+                      <Reveal
+                        as="li"
+                        // Capped so a long category doesn't leave its last rows
+                        // waiting on a ladder the visitor has already scrolled past.
+                        delay={Math.min(i, 6) * 0.05}
+                        key={`${activeSlug}-${product.slug}`}
+                        className="border-b border-kawai-black/8 last:border-b-0"
+                      >
                         <button
                           onClick={() =>
                             setSelected({
@@ -189,10 +183,10 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                               isShigeru: category.slug === 'shigeru',
                             })
                           }
-                          className="group w-full grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_minmax(0,1.4fr)_auto_minmax(0,1fr)_auto] items-center gap-x-4 sm:gap-x-6 px-5 sm:px-8 py-3.5 text-left hover:bg-kawai-pearl/60 focus-visible:bg-kawai-pearl/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-kawai-red transition-colors"
+                          className="bts-row group relative w-full grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_minmax(0,1.4fr)_auto_minmax(0,1fr)_auto] items-center gap-x-4 sm:gap-x-6 px-5 sm:px-8 py-4 text-left hover:bg-kawai-pearl/70 focus-visible:bg-kawai-pearl/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-kawai-red transition-colors"
                         >
                           <span
-                            className="relative w-12 h-12 flex-shrink-0 bg-kawai-pearl/60 rounded-sm overflow-hidden"
+                            className="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 bg-kawai-pearl/70 overflow-hidden"
                             aria-hidden
                           >
                             {product.imageUrl && (
@@ -200,8 +194,8 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                                 src={product.imageUrl}
                                 alt=""
                                 fill
-                                sizes="48px"
-                                className="object-contain"
+                                sizes="56px"
+                                className="object-contain transition-transform duration-500 group-hover:scale-105"
                               />
                             )}
                           </span>
@@ -211,7 +205,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                               className="block text-kawai-black leading-tight"
                               style={{
                                 fontFamily: 'var(--font-oswald), sans-serif',
-                                fontSize: '1.05rem',
+                                fontSize: '1.15rem',
                                 letterSpacing: '0.02em',
                               }}
                             >
@@ -224,7 +218,14 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                             )}
                           </span>
 
-                          <span className="hidden sm:block text-kawai-red text-sm font-semibold whitespace-nowrap">
+                          <span
+                            className="hidden sm:block text-kawai-red whitespace-nowrap uppercase"
+                            style={{
+                              fontFamily: 'var(--font-oswald), sans-serif',
+                              fontSize: '0.82rem',
+                              letterSpacing: '0.1em',
+                            }}
+                          >
                             {saving > 0 ? `Save ${formatPrice(saving, product.currency)}` : ''}
                           </span>
 
@@ -238,7 +239,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                               className="text-kawai-black"
                               style={{
                                 fontFamily: 'var(--font-oswald), sans-serif',
-                                fontSize: '1.05rem',
+                                fontSize: '1.2rem',
                               }}
                             >
                               {formatPrice(product.yourPrice, product.currency)}
@@ -252,7 +253,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                           </span>
 
                           <svg
-                            className="hidden sm:block w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-0.5 transition-all"
+                            className="hidden sm:block w-4 h-4 text-kawai-charcoal/30 group-hover:text-kawai-red group-hover:translate-x-1 transition-all"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -262,7 +263,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                             <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                           </svg>
                         </button>
-                      </li>
+                      </Reveal>
                     )
                   })}
                 </ul>
@@ -270,22 +271,25 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 mt-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 mt-10">
             <button
               onClick={openBooking}
-              className="inline-flex items-center justify-center px-8 py-4 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.14em] uppercase font-medium transition-colors rounded-sm flex-shrink-0"
+              className="group inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
             >
               Book an appointment
+              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
             </button>
             <p className="text-kawai-charcoal/50 text-xs leading-relaxed max-w-2xl">
-              Savings shown are off MSRP and include the instant rebate, taken off the price at the
-              counter on qualifying new Kawai pianos
+              Savings shown are off MSRP and include the additional rebate, taken off the price at
+              the counter on qualifying new Kawai pianos
               {locationName
                 ? ` at ${locationName.includes('Kawai') ? locationName : `Kawai ${locationName}`}`
                 : ''}
-              . Back to School program runs {DATE_RANGE};
-              rebates end {DEADLINE_LONG}. 0% financing for 36 months is subject to credit approval.
-              Trade-in bonus requires a written independent appraisal.
+              . Rebate amounts vary by model. Back to School program runs {DATE_RANGE}; rebates end{' '}
+              {DEADLINE_LONG}. 0% financing for 36 months is subject to credit approval. Trade-in
+              bonus requires a written independent appraisal.
             </p>
           </div>
         </div>
@@ -296,6 +300,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
         isOpen={selected !== null}
         categoryLabel={selected?.categoryLabel ?? ''}
         isShigeru={selected?.isShigeru ?? false}
+        variant="campaign"
         onSignUp={openBooking}
         onClose={() => setSelected(null)}
       />

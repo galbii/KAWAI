@@ -7,7 +7,11 @@
  * every test in this file unrunnable.
  */
 import { escapeHtml } from '@/lib/rsm/lead-email'
-import type { ConfirmationDetails, ConfirmationLocation } from './confirmation-content'
+import type {
+  ConfirmationAppointment,
+  ConfirmationDetails,
+  ConfirmationLocation,
+} from './confirmation-content'
 import type { SignupAnswer } from './types'
 
 interface SubjectVars {
@@ -181,6 +185,39 @@ function hoursRow(day: string, time: string): string {
 }
 
 /**
+ * The invitation card: the date, the time and the two calendar handoffs.
+ *
+ * This is the part of the email that gets looked at again on the day, so it
+ * carries the appointment on its own — a reader who never scrolls past it still
+ * knows when, where, and how to put it in their calendar.
+ *
+ * Buttons are <a> elements with inline padding, matching the "Get directions"
+ * button below them. Outlook's Word renderer under-pads them; every other
+ * client, which is where these are read, renders them correctly.
+ */
+function appointmentCard(appt: ConfirmationAppointment): string {
+  const button = (href: string, label: string, primary: boolean) =>
+    `<a href="${escapeHtml(href)}" style="display:inline-block;margin:0 8px 8px 0;padding:10px 18px;border-radius:4px;font-size:13px;font-weight:700;text-decoration:none;${
+      primary
+        ? 'background:#1E1B16;color:#ffffff;'
+        : 'background:#ffffff;color:#1E1B16;border:1px solid #DBDBDB;'
+    }">${escapeHtml(label)}</a>`
+
+  const actions = [
+    appt.icsUrl ? button(appt.icsUrl, 'Add to calendar', true) : '',
+    appt.googleUrl ? button(appt.googleUrl, 'Google Calendar', false) : '',
+  ].join('')
+
+  return `<div style="margin:22px 0 0;border:1px solid #1E1B16;border-top:3px solid #E11922;padding:20px 22px">
+  <p style="margin:0;color:#E11922;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase">${escapeHtml(appt.eyebrow ?? 'Your appointment')}</p>
+  <p style="margin:8px 0 0;color:#1E1B16;font-size:21px;font-weight:700;line-height:1.25">${escapeHtml(appt.dateLabel)}</p>
+  <p style="margin:2px 0 0;color:#E11922;font-size:16px;font-weight:700;letter-spacing:0.06em">${escapeHtml(appt.timeLabel)}</p>
+  <p style="margin:8px 0 0;color:#6b7280;font-size:14px">${escapeHtml(appt.storeName)}</p>
+  ${actions ? `<div style="margin-top:16px">${actions}</div>` : ''}
+</div>`
+}
+
+/**
  * Confirmation email sent to the person who signed up.
  *
  * Carries the campaign's value props and the showroom address, so the thing
@@ -196,6 +233,8 @@ export function buildConfirmationHtml(input: {
   campaignTitle: string
   storeName: string
   body: string
+  /** A booked date and time, rendered as the invitation card under the intro. */
+  appointment?: ConfirmationAppointment | null | undefined
   details?: ConfirmationDetails | null | undefined
   location?: ConfirmationLocation | null | undefined
   /** Link back to the store's page on the site, rendered after the location card. */
@@ -206,6 +245,8 @@ export function buildConfirmationHtml(input: {
   const body =
     input.body ||
     `We've received your signup for ${input.campaignTitle} at ${input.storeName}. We'll be in touch shortly with the details.`
+
+  const appointment = input.appointment ? appointmentCard(input.appointment) : ''
 
   const details = input.details
     ? `${sectionLabel(input.details.heading)}<table width="100%" style="width:100%;border-collapse:collapse">${input.details.items
@@ -243,6 +284,7 @@ export function buildConfirmationHtml(input: {
     title: input.campaignTitle,
     body: `<p style="margin:0 0 12px">Hi ${escapeHtml(input.firstName)},</p>
 <p style="margin:0 0 12px">${escapeHtml(body)}</p>
+${appointment}
 ${details}
 ${location}
 ${storefrontLink}

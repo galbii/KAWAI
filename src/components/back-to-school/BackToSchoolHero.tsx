@@ -1,7 +1,7 @@
-import Image from 'next/image'
 import { HeroVideoBackground } from './HeroVideoBackground'
+import { HeroParallax } from './HeroParallax'
 import { DATE_RANGE, OFFERS } from './campaign'
-import { RuledGround } from './RuledGround'
+import { BTS_CONTAINER } from './RuledGround'
 import { HeroCtas } from './HeroCtas'
 import type { HoursEntry } from './schedule'
 
@@ -12,266 +12,156 @@ interface BackToSchoolHeroProps {
 }
 
 /**
- * Hero — server-rendered so the headline is in the initial HTML. Client JS is
- * limited to the background video's playback control and the booking CTA.
+ * The hero is the poster; everything below it is the program notes.
  *
- * The campaign clip runs full-bleed behind the copy, inside the same white
- * print frame the smaller panel used: the hero is one large print laid on the
- * page's ruled paper, which keeps the paper language the sections below are
- * drawn in instead of dropping it for one section.
+ * The earlier version framed the footage inside a white print with a margin, so
+ * the hero was one more sheet on the ruled page. This one goes full bleed and
+ * full height: the title is set at poster scale in condensed caps, the third
+ * line is outlined the way a sale poster outlines its event name, and the three
+ * offers run edge to edge along the bottom as a rail rather than a list tucked
+ * beside the copy. The paper picks up again at the section below.
  *
- * Inside the frame the palette inverts — pearl type on the dark footage. Red
- * type here is kawai-red-400, never the brand red: brand red on a dark ground
- * is ~3.6:1 and fails AA (see the Accessibility notes in CLAUDE.md).
+ * Server-rendered so the headline is in the initial HTML. Client JS is limited
+ * to the video (playback + drift), the scroll parallax wrapper, and the booking
+ * CTA.
+ *
+ * Red type on the footage is kawai-red-400, never brand red: brand red on a
+ * dark ground is ~3.6:1 and fails AA (see the Accessibility notes in CLAUDE.md).
  */
 
 /**
- * Entrance choreography. The order is the argument: the print is laid down, the
- * footage settles behind it, then the copy arrives in reading order — signature,
- * dates, headline, invitation, the ask, and only then the terms.
+ * Entrance choreography. The order is the argument: the dates, then the title
+ * one line at a time, then the invitation, the ask, and last the terms.
  *
  * Everything animates on transform / opacity / clip-path so nothing reflows
- * mid-entrance. Reduced motion needs no guard here: globals.css collapses every
- * animation to 0.01ms, and each keyframe below ends on its resting state with
- * `both`, so those users get the finished hero immediately.
+ * mid-entrance. The keyframes live in CampaignStyles.
  */
 const T = {
-  frame: '0s',
-  lockup: '0.30s',
-  divider: '0.36s',
-  dash: '0.40s',
-  date: '0.44s',
-  line1: '0.50s',
-  line2: '0.60s',
-  eventLine: '0.76s',
-  subhead: '0.88s',
-  cta: '1.00s',
-  /** Offer rows stagger from here, one every 80ms. */
-  offers: 1.1,
-  terms: '1.42s',
+  dash: '0.20s',
+  date: '0.26s',
+  line1: '0.34s',
+  line2: '0.48s',
+  line3: '0.66s',
+  subhead: '0.82s',
+  /** Rail cells stagger from here, one every 90ms. */
+  rail: 0.94,
+  /** After the rail it backs — the ask closes the sequence. */
+  cta: '1.28s',
 } as const
 
 export function BackToSchoolHero({ storeslug, locationName, hours }: BackToSchoolHeroProps) {
-  // Same cleanup the header lockup does (src/components/ui/kawai-logo.tsx): the
-  // wordmark already carries "Kawai", so a stored name like "Kawai St. Louis"
-  // or "St. Louis Piano Gallery" must not double-brand next to it.
-  const storeName = (locationName ?? '')
-    .replace(/PIANO GALLERY/gi, '')
-    .replace(/KAWAI/gi, '')
+  // "Kawai" is written out beside it in both places this is used, so a stored
+  // name like "Kawai Denver" or "Denver Piano Gallery" must not repeat it.
+  const cleanedName = (locationName ?? '')
+    .replace(/piano gallery/gi, '')
+    .replace(/kawai/gi, '')
     .trim()
-    .toUpperCase()
+  const storeName = cleanedName || 'showroom'
 
   return (
-    <>
-      <style>{`
-        /* The print being set down on the page. */
-        @keyframes bts-frame-in {
-          from { opacity: 0; transform: translateY(20px) scale(0.988); }
-          to   { opacity: 1; transform: none; }
-        }
-        /* Copy arriving. Short travel — the type is large, so a long rise reads
-           as drift rather than intent. */
-        @keyframes bts-fade-up {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: none; }
-        }
-        /* Headline lines rise into view from their own baseline rather than
-           fading: condensed display caps read better revealed than dissolved.
-           The end state insets negatively so nothing clips the glyphs once the
-           reveal has finished. */
-        @keyframes bts-line-up {
-          from { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateY(0.24em); }
-          to   { opacity: 1; clip-path: inset(-30% -30% -30% -30%); transform: none; }
-        }
-        /* Rules and dividers draw themselves, echoing the pen-on-paper motif the
-           rest of the page is built on. */
-        @keyframes bts-draw-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-        @keyframes bts-draw-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-        /* Tracking settling inward — the sub-title looks like it is being set. */
-        @keyframes bts-track-in {
-          from { opacity: 0; letter-spacing: 0.62em; }
-          to   { opacity: 1; letter-spacing: 0.22em; }
-        }
+    <section className="relative flex flex-col min-h-[92svh] bg-kawai-black overflow-hidden">
+      <HeroVideoBackground />
 
-        .bts-frame  { animation: bts-frame-in 0.85s cubic-bezier(0.22,1,0.36,1) both; }
-        .bts-fade   { animation: bts-fade-up 0.8s cubic-bezier(0.22,0.61,0.36,1) both; }
-        .bts-line   { display: block; animation: bts-line-up 0.95s cubic-bezier(0.16,1,0.3,1) both; }
-        .bts-drawx  { transform-origin: left center; animation: bts-draw-x 0.7s cubic-bezier(0.22,1,0.36,1) both; }
-        .bts-drawy  { transform-origin: center; animation: bts-draw-y 0.5s cubic-bezier(0.22,1,0.36,1) both; }
-        .bts-track  { animation: bts-track-in 1s cubic-bezier(0.22,1,0.36,1) both; }
-      `}</style>
+      <HeroParallax>
+        {/* The site header two inches above already signs the page with the
+            same storefront lockup, so the poster starts on the dates. */}
+        <div className="flex-1 min-h-[2rem] pt-24" aria-hidden />
 
-      <section className="relative overflow-hidden bg-kawai-pearl px-3 sm:px-6 lg:px-8 py-3 sm:py-6 lg:py-8">
+        {/* ── Poster ── */}
+        <div className={`${BTS_CONTAINER} w-full pb-9 md:pb-12`}>
+          <div className="flex items-center gap-3 mb-6">
+            <span
+              className="bts-drawx w-10 h-px bg-kawai-red-400"
+              style={{ animationDelay: T.dash }}
+              aria-hidden
+            />
+            {/* The storefront signs the poster here, at eyebrow size, rather
+                than as a second full lockup under the header's. */}
+            <span
+              className="bts-in bts-eyebrow text-kawai-pearl/80"
+              style={{ animationDelay: T.date }}
+            >
+              {cleanedName ? `Kawai ${cleanedName} · ${DATE_RANGE}` : DATE_RANGE}
+            </span>
+          </div>
 
-        <RuledGround marginRule={false} />
+          <h1 className="bts-display text-kawai-pearl">
+            <span
+              className="bts-inline"
+              style={{ fontSize: 'clamp(3.1rem, 12.5vw, 10.5rem)', animationDelay: T.line1 }}
+            >
+              Back to
+            </span>
+            <span
+              className="bts-inline"
+              style={{ fontSize: 'clamp(3.1rem, 12.5vw, 10.5rem)', animationDelay: T.line2 }}
+            >
+              School
+            </span>
+            {/* Outlined, the way a sale poster outlines the event name under the
+                title. Large display type only — a hairline stroke at body size
+                would not hold its contrast. */}
+            <span
+              className="bts-wipe bts-outline block text-kawai-red-400 mt-3 sm:mt-4"
+              style={{
+                fontSize: 'clamp(1.35rem, 4.6vw, 3.5rem)',
+                letterSpacing: '0.01em',
+                animationDelay: T.line3,
+              }}
+            >
+              Piano Sale Event
+            </span>
+          </h1>
 
-        {/* The print frame — same white margin, hairline and shadow the smaller
-            panel carried, sized up to hold the whole hero. */}
-        <div
-          className="bts-frame relative max-w-[1500px] mx-auto bg-white p-2.5 sm:p-3 rounded-sm border border-kawai-black/10 shadow-[0_24px_60px_rgba(30,27,22,0.16),0_6px_16px_rgba(30,27,22,0.08)]"
-          style={{ animationDelay: T.frame }}
-        >
-          <div className="relative overflow-hidden rounded-[2px] bg-kawai-black">
+          <p
+            className="bts-in bts-serif text-kawai-pearl/85 mt-7 max-w-xl leading-snug"
+            style={{ fontSize: 'clamp(1.3rem, 2.3vw, 1.75rem)', animationDelay: T.subhead }}
+          >
+            Book an appointment and visit our official Kawai {storeName} location.
+          </p>
+        </div>
 
-            <HeroVideoBackground />
-
-            <div className="relative z-10 px-6 sm:px-10 lg:px-16 pt-14 pb-16 md:pt-20 md:pb-24">
-              <div className="max-w-2xl">
-
-                {/* Storefront lockup — the campaign is run by a named showroom, so
-                    the wordmark and the location sign the page before the headline
-                    does. The red PNG is knocked out to white for the dark ground. */}
-                <div className="flex items-center gap-3 sm:gap-3.5 mb-7">
-                  <Image
-                    src="/images/logos/kawai-logo-new-red.png"
-                    alt="Kawai"
-                    width={1030}
-                    height={207}
-                    className="bts-fade h-[30px] sm:h-[34px] w-auto brightness-0 invert"
-                    style={{ animationDelay: T.lockup }}
-                    priority
-                  />
-                  {storeName ? (
-                    <>
-                      <span
-                        className="bts-drawy w-px h-9 bg-kawai-pearl/25"
-                        style={{ animationDelay: T.divider }}
-                        aria-hidden
-                      />
-                      {/* Type copied from the header's storefront lockup so the
-                          campaign signs itself the same way every store page does. */}
-                      <div className="bts-fade" style={{ animationDelay: T.lockup }}>
-                        <div className="font-bold tracking-wide whitespace-nowrap text-base text-kawai-pearl">
-                          {storeName}
-                        </div>
-                        <div className="-mt-1 tracking-widest font-medium whitespace-nowrap text-xs text-kawai-pearl/65">
-                          Official Storefront
-                        </div>
-                      </div>
-                    </>
-                  ) : null}
-                </div>
-
-                {/* The eyebrow matches the red-dash pattern every other section uses. */}
-                <div className="flex items-center gap-3 mb-8">
-                  <span
-                    className="bts-drawx w-6 h-px bg-kawai-red-400"
-                    style={{ animationDelay: T.dash }}
-                    aria-hidden
-                  />
-                  <span
-                    className="bts-fade text-kawai-pearl/75 uppercase"
-                    style={{
-                      fontFamily: 'var(--font-oswald), sans-serif',
-                      fontSize: '0.75rem',
-                      letterSpacing: '0.22em',
-                      animationDelay: T.date,
-                    }}
-                  >
-                    {DATE_RANGE}
-                  </span>
-                </div>
-
-                <h1
-                  className="text-kawai-pearl uppercase leading-[0.86]"
-                  style={{
-                    fontFamily: 'var(--font-oswald), sans-serif',
-                    fontSize: 'clamp(3.2rem, 8vw, 6.2rem)',
-                    letterSpacing: '-0.005em',
-                  }}
+        {/* ── Offer rail ──
+            Edge to edge under the poster: the numbers are the argument for the
+            CTA above them, so they get the full width rather than a column. */}
+        <div className="w-full border-t border-kawai-pearl/25 bg-[rgba(18,16,13,0.55)] backdrop-blur-[2px]">
+          <ul className={`${BTS_CONTAINER} grid grid-cols-1 sm:grid-cols-3`}>
+            {OFFERS.map(({ value, label, detail }, i) => (
+              <li
+                key={label}
+                className="bts-in flex items-baseline gap-4 py-4 sm:py-7 sm:px-6 sm:first:pl-0 sm:last:pr-0 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 border-kawai-pearl/15"
+                style={{ animationDelay: `${T.rail + i * 0.09}s` }}
+              >
+                <span
+                  className="bts-num text-kawai-red-400 leading-none flex-shrink-0"
+                  style={{ fontSize: 'clamp(1.7rem, 3.4vw, 2.9rem)' }}
                 >
-                  <span className="bts-line" style={{ animationDelay: T.line1 }}>
-                    Back to
+                  {value}
+                </span>
+                <span className="min-w-0">
+                  <span className="block bts-eyebrow text-kawai-pearl">{label}</span>
+                  <span className="block text-kawai-pearl/60 text-sm mt-1 leading-snug">
+                    {detail}
                   </span>
-                  <span className="bts-line" style={{ animationDelay: T.line2 }}>
-                    School
-                  </span>
-                  <span
-                    className="bts-track block text-kawai-red-400 mt-4"
-                    style={{
-                      fontSize: 'clamp(0.95rem, 1.5vw, 1.15rem)',
-                      animationDelay: T.eventLine,
-                    }}
-                  >
-                    Piano Sale Event
-                  </span>
-                </h1>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-                {/* The invitation, not the transaction — the offer ledger below and
-                    the closing sentence carry the sale's terms and its standing. */}
-                <p
-                  className="bts-fade text-kawai-pearl/85 italic mt-6 max-w-md leading-snug"
-                  style={{
-                    fontFamily: 'var(--font-brand-serif)',
-                    fontSize: 'clamp(1.25rem, 2.2vw, 1.6rem)',
-                    animationDelay: T.subhead,
-                  }}
-                >
-                  Come sit down at one. We&apos;ll have them tuned and uncovered for you.
-                </p>
-
-                {/* Booking sits directly under the title — the offers below are the
-                    argument for it, not the gate in front of it. */}
-                <div className="bts-fade mt-9" style={{ animationDelay: T.cta }}>
-                  <HeroCtas
-                    storeslug={storeslug}
-                    locationName={locationName ?? null}
-                    hours={hours ?? null}
-                    tone="dark"
-                  />
-                </div>
-
-                {/* Offers — ruled rows rather than cards, so they sit on the paper.
-                    They back the CTA above: the numbers are the argument. */}
-                {/* The value stays readable text rather than aria-hidden decoration, so
-                    a screen reader gets "0% — Financing — 36 months, no interest" in
-                    one pass instead of the value twice. */}
-                <ul className="mt-10 border-t border-kawai-pearl/20 max-w-lg">
-                  {OFFERS.map(({ value, label, detail }, i) => (
-                    <li
-                      key={label}
-                      className="bts-fade flex items-baseline gap-4 sm:gap-6 py-3.5 border-b border-kawai-pearl/20"
-                      style={{ animationDelay: `${T.offers + i * 0.08}s` }}
-                    >
-                      <span
-                        className="text-kawai-red-400 flex-shrink-0 w-[4.5rem] sm:w-[5.5rem] leading-none"
-                        style={{
-                          fontFamily: 'var(--font-oswald), sans-serif',
-                          fontSize: 'clamp(1.35rem, 2.4vw, 1.75rem)',
-                          letterSpacing: '0.01em',
-                        }}
-                      >
-                        {value}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-kawai-pearl text-[0.7rem] tracking-[0.18em] uppercase font-semibold">
-                          {label}
-                        </span>
-                        <span className="block text-kawai-pearl/70 text-sm mt-0.5">{detail}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <p
-                  className="bts-fade text-kawai-pearl/80 text-base leading-relaxed mt-6 max-w-lg"
-                  style={{ animationDelay: T.terms }}
-                >
-                  Every Kawai in the September rebate program comes down at the counter — up to
-                  $4,500 off — and pairs with 0% financing for 36 months. Trade in the piano you
-                  have and we&apos;ll beat any independent appraisal by $500.
-                  {locationName ? (
-                    <> All of it, in person at the official Kawai {locationName} showroom.</>
-                  ) : (
-                    <> All of it, in person at the official Kawai showroom.</>
-                  )}
-                </p>
-
-              </div>
-            </div>
+        {/* The ask sits under the numbers, not above them: the rail is the
+            argument, so it gets read first and the buttons close it. */}
+        <div className={`${BTS_CONTAINER} w-full pt-8 pb-10 md:pb-14`}>
+          <div className="bts-in" style={{ animationDelay: T.cta }}>
+            <HeroCtas
+              storeslug={storeslug}
+              locationName={locationName ?? null}
+              hours={hours ?? null}
+              tone="dark"
+            />
           </div>
         </div>
-      </section>
-    </>
+      </HeroParallax>
+    </section>
   )
 }
