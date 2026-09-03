@@ -89,23 +89,26 @@ export function BackToSchoolPromo({ storeslug, locationName, hours }: BackToScho
       {/* Offer rail — the same edge-to-edge treatment the campaign hero uses. */}
       <div className="relative w-full border-t border-kawai-pearl/25">
         <ul className={`${BTS_CONTAINER} grid grid-cols-1 sm:grid-cols-3`}>
-          {OFFERS.map(({ value, label, detail }, i) => (
+          {OFFERS.map(({ prefix, value, label, detail }, i) => (
             <Reveal
               as="li"
               key={label}
               delay={i * 0.08}
-              className="flex items-baseline gap-4 py-4 sm:py-7 sm:px-6 sm:first:pl-0 sm:last:pr-0 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 border-kawai-pearl/15"
+              className="flex flex-col py-5 sm:py-8 sm:px-6 sm:first:pl-0 sm:last:pr-0 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 border-kawai-pearl/15"
             >
+              {/* Reserved whether or not this cell has a qualifier — see the
+                  hero rail, which this mirrors. */}
+              <span className="bts-eyebrow block text-kawai-pearl/45 min-h-[1.05rem]">
+                {prefix ?? ''}
+              </span>
               <span
-                className="bts-num text-kawai-red-400 leading-none flex-shrink-0"
-                style={{ fontSize: 'clamp(1.7rem, 3.4vw, 2.9rem)' }}
+                className="bts-num block text-kawai-red-400 leading-none mt-1"
+                style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.9rem)' }}
               >
                 {value}
               </span>
-              <span className="min-w-0">
-                <span className="block bts-eyebrow text-kawai-pearl">{label}</span>
-                <span className="block text-kawai-pearl/60 text-sm mt-1 leading-snug">{detail}</span>
-              </span>
+              <span className="block bts-eyebrow text-kawai-pearl mt-3.5">{label}</span>
+              <span className="block text-kawai-pearl/60 text-sm mt-1.5 leading-snug">{detail}</span>
             </Reveal>
           ))}
         </ul>

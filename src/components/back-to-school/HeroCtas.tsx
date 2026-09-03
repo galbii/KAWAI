@@ -14,7 +14,7 @@ interface HeroCtasProps {
 
 /**
  * The hero's CTA pair. Booking is the primary action and opens the campaign
- * booking modal in place; "Learn more" is a matched secondary that drops the
+ * booking modal in place; "See Rebates" is a matched secondary that drops the
  * visitor into the rebate ledger.
  *
  * Both are the same size and shape — a text link beside a filled button reads
@@ -45,7 +45,7 @@ export function HeroCtas({ storeslug, locationName, hours, tone = 'light' }: Her
           href="#rebates"
           className={`inline-flex items-center justify-center px-9 py-5 border text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${secondary}`}
         >
-          Learn more
+          See Rebates
         </a>
       </div>
 

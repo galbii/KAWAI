@@ -26,24 +26,39 @@ export const DEADLINE_SHORT = 'Sept 30'
 export const WINDOW_START_DAY = 7
 export const WINDOW_END_DAY = 30
 
+/** One cell of the offer rail the hero and the storefront promo both carry. */
+export interface CampaignOffer {
+  /**
+   * The figure. Always a numeral — the rail sets these at display scale in
+   * tabular figures, and a word among them ("Instant") reads as a mistake and
+   * throws the three cells out of alignment.
+   */
+  value: string
+  label: string
+  detail: string
+  /** Qualifier set above the figure, e.g. "Up to". Keeps the claim accurate. */
+  prefix?: string
+}
+
 /** The three offers, stated the same way everywhere they appear. */
-export const OFFERS = [
+export const OFFERS: readonly CampaignOffer[] = [
   {
     value: '0%',
     label: 'Financing',
     detail: '36 months, no interest',
   },
   {
-    value: 'Instant',
-    label: 'Rebates',
-    detail: 'Up to $4,500 off, taken at the counter',
+    prefix: 'Up to',
+    value: '$4,500',
+    label: 'Instant Rebates',
+    detail: 'Taken off at the counter',
   },
   {
     value: '+$500',
     label: 'Trade-In Bonus',
     detail: 'Over any independent appraisal',
   },
-] as const
+]
 
 /** Short offer pills for closing CTAs. */
 export const OFFER_PILLS = [

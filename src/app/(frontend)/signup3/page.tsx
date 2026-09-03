@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import { getRebateShowcase } from '@/lib/payload/queries'
-import SignupScroll from './_components/SignupScroll'
+import { CampaignStyles, CampaignNoScript } from '@/components/back-to-school'
+import { SignupCampaign } from './_components/SignupCampaign'
 
 export const revalidate = 3600
 
@@ -50,5 +51,15 @@ export default async function SignupPage() {
   const rebateData = await getRebateShowcase(site)
   // Server-side only — the browser can't turn staging mode on or off.
   const testMode = process.env.SIGNUP3_TEST_MODE === 'true'
-  return <SignupScroll rebateData={rebateData} site={site} testMode={testMode} />
+
+  return (
+    <div className="bg-kawai-pearl">
+      {/* One style block for the whole campaign — the type scale, the hero's
+          entrance keyframes, and the scroll-reveal transitions. Shared with
+          /store/[storeslug]/back-to-school so the two pages cannot drift. */}
+      <CampaignStyles />
+      <CampaignNoScript />
+      <SignupCampaign rebateData={rebateData} site={site} testMode={testMode} />
+    </div>
+  )
 }

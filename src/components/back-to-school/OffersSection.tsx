@@ -14,7 +14,21 @@ import { Reveal } from './Choreography'
  * The figures are set at display scale because they are the content — a family
  * scanning the page should be able to read the whole offer off the numbers.
  */
-const OFFER_DETAIL = [
+interface OfferDetail {
+  value: string
+  /** Small qualifier above the figure, e.g. "Up to". */
+  prefix?: string
+  /**
+   * Optional: the rebate card carries a link to the ledger instead of a
+   * heading. Its figure and its "Up to" already say what it is, and the useful
+   * next move from that card is to go read the amounts, not to read a label.
+   */
+  heading?: string
+  body: string
+  cta?: { label: string; href: string }
+}
+
+const OFFER_DETAIL: OfferDetail[] = [
   {
     value: '0%',
     heading: 'Financing for 36 months',
@@ -23,15 +37,16 @@ const OFFER_DETAIL = [
   {
     value: '$4,500',
     prefix: 'Up to',
-    heading: 'Off, instantly',
     body: 'The rebate comes off the price at the counter on the day you buy — no mail-in form, no waiting on a check. Amounts vary by model; every one of them is in the ledger below.',
+    cta: { label: 'See our rebates', href: '#rebates' },
   },
   {
     value: '+$500',
     heading: 'When you trade in, trade up',
     body: 'Trade in the piano you already have and we’ll beat any written independent appraisal by $500 — applied on top of the rebate, not instead of it.',
+    cta: { label: 'How the trade-in works', href: '#trade-in' },
   },
-] as const
+]
 
 export function OffersSection() {
   return (
@@ -43,7 +58,7 @@ export function OffersSection() {
             other thing worth saying here is the deadline — so the deadline gets
             the emphasised line under it instead of a footnote on the rule. */}
         <SectionHead
-          title="Three ways to save"
+          title="Back to School Specials"
           subhead={`Ends ${DEADLINE_LONG}`}
           className="mb-12 md:mb-16"
         />
@@ -51,10 +66,10 @@ export function OffersSection() {
         <ul className="grid md:grid-cols-3 gap-y-14 md:gap-y-0">
           {OFFER_DETAIL.map((offer, i) => (
             <li
-              key={offer.heading}
+              key={offer.value}
               className={i === 0 ? 'md:pr-10 lg:pr-14' : 'md:px-10 lg:px-14 md:border-l md:border-kawai-black/12'}
             >
-              {'prefix' in offer && offer.prefix ? (
+              {offer.prefix ? (
                 <Reveal
                   as="span"
                   delay={i * 0.09}
@@ -81,15 +96,38 @@ export function OffersSection() {
                 aria-hidden
               />
 
-              <h3 className="bts-display text-kawai-black mb-4" style={{ fontSize: 'clamp(1.15rem, 2vw, 1.5rem)' }}>
-                <Reveal as="span" delay={i * 0.09 + 0.18} className="block">
-                  {offer.heading}
-                </Reveal>
-              </h3>
+              {offer.heading ? (
+                <h3 className="bts-display text-kawai-black mb-4" style={{ fontSize: 'clamp(1.15rem, 2vw, 1.5rem)' }}>
+                  <Reveal as="span" delay={i * 0.09 + 0.18} className="block">
+                    {offer.heading}
+                  </Reveal>
+                </h3>
+              ) : null}
 
               <Reveal as="p" delay={i * 0.09 + 0.24} className="text-kawai-charcoal/70 text-[0.98rem] leading-relaxed">
                 {offer.body}
               </Reveal>
+
+              {offer.cta ? (
+                <Reveal delay={i * 0.09 + 0.3} className="mt-6">
+                  <a
+                    href={offer.cta.href}
+                    className="group inline-flex items-center gap-2.5 text-kawai-red hover:text-kawai-red-600 text-sm tracking-[0.16em] uppercase font-semibold underline underline-offset-4 decoration-kawai-red/30 hover:decoration-kawai-red transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
+                  >
+                    {offer.cta.label}
+                    <svg
+                      className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                  </a>
+                </Reveal>
+              ) : null}
             </li>
           ))}
         </ul>

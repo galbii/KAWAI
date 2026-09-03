@@ -12,7 +12,6 @@ import {
   OffersSection,
   RebateSection,
   TradeInBand,
-  HowItWorksStrip,
   VisitSection,
   BookingSection,
   DeadlineDock,
@@ -109,9 +108,12 @@ async function BackToSchoolContent({ storeslug }: { storeslug: string }) {
         storeslug={storeslug}
       />
 
-      <TradeInBand phone={phone} />
-
-      <HowItWorksStrip phone={phone} />
+      <TradeInBand
+        storeslug={storeslug}
+        phone={phone}
+        locationName={locationName}
+        hours={hours}
+      />
 
       <BookingSection
         locationName={locationName}

@@ -2,54 +2,48 @@
 
 import { useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import RebateModelModal from '@/components/rebates/RebateModelModal'
-import { BookingModal } from './BookingModal'
+import { RuledGround, BTS_CONTAINER, SectionHead, Reveal } from '@/components/back-to-school'
 import { formatPrice } from '@/lib/utils'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
-import { DEADLINE_LONG, DATE_RANGE } from './campaign'
-import { RuledGround, BTS_CONTAINER } from './RuledGround'
-import { SectionHead } from './SectionHead'
-import { Reveal } from './Choreography'
-import type { HoursEntry } from './schedule'
+import { rebatesCopy } from './campaign'
+import { SignUpButton } from './CampaignCtas'
+import { useOfferModal } from './OfferModalContext'
 
-interface RebateSectionProps {
+interface RebateLedgerProps {
   data: RebateCategory[]
-  locationName?: string | null
-  hours?: HoursEntry[] | null
-  storeslug: string
 }
 
 type SelectedModel = { product: RebateProduct; categoryLabel: string; isShigeru: boolean }
 
 /**
  * The rebate program as a price ledger — one line per model — instead of the
- * shared RebateSchedule's full product cards. Eighteen photo cards with two
- * buttons each ran ~5,600px on desktop and ~10,000px on phones; a family
+ * RebateSchedule product cards /signup2 uses. Eighteen photo cards with two
+ * buttons each ran ~5,600px on desktop and ~10,000px on phones; a visitor
  * scanning for "what does the CA401 cost now" needs a table, not a catalog.
  * Photography lives in the detail modal, one tap away on every row.
  *
+ * This is the Back to School ledger without the storefront: the closing CTA
+ * opens the national dealer sign-up popup rather than a store's booking
+ * calendar, and the footnote carries the Summer Savings terms. The section
+ * furniture (ruled ground, SectionHead, row reveals) is the shared campaign
+ * vocabulary, so the two pages read as one type system.
+ *
  * Each row shows a single savings figure (MSRP − final price) so the math
- * reconciles with the two prices beside it; the rebate breakdown is in the
- * modal and the footnote.
- *
- * Rows reveal in a short stagger as the ledger arrives, and re-stagger when the
- * category changes — the filter reads as the table being re-set rather than
- * swapped.
- *
- * Search and the category tabs are one fused sticky control. A visitor who
- * already knows the model they want ("CA401") should not have to guess which
- * category it files under, and a ledger this long is exactly where a name
- * search beats scrolling — so the field sits above the tabs and narrows
- * whatever the tabs have already selected. The tab counts restate themselves
- * against the query, which is how the visitor learns where the matches are.
+ * reconciles with the two prices beside it; the breakdown is in the modal.
  */
-export function RebateSection({ data, locationName, hours, storeslug }: RebateSectionProps) {
+export function RebateLedger({ data }: RebateLedgerProps) {
   const [selected, setSelected] = useState<SelectedModel | null>(null)
-  const [bookingOpen, setBookingOpen] = useState(false)
   const [activeSlug, setActiveSlug] = useState<string>('all')
-  const [query, setQuery] = useState('')
   const filterBarRef = useRef<HTMLDivElement>(null)
+  const offer = useOfferModal()
+
+  // Sign-up from inside a model card: close the card first so the two dialogs
+  // never stack, then open the offer popup.
+  function signUpFromModel() {
+    setSelected(null)
+    offer.open()
+  }
 
   // Switching to a shorter category while deep in the table would strand the
   // visitor below it — snap back to the top of the ledger whenever the bar is
@@ -62,53 +56,15 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
     }
   }
 
-  // What a visitor types here is a model — "CA401", "GX", "K-300" — or, less
-  // often, a word from the full product name ("grand", "hybrid").
-  //
-  // Short queries search the model label only. Two letters against the full
-  // name is almost all noise: "es" appears inside "Series" and "Digital Piano",
-  // so it would return the whole ledger rather than the ES line. From three
-  // characters on, a query is specific enough that matching the name is worth
-  // more than it costs.
-  const trimmedQuery = query.trim().toLowerCase()
-
-  function matchesQuery(product: RebateProduct, q: string): boolean {
-    if (!q) return true
-    const haystack =
-      q.length < 3
-        ? `${product.label} ${product.model}`
-        : `${product.label} ${product.model} ${product.name} ${product.note ?? ''}`
-    return haystack.toLowerCase().includes(q)
-  }
-
-  // Category filter + search + cheapest-first sort. 'all' keeps every group
-  // visible so the ledger still reads as the full program at a glance; a group
-  // the search empties out drops away rather than leaving a bare header.
+  // Category filter + cheapest-first sort. 'all' keeps every group visible so
+  // the ledger still reads as the full program at a glance.
   const visibleData = useMemo(() => {
     const filtered = activeSlug === 'all' ? data : data.filter((c) => c.slug === activeSlug)
-    return filtered
-      .map((category) => ({
-        ...category,
-        products: category.products
-          .filter((product) => matchesQuery(product, trimmedQuery))
-          .sort((a, b) => a.yourPrice - b.yourPrice),
-      }))
-      .filter((category) => category.products.length > 0)
-  }, [data, activeSlug, trimmedQuery])
-
-  // Tab counts are counted against the query, not the whole program — a tab
-  // reading 0 while searching is the answer to "is it in there?", so it stays
-  // clickable and simply dims.
-  const counts = useMemo(() => {
-    const byCategory: Record<string, number> = {}
-    let total = 0
-    for (const category of data) {
-      const n = category.products.filter((product) => matchesQuery(product, trimmedQuery)).length
-      byCategory[category.slug] = n
-      total += n
-    }
-    return { byCategory, total }
-  }, [data, trimmedQuery])
+    return filtered.map((category) => ({
+      ...category,
+      products: [...category.products].sort((a, b) => a.yourPrice - b.yourPrice),
+    }))
+  }, [data, activeSlug])
 
   const visibleCount = useMemo(
     () => visibleData.reduce((n, category) => n + category.products.length, 0),
@@ -116,11 +72,6 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
   )
 
   if (data.length === 0) return null
-
-  function openBooking() {
-    setSelected(null)
-    setBookingOpen(true)
-  }
 
   return (
     <>
@@ -132,79 +83,28 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
 
         <div className={`relative ${BTS_CONTAINER} py-16 md:py-24`}>
           <SectionHead
-            eyebrow="Instant Rebates"
-            title="Our Rebates"
-            subhead="Up to $4,500 across new digital, upright, and grand pianos"
-            meta={`${visibleCount} ${visibleCount === 1 ? 'model' : 'models'} · Ends ${DEADLINE_LONG}`}
+            eyebrow={rebatesCopy.eyebrow}
+            title={rebatesCopy.headline}
+            subhead={rebatesCopy.subhead}
+            aside={rebatesCopy.aside}
+            meta={`${visibleCount} ${visibleCount === 1 ? 'model' : 'models'}`}
             className="mb-10"
           />
 
           {/* Segmented category bar, fused to the top of the ledger. Sticky at
               70px — the site header is fixed at 71px tall, so the bar tucks in
               just under it and stays reachable while scrolling the table. It
-              must live OUTSIDE the ledger's overflow-hidden card or sticky
-              would be inert. */}
+              must live OUTSIDE the ledger's card or sticky would be inert. */}
           <div
             ref={filterBarRef}
-            className="sticky top-[70px] z-20 bg-kawai-black shadow-[0_12px_28px_rgba(30,27,22,0.22)]"
+            role="group"
+            aria-label="Filter models by category"
+            className="sticky top-[70px] z-20 grid bg-kawai-black shadow-[0_12px_28px_rgba(30,27,22,0.22)]"
+            style={{ gridTemplateColumns: `repeat(${data.length + 1}, minmax(0, 1fr))` }}
           >
-            {/* Search. The magnifier and the field share a row with the clear
-                control so the whole thing reads as one instrument, in the same
-                condensed caps the tabs under it are set in. */}
-            <div className="flex items-center gap-3.5 px-5 sm:px-8 border-b border-kawai-pearl/15">
-              <MagnifyingGlassIcon
-                className="w-[1.05rem] h-[1.05rem] text-kawai-pearl/40 flex-shrink-0"
-                aria-hidden
-              />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search a model — CA401, K-300, GX-2…"
-                aria-label="Search rebate models by name"
-                autoComplete="off"
-                className="flex-1 min-w-0 bg-transparent py-3.5 sm:py-4 text-kawai-pearl placeholder:text-kawai-pearl/35 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
-                style={{
-                  fontFamily: 'var(--font-oswald), sans-serif',
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.05em',
-                }}
-              />
-              {query ? (
-                <button
-                  type="button"
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                  className="flex items-center gap-1.5 flex-shrink-0 py-1.5 text-kawai-pearl/50 hover:text-kawai-pearl transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red-400"
-                >
-                  <span
-                    className="hidden sm:inline uppercase"
-                    style={{
-                      fontFamily: 'var(--font-oswald), sans-serif',
-                      fontSize: '0.7rem',
-                      letterSpacing: '0.18em',
-                    }}
-                  >
-                    Clear
-                  </span>
-                  <XMarkIcon className="w-4 h-4" aria-hidden />
-                </button>
-              ) : null}
-            </div>
-
-            <div
-              role="group"
-              aria-label="Filter models by category"
-              className="grid"
-              style={{ gridTemplateColumns: `repeat(${data.length + 1}, minmax(0, 1fr))` }}
-            >
             {[
-              { slug: 'all', label: 'All', count: counts.total },
-              ...data.map((c) => ({
-                slug: c.slug,
-                label: c.label,
-                count: counts.byCategory[c.slug] ?? 0,
-              })),
+              { slug: 'all', label: 'All', count: data.reduce((n, c) => n + c.products.length, 0) },
+              ...data.map((c) => ({ slug: c.slug, label: c.label, count: c.products.length })),
             ].map((tab) => {
               const active = activeSlug === tab.slug
               return (
@@ -217,7 +117,7 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                     active
                       ? 'text-kawai-pearl'
                       : 'text-kawai-pearl/50 hover:text-kawai-pearl hover:bg-white/5'
-                  } ${tab.count === 0 ? 'opacity-40' : ''}`}
+                  }`}
                   style={{
                     fontFamily: 'var(--font-oswald), sans-serif',
                     fontSize: '0.78rem',
@@ -240,44 +140,15 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                 </button>
               )
             })}
-            </div>
           </div>
 
-          {/* The count is the search's only feedback for a screen reader — the
-              ledger itself just silently gets shorter. */}
-          <p aria-live="polite" className="sr-only">
-            {visibleCount} {visibleCount === 1 ? 'model' : 'models'} shown
-          </p>
-
           <div className="bg-white border border-kawai-black/12 border-t-0 shadow-[0_18px_50px_rgba(30,27,22,0.08)]">
-            {visibleData.length === 0 ? (
-              <div className="px-6 py-20 text-center">
-                <p
-                  className="bts-display text-kawai-black mb-3"
-                  style={{ fontSize: 'clamp(1.3rem, 2.4vw, 1.8rem)' }}
-                >
-                  No models match “{query.trim()}”
-                </p>
-                <p className="text-kawai-charcoal/60 text-sm mb-7 max-w-md mx-auto leading-relaxed">
-                  Every Kawai in the September program is in this ledger — try the model number on
-                  its own, or clear the search to see all of them.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('')
-                    setActiveSlug('all')
-                  }}
-                  className="inline-flex items-center justify-center px-7 py-4 border border-kawai-black/30 text-kawai-black hover:bg-kawai-black hover:text-kawai-pearl text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
-                >
-                  Clear search
-                </button>
-              </div>
-            ) : null}
-
             {visibleData.map((category) => (
               <div key={category.slug}>
-                <h3 className="flex items-baseline justify-between gap-4 px-5 sm:px-8 py-3.5 bg-kawai-pearl border-y border-kawai-black/10">
+                {/* The category name labels a group of rows, not a document
+                    section — a heading per group would flood screen-reader
+                    heading navigation (see the Accessibility notes). */}
+                <div className="flex items-baseline justify-between gap-4 px-5 sm:px-8 py-3.5 bg-kawai-pearl border-y border-kawai-black/10">
                   <span
                     className="text-kawai-black uppercase"
                     style={{
@@ -289,9 +160,10 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                     {category.label}
                   </span>
                   <span className="text-kawai-charcoal/45 text-xs tracking-[0.14em] uppercase">
-                    {category.products.length} {category.products.length === 1 ? 'model' : 'models'}
+                    {category.products.length}{' '}
+                    {category.products.length === 1 ? 'model' : 'models'}
                   </span>
-                </h3>
+                </div>
 
                 <ul>
                   {category.products.map((product, i) => {
@@ -390,7 +262,11 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
                             strokeWidth={2}
                             aria-hidden
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                            />
                           </svg>
                         </button>
                       </Reveal>
@@ -402,24 +278,11 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 mt-10">
-            <button
-              onClick={openBooking}
-              className="group inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
-            >
-              Book an appointment
-              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
-            </button>
+            <div className="flex-shrink-0">
+              <SignUpButton />
+            </div>
             <p className="text-kawai-charcoal/50 text-xs leading-relaxed max-w-2xl">
-              Savings shown are off MSRP and include the additional rebate, taken off the price at
-              the counter on qualifying new Kawai pianos
-              {locationName
-                ? ` at ${locationName.includes('Kawai') ? locationName : `Kawai ${locationName}`}`
-                : ''}
-              . Rebate amounts vary by model. Back to School program runs {DATE_RANGE}; rebates end{' '}
-              {DEADLINE_LONG}. 0% financing for 36 months is subject to credit approval. Trade-in
-              bonus requires a written independent appraisal.
+              {rebatesCopy.disclaimer}
             </p>
           </div>
         </div>
@@ -431,16 +294,8 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
         categoryLabel={selected?.categoryLabel ?? ''}
         isShigeru={selected?.isShigeru ?? false}
         variant="campaign"
-        onSignUp={openBooking}
+        onSignUp={signUpFromModel}
         onClose={() => setSelected(null)}
-      />
-
-      <BookingModal
-        open={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-        locationName={locationName}
-        hours={hours}
-        storeslug={storeslug}
       />
     </>
   )

@@ -1,7 +1,6 @@
 'use client'
 
-import { BrandEyebrow } from './brand-ui'
-import { offerCopy, hubspotSignupForm } from './scenes'
+import { offerCopy, hubspotSignupForm } from './campaign'
 import { useOfferModal } from './OfferModalContext'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
@@ -40,11 +39,22 @@ export function OfferSignupForm() {
         </p>
       )}
 
-      <BrandEyebrow className="text-kawai-red/80">{offerCopy.eyebrow}</BrandEyebrow>
-      <h2 className="mt-4 font-[family-name:var(--font-brand-serif)] text-[clamp(1.5rem,3vw,2rem)] font-light leading-[1.1] tracking-tight text-kawai-black">
+      {/* Set in the campaign's type system, not the site's: the popup opens out
+          of a page of poster type, and a serif card would read as furniture
+          borrowed from somewhere else. */}
+      <div className="mb-4 flex items-center gap-3">
+        <span aria-hidden className="h-px w-8 flex-shrink-0 bg-kawai-red" />
+        <span className="bts-eyebrow text-kawai-red">{offerCopy.eyebrow}</span>
+      </div>
+      <h2
+        className="bts-display text-kawai-black"
+        style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.2rem)' }}
+      >
         {offerCopy.headline}
       </h2>
-      <p className="mt-3 mb-6 text-sm leading-relaxed text-kawai-charcoal">{offerCopy.body}</p>
+      <p className="bts-serif mt-4 mb-6 leading-snug text-kawai-charcoal/75 text-[1.05rem]">
+        {offerCopy.body}
+      </p>
 
       <TwoStepHubSpotForm
         form={hubspotSignupForm}

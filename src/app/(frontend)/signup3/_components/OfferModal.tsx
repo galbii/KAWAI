@@ -4,7 +4,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { OfferSignupForm } from './OfferSignupForm'
-import { offerCopy } from './scenes'
+import { offerCopy } from './campaign'
 import { EASE_OUT_EXPO } from './motion'
 
 /**
@@ -13,8 +13,11 @@ import { EASE_OUT_EXPO } from './motion'
  *
  * Built on Radix Dialog primitives (focus trap, Escape, click-outside, aria) but
  * animated with framer-motion for a snappier feel than the CSS-keyframe shared
- * Modal: a blurred backdrop fades in while the rounded panel springs up. Reduced
- * motion collapses to a plain fade.
+ * Modal: a blurred backdrop fades in while the panel springs up. Reduced motion
+ * collapses to a plain fade.
+ *
+ * Square corners, like every other edge on this page — the rounded shell it
+ * inherited from /signup2 belongs to that page's brand-pill vocabulary.
  */
 
 type Props = {
@@ -61,7 +64,7 @@ export default function OfferModal({ isOpen, onClose }: Props) {
                   animate={panel.animate}
                   exit={panel.exit}
                   transition={panel.transition}
-                  className="pointer-events-auto relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-kawai-pearl p-6 text-kawai-black shadow-[0_30px_80px_-12px_rgba(0,0,0,0.55)] ring-1 ring-black/5 sm:p-8"
+                  className="pointer-events-auto relative max-h-[90vh] w-full max-w-md overflow-y-auto bg-kawai-pearl p-6 text-kawai-black shadow-[0_30px_80px_-12px_rgba(0,0,0,0.55)] ring-1 ring-black/5 sm:p-8"
                 >
                   {/* Visually-hidden labels satisfy the dialog's a11y contract; the
                       visible heading/body live inside OfferSignupForm. */}
@@ -69,7 +72,7 @@ export default function OfferModal({ isOpen, onClose }: Props) {
                   <DialogPrimitive.Description className="sr-only">{offerCopy.body}</DialogPrimitive.Description>
 
                   <DialogPrimitive.Close
-                    className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-kawai-charcoal/70 transition-colors hover:bg-kawai-black/5 hover:text-kawai-black focus:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
+                    className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center text-kawai-charcoal/70 transition-colors hover:bg-kawai-black/5 hover:text-kawai-black focus:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red"
                   >
                     <XMarkIcon className="h-5 w-5" />
                     <span className="sr-only">Close</span>

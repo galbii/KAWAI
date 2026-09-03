@@ -23,6 +23,29 @@ const VIDEO_SRC =
 
 const POSTER_SRC = '/images/kawai-piano.jpeg'
 
+/** The Back to School footage is a dark stage, so it takes a lift. */
+const DEFAULT_FILTER = 'brightness(1.35) contrast(1.04) saturate(1.05)'
+
+interface HeroVideoBackgroundProps {
+  /** Override the campaign clip. Defaults to the Back to School footage. */
+  src?: string
+  /** First frame held until the clip plays (and the whole background under
+      reduced motion). Must be as dark as the footage or the scrims under-scrim it. */
+  poster?: string
+  /**
+   * Colour treatment on the footage. The default lifts a dark stage; a clip
+   * that is already bright wants no lift, or a negative one — a brightened
+   * frame under a fixed scrim is exactly how poster copy loses its contrast.
+   */
+  filter?: string
+  /**
+   * Flat black laid over the whole frame under the gradients. 0.32 suits dark
+   * footage; a bright clip needs more before the middle band (which carries the
+   * display figure) clears 4.5:1.
+   */
+  baseScrim?: number
+}
+
 /** Under the poster copy. */
 const BOTTOM_SCRIM =
   'linear-gradient(to top, rgba(18,16,13,0.95) 0%, rgba(18,16,13,0.91) 32%, rgba(18,16,13,0.72) 52%, rgba(18,16,13,0.28) 74%, rgba(18,16,13,0) 100%)'
@@ -30,7 +53,12 @@ const BOTTOM_SCRIM =
 const TOP_SCRIM =
   'linear-gradient(to bottom, rgba(18,16,13,0.82) 0%, rgba(18,16,13,0.38) 15%, rgba(18,16,13,0) 30%)'
 
-export function HeroVideoBackground() {
+export function HeroVideoBackground({
+  src = VIDEO_SRC,
+  poster = POSTER_SRC,
+  filter = DEFAULT_FILTER,
+  baseScrim = 0.32,
+}: HeroVideoBackgroundProps = {}) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -77,13 +105,9 @@ export function HeroVideoBackground() {
           // The footage is a dark stage; under the scrim it reads as black. The
           // lift is cosmetic only — the contrast budget above already assumes a
           // pure-white frame, so brightening can't undercut it.
-          style={
-            reduceMotion
-              ? { filter: 'brightness(1.35) contrast(1.04) saturate(1.05)' }
-              : { filter: 'brightness(1.35) contrast(1.04) saturate(1.05)', scale, y }
-          }
-          src={VIDEO_SRC}
-          poster={POSTER_SRC}
+          style={reduceMotion ? { filter } : { filter, scale, y }}
+          src={src}
+          poster={poster}
           muted
           loop
           playsInline
@@ -92,7 +116,7 @@ export function HeroVideoBackground() {
         />
 
         {/* Base — keeps the mid-frame from washing out the outlined display line. */}
-        <div className="absolute inset-0 bg-[rgba(18,16,13,0.32)]" />
+        <div className="absolute inset-0" style={{ background: `rgba(18,16,13,${baseScrim})` }} />
         <div className="absolute inset-0" style={{ background: BOTTOM_SCRIM }} />
         <div className="absolute inset-0" style={{ background: TOP_SCRIM }} />
 

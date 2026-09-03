@@ -39,6 +39,26 @@ const VARIANT_CLASS: Record<RevealVariant, string> = {
   wipe: 'is-wipe',
 }
 
+/**
+ * Which variants hide themselves with `clip-path` rather than opacity.
+ *
+ * This matters to the observer, not the animation. A target whose own
+ * clip-path collapses it to zero area is reported by IntersectionObserver as
+ * not intersecting — however far up the viewport it scrolls — so a `line` or
+ * `wipe` reveal would wait forever on a callback that never fires and stay
+ * clipped for good. Those two observe their parent instead; it encloses the
+ * target and is never clipped, so the reveal still lands as the element
+ * arrives. (`ruleX` / `ruleY` hide with a scale transform, which the observer
+ * reads through, so they observe themselves.)
+ */
+const CLIPS_ITSELF: Record<RevealVariant, boolean> = {
+  rise: false,
+  line: true,
+  ruleX: false,
+  ruleY: false,
+  wipe: true,
+}
+
 /** Tags the reveal wrapper is allowed to render as — keeps `as` type-safe. */
 type RevealTag = 'div' | 'span' | 'p' | 'li' | 'ul' | 'ol' | 'section' | 'article' | 'h2' | 'h3'
 
@@ -86,9 +106,9 @@ export function Reveal({
       // finishing as it arrives rather than starting once it is already read.
       { rootMargin: '0px 0px -10% 0px', threshold: 0.01 },
     )
-    io.observe(el)
+    io.observe((CLIPS_ITSELF[variant] && el.parentElement) || el)
     return () => io.disconnect()
-  }, [])
+  }, [variant])
 
   return (
     <Tag

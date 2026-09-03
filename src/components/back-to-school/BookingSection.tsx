@@ -32,7 +32,12 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
 
   return (
     <>
-      <section id="book" className="relative bg-kawai-black overflow-hidden scroll-mt-24">
+      {/* The trade-in band above is now dark too, so the close needs a seam —
+          without it the two sections read as one very long black run. */}
+      <section
+        id="book"
+        className="relative bg-kawai-black border-t border-kawai-pearl/12 overflow-hidden scroll-mt-24"
+      >
         <RuledGround tone="dark" marginRule={false} />
 
         <div className={`relative ${BTS_CONTAINER} py-20 md:py-32 text-center`}>
