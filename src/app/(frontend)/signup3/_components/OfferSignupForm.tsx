@@ -17,11 +17,11 @@ const SHOPIFY_LEAD_TAGS = ['signup3', 'summer-savings']
  *
  * How /signup3 differs from /signup:
  *
- *   - On success the submission is handed up to OfferModalProvider, which opens
- *     the dealer picker and defers the RSM notification until the visitor
- *     answers so it can carry their choice. The provider owns that, not this
- *     component — this one is unmounted when the offer modal closes, so it must
- *     not own anything the lead depends on.
+ *   - On success the submission is handed up to OfferModalProvider, which owns
+ *     lead routing rather than this component — this one is unmounted when the
+ *     offer modal closes, so it must not own anything the lead depends on. The
+ *     provider routes on the ZIP alone today, or (with its dealer picker
+ *     re-enabled) defers until the visitor names the dealer they want.
  *   - In test mode (SIGNUP3_TEST_MODE) nothing is written to HubSpot or
  *     Shopify, so the full flow can be exercised without junk in the CRM. Lead
  *     routing still runs, held or redirected by the LEAD_NOTIFY_* switches.

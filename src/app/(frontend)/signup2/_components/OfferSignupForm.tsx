@@ -20,11 +20,11 @@ const SHOPIFY_LEAD_TAGS = ['signup2', 'summer-savings']
  * into Shopify via `onComplete` — fire-and-forget so a Shopify hiccup can never
  * block or fail the HubSpot submission the visitor is waiting on.
  *
- * Lead routing is deliberately NOT fired here. Unlike /signup, this page asks
- * the visitor which dealer they want, so the RSM notification is deferred until
- * they answer and then carries their choice. The submission is handed up to
- * OfferModalProvider, which owns the picker — this component is unmounted when
- * the offer modal closes, so it must not own anything the lead depends on.
+ * Lead routing is deliberately NOT fired here — the submission is handed up to
+ * OfferModalProvider instead. This component is unmounted when the offer modal
+ * closes, so it must not own anything the lead depends on. The provider decides
+ * how to route: today straight to the RSM on the ZIP alone, or (with its dealer
+ * picker re-enabled) deferred until the visitor names the dealer they want.
  */
 export function OfferSignupForm() {
   const { captureLead, confirmLead } = useOfferModal()
