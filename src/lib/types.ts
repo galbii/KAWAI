@@ -224,6 +224,12 @@ declare global {
     dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
     fbq?: (...args: unknown[]) => void
+    // HubSpot tracking code queues. _hsq takes analytics commands
+    // (setPath/trackPageView/identify); _hsp takes consent commands
+    // (setHubSpotConsent/revokeCookieConsent). Both are plain arrays until the
+    // loader replaces them with a real queue, so pushing before load is safe.
+    _hsq?: unknown[][]
+    _hsp?: unknown[][]
   }
 }
 

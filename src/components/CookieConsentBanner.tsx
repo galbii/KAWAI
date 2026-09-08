@@ -22,6 +22,17 @@ function applyAnalyticsConsent(accepted: boolean) {
   } else {
     posthog.opt_out_capturing()
   }
+
+  // HubSpot drops hubspotutk/__hstc/__hssc, so it rides the analytics category.
+  // _hsp is queued and replayed by the loader, so pushing before (or without) it
+  // is safe. revokeCookieConsent clears the cookies and halts further tracking.
+  const _hsp = (window._hsp = window._hsp ?? [])
+  if (accepted) {
+    initHubSpot()
+    _hsp.push(['setHubSpotConsent', { analytics: true, functionality: true }])
+  } else {
+    _hsp.push(['revokeCookieConsent'])
+  }
 }
 
 function applyMarketingConsent(accepted: boolean) {
@@ -38,6 +49,28 @@ function applyMarketingConsent(accepted: boolean) {
     // stops it sending further events without unloading the script.
     window.fbq('consent', 'revoke')
   }
+}
+
+/**
+ * HubSpot tracking code. `js.hs-scripts.com/{portal}.js` is only a loader — it
+ * injects hs-analytics, hscollectedforms and hs-banner, which is why all four
+ * hosts are allowlisted in `src/lib/csp.ts`.
+ *
+ * This sets the `hubspotutk` cookie that `src/lib/hubspot/forms.ts` reads when
+ * submitting to the Forms API — without it, native form leads land in the CRM
+ * with no original-source attribution.
+ */
+function initHubSpot() {
+  const portalId = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID
+  if (!portalId || typeof document === 'undefined') return
+  if (document.getElementById('hs-script-loader')) return
+
+  const script = document.createElement('script')
+  script.id = 'hs-script-loader'
+  script.async = true
+  script.defer = true
+  script.src = `https://js.hs-scripts.com/${portalId}.js`
+  document.head.appendChild(script)
 }
 
 function initMetaPixel() {
@@ -77,11 +110,15 @@ function initMetaPixel() {
 export function CookieConsentBanner() {
   useEffect(() => {
     // Opt-out model outside the EEA/UK/CH: analytics + marketing default ON, and
-    // the Meta Pixel loads immediately rather than waiting for a banner click.
-    // Restricted regions keep the opt-in model (categories off, pixel gated).
+    // the Meta Pixel + HubSpot tracking code load immediately rather than waiting
+    // for a banner click. Restricted regions keep the opt-in model (categories
+    // off, both tags gated until onConsent fires with the category accepted).
     const restricted = isConsentRestricted()
 
-    if (!restricted) initMetaPixel()
+    if (!restricted) {
+      initMetaPixel()
+      initHubSpot()
+    }
 
     CookieConsent.run({
       guiOptions: {
@@ -109,6 +146,8 @@ export function CookieConsentBanner() {
               { name: /^ph_/ },
               { name: /^_ga/ },
               { name: '_gid' },
+              { name: 'hubspotutk' },
+              { name: /^__hs/ },
             ],
           },
         },
@@ -161,7 +200,7 @@ export function CookieConsentBanner() {
                 {
                   title: 'Analytics',
                   description:
-                    'Help us understand how visitors use our site (Google Analytics, PostHog) so we can improve it.',
+                    'Help us understand how visitors use our site (Google Analytics, PostHog, HubSpot) so we can improve it.',
                   linkedCategory: 'analytics',
                 },
                 {

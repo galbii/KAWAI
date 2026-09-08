@@ -53,8 +53,18 @@ export function buildCspHeader(_isDev: boolean): string {
       // HubSpot — js.hsforms.net loads the embed, static.hsappstatic.net serves the JS bundle
       'https://js.hsforms.net',
       'https://static.hsappstatic.net',
-      'https://js.hs-scripts.com',
       'https://js.hubspot.com',
+      // HubSpot tracking code: js.hs-scripts.com is only a loader shim — it
+      // injects the three scripts below at runtime. Allowlisting just the
+      // loader makes the tag look installed while it silently collects nothing.
+      'https://js.hs-scripts.com',
+      'https://js.hs-analytics.net',      // analytics core (the __ptq beacon)
+      'https://js.hscollectedforms.net',  // collected forms
+      'https://js.hs-banner.com',         // consent state / the _hsp API
+      // Loaded only when the matching HubSpot feature is switched on in the
+      // portal; harmless to allow, and avoids a silent break if one is enabled.
+      'https://js.usemessages.com',       // HubSpot chat
+      'https://js.hsadspixel.net',        // HubSpot ads pixel
 
       // Shopify
       'https://cdn.shopify.com',
@@ -189,7 +199,11 @@ export function buildCspHeader(_isDev: boolean): string {
       // HubSpot form submissions + tracking
       'https://api.hsforms.com',
       'https://forms.hsforms.com',
-      'https://track.hubspot.com',
+      'https://track.hubspot.com',        // tracking-code pageview/event beacon
+      'https://forms.hubspot.com',        // collected-forms submissions
+      'https://api.hubspot.com',
+      'https://api.hubapi.com',
+      'https://perf-ct.hubspot.com',      // tracking-code performance beacon
 
       // Shopify storefront/cart API + analytics beacon
       'https://*.myshopify.com',
@@ -226,6 +240,7 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://js.hsforms.net',
       'https://forms.hsforms.com',
       'https://share.hsforms.com',
+      'https://app.hubspot.com',          // chat widget iframe (only if chat is enabled)
 
       // Shopify checkout
       'https://checkout.shopify.com',

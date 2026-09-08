@@ -133,6 +133,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.facebook.com" />
         <link rel="dns-prefetch" href="https://stats.g.doubleclick.net" />
         <link rel="dns-prefetch" href="https://us.posthog.com" />
+        <link rel="dns-prefetch" href="https://js.hs-scripts.com" />
       </head>
       <body className="antialiased bg-kawai-black text-kawai-pearl">
         {/* GA4 Consent Mode v2 — must run before GTM so tags use the correct defaults.
