@@ -11,6 +11,7 @@ import { useState, useEffect, createElement, useRef } from 'react'
 import { Images, ChevronLeft, ChevronRight, Truck, Shield, RotateCcw, Headphones as HeadphonesIcon } from 'lucide-react'
 import { cn, formatPrice } from '@/lib/utils'
 import { hasFreeShipping } from '@/lib/free-shipping'
+import { isDigitalProduct } from '@/lib/product-type'
 import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
@@ -372,10 +373,11 @@ export function ProductHeroBlock({
   // CONSOLIDATED: Use the new root-level model field
   const modelDisplay = (product as any).modelLabel || product.model || product.name
 
-  // Free shipping is a US-wide offer; on ca.kawaius.com only specific portable
-  // digital models ship free, so the tile is dropped for everything else.
-  // Match on `model` (the identity key), never `modelLabel` (display-only).
-  const showFreeShipping = hasFreeShipping(product.model, site)
+  // Direct-fulfillment value props (free shipping, returns) apply to digital pianos
+  // only — everything else is dealer-delivered, so Kawai neither ships nor accepts
+  // returns on it. `type` is synced from Shopify productType.
+  // (The tile flags themselves are derived below, once stock state is known.)
+  const isDigital = isDigitalProduct(product.type)
 
   const hasVariations = allVariations.length > 0
 
@@ -479,6 +481,20 @@ export function ProductHeroBlock({
 
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
+
+  // Free shipping and returns describe buying direct from Kawai, which requires a
+  // digital piano AND stock on hand. An out-of-stock variant routes to a dealer just
+  // like a grand does, so it drops both tiles too.
+  // Free shipping narrows further on ca.kawaius.com to specific portable models —
+  // match on `model` (the identity key), never `modelLabel` (display-only).
+  const shipsDirect = isDigital && !isOutOfStock
+  const showFreeShipping = shipsDirect && hasFreeShipping({ type: product.type, model: product.model }, site)
+  const showReturns = shipsDirect
+
+  // Warranty + Support always render; the other two are conditional. An odd tile count
+  // would leave the last row half-empty, so widen the final tile to span both columns.
+  const valuePropCount = 2 + (showFreeShipping ? 1 : 0) + (showReturns ? 1 : 0)
+  const widenLastValueProp = valuePropCount % 2 === 1
 
   // Active automatic Shopify discount — the synced snapshot on the product doc.
   // Shopify "Discounts" are a separate resource from price/compareAtPrice and apply
@@ -1264,7 +1280,7 @@ export function ProductHeroBlock({
                   <div className="w-full flex flex-col gap-2">
                     {isOutOfStock && (
                       <p className="text-xs text-kawai-muted text-center tracking-wide">
-                        Out of stock. Contact an Authorized Dealer.
+                        Find this product at a local authorized dealer near you.
                       </p>
                     )}
 
@@ -1316,7 +1332,7 @@ export function ProductHeroBlock({
               <div className="h-px bg-gradient-to-r from-transparent via-kawai-neutral to-transparent mb-3" />
               <div className="grid grid-cols-2 gap-1.5">
 
-                {/* Free Shipping — US always; Canada only on eligible models (see hasFreeShipping) */}
+                {/* Free Shipping — digital only; Canada narrows further to eligible models (see hasFreeShipping) */}
                 {showFreeShipping && (
                   <div className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
                     <Truck className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
@@ -1326,29 +1342,34 @@ export function ProductHeroBlock({
                   </div>
                 )}
 
-                {/* Warranty */}
-                <Link href="/warranty-registration" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                {/* Warranty — two destinations, so the tile is a div: an <a> may not nest inside an <a> */}
+                <div className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200">
                   <Shield className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Warranty</p>
-                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Register yours →</p>
+                    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1">
+                      <Link href="/warranty-registration" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">Register yours →</Link>
+                      <span aria-hidden="true" className="text-[9px] text-kawai-neutral">|</span>
+                      <Link href="/warranty" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">View coverage →</Link>
+                    </span>
                   </div>
-                </Link>
+                </div>
 
-                {/* Returns */}
-                <Link href="/return-policy" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
-                  <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
-                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">15-day policy →</p>
-                  </div>
-                </Link>
+                {/* Returns — digital only; dealer-delivered products aren't returned to Kawai */}
+                {showReturns && (
+                  <Link href="/return-policy" className="flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group">
+                    <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
+                      <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">15-day policy →</p>
+                    </div>
+                  </Link>
+                )}
 
                 {/* Support */}
                 <Link href="/technical-support-division" className={cn(
                   "flex items-start gap-2.5 p-3 rounded-xl border border-kawai-neutral/60 bg-kawai-pearl/60 hover:border-kawai-red/25 hover:bg-red-50/30 transition-all duration-200 group",
-                  // Without the shipping tile only 3 remain — widen the last so row 2 isn't half-empty
-                  !showFreeShipping && "col-span-2"
+                  widenLastValueProp && "col-span-2"
                 )}>
                   <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
@@ -1359,13 +1380,11 @@ export function ProductHeroBlock({
 
               </div>
 
-              {/* Subscription nudge + tax notice */}
-              <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center text-[10px] text-kawai-muted mt-2">
+              {/* Subscription nudge */}
+              <p className="text-center text-[10px] text-kawai-muted mt-2">
                 <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-kawai-neutral hover:decoration-kawai-red">
                   3 Month Subscription with your Product Registration
                 </Link>
-                <span aria-hidden="true" className="text-kawai-neutral">|</span>
-                <span>Purchases are subject to sales tax</span>
               </p>
             </div>
 
