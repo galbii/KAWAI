@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import ShigeruHeader from './_components/ShigeruHeader'
+import { footerLinks } from '@/lib/shigeru/nav'
 import './shigeru.css'
 
 export const metadata: Metadata = {
@@ -232,16 +233,6 @@ const faqSchema = {
   ],
 }
 
-const footerLinks = [
-  { label: 'Home', href: '/shigeru' },
-  { label: 'Concert Grands', href: '/shigeru/models' },
-  { label: 'Authorized Dealers', href: '/shigeru/dealers' },
-  { label: 'Artists', href: '/shigeru/artists' },
-  { label: 'Artisans', href: '/shigeru/artisans' },
-  { label: 'Institutions', href: '/shigeru/institutions' },
-  { label: 'Contact', href: '/shigeru/contact' },
-]
-
 export default function ShigeruLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -259,9 +250,11 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <ShigeruHeader />
-
+      {/* Inside .sk-site so shigeru.css's font-size / opacity floors apply to the
+          header too — it previously sat outside and silently opted out of them. */}
       <div className="sk-site">
+        <ShigeruHeader />
+
         <main className="flex-1">{children}</main>
 
         {/* Shigeru Kawai footer */}

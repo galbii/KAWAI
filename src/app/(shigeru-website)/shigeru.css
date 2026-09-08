@@ -156,3 +156,16 @@
 /* Gold: was often rendered at /40–/50, bump to fully legible */
 .sk-site .text-kawai-gold\/40 { color: color-mix(in srgb, var(--color-kawai-gold) 70%, transparent) !important; }
 .sk-site .text-kawai-gold\/50 { color: color-mix(in srgb, var(--color-kawai-gold) 80%, transparent) !important; }
+
+/* ─── Focus visibility ───────────────────────────────────────────────────
+   The site had no :focus-visible styling anywhere, so keyboard users fell
+   back to the UA default ring on a near-black bar. Gold reads on both the
+   dark chrome and the light content panels. (WCAG 2.4.7)
+   ─────────────────────────────────────────────────────────────────────── */
+.sk-site a:focus-visible,
+.sk-site button:focus-visible,
+.sk-site [tabindex]:focus-visible {
+  outline: 2px solid var(--color-kawai-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

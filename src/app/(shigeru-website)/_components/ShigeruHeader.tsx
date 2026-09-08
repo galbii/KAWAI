@@ -1,121 +1,119 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+  leftNav,
+  rightNav,
+  mobileNav,
+  resolveActive,
+  isDropdown,
+  type NavItem,
+} from '@/lib/shigeru/nav'
 
-type NavChild = { label: string; href: string }
-type NavItem =
-  | { label: string; href: string; children?: never }
-  | { label: string; href: null; children: NavChild[] }
-
-const leftNav: NavItem[] = [
-  { label: 'Home', href: '/shigeru' },
-  { label: 'Grand Pianos', href: '/shigeru/models' },
-  { label: 'Artists', href: '/shigeru/artists' },
-]
-
-const rightNav: NavItem[] = [
-  { label: 'Authorized Dealers', href: '/shigeru/dealers' },
-  {
-    label: 'Resources',
-    href: null,
-    children: [
-      { label: 'Artisans', href: '/shigeru/artisans' },
-      { label: 'Institutions', href: '/shigeru/institutions' },
-    ],
-  },
-  { label: 'Contact', href: '/shigeru/contact' },
-]
-
-const mobileNavItems: NavItem[] = [
-  { label: 'Home', href: '/shigeru' },
-  { label: 'Grand Pianos', href: '/shigeru/models' },
-  { label: 'Authorized Dealers', href: '/shigeru/dealers' },
-  {
-    label: 'Resources',
-    href: null,
-    children: [
-      { label: 'Artists', href: '/shigeru/artists' },
-      { label: 'Artisans', href: '/shigeru/artisans' },
-      { label: 'Institutions', href: '/shigeru/institutions' },
-    ],
-  },
-  { label: 'Contact', href: '/shigeru/contact' },
-]
+const SHIGERU_LOGO =
+  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp'
 
 const f = { fontFamily: 'var(--font-oswald)' }
 const SCROLL_THRESHOLD = 80
 const ease = [0.25, 0.46, 0.45, 0.94] as const
 
-const dropdownStyle: React.CSSProperties = {
+const panelStyle: React.CSSProperties = {
   background: 'rgba(18,16,12,0.98)',
   backdropFilter: 'blur(24px) saturate(180%)',
   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  border: '1px solid rgba(255,255,255,0.07)',
+  border: '1px solid rgba(255,255,255,0.09)',
   borderRadius: '4px',
   boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
 }
 
-const linkBase = 'text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors duration-300'
+const linkBase =
+  'relative text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors duration-300'
 
-// ── Nav side bar ────────────────────────────────────────────────────────────
+const dropdownId = (label: string) => `sk-nav-${label.toLowerCase().replace(/\s+/g, '-')}`
+
+/** Gold rule beneath the current page — active state must not be colour-only (WCAG 1.4.1). */
+function ActiveRule() {
+  return (
+    <span
+      aria-hidden
+      className="absolute -bottom-2 left-0 right-0 h-px bg-kawai-gold"
+    />
+  )
+}
+
+// ── One side of the split nav ────────────────────────────────────────────────
 
 function NavBar({
   items,
   pathname,
   openDropdown,
-  onDropdownEnter,
-  onDropdownLeave,
+  onOpen,
+  onClose,
+  onToggle,
   side,
 }: {
   items: NavItem[]
   pathname: string
   openDropdown: string | null
-  onDropdownEnter: (label: string) => void
-  onDropdownLeave: () => void
+  onOpen: (label: string) => void
+  onClose: () => void
+  onToggle: (label: string) => void
   side: 'left' | 'right'
 }) {
-  function isActive(item: NavItem): boolean {
-    if (item.href === '/shigeru') return pathname === '/shigeru'
-    if (item.href) return pathname.startsWith(item.href)
-    if (item.children) return item.children.some((c) => pathname.startsWith(c.href))
-    return false
-  }
-
   return (
     <nav
-      className={`hidden md:flex items-center ${side === 'right' ? 'justify-end' : 'justify-start'}`}
+      className={`hidden lg:flex items-center ${side === 'right' ? 'justify-end' : 'justify-start'}`}
       aria-label={side === 'left' ? 'Primary navigation' : 'Secondary navigation'}
     >
       {items.map((item, idx) => {
-        const active = isActive(item)
-        const isContact = item.href === '/shigeru/contact'
-        const textColor = active
-          ? 'text-white'
-          : isContact
-            ? 'text-kawai-gold hover:text-kawai-gold/75 font-bold'
-            : 'text-white/60 hover:text-white'
+        const active = resolveActive(pathname, item)
+        const isContact = !isDropdown(item) && item.href === '/shigeru/contact'
+
+        // Contact is the primary CTA — give it a real affordance, matching mobile.
+        if (isContact && !isDropdown(item)) {
+          return (
+            <div key={item.label} className="flex items-center">
+              {idx > 0 && <span className="block w-px h-3 bg-white/25 mx-5 shrink-0" aria-hidden />}
+              <Link
+                href={item.href}
+                style={{ ...f, borderRadius: '999px' }}
+                aria-current={active ? 'page' : undefined}
+                className={[
+                  'text-[11px] font-semibold tracking-[0.14em] uppercase px-5 py-2 border transition-all duration-300',
+                  active
+                    ? 'border-kawai-gold text-kawai-gold bg-kawai-gold/[0.10]'
+                    : 'border-kawai-gold/45 text-kawai-gold hover:border-kawai-gold hover:bg-kawai-gold/[0.08]',
+                ].join(' ')}
+              >
+                {item.label}
+              </Link>
+            </div>
+          )
+        }
+
+        const textColor = active ? 'text-white' : 'text-white/75 hover:text-white'
 
         return (
           <div key={item.label} className="flex items-center">
-            {idx > 0 && (
-              <span className="block w-px h-3 bg-white/25 mx-5 shrink-0" aria-hidden />
-            )}
+            {idx > 0 && <span className="block w-px h-3 bg-white/25 mx-5 shrink-0" aria-hidden />}
 
-            {item.children ? (
+            {isDropdown(item) ? (
               <div
-                onMouseEnter={() => onDropdownEnter(item.label)}
-                onMouseLeave={onDropdownLeave}
                 className="relative"
+                onMouseEnter={() => onOpen(item.label)}
+                onMouseLeave={onClose}
               >
                 <button
+                  type="button"
                   style={f}
+                  onClick={() => onToggle(item.label)}
                   aria-expanded={openDropdown === item.label}
-                  aria-haspopup="true"
-                  className={[linkBase, 'flex items-center gap-1 cursor-default select-none', textColor].join(' ')}
+                  aria-controls={dropdownId(item.label)}
+                  className={[linkBase, 'flex items-center gap-1 cursor-pointer select-none', textColor].join(' ')}
                 >
                   {item.label}
                   <motion.span
@@ -127,11 +125,59 @@ function NavBar({
                       <path d="M1 1L3.5 3.5L6 1" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </motion.span>
+                  {active && <ActiveRule />}
                 </button>
+
+                {/* Anchored to its own trigger. `pt-3` is the hover bridge, so the
+                    close-delay timer never has to cover a bare gap. */}
+                {/* Deliberately NOT wrapped in <AnimatePresence>. With framer-motion 12
+                    + React 19 the exit animation runs but the node is never unmounted,
+                    leaving an opacity-0 panel that still has pointer-events and keeps its
+                    links in the tab order — an invisible click-blocker over the page.
+                    A plain conditional mount unmounts synchronously and is correct; only
+                    the (unnoticed) exit animation is given up. */}
+                {openDropdown === item.label && (
+                    <motion.div
+                      id={dropdownId(item.label)}
+                      className={`absolute top-full pt-3 z-50 ${side === 'right' ? 'right-0' : 'left-0'}`}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.16, ease }}
+                    >
+                      <ul className="flex flex-col min-w-[208px] py-2" style={panelStyle}>
+                        {item.children.map((child) => {
+                          const childActive = resolveActive(pathname, child)
+                          return (
+                            <li key={child.href}>
+                              <Link
+                                href={child.href}
+                                style={f}
+                                aria-current={childActive ? 'page' : undefined}
+                                className={[
+                                  'block text-[11px] font-semibold tracking-[0.14em] uppercase px-6 py-3 transition-colors duration-200',
+                                  childActive
+                                    ? 'text-white bg-white/[0.05] border-l-2 border-kawai-gold'
+                                    : 'text-white/75 hover:text-white hover:bg-white/[0.04] border-l-2 border-transparent',
+                                ].join(' ')}
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </motion.div>
+                )}
               </div>
             ) : (
-              <Link href={item.href} style={f} className={[linkBase, textColor].join(' ')}>
+              <Link
+                href={item.href}
+                style={f}
+                aria-current={active ? 'page' : undefined}
+                className={[linkBase, textColor].join(' ')}
+              >
                 {item.label}
+                {active && <ActiveRule />}
               </Link>
             )}
           </div>
@@ -152,18 +198,36 @@ export default function ShigeruHeader() {
   const [logoHovered, setLogoHovered] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  const headerRef = useRef<HTMLElement | null>(null)
+  const overlayRef = useRef<HTMLDivElement | null>(null)
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null)
   const navLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const logoLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Transparency only applies on the /shigeru homepage — all other pages are always solid
   const transparent = isHomepage && !scrolled
 
+  // Only the homepage reacts to scroll, and only once per frame.
   useEffect(() => {
-    function onScroll() { setScrolled(window.scrollY > SCROLL_THRESHOLD) }
+    if (!isHomepage) {
+      setScrolled(false)
+      return
+    }
+    let frame = 0
+    function onScroll() {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        setScrolled(window.scrollY > SCROLL_THRESHOLD)
+      })
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [isHomepage])
 
   useEffect(() => {
     setMobileOpen(false)
@@ -171,17 +235,95 @@ export default function ShigeruHeader() {
     setLogoHovered(false)
   }, [pathname])
 
+  // Lock the page behind the mobile sheet without losing scroll position (iOS
+  // resets to top if you only set `overflow: hidden`).
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (!mobileOpen) return
+    const y = window.scrollY
+    const { body } = document
+    const prev = { position: body.style.position, top: body.style.top, width: body.style.width }
+    body.style.position = 'fixed'
+    body.style.top = `-${y}px`
+    body.style.width = '100%'
+    return () => {
+      body.style.position = prev.position
+      body.style.top = prev.top
+      body.style.width = prev.width
+      window.scrollTo(0, y)
+    }
   }, [mobileOpen])
 
-  function handleDropdownEnter(label: string) {
+  const closeDropdownNow = useCallback(() => {
+    if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current)
+    setOpenDropdown(null)
+  }, [])
+
+  // Escape closes whatever is open and hands focus back to its trigger.
+  useEffect(() => {
+    if (!openDropdown && !mobileOpen) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      if (mobileOpen) {
+        setMobileOpen(false)
+        hamburgerRef.current?.focus()
+        return
+      }
+      const trigger = headerRef.current?.querySelector<HTMLButtonElement>('[aria-expanded="true"]')
+      closeDropdownNow()
+      trigger?.focus()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [openDropdown, mobileOpen, closeDropdownNow])
+
+  // Any press outside the header dismisses an open dropdown.
+  useEffect(() => {
+    if (!openDropdown) return
+    function onPointerDown(e: PointerEvent) {
+      if (!headerRef.current?.contains(e.target as Node)) closeDropdownNow()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [openDropdown, closeDropdownNow])
+
+  // Focus trap for the mobile sheet.
+  useEffect(() => {
+    if (!mobileOpen) return
+    const root = overlayRef.current
+    if (!root) return
+    const selector =
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const first = root.querySelector<HTMLElement>(selector)
+    first?.focus()
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !root) return
+      const focusable = Array.from(root.querySelectorAll<HTMLElement>(selector))
+      if (focusable.length === 0) return
+      const start = focusable[0]!
+      const end = focusable[focusable.length - 1]!
+      if (e.shiftKey && document.activeElement === start) {
+        e.preventDefault()
+        end.focus()
+      } else if (!e.shiftKey && document.activeElement === end) {
+        e.preventDefault()
+        start.focus()
+      }
+    }
+    root.addEventListener('keydown', onKeyDown)
+    return () => root.removeEventListener('keydown', onKeyDown)
+  }, [mobileOpen])
+
+  function handleDropdownOpen(label: string) {
     if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current)
     setOpenDropdown(label)
   }
   function handleDropdownLeave() {
     navLeaveTimer.current = setTimeout(() => setOpenDropdown(null), 150)
+  }
+  function handleDropdownToggle(label: string) {
+    if (navLeaveTimer.current) clearTimeout(navLeaveTimer.current)
+    setOpenDropdown((current) => (current === label ? null : label))
   }
 
   function handleLogoEnter() {
@@ -192,28 +334,19 @@ export default function ShigeruHeader() {
     logoLeaveTimer.current = setTimeout(() => setLogoHovered(false), 180)
   }
 
-  const activeDropdownItem = openDropdown
-    ? [...leftNav, ...rightNav].find((i) => i.label === openDropdown && i.children)
-    : null
-
-  function handleHeaderClick(e: React.MouseEvent<HTMLElement>) {
-    const target = e.target as HTMLElement
-    if (!target.closest('a') && !target.closest('button')) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-
-  function isActive(item: NavItem): boolean {
-    if (item.href === '/shigeru') return pathname === '/shigeru'
-    if (item.href) return pathname.startsWith(item.href)
-    return false
+  const navBarProps = {
+    pathname,
+    openDropdown,
+    onOpen: handleDropdownOpen,
+    onClose: handleDropdownLeave,
+    onToggle: handleDropdownToggle,
   }
 
   return (
     <>
       {/* ── Header ── */}
       <header
-        onClick={handleHeaderClick}
+        ref={headerRef}
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
         style={{
           background: transparent ? 'transparent' : 'rgba(16,14,10,0.97)',
@@ -226,14 +359,7 @@ export default function ShigeruHeader() {
 
           {/* Left nav — wrapper div keeps this column in grid flow on mobile */}
           <div>
-            <NavBar
-              items={leftNav}
-              pathname={pathname}
-              openDropdown={openDropdown}
-              onDropdownEnter={handleDropdownEnter}
-              onDropdownLeave={handleDropdownLeave}
-              side="left"
-            />
+            <NavBar items={leftNav} side="left" {...navBarProps} />
           </div>
 
           {/* Center logo with Kawai parent-brand hover dropdown */}
@@ -244,7 +370,7 @@ export default function ShigeruHeader() {
           >
             <Link href="/shigeru" aria-label="Shigeru Kawai — Home" className="flex items-center justify-center">
               <Image
-                src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
+                src={SHIGERU_LOGO}
                 alt="Shigeru Kawai"
                 width={0}
                 height={0}
@@ -256,20 +382,18 @@ export default function ShigeruHeader() {
             </Link>
 
             {/* Kawai parent brand dropdown */}
-            <AnimatePresence>
-              {logoHovered && (
+            {logoHovered && (
                 <motion.div
                   className="absolute top-full mt-3 left-1/2 -translate-x-1/2 pointer-events-auto z-50"
                   initial={{ opacity: 0, y: -8, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.97 }}
                   transition={{ duration: 0.18, ease }}
                 >
                   <Link
                     href="/"
                     aria-label="Back to Kawai America"
                     className="flex flex-col items-center gap-3 px-8 py-5 group"
-                    style={dropdownStyle}
+                    style={panelStyle}
                   >
                     <Image
                       src="/images/Kawai (Red).png"
@@ -280,87 +404,44 @@ export default function ShigeruHeader() {
                       style={{ height: '28px', width: 'auto' }}
                     />
                     <span
-                      className="text-white/30 group-hover:text-white/55 transition-colors duration-200 text-[8px] tracking-[0.4em] uppercase whitespace-nowrap"
+                      className="text-white/65 group-hover:text-white transition-colors duration-200 text-[10px] tracking-[0.4em] uppercase whitespace-nowrap"
                       style={f}
                     >
                       Kawai America
                     </span>
                   </Link>
                 </motion.div>
-              )}
-            </AnimatePresence>
+            )}
           </div>
 
           {/* Right nav + mobile hamburger */}
           <div className="flex items-center justify-end">
-            <NavBar
-              items={rightNav}
-              pathname={pathname}
-              openDropdown={openDropdown}
-              onDropdownEnter={handleDropdownEnter}
-              onDropdownLeave={handleDropdownLeave}
-              side="right"
-            />
+            <NavBar items={rightNav} side="right" {...navBarProps} />
 
             {/* Mobile hamburger */}
             <button
+              ref={hamburgerRef}
               onClick={() => setMobileOpen(true)}
-              className="flex flex-col justify-center gap-[5px] w-9 h-9 md:hidden"
+              className="flex flex-col justify-center items-end gap-[5px] w-11 h-11 lg:hidden"
               aria-label="Open navigation"
+              aria-expanded={mobileOpen}
             >
-              <span className="block h-px w-5 bg-white/70" />
-              <span className="block h-px w-3.5 bg-white/70" />
-              <span className="block h-px w-5 bg-white/70" />
+              <span className="block h-px w-5 bg-white/80" />
+              <span className="block h-px w-3.5 bg-white/80" />
+              <span className="block h-px w-5 bg-white/80" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── Nav dropdown (Resources etc.) ── */}
-      <AnimatePresence>
-        {activeDropdownItem?.children && (
-          <motion.div
-            className="fixed top-[68px] left-0 right-0 z-40 flex justify-center pointer-events-none"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.16, ease }}
-            onMouseEnter={() => handleDropdownEnter(openDropdown!)}
-            onMouseLeave={handleDropdownLeave}
-          >
-            <div
-              className="pointer-events-auto flex items-center px-8 py-4"
-              style={dropdownStyle}
-              role="menu"
-              aria-label={activeDropdownItem.label}
-            >
-              {activeDropdownItem.children.map((child, idx, arr) => (
-                <div key={child.href} className="flex items-center">
-                  <Link
-                    href={child.href}
-                    role="menuitem"
-                    style={f}
-                    className={[
-                      'text-[11px] font-semibold tracking-[0.14em] uppercase transition-colors duration-200 px-6',
-                      pathname.startsWith(child.href) ? 'text-white' : 'text-white/50 hover:text-white',
-                    ].join(' ')}
-                  >
-                    {child.label}
-                  </Link>
-                  {idx < arr.length - 1 && (
-                    <span className="block w-px h-3 bg-kawai-gold/20 shrink-0" aria-hidden />
-                  )}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* ── Mobile overlay ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            ref={overlayRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site navigation"
             className="fixed inset-0 z-[60] flex flex-col"
             style={{ background: 'rgba(10,9,6,0.98)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)' }}
             initial={{ opacity: 0 }}
@@ -370,9 +451,9 @@ export default function ShigeruHeader() {
           >
             {/* Top bar */}
             <div className="relative flex items-center justify-center h-[68px] border-b border-white/[0.06] shrink-0">
-              <Link href="/shigeru" onClick={() => setMobileOpen(false)}>
+              <Link href="/shigeru" onClick={() => setMobileOpen(false)} aria-label="Shigeru Kawai — Home">
                 <Image
-                  src="https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo%20(white).webp"
+                  src={SHIGERU_LOGO}
                   alt="Shigeru Kawai"
                   width={0}
                   height={0}
@@ -382,19 +463,21 @@ export default function ShigeruHeader() {
               </Link>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="absolute right-6 flex items-center justify-center w-9 h-9 text-white/40 hover:text-white/80 transition-colors"
+                className="absolute right-5 flex items-center justify-center w-11 h-11 text-white/70 hover:text-white transition-colors"
                 aria-label="Close menu"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M2 2L14 14M14 2L2 14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                 </svg>
               </button>
             </div>
 
-            {/* Nav items */}
+            {/* Nav items — same source of truth as desktop */}
             <nav className="flex flex-col px-8 pt-12 gap-8 overflow-y-auto" aria-label="Mobile navigation">
-              {mobileNavItems.map((item, i) => {
-                if ('children' in item && item.children) {
+              {mobileNav.map((item, i) => {
+                const active = resolveActive(pathname, item)
+
+                if (isDropdown(item)) {
                   return (
                     <motion.div
                       key={item.label}
@@ -402,44 +485,48 @@ export default function ShigeruHeader() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 + 0.08, duration: 0.26, ease }}
                     >
-                      <span style={f} className="block text-[10px] tracking-[0.2em] uppercase text-white/30 mb-5">
+                      <span style={f} className="block text-[10px] tracking-[0.2em] uppercase text-white/55 mb-5">
                         {item.label}
                       </span>
-                      <div className="flex flex-col gap-5 pl-5 border-l border-kawai-gold/20">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            style={f}
-                            className={[
-                              'text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
-                              pathname.startsWith(child.href) ? 'text-white' : 'text-white/60 hover:text-white',
-                            ].join(' ')}
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
+                      <div className="flex flex-col gap-5 pl-5 border-l border-kawai-gold/30">
+                        {item.children.map((child) => {
+                          const childActive = resolveActive(pathname, child)
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              style={f}
+                              aria-current={childActive ? 'page' : undefined}
+                              className={[
+                                'text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
+                                childActive ? 'text-kawai-gold' : 'text-white/75 hover:text-white',
+                              ].join(' ')}
+                            >
+                              {child.label}
+                            </Link>
+                          )
+                        })}
                       </div>
                     </motion.div>
                   )
                 }
 
-                const href = item.href ?? '/shigeru'
-                const isContact = href === '/shigeru/contact'
+                const isContact = item.href === '/shigeru/contact'
 
                 return (
                   <motion.div
-                    key={href}
+                    key={item.href}
                     initial={{ opacity: 0, x: -12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 + 0.08, duration: 0.26, ease }}
                   >
                     <Link
-                      href={href}
+                      href={item.href}
                       style={f}
+                      aria-current={active ? 'page' : undefined}
                       className={[
                         'block text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
-                        isActive(item) ? 'text-white' : isContact ? 'text-kawai-gold' : 'text-white/60 hover:text-white',
+                        active ? 'text-kawai-gold' : isContact ? 'text-kawai-gold/85' : 'text-white/75 hover:text-white',
                       ].join(' ')}
                     >
                       {item.label}
@@ -472,10 +559,7 @@ export default function ShigeruHeader() {
                     className="object-contain"
                     style={{ height: '18px', width: 'auto' }}
                   />
-                  <span
-                    className="text-white/20 text-[9px] tracking-[0.35em] uppercase"
-                    style={f}
-                  >
+                  <span className="text-white/65 text-[10px] tracking-[0.35em] uppercase" style={f}>
                     ← Kawai America
                   </span>
                 </Link>
@@ -484,7 +568,7 @@ export default function ShigeruHeader() {
               <Link
                 href="/shigeru/contact"
                 style={{ ...f, borderRadius: '999px' }}
-                className="inline-flex items-center border border-kawai-gold/30 hover:border-kawai-gold/65 text-kawai-gold text-[13px] font-semibold tracking-[0.1em] uppercase px-7 py-3 transition-all duration-300 hover:bg-kawai-gold/[0.06]"
+                className="inline-flex items-center self-start border border-kawai-gold/45 hover:border-kawai-gold text-kawai-gold text-[13px] font-semibold tracking-[0.1em] uppercase px-7 py-3 transition-all duration-300 hover:bg-kawai-gold/[0.08]"
               >
                 Contact Us
               </Link>
