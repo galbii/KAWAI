@@ -1383,7 +1383,7 @@ export function ProductHeroBlock({
               {/* Subscription nudge */}
               <p className="text-center text-[10px] text-kawai-muted mt-2">
                 <Link href="/warranty-registration" className="hover:text-kawai-red transition-colors duration-200 underline underline-offset-2 decoration-kawai-neutral hover:decoration-kawai-red">
-                  3 Month Subscription with your Product Registration
+                  Free Trial Lessons with your Product Registration
                 </Link>
               </p>
             </div>

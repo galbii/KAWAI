@@ -3,18 +3,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
-import { captureBookingLead } from '@/lib/actions/booking-lead'
-import { bookBackToSchoolAppointment } from '@/lib/actions/back-to-school-booking'
-import { trackLead, trackSchedule } from '@/components/MetaPixel'
 import { RuledGround } from './RuledGround'
-import { CAMPAIGN_YEAR, CAMPAIGN_MONTH, DEADLINE_LONG } from './campaign'
+import { OSWALD, CORMORANT, DEADLINE_LONG } from './campaign'
 import {
-  slotsForDate,
-  isBookableDate,
-  toIsoDate,
-  formatLongDate,
-  type HoursEntry,
-} from './schedule'
+  EMPTY_FORM,
+  submitBooking,
+  validate,
+  type ContactForm,
+  type FormErrors,
+} from './booking-core'
+import {
+  Eyebrow,
+  Field,
+  Input,
+  SeptemberPicker,
+  SlotGrid,
+  primaryButton,
+  secondaryButton,
+} from './BookingFields'
+import { slotsForDate, toIsoDate, formatLongDate, type HoursEntry } from './schedule'
 import { appointmentIcsUrl, googleCalendarUrl } from './calendar'
 
 /**
@@ -27,6 +34,11 @@ import { appointmentIcsUrl, googleCalendarUrl } from './calendar'
  * a time from the store's actual hours → one server action adds the customer
  * to Shopify (tagged 'back-to-school' + storeslug) and emails the showroom via
  * Resend. No iframe, no postMessage listening, no third-party scheduling.
+ *
+ * The fields, the calendar, the validation and the submit path all live outside
+ * this file (BookingFields / booking-core) because /back-to-school2 renders the
+ * same form inline on the page. This component is the two-step modal wrapper
+ * around them; BookingForm is the one-screen one.
  */
 
 export interface BookingModalProps {
@@ -35,213 +47,6 @@ export interface BookingModalProps {
   storeslug: string
   locationName?: string | null | undefined
   hours?: HoursEntry[] | null | undefined
-}
-
-interface ContactForm {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-}
-
-type FormErrors = Partial<Record<keyof ContactForm, string>>
-
-const EMPTY_FORM: ContactForm = { firstName: '', lastName: '', email: '', phone: '' }
-
-function validate(form: ContactForm): FormErrors {
-  const errors: FormErrors = {}
-  if (!form.firstName.trim()) errors.firstName = 'Required'
-  if (!form.lastName.trim()) errors.lastName = 'Required'
-  if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-    errors.email = 'Enter a valid email address'
-  return errors
-}
-
-function toE164US(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (!digits) return ''
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
-  if (digits.length === 10) return `+1${digits}`
-  return `+1${digits}`
-}
-
-/**
- * Same conversion push the sign-up forms fire (see TwoStepHubSpotForm) so a
- * booked appointment counts as the same GA4 / Google Ads conversion. user_data
- * follows the Enhanced Conversions shape; GTM hashes it before it leaves.
- */
-function pushSignupConversion(form: ContactForm) {
-  const userData: Record<string, unknown> = { email: form.email }
-  const phone = toE164US(form.phone)
-  if (phone) userData.phone_number = phone
-  userData.address = { first_name: form.firstName, last_name: form.lastName }
-
-  window.dataLayer = window.dataLayer ?? []
-  window.dataLayer.push({
-    event: 'signup_form_submitted',
-    event_category: 'signup',
-    event_label: 'back_to_school_booking',
-    user_data: userData,
-  })
-}
-
-// ─── Small pieces ─────────────────────────────────────────────────────────────
-
-const OSWALD = 'var(--font-oswald), sans-serif'
-const CORMORANT = 'var(--font-family-cormorant), Georgia, serif'
-
-function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="w-5 h-px bg-kawai-red" aria-hidden />
-      <span
-        className="text-kawai-red uppercase"
-        style={{ fontFamily: OSWALD, fontSize: '0.62rem', letterSpacing: '0.24em' }}
-      >
-        {children}
-      </span>
-    </div>
-  )
-}
-
-function Field({
-  label,
-  htmlFor,
-  required,
-  error,
-  children,
-}: {
-  label: string
-  htmlFor: string
-  required?: boolean
-  error?: string | undefined
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-1.5 min-w-0">
-      <label
-        htmlFor={htmlFor}
-        className="text-kawai-charcoal/60 uppercase select-none"
-        style={{ fontFamily: OSWALD, fontSize: '0.66rem', letterSpacing: '0.2em' }}
-      >
-        {label}
-        {required && <span className="text-kawai-red ml-1">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-kawai-red text-xs">{error}</p>}
-    </div>
-  )
-}
-
-function Input({
-  error,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement> & { error?: boolean }) {
-  return (
-    <input
-      {...props}
-      className={cn(
-        // Square, flat, and on white — the same panel language the ledger and
-        // the showroom card are drawn in. 16px on mobile so iOS doesn't zoom.
-        'w-full px-4 py-3.5 text-[16px] sm:text-sm text-kawai-black bg-white border outline-none transition-colors duration-200',
-        'placeholder:text-kawai-charcoal/35',
-        error
-          ? 'border-kawai-red ring-2 ring-kawai-red/15'
-          : 'border-kawai-black/15 hover:border-kawai-black/35 focus:border-kawai-red focus:ring-2 focus:ring-kawai-red/15',
-      )}
-    />
-  )
-}
-
-const primaryButton =
-  'group w-full inline-flex items-center justify-center gap-3 px-6 py-5 bg-kawai-red hover:bg-kawai-red-600 disabled:opacity-50 disabled:hover:bg-kawai-red text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black'
-
-const secondaryButton =
-  'px-6 py-5 border border-kawai-black/25 hover:bg-kawai-black hover:text-kawai-pearl text-kawai-black text-sm tracking-[0.14em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black'
-
-// ─── Calendar step ────────────────────────────────────────────────────────────
-
-const WEEKDAY_HEADER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
-
-function SeptemberPicker({
-  hours,
-  selected,
-  onSelect,
-}: {
-  hours: HoursEntry[] | null | undefined
-  selected: Date | null
-  onSelect: (d: Date) => void
-}) {
-  // `now` is fixed per mount so the grid doesn't shift mid-interaction.
-  const now = useMemo(() => new Date(), [])
-  const firstWeekday = new Date(CAMPAIGN_YEAR, CAMPAIGN_MONTH - 1, 1).getDay()
-  const daysInMonth = 30
-
-  return (
-    <div>
-      <div className="flex items-baseline justify-between mb-3">
-        <span
-          className="text-kawai-black uppercase"
-          style={{ fontFamily: OSWALD, fontSize: '1.35rem', fontWeight: 600, letterSpacing: '0.01em' }}
-        >
-          September 2026
-        </span>
-        <span
-          className="text-kawai-red uppercase"
-          style={{ fontFamily: OSWALD, fontSize: '0.64rem', letterSpacing: '0.18em' }}
-        >
-          Sept 7 – 30
-        </span>
-      </div>
-
-      <div className="grid grid-cols-7 gap-1 mb-1" aria-hidden>
-        {WEEKDAY_HEADER.map((d, i) => (
-          <span
-            key={i}
-            className="text-center text-kawai-charcoal/45 py-1.5"
-            style={{ fontFamily: OSWALD, fontSize: '0.66rem', letterSpacing: '0.12em' }}
-          >
-            {d}
-          </span>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: firstWeekday }).map((_, i) => (
-          <span key={`blank-${i}`} />
-        ))}
-        {Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1
-          const date = new Date(CAMPAIGN_YEAR, CAMPAIGN_MONTH - 1, day)
-          const bookable = isBookableDate(hours, date, now)
-          const isSelected = selected?.getDate() === day
-          return (
-            <button
-              key={day}
-              type="button"
-              disabled={!bookable}
-              onClick={() => onSelect(date)}
-              aria-label={`${formatLongDate(date)}${bookable ? '' : ' — unavailable'}`}
-              aria-pressed={isSelected}
-              // Square cells on white: the calendar reads as a grid on the
-              // page's paper rather than a row of pills.
-              style={{ fontFamily: OSWALD, fontSize: '0.95rem' }}
-              className={cn(
-                'aspect-square flex items-center justify-center border transition-colors',
-                bookable
-                  ? isSelected
-                    ? 'bg-kawai-red border-kawai-red text-white font-semibold'
-                    : 'bg-white border-kawai-black/12 text-kawai-black hover:border-kawai-red hover:text-kawai-red'
-                  : 'border-transparent text-kawai-charcoal/25 cursor-default',
-              )}
-            >
-              {day}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -309,67 +114,32 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
       return
     }
     setStep(2)
-    // Capture the lead in the CRM now, before the calendar — an abandoned
-    // scheduling step still puts the customer in Shopify, tagged with the sale
-    // and the store, so the showroom can follow up.
-    //
-    // No ad-platform conversion fires here. Reaching the calendar is not a
-    // lead: anyone who fills in step 1, sees the calendar and closes the modal
-    // would otherwise be counted. Meta's Lead fires in handleConfirm, once an
-    // appointment actually exists.
-    void captureBookingLead({
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-      phone: form.phone ? toE164US(form.phone) : undefined,
-      storeslug,
-      customTags: ['back-to-school'],
-      note: 'Back to School booking started',
-    })
+    // Nothing is written anywhere here. Reaching the calendar is not a lead —
+    // and a step-1 CRM write plus the one inside bookBackToSchoolAppointment
+    // meant every booking hit Shopify twice (create, then update) with the same
+    // email, which downstream integrations counted as two leads. Back →
+    // Continue repeated it again each cycle. The customer goes into Shopify
+    // exactly once, in handleConfirm, when an appointment actually exists.
   }
 
   async function handleConfirm() {
     if (!selectedDate || !selectedTime || submitting) return
     setSubmitting(true)
     setSubmitError(null)
-    const result = await bookBackToSchoolAppointment({
-      firstName: form.firstName.trim(),
-      lastName: form.lastName.trim(),
-      email: form.email.trim(),
-      ...(form.phone.trim() ? { phone: toE164US(form.phone) } : {}),
+    const result = await submitBooking({
+      form,
       storeslug,
-      date: toIsoDate(selectedDate),
+      date: selectedDate,
       time: selectedTime,
-    }).catch(() => ({ ok: false as const, error: undefined }))
+      locationName,
+    })
     setSubmitting(false)
 
     if (!result.ok) {
-      setSubmitError(
-        ('error' in result ? result.error : undefined) ??
-          'Something went wrong sending your request. Please try again.',
-      )
+      setSubmitError(result.error)
       return
     }
-
     setBooked(true)
-    trackSchedule({
-      content_name: 'Back to School Appointment',
-      ...(locationName ? { content_category: locationName } : {}),
-    })
-    // The booked appointment is the lead — see handleContinue.
-    trackLead({
-      content_name: 'Back to School Booking',
-      ...(locationName ? { content_category: locationName } : {}),
-    })
-    window.dataLayer = window.dataLayer ?? []
-    // Event name kept from the Calendly era so existing GTM triggers and GA
-    // reports stay continuous — the mechanism changed, the conversion didn't.
-    window.dataLayer.push({
-      event: 'calendly_booking_confirmed',
-      event_category: 'booking',
-      event_label: locationName ?? 'Back to School Appointment',
-    })
-    pushSignupConversion(form)
   }
 
   function handleClose() {
@@ -386,21 +156,6 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
 
   return createPortal(
     <>
-      <style>{`
-        @keyframes btsm-overlay-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes btsm-panel-in {
-          from { opacity: 0; transform: translateY(22px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes btsm-step-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .btsm-overlay { animation: btsm-overlay-in 0.2s ease both; }
-        .btsm-panel   { animation: btsm-panel-in 0.4s cubic-bezier(0.22,1,0.36,1) both; }
-        .btsm-step    { animation: btsm-step-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
-      `}</style>
-
       <div
         className="btsm-overlay fixed inset-0 z-[9010] bg-kawai-black/55 backdrop-blur-md"
         onClick={handleClose}
@@ -644,34 +399,14 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
                     >
                       Times for {formatLongDate(selectedDate).split(',')[0]}, September {selectedDate.getDate()}
                     </p>
-                    {slots.length > 0 ? (
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {slots.map((slot) => (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTime(slot)
-                              setSubmitError(null)
-                            }}
-                            aria-pressed={selectedTime === slot}
-                            style={{ fontFamily: OSWALD, letterSpacing: '0.06em' }}
-                            className={cn(
-                              'py-3 text-[0.8rem] border transition-colors',
-                              selectedTime === slot
-                                ? 'bg-kawai-red border-kawai-red text-white font-semibold'
-                                : 'bg-white border-kawai-black/15 text-kawai-black hover:border-kawai-red hover:text-kawai-red',
-                            )}
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-kawai-charcoal/55 text-sm">
-                        The showroom is closed that day — pick another.
-                      </p>
-                    )}
+                    <SlotGrid
+                      slots={slots}
+                      selected={selectedTime}
+                      onSelect={(slot) => {
+                        setSelectedTime(slot)
+                        setSubmitError(null)
+                      }}
+                    />
                   </div>
                 )}
 

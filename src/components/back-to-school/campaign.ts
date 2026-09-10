@@ -9,6 +9,10 @@
  * products by getRebateShowcase(). This file only knows the program window.
  */
 
+/** The two type stacks every surface on this campaign is set in. */
+export const OSWALD = 'var(--font-oswald), sans-serif'
+export const CORMORANT = 'var(--font-family-cormorant), Georgia, serif'
+
 /** Campaign window. Sept 7 is Labor Day 2026 — the Monday school starts. */
 export const CAMPAIGN_START = '2026-09-07'
 /** Rebates expire at end of day. Same date the Q3 rebate program closes. */

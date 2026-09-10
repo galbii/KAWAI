@@ -216,6 +216,25 @@ export function CampaignStyles() {
       }
       .bts-row:hover::before,
       .bts-row:focus-visible::before { transform: scaleY(1); }
+
+      /* ── Dialogs ────────────────────────────────────────────────────────
+         Shared by the booking modal and the rebate modal. They used to live
+         in a <style> tag inside BookingModal, which meant a page that opened
+         the rebate ledger without ever mounting the booking modal got an
+         un-animated panel. Emitted here, once, alongside everything else the
+         campaign adds. */
+      @keyframes btsm-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes btsm-panel-in {
+        from { opacity: 0; transform: translateY(22px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes btsm-step-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .btsm-overlay { animation: btsm-overlay-in 0.2s ease both; }
+      .btsm-panel   { animation: btsm-panel-in 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+      .btsm-step    { animation: btsm-step-in 0.3s cubic-bezier(0.22,1,0.36,1) both; }
     `}</style>
   )
 }

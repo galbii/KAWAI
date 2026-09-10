@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { HeroVideoBackground } from './HeroVideoBackground'
 import { HeroParallax } from './HeroParallax'
 import { DATE_RANGE, OFFERS } from './campaign'
@@ -10,6 +10,13 @@ interface BackToSchoolHeroProps {
   storeslug: string
   locationName?: string | null
   hours?: HoursEntry[] | null
+  /**
+   * Replaces the default CTA pair. The poster is the same on both campaign
+   * pages; what the buttons do is not — /back-to-school opens the booking modal
+   * and scrolls to the ledger, /back-to-school2 scrolls to the form and opens
+   * the ledger. Only the ask differs, so only the ask is injected.
+   */
+  ctas?: ReactNode
 }
 
 /**
@@ -50,7 +57,7 @@ const T = {
   cta: '1.28s',
 } as const
 
-export function BackToSchoolHero({ storeslug, locationName, hours }: BackToSchoolHeroProps) {
+export function BackToSchoolHero({ storeslug, locationName, hours, ctas }: BackToSchoolHeroProps) {
   // "Kawai" is written out beside it in both places this is used, so a stored
   // name like "Kawai Denver" or "Denver Piano Gallery" must not repeat it.
   const cleanedName = (locationName ?? '')
@@ -174,12 +181,14 @@ export function BackToSchoolHero({ storeslug, locationName, hours }: BackToSchoo
             argument, so it gets read first and the buttons close it. */}
         <div className={`${BTS_CONTAINER} w-full pt-6 pb-8 md:pb-10`}>
           <div className="bts-in" style={{ animationDelay: T.cta }}>
-            <HeroCtas
-              storeslug={storeslug}
-              locationName={locationName ?? null}
-              hours={hours ?? null}
-              tone="dark"
-            />
+            {ctas ?? (
+              <HeroCtas
+                storeslug={storeslug}
+                locationName={locationName ?? null}
+                hours={hours ?? null}
+                tone="dark"
+              />
+            )}
           </div>
         </div>
       </HeroParallax>
