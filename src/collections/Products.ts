@@ -212,6 +212,7 @@ async function transformShopifyToPayload(
     tone: shopifyProduct.metafields?.tone || [],
     features: shopifyProduct.metafields?.features || [],
     ownersManualUrl: shopifyProduct.metafields?.ownersManual ?? null,
+    brochures: shopifyProduct.metafields?.brochures || [],
   })
 
   return baseData
@@ -804,6 +805,41 @@ export const Products: CollectionConfig = {
                 description: "Owner's manual PDF URL (synced from Shopify custom.ownermanual metafield)",
                 readOnly: true,
               },
+            },
+
+            // Brochures - custom.brochure list.file_reference metafield from Shopify
+            {
+              name: 'brochures',
+              type: 'array',
+              maxRows: 20,
+              labels: {
+                singular: 'Brochure',
+                plural: 'Brochures',
+              },
+              admin: {
+                description:
+                  'Brochure files (synced from Shopify custom.brochure metafield — a list of files). Shown as download links in the Technical Specifications block. Set each file\'s alt text in Shopify to control the link label.',
+                readOnly: true,
+                initCollapsed: true,
+              },
+              fields: [
+                {
+                  name: 'name',
+                  type: 'text',
+                  admin: {
+                    description: 'Display label (file alt text from Shopify, or the filename)',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'url',
+                  type: 'text',
+                  admin: {
+                    description: 'Brochure file URL',
+                    readOnly: true,
+                  },
+                },
+              ],
             },
 
             // Action / Tone / Features — list.single_line_text_field metafields from Shopify

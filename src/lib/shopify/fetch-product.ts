@@ -28,6 +28,39 @@ export interface ShopifyHighlight {
   description: string
 }
 
+/**
+ * Brochure file from the custom.brochure list.file_reference metafield.
+ * `name` is the file's alt text in Shopify (editor-controlled display label),
+ * falling back to the filename parsed from the URL.
+ */
+export interface ShopifyBrochure {
+  url: string
+  name: string | null
+}
+
+/**
+ * Parse the custom.brochure metafield references into a brochure list.
+ * Shared by every transform that maps a raw GraphQL product.
+ */
+export function parseBrochureMetafield(metafieldBrochure: any): ShopifyBrochure[] {
+  const edges = metafieldBrochure?.references?.edges
+  if (!Array.isArray(edges)) return []
+  return edges
+    .map((edge: any) => edge?.node)
+    .filter((node: any) => typeof node?.url === 'string' && node.url)
+    .map((node: any) => {
+      const altName = typeof node.alt === 'string' && node.alt.trim() ? node.alt.trim() : null
+      let fileName: string | null = null
+      try {
+        const lastSegment = new URL(node.url).pathname.split('/').pop() || ''
+        fileName = lastSegment ? decodeURIComponent(lastSegment) : null
+      } catch {
+        fileName = null
+      }
+      return { url: node.url as string, name: altName ?? fileName }
+    })
+}
+
 export interface ShopifyProductData {
   id: string
   title: string
@@ -104,13 +137,14 @@ export interface ShopifyProductData {
       height: number | null
     } | null
     ownersManual?: string | null
+    brochures?: ShopifyBrochure[]
     action?: string[]
     tone?: string[]
     features?: string[]
     specifications?: ShopifySpecification[]
     highlights?: ShopifyHighlight[]
     specificationJson?: Record<string, unknown> | null
-    [key: string]: string | string[] | ShopifySpecification[] | ShopifyHighlight[] | Record<string, unknown> | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
+    [key: string]: string | string[] | ShopifySpecification[] | ShopifyHighlight[] | ShopifyBrochure[] | Record<string, unknown> | { url: string; alt: string | null; width: number | null; height: number | null } | null | undefined
   }
   availableForSale: boolean
   createdAt: string
@@ -384,6 +418,19 @@ const PRODUCT_BY_ID_QUERY = `
         }
       }
     }
+
+    metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+      references(first: 20) {
+        edges {
+          node {
+            ... on GenericFile {
+              url
+              alt
+            }
+          }
+        }
+      }
+    }
   }
 `
 
@@ -534,6 +581,19 @@ const PRODUCT_BY_HANDLE_QUERY = `
       reference {
         ... on GenericFile {
           url
+        }
+      }
+    }
+
+    metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+      references(first: 20) {
+        edges {
+          node {
+            ... on GenericFile {
+              url
+              alt
+            }
+          }
         }
       }
     }
@@ -735,6 +795,19 @@ const PRODUCT_BY_METAFIELD_QUERY = `
       }
     }
 
+    metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+      references(first: 20) {
+        edges {
+          node {
+            ... on GenericFile {
+              url
+              alt
+            }
+          }
+        }
+      }
+    }
+
     seo {
       title
       description
@@ -914,6 +987,7 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
     metafields: {
       model: shopifyProduct.metafield_model?.value || undefined,
       ownersManual: shopifyProduct.metafield_ownermanual?.reference?.url || null,
+      brochures: parseBrochureMetafield(shopifyProduct.metafield_brochure),
 
       // Parse blueprint file reference
       blueprint: (() => {

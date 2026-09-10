@@ -183,6 +183,12 @@ export interface ShopifyProduct {
   metafield_ownermanual?: {
     reference: { url: string } | null
   } | null
+  /** Brochure file list reference (custom.brochure metafield, list.file_reference) */
+  metafield_brochure?: {
+    references: {
+      edges: Array<{ node: { url: string; alt: string | null } | null }>
+    } | null
+  } | null
 }
 
 // ============================================================================
@@ -254,6 +260,8 @@ export interface Product {
   }>
   /** Owner's manual PDF URL (from custom.ownermanual metafield) */
   ownersManualUrl: string | null
+  /** Brochure files (from custom.brochure list.file_reference metafield) */
+  brochures: Array<{ url: string; name: string | null }>
   /** Action descriptors (from custom.action list metafield, e.g. ["Light", "Medium"]) */
   action: string[]
   /** Tone descriptors (from custom.tone list metafield, e.g. ["Bright", "Warm"]) */

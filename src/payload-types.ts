@@ -2439,6 +2439,22 @@ export interface Product {
    * Owner's manual PDF URL (synced from Shopify custom.ownermanual metafield)
    */
   ownersManualUrl?: string | null;
+  /**
+   * Brochure files (synced from Shopify custom.brochure metafield — a list of files). Shown as download links in the Technical Specifications block. Set each file's alt text in Shopify to control the link label.
+   */
+  brochures?:
+    | {
+        /**
+         * Display label (file alt text from Shopify, or the filename)
+         */
+        name?: string | null;
+        /**
+         * Brochure file URL
+         */
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   action?:
     | {
         [k: string]: unknown;
@@ -3216,10 +3232,6 @@ export interface ProductTechnicalSpecsBlock {
    */
   blueprintCaption?: string | null;
   /**
-   * Overlay a subtle engineering grid pattern on the blueprint image
-   */
-  showGridOverlay?: boolean | null;
-  /**
    * Specification categories for manual entry
    */
   categories?:
@@ -3265,27 +3277,11 @@ export interface ProductTechnicalSpecsBlock {
       }[]
     | null;
   /**
-   * Visual theme for the specifications section
-   */
-  theme?: ('blueprint' | 'light' | 'charcoal') | null;
-  /**
-   * Number of columns for specification categories
-   */
-  gridColumns?: ('1' | '2' | '3') | null;
-  /**
-   * Show a subtle engineering grid pattern in the section background
-   */
-  showGridBackground?: boolean | null;
-  /**
-   * Show corner registration marks (engineering drawing aesthetic)
-   */
-  showRegistrationMarks?: boolean | null;
-  /**
-   * Show a download button for specifications
+   * Add a link to the product's blueprint file in the Documents row. Owner's manual and brochure links appear there automatically when the product has them — this toggle is only for the blueprint download.
    */
   enableDownload?: boolean | null;
   /**
-   * Label for the download button
+   * Label for the blueprint download link
    */
   downloadButtonText?: string | null;
   id?: string | null;
@@ -12909,6 +12905,13 @@ export interface ProductsSelect<T extends boolean = true> {
         details?: T;
       };
   ownersManualUrl?: T;
+  brochures?:
+    | T
+    | {
+        name?: T;
+        url?: T;
+        id?: T;
+      };
   action?: T;
   tone?: T;
   features?: T;

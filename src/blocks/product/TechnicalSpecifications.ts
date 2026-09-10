@@ -90,14 +90,6 @@ export const TechnicalSpecifications: Block = {
         description: 'Caption displayed below the blueprint image',
       },
     },
-    {
-      name: 'showGridOverlay',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Overlay a subtle engineering grid pattern on the blueprint image',
-      },
-    },
 
     // --- Manual Categories (manual / hybrid modes) ---
     {
@@ -187,62 +179,25 @@ export const TechnicalSpecifications: Block = {
     },
 
     // --- Display Options ---
-    {
-      name: 'theme',
-      type: 'select',
-      defaultValue: 'light',
-      options: [
-        { label: '📘 Blueprint (Dark Blue)', value: 'blueprint' },
-        { label: '⬜ Light (Pearl)', value: 'light' },
-        { label: '⬛ Charcoal', value: 'charcoal' },
-      ],
-      admin: {
-        description: 'Visual theme for the specifications section',
-      },
-    },
-    {
-      name: 'gridColumns',
-      type: 'select',
-      defaultValue: '1',
-      options: [
-        { label: '1 Column (default)', value: '1' },
-        { label: '2 Columns', value: '2' },
-        { label: '3 Columns', value: '3' },
-      ],
-      admin: {
-        description: 'Number of columns for specification categories',
-      },
-    },
-    {
-      name: 'showGridBackground',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Show a subtle engineering grid pattern in the section background',
-      },
-    },
-    {
-      name: 'showRegistrationMarks',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Show corner registration marks (engineering drawing aesthetic)',
-      },
-    },
+    // Note: the Owner's Manual and Brochure download links render automatically
+    // in the Documents row whenever the linked product has them synced from
+    // Shopify (custom.ownermanual and custom.brochure metafields) — no
+    // configuration needed here.
     {
       name: 'enableDownload',
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        description: 'Show a download button for specifications',
+        description:
+          "Add a link to the product's blueprint file in the Documents row. Owner's manual and brochure links appear there automatically when the product has them — this toggle is only for the blueprint download.",
       },
     },
     {
       name: 'downloadButtonText',
       type: 'text',
-      defaultValue: 'Download Technical Specs',
+      defaultValue: 'Technical drawing',
       admin: {
-        description: 'Label for the download button',
+        description: 'Label for the blueprint download link',
         condition: (data) => data.enableDownload === true,
       },
     },

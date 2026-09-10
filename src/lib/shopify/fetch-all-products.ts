@@ -14,6 +14,7 @@
  */
 
 import { shopifyAdminClient } from './admin-client'
+import { parseBrochureMetafield } from './fetch-product'
 import type { ShopifyProductData, ShopifySpecification } from './fetch-product'
 
 /**
@@ -206,6 +207,19 @@ const PRODUCTS_WITH_MODEL_QUERY = `
             reference {
               ... on GenericFile {
                 url
+              }
+            }
+          }
+
+          metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+            references(first: 20) {
+              edges {
+                node {
+                  ... on GenericFile {
+                    url
+                    alt
+                  }
+                }
               }
             }
           }
@@ -602,6 +616,9 @@ function transformShopifyProduct(shopifyProduct: any): ShopifyProductData {
 
       // Owner's manual URL (synced from Shopify custom.ownermanual file reference)
       ownersManual: shopifyProduct.metafield_ownermanual?.reference?.url || null,
+
+      // Brochure files (synced from Shopify custom.brochure list.file_reference)
+      brochures: parseBrochureMetafield(shopifyProduct.metafield_brochure),
 
       // Parse list.single_line_text_field metafields (JSON-encoded string arrays).
       // Powers the Touch & Action / Sound & Tone / Connectivity & Features tabs

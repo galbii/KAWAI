@@ -41,7 +41,7 @@ import type {
   ShopifyGID,
 } from './types'
 import { formatPrice } from '../utils'
-import { fetchShopifyProductByModel, fetchShopifyProduct, type ShopifyProductData } from './fetch-product'
+import { fetchShopifyProductByModel, fetchShopifyProduct, parseBrochureMetafield, type ShopifyProductData } from './fetch-product'
 import { shopifyAdminClient, shopifyAdminClientCA } from './admin-client'
 
 // ============================================================================
@@ -146,6 +146,7 @@ function transformAdminProductToStorefront(adminProduct: ShopifyProductData): Pr
       image: null, // Admin API doesn't include variant images in this query
     })),
     ownersManualUrl: adminProduct.metafields?.ownersManual ?? null,
+    brochures: adminProduct.metafields?.brochures ?? [],
     action: adminProduct.metafields?.action ?? [],
     tone: adminProduct.metafields?.tone ?? [],
     features: adminProduct.metafields?.features ?? [],
@@ -229,6 +230,7 @@ export function transformProduct(shopifyProduct: ShopifyProduct): Product {
     images,
     variants,
     ownersManualUrl: shopifyProduct.metafield_ownermanual?.reference?.url ?? null,
+    brochures: parseBrochureMetafield(shopifyProduct.metafield_brochure),
     action: Array.isArray(metadata.action) ? (metadata.action as string[]) : [],
     tone: Array.isArray(metadata.tone) ? (metadata.tone as string[]) : [],
     features: Array.isArray(metadata.features) ? (metadata.features as string[]) : [],

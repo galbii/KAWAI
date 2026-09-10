@@ -62,6 +62,7 @@ export type ShopifyDataUpdate = Partial<
     shopifyDiscountCAD?: ProductDiscount
     specificationJson?: Record<string, unknown> | null
     ownersManualUrl?: string | null
+    brochures?: Array<{ url: string; name: string | null }>
     action?: string[]
     tone?: string[]
     features?: string[]
@@ -527,6 +528,7 @@ export async function syncShopifyDataToProduct(
       ...(shopifyDiscountCAD && { shopifyDiscountCAD }),
       specificationJson: shopifyData.metafields?.specificationJson ?? null,
       ownersManualUrl: shopifyData.metafields?.ownersManual ?? null,
+      brochures: shopifyData.metafields?.brochures ?? [],
       action: shopifyData.metafields?.action ?? [],
       tone: shopifyData.metafields?.tone ?? [],
       features: shopifyData.metafields?.features ?? [],

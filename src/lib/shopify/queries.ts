@@ -195,6 +195,18 @@ export const GET_PRODUCT_BY_HANDLE = `
           }
         }
       }
+      metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+        references(first: 20) {
+          edges {
+            node {
+              ... on GenericFile {
+                url
+                alt
+              }
+            }
+          }
+        }
+      }
     }
   }
 `
@@ -244,6 +256,18 @@ export const GET_PRODUCT_BY_ID = `
         reference {
           ... on GenericFile {
             url
+          }
+        }
+      }
+      metafield_brochure: metafield(namespace: "custom", key: "brochure") {
+        references(first: 20) {
+          edges {
+            node {
+              ... on GenericFile {
+                url
+                alt
+              }
+            }
           }
         }
       }
