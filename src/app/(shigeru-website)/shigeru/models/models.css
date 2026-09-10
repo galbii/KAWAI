@@ -128,3 +128,53 @@
     animation: none;
   }
 }
+
+/* ── Reveal on scroll ──────────────────────────────────────────────────────
+   Driven by useReveal(): the observed element gets `is-shown`, and every
+   `.sk-reveal` inside it (or the element itself) transitions in. Stagger by
+   setting `--sk-delay` per child.
+
+   Anything that wraps a mix-blend-multiply piano must also paint an opaque
+   pearl background — the transition creates a stacking context and the
+   white-background SK-EX shot would otherwise render as a box.
+   ──────────────────────────────────────────────────────────────────────── */
+.sk-reveal {
+  opacity: 0;
+  transition:
+    opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: var(--sk-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.sk-reveal-up {
+  transform: translateY(18px);
+}
+
+.sk-reveal-left {
+  transform: translateX(-48px);
+}
+
+.sk-reveal-right {
+  transform: translateX(48px);
+}
+
+.sk-reveal.is-shown,
+.is-shown .sk-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* Once it has arrived, stop hinting the compositor. */
+.sk-reveal.is-shown,
+.is-shown .sk-reveal {
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

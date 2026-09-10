@@ -25,6 +25,21 @@ export const pearl = (alpha: number): string => `rgba(${PEARL_RGB}, ${alpha})`
 /** kawai-gold. Hairlines, underlines, and dividers only — never type. */
 export const GOLD = 'rgb(213, 199, 140)'
 
+/** Opaque pearl. Needed as a real background wherever an animated wrapper
+ *  sits above a mix-blend-multiply image — see RangeFloor. */
+export const PEARL = 'rgb(250, 248, 245)'
+
+/** The microsite's motion curve — the same one the homepage carousel rides. */
+export const ease = [0.25, 0.46, 0.45, 0.94] as const
+
+/**
+ * The Shigeru Kawai wordmark. The asset is gold on transparent, which is only
+ * ~1.6:1 on pearl — render it over a light ground with `filter: brightness(0)`
+ * so it reads as ink, and use the white variant on the dark chrome.
+ */
+export const SHIGERU_WORDMARK =
+  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Shigeru%20Kawai%20logo.webp'
+
 /** The near-black used by every dark band on the microsite. */
 export const NEAR_BLACK = '#0a0a0a'
 

@@ -1,11 +1,17 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { SHIGERU_MODELS } from '../../_data/models'
 import type { ShigeruPageData } from '../../_data/shopify'
-import { GOLD, ink, lengthRatio } from '@/lib/shigeru/tokens'
+import { GOLD, OSWALD, PEARL, ink, lengthRatio } from '@/lib/shigeru/tokens'
+import { useReveal } from '@/lib/shigeru/use-reveal'
 
 /** Column widths track length too, so the row is to scale along both axes. */
 const COLUMNS = SHIGERU_MODELS.map((m) => `${lengthRatio(m.cm)}fr`).join(' ')
+
+/** Fixed name block under every instrument, so the floor line sits flat. */
+const NAME_BLOCK = '3.25rem'
 
 type FloorProps = {
   productData: ShigeruPageData
@@ -17,6 +23,12 @@ type FloorProps = {
   activeSlug?: string
   /** Height of the SK-EX in rem; every other model is drawn against it. */
   heightRem?: number
+  /**
+   * `page` links out to each model's own page. `anchor` jumps down to that
+   * model's entry on the current page — what the collection page wants, since
+   * the entries are right there.
+   */
+  linkMode?: 'page' | 'anchor'
 }
 
 /**
@@ -29,99 +41,128 @@ type FloorProps = {
  * scaling honest; below that the row scrolls rather than lying about the
  * proportions.
  *
- * Never wrap this in an element that animates transform or opacity. The shots
- * are a mix of transparent PNGs and white-background JPEGs, and the JPEGs only
- * disappear into the pearl because of mix-blend-multiply — an animated
- * ancestor isolates the blend group and the SK-EX renders as a white box.
+ * On the blend trap: the shots are a mix of transparent PNGs and
+ * white-background JPEGs, and the JPEGs only disappear into the pearl because
+ * of mix-blend-multiply. Any ancestor that animates transform or opacity
+ * isolates the blend group and the SK-EX renders as a white box — so every
+ * animated wrapper in here paints an opaque pearl background of its own,
+ * which is invisible against the page and gives the multiply something to
+ * land on.
  */
-export function RangeFloor({ productData, activeSlug, heightRem = 11 }: FloorProps) {
+export function RangeFloor({
+  productData,
+  activeSlug,
+  heightRem = 11,
+  linkMode = 'page',
+}: FloorProps) {
+  const { ref, shown } = useReveal<HTMLDivElement>(0.2)
+
   return (
     <div className="overflow-x-auto sk-scroll-hide">
-      <div className="grid min-w-[70rem] items-end" style={{ gridTemplateColumns: COLUMNS }}>
-        {/* Row 1 — the instruments, each as tall as its length allows */}
-        {SHIGERU_MODELS.map((m) => {
-          const ghosted = activeSlug !== undefined && m.slug !== activeSlug
-          const image = productData[m.slug.replace(/-/g, '')]?.imageUrl ?? null
-          if (!image) return <div key={m.slug} aria-hidden="true" />
-
-          return (
-            <span
-              key={m.slug}
-              aria-hidden="true"
-              className="relative block w-full"
-              style={{ height: `${lengthRatio(m.cm) * heightRem}rem` }}
-            >
-              {/* Opacity sits on the image itself: an opacity wrapper would
-                  isolate the blend group, and the white-background SK-EX shot
-                  would show its box instead of multiplying into the pearl. */}
-              <Image
-                src={image}
-                alt=""
-                fill
-                sizes="280px"
-                className="object-contain object-bottom mix-blend-multiply"
-                style={{ opacity: ghosted ? 0.55 : 1 }}
-              />
-            </span>
-          )
-        })}
-
-        {/* Row 2 — the shared floor */}
+      <div className="min-w-[70rem]">
         <div
-          aria-hidden="true"
-          className="h-px w-full"
-          style={{ gridColumn: '1 / -1', background: ink(0.22) }}
-        />
+          ref={ref}
+          className={`relative grid items-end ${shown ? 'is-shown' : ''}`}
+          style={{ gridTemplateColumns: COLUMNS }}
+        >
+          {SHIGERU_MODELS.map((m, i) => {
+            const current = m.slug === activeSlug
+            const ghosted = activeSlug !== undefined && !current
+            const image = productData[m.slug.replace(/-/g, '')]?.imageUrl ?? null
+            const href =
+              linkMode === 'anchor' ? `#model-${m.slug}` : `/shigeru/models/${m.slug}`
 
-        {/* Row 3 — names */}
-        {SHIGERU_MODELS.map((m) => {
-          const current = m.slug === activeSlug
-          const nameStyle = {
-            fontFamily: 'var(--font-oswald)',
-            fontSize: '0.95rem',
-            fontWeight: current || activeSlug === undefined ? 700 : 500,
-            letterSpacing: '0.1em',
-            color: current || activeSlug === undefined ? ink(0.95) : ink(0.72),
-          }
-
-          return (
-            <div key={m.slug} className="text-center">
-              {current ? (
+            const body = (
+              <>
                 <span
-                  aria-current="page"
-                  className="relative inline-block pt-4 pb-2.5 uppercase leading-none"
-                  style={nameStyle}
+                  className="sk-reveal sk-reveal-up relative block w-full"
+                  style={
+                    {
+                      height: `${lengthRatio(m.cm) * heightRem}rem`,
+                      background: PEARL,
+                      '--sk-delay': `${i * 0.075}s`,
+                    } as React.CSSProperties
+                  }
                 >
-                  {m.name}
+                  {image && (
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="280px"
+                      className="object-contain object-bottom mix-blend-multiply transition-transform duration-500 ease-out group-hover:-translate-y-2"
+                      style={{ opacity: ghosted ? 0.55 : 1 }}
+                    />
+                  )}
+                </span>
+
+                <span
+                  className="relative flex w-full items-center justify-center"
+                  style={{ height: NAME_BLOCK }}
+                >
+                  <span
+                    className="uppercase leading-none transition-colors duration-300"
+                    style={{
+                      fontFamily: OSWALD,
+                      fontSize: '0.95rem',
+                      fontWeight: current || activeSlug === undefined ? 700 : 500,
+                      letterSpacing: '0.1em',
+                      color: current || activeSlug === undefined ? ink(0.95) : ink(0.72),
+                    }}
+                  >
+                    {m.name}
+                  </span>
+
+                  {/* Gold marker: always shown on the current model, drawn in
+                      from the centre on hover for the rest. */}
                   <span
                     aria-hidden="true"
-                    className="absolute inset-x-0 bottom-0 h-[3px]"
+                    className={`absolute bottom-2 left-1/2 h-[3px] w-9 -translate-x-1/2 origin-center transition-transform duration-300 ease-out ${
+                      current ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                    }`}
                     style={{ background: GOLD }}
                   />
                 </span>
-              ) : (
-                <Link
-                  href={`/shigeru/models/${m.slug}`}
-                  className="inline-block pt-4 pb-2.5 uppercase leading-none transition-colors duration-200 hover:!text-kawai-black"
-                  style={nameStyle}
-                >
-                  <span className="sr-only">Shigeru Kawai </span>
-                  {m.name}
-                  <span className="sr-only"> {m.type}</span>
-                </Link>
-              )}
-            </div>
-          )
-        })}
+              </>
+            )
 
-        {/* Row 4 — the two ends of the range, labelled where they sit */}
-        <div className="flex items-baseline justify-between pt-4" style={{ gridColumn: '1 / -1' }}>
+            return current ? (
+              <span
+                key={m.slug}
+                aria-current="page"
+                className="group flex flex-col items-center justify-end"
+              >
+                {body}
+              </span>
+            ) : (
+              <Link
+                key={m.slug}
+                href={href}
+                className="group flex flex-col items-center justify-end"
+              >
+                <span className="sr-only">Shigeru Kawai {m.name}, </span>
+                {body}
+                <span className="sr-only">{m.type}</span>
+              </Link>
+            )
+          })}
+
+          {/* The shared floor, one continuous line under every instrument */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 h-px"
+            style={{ bottom: NAME_BLOCK, background: ink(0.22) }}
+          />
+        </div>
+
+        {/* The two ends of the range, labelled where they sit */}
+        <div className="flex items-baseline justify-between pt-3">
           {(['The beginning', 'The pinnacle'] as const).map((text) => (
             <span
               key={text}
               className="uppercase"
               style={{
-                fontFamily: 'var(--font-oswald)',
+                fontFamily: OSWALD,
                 fontSize: '0.7rem',
                 letterSpacing: '0.28em',
                 color: ink(0.72),
@@ -165,7 +206,7 @@ export function ModelRangeStrip({
             href="/shigeru/models"
             className="group inline-flex items-center gap-3 uppercase transition-colors duration-200 hover:!text-kawai-black"
             style={{
-              fontFamily: 'var(--font-oswald)',
+              fontFamily: OSWALD,
               fontSize: '0.78rem',
               fontWeight: 600,
               letterSpacing: '0.28em',

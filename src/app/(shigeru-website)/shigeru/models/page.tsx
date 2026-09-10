@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { SHIGERU_MODELS } from '../_data/models'
 import { getShigeruPageData } from '../_data/shopify'
@@ -12,6 +13,7 @@ import {
   OSWALD,
   SANS,
   SERIF,
+  SHIGERU_WORDMARK,
   ink,
   labelStyle,
   pearl,
@@ -142,28 +144,30 @@ export default async function ModelsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── HERO — the whole range, to scale ────────────────────────────── */}
+      {/* ── HERO — the wordmark, then the whole range to scale ────────── */}
       <section className="relative overflow-hidden bg-kawai-pearl">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 70% 55% at 50% 68%, rgba(213,199,140,0.16) 0%, transparent 72%)',
-          }}
-        />
-
         <div className="relative mx-auto max-w-[86rem] px-6 pt-24 pb-20 lg:px-12 lg:pt-28 lg:pb-24">
-          <p className="sk-rise sk-rise-1 text-center uppercase" style={labelStyle(0.72)}>
-            Shigeru Kawai
-          </p>
+          {/* The asset is gold on transparent — brightness(0) renders it as
+              ink so it clears contrast on the pearl ground. */}
+          <div className="sk-rise sk-rise-1 flex justify-center">
+            <Image
+              src={SHIGERU_WORDMARK}
+              alt="Shigeru Kawai"
+              width={5906}
+              height={1842}
+              priority
+              sizes="(min-width: 768px) 420px, 68vw"
+              className="h-auto w-[clamp(14rem,30vw,25rem)]"
+              style={{ filter: 'brightness(0)', opacity: 0.92 }}
+            />
+          </div>
 
-          <h1 className="sk-rise sk-rise-2 mt-8 text-center">
+          <h1 className="sk-rise sk-rise-2 mt-10 text-center">
             <span
               className="block uppercase leading-[0.9]"
               style={{
                 fontFamily: OSWALD,
-                fontSize: 'clamp(2.5rem, 6vw, 5rem)',
+                fontSize: 'clamp(2rem, 4.5vw, 3.6rem)',
                 fontWeight: 300,
                 letterSpacing: '0.22em',
                 color: ink(0.4),
@@ -175,7 +179,7 @@ export default async function ModelsPage() {
               className="mt-1 block uppercase leading-[0.85]"
               style={{
                 fontFamily: OSWALD,
-                fontSize: 'clamp(4rem, 11vw, 10rem)',
+                fontSize: 'clamp(3.4rem, 9vw, 8rem)',
                 fontWeight: 700,
                 letterSpacing: '0.03em',
                 color: ink(0.95),
@@ -183,30 +187,25 @@ export default async function ModelsPage() {
             >
               Collection
             </span>
-            <span className="sr-only">
-              {' '}
-              — Shigeru Kawai grand piano models, SK-2 to SK-EX
-            </span>
+            <span className="sr-only"> — Shigeru Kawai grand piano models, SK-2 to SK-EX</span>
           </h1>
 
           <span
             aria-hidden="true"
-            className="sk-rise sk-rise-3 mx-auto mt-10 block h-px w-14"
+            className="sk-rise sk-rise-3 mx-auto mt-9 block h-px w-14"
             style={{ background: GOLD }}
           />
 
           <p
-            className="sk-rise sk-rise-3 mt-8 text-center"
+            className="sk-rise sk-rise-3 mt-7 text-center"
             style={{ fontFamily: SANS, fontSize: '0.95rem', letterSpacing: '0.04em', color: ink(0.72) }}
           >
             Six handcrafted grand pianos&ensp;·&ensp;Ryuyo Grand Piano Factory, Hamamatsu
           </p>
 
-          {/* No entrance animation on this wrapper — see RangeFloor: a
-              transform/opacity animation isolates the blend group and the
-              white-background SK-EX shot renders as a box on the pearl. */}
-          <div className="mt-14 lg:mt-20">
-            <RangeFloor productData={productData} heightRem={12} />
+          {/* Each instrument jumps to its own entry further down the page. */}
+          <div className="mt-14 lg:mt-16">
+            <RangeFloor productData={productData} heightRem={12} linkMode="anchor" />
           </div>
         </div>
       </section>
@@ -217,6 +216,7 @@ export default async function ModelsPage() {
           <CollectionEntry
             key={model.slug}
             model={model}
+            index={i}
             imageUrl={productData[model.slug.replace(/-/g, '')]?.imageUrl ?? null}
             priority={i === 0}
           />
