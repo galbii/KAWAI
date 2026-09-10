@@ -9,6 +9,7 @@ import {
   rightNav,
   mobileNav,
   footerLinks,
+  grandsNav,
   resolveActive,
   isDropdown,
   type NavItem,
@@ -22,7 +23,8 @@ const byLabel = (items: NavItem[], label: string): NavItem => {
 
 describe('resolveActive', () => {
   const home = byLabel(leftNav, 'Home')
-  const models = byLabel(leftNav, 'Grand Pianos')
+  const grands = byLabel(leftNav, 'Grands')
+  const artists = byLabel(leftNav, 'Artists')
   const resources = byLabel(rightNav, 'Resources')
 
   test('Home matches only the exact microsite root', () => {
@@ -32,16 +34,16 @@ describe('resolveActive', () => {
   })
 
   test('a leaf item matches its own path', () => {
-    expect(resolveActive('/shigeru/models', models)).toBe(true)
+    expect(resolveActive('/shigeru/artists', artists)).toBe(true)
   })
 
   test('a leaf item matches deeper descendant paths', () => {
-    expect(resolveActive('/shigeru/models/sk-ex', models)).toBe(true)
+    expect(resolveActive('/shigeru/artists/kotaro-fukuma', artists)).toBe(true)
   })
 
   test('a leaf item does not match a sibling sharing a prefix string', () => {
-    // "/shigeru/models-archive" must not match "/shigeru/models"
-    expect(resolveActive('/shigeru/models-archive', models)).toBe(false)
+    // "/shigeru/artists-archive" must not match "/shigeru/artists"
+    expect(resolveActive('/shigeru/artists-archive', artists)).toBe(false)
   })
 
   test('a dropdown is active when any child is active', () => {
@@ -58,6 +60,46 @@ describe('resolveActive', () => {
   test('a dropdown is inactive elsewhere', () => {
     expect(resolveActive('/shigeru', resources)).toBe(false)
     expect(resolveActive('/shigeru/dealers', resources)).toBe(false)
+  })
+
+  test('Grands is active on its overview page and on any model page', () => {
+    expect(resolveActive('/shigeru/models', grands)).toBe(true)
+    expect(resolveActive('/shigeru/models/sk-ex', grands)).toBe(true)
+    expect(resolveActive('/shigeru', grands)).toBe(false)
+    expect(resolveActive('/shigeru/models-archive', grands)).toBe(false)
+  })
+})
+
+describe('grandsNav', () => {
+  test('is a dropdown rendered as the models card grid', () => {
+    expect(isDropdown(grandsNav)).toBe(true)
+    expect(grandsNav.variant).toBe('models')
+  })
+
+  test('carries every model with the detail the menu draws', () => {
+    expect(grandsNav.children.length).toBeGreaterThanOrEqual(6)
+    expect(grandsNav.children.map((c) => c.label)).toContain('SK-EX')
+    for (const child of grandsNav.children) {
+      expect(child.href.startsWith('/shigeru/models/')).toBe(true)
+      expect(child.detail?.kind).toBeTruthy()
+      expect(child.detail?.length).toBeTruthy()
+      expect(child.detail?.lengthCm).toBeTruthy()
+    }
+  })
+
+  test('length ratios run 0-1, with the longest model at exactly 1', () => {
+    const ratios = grandsNav.children.map((c) => c.detail!.lengthRatio)
+    for (const r of ratios) {
+      expect(r).toBeGreaterThan(0)
+      expect(r).toBeLessThanOrEqual(1)
+    }
+    expect(Math.max(...ratios)).toBe(1)
+    // The range is read by length, so the ratios must be strictly ascending.
+    expect([...ratios].sort((a, b) => a - b)).toEqual(ratios)
+  })
+
+  test('points at the collection page as its overview', () => {
+    expect(grandsNav.overview?.href).toBe('/shigeru/models')
   })
 })
 
@@ -89,6 +131,12 @@ describe('derived lists', () => {
     const hrefs = footerLinks.map((l) => l.href)
     expect(hrefs).toContain('/shigeru/about')
     expect(hrefs).toContain('/shigeru/technology')
+  })
+
+  test('a group with an overview collapses to that one footer link', () => {
+    const hrefs = footerLinks.map((l) => l.href)
+    expect(hrefs).toContain('/shigeru/models')
+    expect(hrefs).not.toContain('/shigeru/models/sk-ex')
   })
 
   test('footerLinks has no dropdown parents and no duplicate hrefs', () => {

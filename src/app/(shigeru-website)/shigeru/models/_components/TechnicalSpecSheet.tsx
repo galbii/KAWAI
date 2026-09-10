@@ -2,6 +2,15 @@
 
 import { useState } from 'react'
 import type { ShigeruModel } from '../../_data/models'
+import {
+  EDITORIAL_GRID,
+  GOLD,
+  OSWALD,
+  SANS,
+  SERIF,
+  ink,
+  labelStyle,
+} from '@/lib/shigeru/tokens'
 
 type Props = {
   model: Pick<
@@ -19,6 +28,50 @@ type SpecRow = {
 type SpecGroup = {
   title: string
   rows: SpecRow[]
+}
+
+/** One line of the appendix: label, leader, figure, and the figure's unit. */
+function Row({ row }: { row: SpecRow }) {
+  return (
+    <div
+      className="flex items-baseline justify-between gap-6 py-5"
+      style={{ borderBottom: `1px solid ${ink(0.12)}` }}
+    >
+      <dt className="w-28 flex-shrink-0 uppercase sm:w-48" style={labelStyle(0.72)}>
+        {row.label}
+      </dt>
+      <span
+        aria-hidden="true"
+        className="mb-1.5 hidden flex-1 sm:block"
+        style={{ borderBottom: `1px dotted ${ink(0.2)}` }}
+      />
+      {/* min-w-0 and no flex-shrink-0: a long value like "Millennium III
+          ABS-Carbon" must wrap on a phone rather than push the page wider than
+          the viewport. */}
+      <dd className="min-w-0 max-w-sm text-right">
+        <span
+          className="leading-tight"
+          style={{
+            fontFamily: OSWALD,
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            letterSpacing: '0.03em',
+            color: ink(0.92),
+          }}
+        >
+          {row.value}
+        </span>
+        {row.note && (
+          <span
+            className="mt-1 block"
+            style={{ fontFamily: SANS, fontSize: '0.78rem', color: ink(0.72) }}
+          >
+            {row.note}
+          </span>
+        )}
+      </dd>
+    </div>
+  )
 }
 
 export function TechnicalSpecSheet({ model }: Props) {
@@ -89,178 +142,116 @@ export function TechnicalSpecSheet({ model }: Props) {
   const remainingCount = expandedGroups.reduce((acc, g) => acc + g.rows.length, 0)
 
   return (
-    <section className="bg-kawai-pearl px-6 py-16">
-      <div className="max-w-4xl mx-auto">
-
-        {/* ── Section heading ──────────────────────────────────────── */}
-        <div className="flex items-center gap-5 mb-8 border-t border-kawai-black/[0.08] pt-12">
-          <h2
-            className="flex-shrink-0 text-kawai-black font-bold text-base tracking-[0.2em] uppercase"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Technical Specifications
-          </h2>
-          <span className="block h-px flex-1 bg-kawai-black/[0.08]" />
-          <span
-            className="flex-shrink-0 text-kawai-charcoal/35 text-sm"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            {model.name}
-          </span>
-        </div>
-
-        {/* ── Always-visible first 5 rows ──────────────────────────── */}
-        <div>
-          {previewRows.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-baseline justify-between gap-8 py-5 border-b border-kawai-black/[0.07]"
+    <section className="bg-kawai-pearl">
+      <div
+        className="mx-auto max-w-7xl px-6 py-20 lg:px-12 lg:py-28"
+        style={{ borderTop: `1px solid ${ink(0.12)}` }}
+      >
+        <div className={EDITORIAL_GRID}>
+          {/* ── Heading column ─────────────────────────────────────────── */}
+          <div>
+            <h2
+              className="uppercase leading-[1.05]"
+              style={{
+                fontFamily: OSWALD,
+                fontSize: 'clamp(1.9rem, 3vw, 2.6rem)',
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                color: ink(0.95),
+              }}
             >
-              <p
-                className="flex-shrink-0 text-kawai-charcoal/55 text-sm tracking-[0.2em] uppercase w-48"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                {row.label}
-              </p>
+              Technical Specifications
+            </h2>
+            <span aria-hidden="true" className="my-6 block h-px w-12" style={{ background: GOLD }} />
+            <p className="italic" style={{ fontFamily: SERIF, fontSize: '1.15rem', color: ink(0.72) }}>
+              {model.name}
+            </p>
+            <p
+              className="mt-10 hidden lg:block"
+              style={{ fontFamily: SANS, fontSize: '0.8rem', lineHeight: 1.6, color: ink(0.72) }}
+            >
+              Specifications subject to change without notice.
+            </p>
+          </div>
+
+          {/* ── Table column ───────────────────────────────────────────── */}
+          <div>
+            <dl>
+              {previewRows.map((row) => (
+                <Row key={row.label} row={row} />
+              ))}
+            </dl>
+
+            <button
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="group flex w-full cursor-pointer items-center justify-between gap-6 py-5"
+              style={{ borderBottom: `1px solid ${ink(0.12)}` }}
+            >
               <span
-                className="flex-1 border-b border-dotted border-kawai-black/[0.08] mb-1.5 hidden sm:block"
+                className="uppercase transition-colors duration-200 group-hover:!text-kawai-black"
+                style={{ ...labelStyle(0.72, '0.72rem'), letterSpacing: '0.2em' }}
+              >
+                {open ? 'Show fewer' : `Show all ${remainingCount + 5} specifications`}
+              </span>
+              <span
                 aria-hidden="true"
-              />
-              <div className="text-right flex-shrink-0 max-w-sm">
-                <span
-                  className="text-kawai-black font-light italic"
-                  style={{
-                    fontFamily: 'var(--font-brand-luxury)',
-                    fontSize: 'clamp(1.15rem, 1.8vw, 1.4rem)',
-                  }}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-colors duration-200 group-hover:!border-kawai-black"
+                style={{ border: `1px solid ${ink(0.28)}`, color: ink(0.75) }}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  className="transition-transform duration-300"
+                  style={{ transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}
                 >
-                  {row.value}
-                </span>
-                {row.note && (
-                  <span
-                    className="block text-kawai-charcoal/40 text-xs mt-0.5"
-                    style={{ fontFamily: 'var(--font-brand-sans)' }}
-                  >
-                    {row.note}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+                </svg>
+              </span>
+            </button>
 
-        {/* ── Expand toggle ────────────────────────────────────────── */}
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className="w-full flex items-center justify-between gap-8 py-5 border-b border-kawai-black/[0.07] group cursor-pointer"
-        >
-          <span
-            className="text-kawai-charcoal/45 group-hover:text-kawai-charcoal/70 text-sm tracking-wide transition-colors duration-200"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            {open ? 'Show fewer' : `Show all ${remainingCount + 5} specifications`}
-          </span>
-          <span
-            className="flex-shrink-0 w-8 h-8 rounded-full border border-kawai-black/15 group-hover:border-kawai-black/35 flex items-center justify-center transition-colors duration-200"
-            aria-hidden="true"
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-kawai-charcoal/50 transition-transform duration-300"
-              style={{ transform: open ? 'rotate(45deg)' : 'rotate(0deg)' }}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateRows: open ? '1fr' : '0fr',
+                transition: 'grid-template-rows 400ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
             >
-              <path
-                d="M7 1v12M1 7h12"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
-        </button>
-
-        {/* ── Expandable remaining rows ─────────────────────────────── */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateRows: open ? '1fr' : '0fr',
-            transition: 'grid-template-rows 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="overflow-hidden">
-            <div className="pt-2 pb-10">
-              <div className="space-y-10">
-                {expandedGroups.map((group) => (
-                  <div key={group.title}>
-                    <div className="flex items-center gap-5 mb-1">
-                      <p
-                        className="flex-shrink-0 text-kawai-gold text-[9px] tracking-[0.55em] uppercase"
-                        style={{ fontFamily: 'var(--font-brand-sans)', fontVariant: 'small-caps' }}
-                      >
-                        {group.title}
-                      </p>
-                      <span className="block h-px flex-1 bg-kawai-gold/25" />
+              <div className="overflow-hidden">
+                <div className="space-y-12 pt-10">
+                  {expandedGroups.map((group) => (
+                    <div key={group.title}>
+                      <div className="mb-1 flex items-center gap-5">
+                        <p className="flex-shrink-0 uppercase" style={labelStyle(0.72)}>
+                          {group.title}
+                        </p>
+                        <span
+                          aria-hidden="true"
+                          className="block h-px flex-1"
+                          style={{ background: GOLD, opacity: 0.5 }}
+                        />
+                      </div>
+                      <dl>
+                        {group.rows.map((row) => (
+                          <Row key={row.label} row={row} />
+                        ))}
+                      </dl>
                     </div>
-                    <div>
-                      {group.rows.map((row) => (
-                        <div
-                          key={row.label}
-                          className="flex items-baseline justify-between gap-8 py-5 border-b border-kawai-black/[0.07] last:border-b-0"
-                        >
-                          <p
-                            className="flex-shrink-0 text-kawai-charcoal/55 text-sm tracking-[0.2em] uppercase w-48"
-                            style={{ fontFamily: 'var(--font-brand-sans)' }}
-                          >
-                            {row.label}
-                          </p>
-                          <span
-                            className="flex-1 border-b border-dotted border-kawai-black/[0.08] mb-1.5 hidden sm:block"
-                            aria-hidden="true"
-                          />
-                          <div className="text-right flex-shrink-0 max-w-sm">
-                            <span
-                              className="text-kawai-black font-light italic"
-                              style={{
-                                fontFamily: 'var(--font-brand-luxury)',
-                                fontSize: 'clamp(1.15rem, 1.8vw, 1.4rem)',
-                              }}
-                            >
-                              {row.value}
-                            </span>
-                            {row.note && (
-                              <span
-                                className="block text-kawai-charcoal/40 text-xs mt-0.5"
-                                style={{ fontFamily: 'var(--font-brand-sans)' }}
-                              >
-                                {row.note}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
+
+            <p
+              className="mt-10 lg:hidden"
+              style={{ fontFamily: SANS, fontSize: '0.8rem', lineHeight: 1.6, color: ink(0.72) }}
+            >
+              Specifications subject to change without notice.
+            </p>
           </div>
         </div>
-
-        {/* ── Footer ───────────────────────────────────────────────── */}
-        <div className="mt-10">
-          <p
-            className="text-kawai-charcoal/30 text-xs tracking-[0.2em] uppercase"
-            style={{ fontFamily: 'var(--font-brand-sans)' }}
-          >
-            Specifications subject to change without notice.
-          </p>
-        </div>
-
       </div>
     </section>
   )

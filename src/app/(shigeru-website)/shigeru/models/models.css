@@ -1,0 +1,130 @@
+/*
+ * Shigeru Kawai — model page.
+ *
+ * Two things Tailwind can't express cleanly, and nothing else:
+ *   1. the spec plaque's breakpoint-dependent cell rules
+ *   2. the hero's one page-load sequence
+ *
+ * Plain CSS only — no @apply, so this file needs no `@import "tailwindcss"`.
+ */
+
+/* ── Spec plaque ───────────────────────────────────────────────────────────
+   The instrument's wall label: two-up on phones, four-up from md. Cells are
+   divided by hairlines, and the divider has to move between the two layouts —
+   a vertical rule between columns, a horizontal one between the stacked rows.
+   ──────────────────────────────────────────────────────────────────────── */
+.sk-plaque {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sk-plaque > * {
+  padding: 1.15rem 1rem 1.3rem;
+  border-left: 1px solid rgba(30, 27, 22, 0.16);
+}
+
+/* Left-hand cell of each phone row opens flush with the page margin */
+.sk-plaque > *:nth-child(odd) {
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* Second phone row gets a rule above it */
+.sk-plaque > *:nth-child(n + 3) {
+  border-top: 1px solid rgba(30, 27, 22, 0.16);
+}
+
+@media (min-width: 768px) {
+  .sk-plaque {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sk-plaque > *,
+  .sk-plaque > *:nth-child(odd) {
+    border-left: 1px solid rgba(30, 27, 22, 0.16);
+    border-top: 0;
+    padding-left: 1.5rem;
+  }
+
+  .sk-plaque > *:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* ── Hero sequence ─────────────────────────────────────────────────────────
+   One orchestrated moment on load: the label settles, the instrument arrives,
+   the floor line draws out beneath it. Nothing on this page animates on
+   scroll.
+   ──────────────────────────────────────────────────────────────────────── */
+@keyframes sk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sk-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sk-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.sk-rise {
+  animation: sk-rise 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.sk-rise-1 {
+  animation-delay: 0.04s;
+}
+.sk-rise-2 {
+  animation-delay: 0.12s;
+}
+.sk-rise-3 {
+  animation-delay: 0.2s;
+}
+.sk-rise-4 {
+  animation-delay: 0.62s;
+}
+.sk-rise-5 {
+  animation-delay: 0.7s;
+}
+
+.sk-arrive {
+  animation: sk-arrive 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 0.26s;
+}
+
+.sk-draw {
+  transform-origin: center;
+  animation: sk-draw 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 0.5s;
+}
+
+/* globals.css clamps animation-duration for reduced motion but leaves the
+   delays, which would blink the hero in. Switch it off outright instead. */
+@media (prefers-reduced-motion: reduce) {
+  .sk-rise,
+  .sk-arrive,
+  .sk-draw {
+    animation: none;
+  }
+}

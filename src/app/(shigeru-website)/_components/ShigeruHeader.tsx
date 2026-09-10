@@ -12,6 +12,7 @@ import {
   resolveActive,
   isDropdown,
   type NavItem,
+  type NavDropdown,
 } from '@/lib/shigeru/nav'
 
 const SHIGERU_LOGO =
@@ -42,6 +43,195 @@ function ActiveRule() {
       aria-hidden
       className="absolute -bottom-2 left-0 right-0 h-px bg-kawai-gold"
     />
+  )
+}
+
+// ── Dropdown panels ──────────────────────────────────────────────────────────
+
+/** Plain link column — Resources. */
+function ListPanel({ item, pathname }: { item: NavDropdown; pathname: string }) {
+  return (
+    <ul className="flex flex-col min-w-[208px] py-2" style={panelStyle}>
+      {item.children.map((child) => {
+        const childActive = resolveActive(pathname, child)
+        return (
+          <li key={child.href}>
+            <Link
+              href={child.href}
+              style={f}
+              aria-current={childActive ? 'page' : undefined}
+              className={[
+                'block text-[11px] font-semibold tracking-[0.14em] uppercase px-6 py-3 transition-colors duration-200',
+                childActive
+                  ? 'text-white bg-white/[0.05] border-l-2 border-kawai-gold'
+                  : 'text-white/75 hover:text-white hover:bg-white/[0.04] border-l-2 border-transparent',
+              ].join(' ')}
+            >
+              {child.label}
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/** Every model class ends in "Grand"; the menu is already labelled Grands. */
+const shortKind = (kind: string) => kind.replace(/\s+Grand$/i, '')
+
+/** Ink alphas match the collection carousel's — ≥0.72 clears 4.5:1 on pearl. */
+const INK = '30,27,22'
+const ink = (a: number) => `rgba(${INK},${a})`
+
+export type ModelImages = Record<string, string | null>
+
+/**
+ * The grand-piano mega menu — the homepage collection filmstrip, moved into
+ * the header.
+ *
+ * The carousel's argument is that the range is read by length, so it stands the
+ * six pianos to true relative scale on one shared floor: the SK-2 fills 65% of
+ * the SK-EX's frame because that is how long it actually is. This panel keeps
+ * that reading, and keeps the pearl stage with it — the product shots are lit
+ * on white and blend into pearl, not into the header's near-black.
+ */
+function ModelsPanel({
+  item,
+  pathname,
+  modelImages,
+}: {
+  item: NavDropdown
+  pathname: string
+  modelImages: ModelImages
+}) {
+  const { overview } = item
+  const overviewActive = overview ? pathname === overview.href : false
+
+  return (
+    <div className="bg-kawai-pearl">
+      <ul
+        className="sk-scroll-hide mx-auto flex max-w-screen-2xl items-end overflow-x-auto px-8 pt-10 md:px-14"
+        style={{ scrollSnapType: 'x proximity' }}
+      >
+        {item.children.map((child) => {
+          const childActive = resolveActive(pathname, child)
+          const detail = child.detail
+          const image = detail ? modelImages[detail.slug] : null
+          const ratio = detail?.lengthRatio ?? 1
+          return (
+            <li
+              key={child.href}
+              className="shrink-0"
+              style={{ width: `${ratio * 19}rem`, minWidth: '9rem', scrollSnapAlign: 'start' }}
+            >
+              <Link
+                href={child.href}
+                aria-current={childActive ? 'page' : undefined}
+                className="group relative flex h-full flex-col justify-end pb-6 text-center transition-colors duration-300 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
+              >
+                {/* Each piano occupies its true share of the frame, and every
+                    column's bottom border joins the next into one floor. */}
+                <span
+                  className="flex items-end justify-center px-4 pb-1"
+                  style={{ borderBottom: `1px solid ${ink(0.18)}`, minHeight: '10.5rem' }}
+                >
+                  <span
+                    className="relative block"
+                    style={{ width: '100%', height: `${ratio * 9.5}rem` }}
+                  >
+                    {image && (
+                      // mix-blend-multiply drops the white-lit product shot onto
+                      // the pearl stage. Nothing is layered over the photograph.
+                      <Image
+                        src={image}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1536px) 320px, 25vw"
+                        className="object-contain object-bottom mix-blend-multiply"
+                      />
+                    )}
+                  </span>
+                </span>
+
+                <span
+                  className="mt-4 block uppercase leading-none transition-colors duration-300"
+                  style={{
+                    fontFamily: 'var(--font-oswald)',
+                    fontSize: '1.05rem',
+                    fontWeight: childActive ? 700 : 500,
+                    letterSpacing: '0.1em',
+                    color: childActive ? ink(0.95) : ink(0.78),
+                  }}
+                >
+                  {child.label}
+                </span>
+
+                {detail && (
+                  <>
+                    <span
+                      className="mt-2 block italic leading-tight"
+                      style={{
+                        fontFamily: 'var(--font-brand-luxury)',
+                        fontSize: '1rem',
+                        color: ink(0.72),
+                      }}
+                    >
+                      {shortKind(detail.kind)}
+                    </span>
+                    <span
+                      className="mt-2 block"
+                      style={{
+                        fontFamily: 'var(--font-oswald)',
+                        fontSize: '0.8rem',
+                        letterSpacing: '0.18em',
+                        color: ink(0.72),
+                      }}
+                    >
+                      {detail.length}
+                    </span>
+                  </>
+                )}
+
+                {/* Gold marker under the model you're on — the filmstrip's. */}
+                <span
+                  aria-hidden
+                  className={[
+                    'absolute inset-x-4 bottom-0 h-[3px] bg-kawai-gold transition-opacity duration-300',
+                    childActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+                  ].join(' ')}
+                />
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+
+      {overview && (
+        <div className="bg-kawai-black">
+          <Link
+            href={overview.href}
+            aria-current={overviewActive ? 'page' : undefined}
+            className="group mx-auto flex max-w-screen-2xl items-center gap-3 px-8 py-5 md:px-14"
+          >
+            <span
+              style={f}
+              className={[
+                'text-[12px] font-semibold tracking-[0.16em] uppercase transition-colors duration-300',
+                overviewActive ? 'text-white' : 'text-white/75 group-hover:text-white',
+              ].join(' ')}
+            >
+              Compare all six side by side
+            </span>
+            <span
+              aria-hidden
+              className="text-kawai-gold text-xs transition-transform duration-300 group-hover:translate-x-1"
+            >
+              →
+            </span>
+          </Link>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -136,7 +326,7 @@ function NavBar({
                     links in the tab order — an invisible click-blocker over the page.
                     A plain conditional mount unmounts synchronously and is correct; only
                     the (unnoticed) exit animation is given up. */}
-                {openDropdown === item.label && (
+                {openDropdown === item.label && item.variant !== 'models' && (
                     <motion.div
                       id={dropdownId(item.label)}
                       className={`absolute top-full pt-3 z-50 ${side === 'right' ? 'right-0' : 'left-0'}`}
@@ -144,28 +334,7 @@ function NavBar({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.16, ease }}
                     >
-                      <ul className="flex flex-col min-w-[208px] py-2" style={panelStyle}>
-                        {item.children.map((child) => {
-                          const childActive = resolveActive(pathname, child)
-                          return (
-                            <li key={child.href}>
-                              <Link
-                                href={child.href}
-                                style={f}
-                                aria-current={childActive ? 'page' : undefined}
-                                className={[
-                                  'block text-[11px] font-semibold tracking-[0.14em] uppercase px-6 py-3 transition-colors duration-200',
-                                  childActive
-                                    ? 'text-white bg-white/[0.05] border-l-2 border-kawai-gold'
-                                    : 'text-white/75 hover:text-white hover:bg-white/[0.04] border-l-2 border-transparent',
-                                ].join(' ')}
-                              >
-                                {child.label}
-                              </Link>
-                            </li>
-                          )
-                        })}
-                      </ul>
+                      <ListPanel item={item} pathname={pathname} />
                     </motion.div>
                 )}
               </div>
@@ -189,7 +358,7 @@ function NavBar({
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export default function ShigeruHeader() {
+export default function ShigeruHeader({ modelImages = {} }: { modelImages?: ModelImages }) {
   const pathname = usePathname()
   const isHomepage = pathname === '/shigeru'
 
@@ -204,8 +373,16 @@ export default function ShigeruHeader() {
   const navLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const logoLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Transparency only applies on the /shigeru homepage — all other pages are always solid
-  const transparent = isHomepage && !scrolled
+  // The one full-bleed menu, if it's the one that's open.
+  const megaItem = mobileNav.find(
+    (item): item is NavDropdown =>
+      isDropdown(item) && item.variant === 'models' && item.label === openDropdown,
+  )
+
+  // Transparency only applies on the /shigeru homepage — all other pages are
+  // always solid. The mega menu is a full-width sheet, so the bar above it goes
+  // solid too and the two read as one surface.
+  const transparent = isHomepage && !scrolled && !megaItem
 
   // Only the homepage reacts to scroll, and only once per frame.
   useEffect(() => {
@@ -432,6 +609,24 @@ export default function ShigeruHeader() {
             </button>
           </div>
         </div>
+
+        {/* Grand-piano mega menu — full-bleed under the bar, kept open while the
+            pointer is inside it. Not wrapped in <AnimatePresence> for the same
+            reason as the anchored panels above. */}
+        {megaItem && (
+          <motion.div
+            id={dropdownId(megaItem.label)}
+            onMouseEnter={() => handleDropdownOpen(megaItem.label)}
+            onMouseLeave={handleDropdownLeave}
+            className="hidden lg:block overflow-hidden"
+            style={{ boxShadow: '0 24px 48px rgba(0,0,0,0.45)' }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease }}
+          >
+            <ModelsPanel item={megaItem} pathname={pathname} modelImages={modelImages} />
+          </motion.div>
+        )}
       </header>
 
       {/* ── Mobile overlay ── */}
@@ -495,17 +690,47 @@ export default function ShigeruHeader() {
                             <Link
                               key={child.href}
                               href={child.href}
-                              style={f}
                               aria-current={childActive ? 'page' : undefined}
-                              className={[
-                                'text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
-                                childActive ? 'text-kawai-gold' : 'text-white/75 hover:text-white',
-                              ].join(' ')}
+                              className="flex flex-col gap-1"
                             >
-                              {child.label}
+                              <span
+                                style={f}
+                                className={[
+                                  'text-[16px] font-semibold tracking-[0.04em] uppercase transition-colors duration-200',
+                                  childActive ? 'text-kawai-gold' : 'text-white/75',
+                                ].join(' ')}
+                              >
+                                {child.label}
+                              </span>
+                              {child.detail && (
+                                <span
+                                  className="flex items-baseline gap-4 text-[11px] tracking-[0.16em] uppercase text-white/45"
+                                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                                >
+                                  <span>{child.detail.kind}</span>
+                                  <span>{child.detail.length}</span>
+                                </span>
+                              )}
                             </Link>
                           )
                         })}
+
+                        {item.overview && (
+                          <Link
+                            href={item.overview.href}
+                            style={f}
+                            aria-current={pathname === item.overview.href ? 'page' : undefined}
+                            className={[
+                              'inline-flex items-center gap-2 text-[13px] font-semibold tracking-[0.14em] uppercase transition-colors duration-200',
+                              pathname === item.overview.href
+                                ? 'text-kawai-gold'
+                                : 'text-kawai-gold/85',
+                            ].join(' ')}
+                          >
+                            Compare all six
+                            <span aria-hidden className="text-xs">→</span>
+                          </Link>
+                        )}
                       </div>
                     </motion.div>
                   )

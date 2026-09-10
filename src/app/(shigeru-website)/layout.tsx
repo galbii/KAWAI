@@ -3,6 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ShigeruHeader from './_components/ShigeruHeader'
 import { footerLinks } from '@/lib/shigeru/nav'
+import { SHIGERU_MODELS } from './shigeru/_data/models'
+import { getShigeruPageData } from './shigeru/_data/shopify'
 import './shigeru.css'
 
 export const metadata: Metadata = {
@@ -97,94 +99,12 @@ const shigeruOrganizationSchema = {
   },
 }
 
-const shigeruProductListSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  name: 'Shigeru Kawai Grand Piano Models',
-  description: 'The complete collection of six Shigeru Kawai handcrafted grand pianos.',
-  url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'}/shigeru`,
-  numberOfItems: 6,
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-2',
-        description:
-          'The Classic Salon Grand — 5 feet 11 inches. The first model in the premium Shigeru Kawai line. Rivals any premium piano of its class.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-2',
-        category: 'Grand Piano',
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-3',
-        description:
-          'The Conservatory Grand — 6 feet 2 inches. Regarded as some of the finest pianos available. Admired by world-class pianists across the globe.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-3',
-        category: 'Grand Piano',
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 3,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-5',
-        description:
-          'The Chamber Grand — 6 feet 7 inches. Perfect fusion of robust tone, power, and presence for stately homes and professional venues.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-5',
-        category: 'Grand Piano',
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 4,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-6',
-        description:
-          'The Orchestra Grand — 7 feet even. Stability, consistent touch, and a rich, well-rounded tone. Each new owner receives an MPA in-home visit.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-6',
-        category: 'Grand Piano',
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 5,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-7',
-        description:
-          'The Semi-Concert Grand — 7 feet 6 inches. Second only to the SK-EX in full-bodied tone and exceptional dynamic range.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-7',
-        category: 'Grand Piano',
-      },
-    },
-    {
-      '@type': 'ListItem',
-      position: 6,
-      item: {
-        '@type': 'Product',
-        name: 'Shigeru Kawai SK-EX',
-        description:
-          'The Concert Grand — 9 feet 1 inch. Fewer than 20 are handcrafted each year. The pinnacle of the Shigeru Kawai range and a common choice at international piano competitions.',
-        brand: { '@type': 'Brand', name: 'Shigeru Kawai' },
-        model: 'SK-EX',
-        category: 'Grand Piano',
-      },
-    },
-  ],
-}
+/*
+ * The ItemList of the six models used to live here, which emitted it on every
+ * /shigeru page — the dealers page, the contact page, all of them — with no
+ * URL on any list item. It now lives on /shigeru/models, the one page it
+ * actually describes, with a url and an image per model.
+ */
 
 const faqSchema = {
   '@context': 'https://schema.org',
@@ -233,7 +153,17 @@ const faqSchema = {
   ],
 }
 
-export default function ShigeruLayout({ children }: { children: React.ReactNode }) {
+export default async function ShigeruLayout({ children }: { children: React.ReactNode }) {
+  // Same 1h-cached read the homepage collection carousel makes, so the header's
+  // grand-piano menu shows the real instruments without a second query.
+  const productData = await getShigeruPageData()
+  const modelImages = Object.fromEntries(
+    SHIGERU_MODELS.map((model) => [
+      model.slug,
+      productData[model.slug.replace(/-/g, '')]?.imageUrl ?? null,
+    ]),
+  )
+
   return (
     <>
       {/* Structured data */}
@@ -243,17 +173,13 @@ export default function ShigeruLayout({ children }: { children: React.ReactNode 
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(shigeruProductListSchema) }}
-      />
-      <script
-        type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       {/* Inside .sk-site so shigeru.css's font-size / opacity floors apply to the
           header too — it previously sat outside and silently opted out of them. */}
       <div className="sk-site">
-        <ShigeruHeader />
+        <ShigeruHeader modelImages={modelImages} />
 
         <main className="flex-1">{children}</main>
 
