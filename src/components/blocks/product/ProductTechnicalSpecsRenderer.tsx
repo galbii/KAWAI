@@ -472,35 +472,45 @@ export function ProductTechnicalSpecsRenderer({
         {/* Ledger */}
         {hasSpecs && (
           <div className="mt-10 md:mt-12">
-            {/* Count + filter */}
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-              <p className="text-sm text-kawai-muted tabular-nums" aria-live="polite">
-                {q ? `${filteredCount} of ${totalCount} specifications` : `${totalCount} specifications`}
-              </p>
-              <label className="flex w-full max-w-[240px] items-center gap-2 border-b border-kawai-neutral transition-colors focus-within:border-kawai-charcoal">
-                <MagnifyingGlassIcon className="h-4 w-4 flex-shrink-0 text-kawai-charcoal/40" aria-hidden="true" />
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape' && query) setQuery('')
-                  }}
-                  aria-label="Filter specifications"
-                  placeholder="Filter specifications"
-                  className="w-full bg-transparent py-2 text-sm text-kawai-black outline-none placeholder:text-kawai-charcoal/45"
-                />
-                {query && (
-                  <button
-                    onClick={() => setQuery('')}
-                    className="p-1 text-kawai-charcoal/40 transition-colors hover:text-kawai-red"
-                    aria-label="Clear filter"
-                  >
-                    <XMarkIcon className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </label>
-            </div>
+            {/* Search bar */}
+            <label
+              className={cn(
+                'mb-5 flex items-center gap-3 rounded-lg border bg-white px-4 shadow-sm transition-colors',
+                'border-kawai-neutral focus-within:border-kawai-charcoal/60',
+              )}
+            >
+              <MagnifyingGlassIcon className="h-4 w-4 flex-shrink-0 text-kawai-charcoal/45" aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && query) setQuery('')
+                }}
+                aria-label="Search specifications"
+                placeholder="Search specifications…"
+                className="w-full bg-transparent py-3 text-[15px] text-kawai-black outline-none placeholder:text-kawai-charcoal/45 [&::-webkit-search-cancel-button]:hidden"
+              />
+              <span
+                className="flex-shrink-0 text-xs text-kawai-muted tabular-nums whitespace-nowrap"
+                aria-live="polite"
+              >
+                {q
+                  ? filteredCount === 0
+                    ? 'No matches'
+                    : `${filteredCount} of ${totalCount}`
+                  : `${totalCount} specs`}
+              </span>
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="flex-shrink-0 rounded-full p-1 text-kawai-charcoal/40 transition-colors hover:bg-kawai-red/5 hover:text-kawai-red"
+                  aria-label="Clear search"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              )}
+            </label>
 
             {filteredFlatRows.length > 0 && <Ledger rows={filteredFlatRows} query={q} />}
 
