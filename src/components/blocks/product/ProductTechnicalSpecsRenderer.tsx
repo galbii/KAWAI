@@ -51,6 +51,7 @@ interface ManualSpec {
 interface SpecRow {
   id?: string
   label: string
+  type?: string
   value: string
   subItems?: string[]
   unit?: string | null
@@ -87,6 +88,7 @@ function transformProductSpecs(productSpecs: NonNullable<Product['specifications
 function transformJsonSpecs(specificationJson: Record<string, unknown>): SpecRow[] {
   return parseSpecificationJson(specificationJson).map((row) => ({
     label: row.label,
+    ...(row.type ? { type: row.type } : {}),
     value: row.value,
     ...(row.subItems && row.subItems.length > 0 ? { subItems: row.subItems } : {}),
   }))
@@ -114,6 +116,7 @@ function normaliseManualCategories(cats: ManualCategory[]): SpecCategory[] {
 function rowMatches(row: SpecRow, q: string): boolean {
   return (
     row.label.toLowerCase().includes(q) ||
+    (row.type?.toLowerCase().includes(q) ?? false) ||
     row.value.toLowerCase().includes(q) ||
     (row.unit?.toLowerCase().includes(q) ?? false) ||
     (row.note?.toLowerCase().includes(q) ?? false) ||
@@ -204,6 +207,11 @@ function LedgerRow({ row, query }: { row: SpecRow; query: string }) {
         <Highlight text={row.label} query={query} />
       </div>
       <div className="mt-1 md:mt-0">
+        {row.type && (
+          <div className="text-xs uppercase tracking-wide text-kawai-charcoal/55">
+            <Highlight text={row.type} query={query} />
+          </div>
+        )}
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className="text-[15px] font-medium leading-relaxed text-kawai-black tabular-nums">
             <Highlight text={row.value || '—'} query={query} />
