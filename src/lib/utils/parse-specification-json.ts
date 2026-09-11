@@ -93,12 +93,36 @@ function formatScalar(v: Scalar): string {
   return String(v).trim()
 }
 
+/**
+ * Some products (DG30, KDP75, the GX line) were authored with whole spec
+ * sections as one " - " delimited string instead of a nested object:
+ *   "Responsive Hammer III action - 88 keys - Ivory Touch - Let-off"
+ * Split those into separate lines so they read like every other product.
+ *
+ * Only splits at three or more segments. Two-segment strings are ranges and
+ * pairs in this data — "1st - 46th Key", "USB - MIDI" — and splitting those
+ * would destroy the value rather than clarify it.
+ */
+function splitRunOnString(text: string): string[] | null {
+  if (!text.includes(' - ')) return null
+  const parts = text.split(/ +- +/).map((p) => p.trim().replace(/,$/, '')).filter(Boolean)
+  return parts.length >= 3 ? parts : null
+}
+
 /** Render one object inline, for arrays of objects: prefers `name (extra, extra)`. */
 function formatInlineObject(obj: Record<string, unknown>): string {
   const name = typeof obj.name === 'string' ? obj.name : null
   const rest = Object.entries(obj)
     .filter(([k, v]) => k !== 'name' && v !== null && v !== undefined)
-    .map(([, v]) => (isScalar(v) ? formatScalar(v) : Array.isArray(v) ? formatList(v) : null))
+    .map(([k, v]) => {
+      // A boolean here is a named flag — `{ name: 'Damper', half_pedal_support: true }`.
+      // Rendering the value alone gives "Damper (Yes)", which says nothing; the key
+      // IS the information, so emit the key and drop the entry when it's false.
+      if (typeof v === 'boolean') return v ? humanizeKey(k).toLowerCase() : null
+      if (isScalar(v)) return formatScalar(v)
+      if (Array.isArray(v)) return formatList(v)
+      return null
+    })
     .filter((s): s is string => Boolean(s))
   if (name) return rest.length ? `${name} (${rest.join(', ')})` : name
   return rest.join(' — ')
@@ -295,7 +319,13 @@ export function parseSpecificationJson(
 
     if (isScalar(value)) {
       const v = formatScalar(value)
-      if (v) rows.push({ label, value: v })
+      if (!v) continue
+      const parts = typeof value === 'string' ? splitRunOnString(v) : null
+      if (parts) {
+        rows.push({ label, value: parts[0] ?? v, subItems: parts.slice(1) })
+      } else {
+        rows.push({ label, value: v })
+      }
       continue
     }
 
