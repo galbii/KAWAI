@@ -89,11 +89,13 @@ export type ModelImages = Record<string, string | null>
  * The grand-piano mega menu — the homepage collection filmstrip, moved into
  * the header.
  *
- * The carousel's argument is that the range is read by length, so it stands the
- * six pianos to true relative scale on one shared floor: the SK-2 fills 65% of
- * the SK-EX's frame because that is how long it actually is. This panel keeps
- * that reading, and keeps the pearl stage with it — the product shots are lit
- * on white and blend into pearl, not into the header's near-black.
+ * The /shigeru/models range strip draws the six pianos to true relative scale,
+ * because on that page the range IS the subject. A menu is not — it is read as
+ * a list of destinations, and a scale rule there leaves the SK-2 two-thirds the
+ * size of the SK-EX to see and to click. So every model gets an identical
+ * frame here; the length is still stated, in words, under each name. The pearl
+ * stage stays — the product shots are lit on white and blend into pearl, not
+ * into the header's near-black.
  */
 function ModelsPanel({
   item,
@@ -117,28 +119,26 @@ function ModelsPanel({
           const childActive = resolveActive(pathname, child)
           const detail = child.detail
           const image = detail ? modelImages[detail.slug] : null
-          const ratio = detail?.lengthRatio ?? 1
           return (
             <li
               key={child.href}
-              className="shrink-0"
-              style={{ width: `${ratio * 19}rem`, minWidth: '9rem', scrollSnapAlign: 'start' }}
+              // Equal columns that share out the row: they grow together on a
+              // wide header and hold 11rem — then scroll — on a cramped one.
+              style={{ flex: '1 0 11rem', maxWidth: '18rem', scrollSnapAlign: 'start' }}
             >
               <Link
                 href={child.href}
                 aria-current={childActive ? 'page' : undefined}
                 className="group relative flex h-full flex-col justify-end pb-6 text-center transition-colors duration-300 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
               >
-                {/* Each piano occupies its true share of the frame, and every
-                    column's bottom border joins the next into one floor. */}
+                {/* One frame, one size, for every model — object-contain sizes
+                    each photograph into it. Every column's bottom border joins
+                    the next into one floor. */}
                 <span
                   className="flex items-end justify-center px-4 pb-1"
                   style={{ borderBottom: `1px solid ${ink(0.18)}`, minHeight: '10.5rem' }}
                 >
-                  <span
-                    className="relative block"
-                    style={{ width: '100%', height: `${ratio * 9.5}rem` }}
-                  >
+                  <span className="relative block" style={{ width: '100%', height: '9.5rem' }}>
                     {image && (
                       // mix-blend-multiply drops the white-lit product shot onto
                       // the pearl stage. Nothing is layered over the photograph.
@@ -146,7 +146,7 @@ function ModelsPanel({
                         src={image}
                         alt=""
                         fill
-                        sizes="(min-width: 1536px) 320px, 25vw"
+                        sizes="(min-width: 1536px) 288px, 25vw"
                         className="object-contain object-bottom mix-blend-multiply"
                       />
                     )}

@@ -87,17 +87,6 @@ describe('grandsNav', () => {
     }
   })
 
-  test('length ratios run 0-1, with the longest model at exactly 1', () => {
-    const ratios = grandsNav.children.map((c) => c.detail!.lengthRatio)
-    for (const r of ratios) {
-      expect(r).toBeGreaterThan(0)
-      expect(r).toBeLessThanOrEqual(1)
-    }
-    expect(Math.max(...ratios)).toBe(1)
-    // The range is read by length, so the ratios must be strictly ascending.
-    expect([...ratios].sort((a, b) => a - b)).toEqual(ratios)
-  })
-
   test('points at the collection page as its overview', () => {
     expect(grandsNav.overview?.href).toBe('/shigeru/models')
   })

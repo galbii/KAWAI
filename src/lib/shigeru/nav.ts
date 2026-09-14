@@ -19,8 +19,6 @@ export type NavLeafDetail = {
   /** Length in feet/inches and in centimetres — `6' 2"`, `188 cm`. */
   length: string
   lengthCm: string
-  /** Length as a fraction of the longest model, 0–1. Sets the scale rule. */
-  lengthRatio: number
 }
 
 export type NavLeaf = {
@@ -48,11 +46,6 @@ export type NavItem = NavLeaf | NavDropdown
 
 const MICROSITE_ROOT = '/shigeru'
 
-const parseCm = (cm: string): number => parseInt(cm, 10) || 0
-
-/** The SK-EX at 278 cm — every other model is drawn against it. */
-const LONGEST_CM = Math.max(...SHIGERU_MODELS.map((m) => parseCm(m.cm)))
-
 /**
  * The six grands, derived from the model data the homepage carousel and the
  * /shigeru/models pages already render — add a model there and it appears here.
@@ -70,7 +63,6 @@ export const grandsNav: NavDropdown = {
       kind: model.type,
       length: model.feet,
       lengthCm: model.cm,
-      lengthRatio: LONGEST_CM ? parseCm(model.cm) / LONGEST_CM : 1,
     },
   })),
 }
