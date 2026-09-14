@@ -39,6 +39,47 @@ const FALLBACK_WINDOW: DayWindow = { open: 10 * 60, close: 18 * 60 }
 /** Appointments start on the hour and block out this long before closing. */
 const SLOT_MINUTES = 60
 
+/**
+ * A stretch of one date when a store can't take appointments even though its
+ * published hours say it's open — a staff event, a recital, a private showing.
+ * A slot is withheld when it starts at or after `from` and before `until`, so
+ * a slot exactly at `until` is the first one still bookable.
+ */
+export interface Blackout {
+  /** Local calendar date, 'YYYY-MM-DD'. */
+  date: string
+  /** Minutes since midnight. Omitted = from the start of the day. */
+  from?: number
+  /** Minutes since midnight, exclusive. Omitted = to the end of the day. */
+  until?: number
+}
+
+/**
+ * Per-store blackouts, keyed by storeslug.
+ *
+ * Weekly hours belong in the CMS; these don't. A blackout is a one-off
+ * exception to a single date that would otherwise have to be expressed by
+ * editing the store's Saturday hours and remembering to put them back.
+ */
+export const STORE_BLACKOUTS: Record<string, readonly Blackout[]> = {
+  // Saturday, September 19 — Denver is committed until 3 PM. The 3, 4 and 5 PM
+  // slots stay open; the morning through 2 PM is withheld.
+  denver: [{ date: '2026-09-19', until: 15 * 60 }],
+}
+
+function isBlackedOut(
+  storeslug: string | null | undefined,
+  isoDate: string,
+  minutes: number,
+): boolean {
+  if (!storeslug) return false
+  const windows = STORE_BLACKOUTS[storeslug.toLowerCase().trim()]
+  if (!windows) return false
+  return windows.some(
+    (b) => b.date === isoDate && minutes >= (b.from ?? 0) && minutes < (b.until ?? 24 * 60),
+  )
+}
+
 function toMinutes(hourRaw: number, minute: number, meridiem: string | undefined): number {
   let hour = hourRaw % 12
   if (meridiem === 'pm') hour += 12
@@ -90,13 +131,23 @@ export function formatSlot(minutes: number): string {
 /**
  * Bookable time labels for one date, hourly on the hour, ending an hour before
  * close. "10:00 am–7:00 pm" → 10:00 AM … 6:00 PM.
+ *
+ * `storeslug` is what applies that store's blackouts (STORE_BLACKOUTS). Every
+ * caller has it, and both the client grid and the server action's re-validation
+ * must pass it or the two disagree about what is bookable.
  */
-export function slotsForDate(hours: HoursEntry[] | null | undefined, date: Date): string[] {
+export function slotsForDate(
+  hours: HoursEntry[] | null | undefined,
+  date: Date,
+  storeslug?: string | null,
+): string[] {
   const window = windowForDate(hours, date)
   if (!window) return []
+  const isoDate = toIsoDate(date)
   const slots: string[] = []
   const firstSlot = Math.ceil(window.open / 60) * 60
   for (let t = firstSlot; t + SLOT_MINUTES <= window.close; t += SLOT_MINUTES) {
+    if (isBlackedOut(storeslug, isoDate, t)) continue
     slots.push(formatSlot(t))
   }
   return slots
@@ -111,10 +162,15 @@ export function campaignDates(): Date[] {
   return dates
 }
 
-/** In-window, not before today, and the store is open that day. */
+/**
+ * In-window, not before today, and the store has at least one slot left that
+ * day. Decided on the slots rather than on the hours window so a blackout that
+ * covers the whole day greys the date out instead of offering an empty grid.
+ */
 export function isBookableDate(
   hours: HoursEntry[] | null | undefined,
   date: Date,
+  storeslug?: string | null,
   now: Date = new Date(),
 ): boolean {
   if (date.getFullYear() !== CAMPAIGN_YEAR || date.getMonth() !== CAMPAIGN_MONTH - 1) return false
@@ -122,7 +178,7 @@ export function isBookableDate(
   if (day < WINDOW_START_DAY || day > WINDOW_END_DAY) return false
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   if (date < today) return false
-  return windowForDate(hours, date) !== null
+  return slotsForDate(hours, date, storeslug).length > 0
 }
 
 /** '2026-09-12' → Date (local). Returns null for anything else. */

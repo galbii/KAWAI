@@ -82,8 +82,8 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
   }, [open])
 
   const slots = useMemo(
-    () => (selectedDate ? slotsForDate(hours ?? null, selectedDate) : []),
-    [hours, selectedDate],
+    () => (selectedDate ? slotsForDate(hours ?? null, selectedDate, storeslug) : []),
+    [hours, selectedDate, storeslug],
   )
 
   // Built here rather than in the success markup so the link is one value the
@@ -382,6 +382,7 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
             {!booked && step === 2 && (
               <div className="btsm-step px-6 py-6">
                 <SeptemberPicker
+                  storeslug={storeslug}
                   hours={hours}
                   selected={selectedDate}
                   onSelect={(d) => {

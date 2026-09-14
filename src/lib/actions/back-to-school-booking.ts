@@ -144,7 +144,10 @@ export async function bookBackToSchoolAppointment(
   if (!storefront) return { ok: false, error: GENERIC_ERROR }
 
   const hours = storefront.hours ?? null
-  if (!isBookableDate(hours, date) || !slotsForDate(hours, date).includes(input.time)) {
+  if (
+    !isBookableDate(hours, date, input.storeslug) ||
+    !slotsForDate(hours, date, input.storeslug).includes(input.time)
+  ) {
     return { ok: false, error: 'That time is no longer available — please pick another.' }
   }
 

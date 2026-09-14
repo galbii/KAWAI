@@ -91,10 +91,13 @@ const WEEKDAY_HEADER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
 
 export function SeptemberPicker({
   hours,
+  storeslug,
   selected,
   onSelect,
 }: {
   hours: HoursEntry[] | null | undefined
+  /** Which store's blackouts to grey out alongside its closed days. */
+  storeslug: string
   selected: Date | null
   onSelect: (d: Date) => void
 }) {
@@ -139,7 +142,7 @@ export function SeptemberPicker({
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1
           const date = new Date(CAMPAIGN_YEAR, CAMPAIGN_MONTH - 1, day)
-          const bookable = isBookableDate(hours, date, now)
+          const bookable = isBookableDate(hours, date, storeslug, now)
           const isSelected = selected?.getDate() === day
           return (
             <button

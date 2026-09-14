@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
   const hours = storefront.hours ?? null
   // Deliberately not isBookableDate(): that also rejects dates in the past, and
   // adding a past appointment to a calendar is a reasonable thing to want.
-  if (!windowForDate(hours, date) || !slotsForDate(hours, date).includes(time)) {
+  if (!windowForDate(hours, date) || !slotsForDate(hours, date, storeslug).includes(time)) {
     return NextResponse.json({ error: 'That time is not one of ours.' }, { status: 400 })
   }
 

@@ -44,8 +44,8 @@ export function BookingForm({ storeslug, locationName, hours, className = '' }: 
   const [booked, setBooked] = useState(false)
 
   const slots = useMemo(
-    () => (selectedDate ? slotsForDate(hours ?? null, selectedDate) : []),
-    [hours, selectedDate],
+    () => (selectedDate ? slotsForDate(hours ?? null, selectedDate, storeslug) : []),
+    [hours, selectedDate, storeslug],
   )
 
   const googleUrl = useMemo(() => {
@@ -248,6 +248,7 @@ export function BookingForm({ storeslug, locationName, hours, className = '' }: 
           </p>
 
           <SeptemberPicker
+            storeslug={storeslug}
             hours={hours}
             selected={selectedDate}
             onSelect={(d) => {
