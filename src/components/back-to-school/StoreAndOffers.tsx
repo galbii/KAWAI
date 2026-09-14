@@ -222,7 +222,7 @@ export function StoreAndOffers({
                             onClick={() => setRebatesOpen(true)}
                             className="group mt-3 inline-flex items-center gap-2.5 text-kawai-red hover:text-kawai-red-600 text-sm tracking-[0.16em] uppercase font-semibold underline underline-offset-4 decoration-kawai-red/30 hover:decoration-kawai-red transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
                           >
-                            See rebates
+                            Browse catalog
                             <svg
                               className="w-4 h-4 transition-transform group-hover:translate-x-1"
                               fill="none"
@@ -246,7 +246,7 @@ export function StoreAndOffers({
                   href={bookHref}
                   className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
                 >
-                  Book an appointment
+                  Schedule a Tour
                   <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>

@@ -13,12 +13,16 @@ interface HeroCtasProps {
 }
 
 /**
- * The hero's CTA pair. Booking is the primary action and opens the campaign
- * booking modal in place; "See Rebates" is a matched secondary that drops the
- * visitor into the rebate ledger.
+ * The hero's CTA pair. Scheduling a tour is the primary action and opens the
+ * campaign booking modal in place; "Browse Catalog" is a matched secondary
+ * that drops the visitor into the featured-products ledger.
  *
  * Both are the same size and shape — a text link beside a filled button reads
  * as an afterthought, and the ledger is where most of the page's argument is.
+ *
+ * The line under the pair is the friction-reducer: the ask is a visit, and the
+ * thing that stops a visit being booked is not knowing what it costs you. So it
+ * says what it takes (a minute) and what it doesn't (an obligation).
  */
 export function HeroCtas({ storeslug, locationName, hours, tone = 'light' }: HeroCtasProps) {
   const [open, setOpen] = useState(false)
@@ -35,7 +39,7 @@ export function HeroCtas({ storeslug, locationName, hours, tone = 'light' }: Her
           onClick={() => setOpen(true)}
           className="group inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-pearl"
         >
-          Book an appointment
+          Schedule a Tour
           <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
           </svg>
@@ -45,9 +49,15 @@ export function HeroCtas({ storeslug, locationName, hours, tone = 'light' }: Her
           href="#rebates"
           className={`inline-flex items-center justify-center px-9 py-5 border text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${secondary}`}
         >
-          See Rebates
+          Browse Catalog
         </a>
       </div>
+
+      <p
+        className={`mt-4 text-sm ${tone === 'dark' ? 'text-kawai-pearl/60' : 'text-kawai-charcoal/60'}`}
+      >
+        Takes about a minute — pick a day and time that works. No obligation.
+      </p>
 
       <BookingModal
         open={open}

@@ -55,7 +55,7 @@ export function BookingForm({ storeslug, locationName, hours, className = '' }: 
       isoDate: toIsoDate(selectedDate),
       time: selectedTime,
       details:
-        'Your Back to School appointment. The pianos will be uncovered and in tune when you arrive.',
+        'Your Back to School showroom tour. The pianos will be uncovered and in tune when you arrive.',
     })
   }, [selectedDate, selectedTime, locationName])
 

@@ -59,14 +59,14 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
             className="bts-serif text-kawai-pearl/85 mt-6 max-w-2xl mx-auto"
             style={{ fontSize: 'clamp(1.25rem, 2.4vw, 1.8rem)', lineHeight: 1.35 }}
           >
-            Book your appointment to receive an official invitation.
+            Schedule a tour and we’ll send your official invitation.
           </Reveal>
 
           <Reveal as="p" delay={0.24} className="text-kawai-pearl/60 text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-8 mb-10">
-            Pick a day and a time and the invitation lands in your inbox — the date, the address,
-            and a link that drops it straight into your calendar. Tell us roughly what you&apos;re
-            after and we&apos;ll have those pianos uncovered and in tune when you arrive
-            {locationName ? <> at {locationName}</> : null}.
+            Pick a day and a time — it takes about a minute. The invitation lands in your inbox
+            with the date, the address, and a link that drops it straight into your calendar. Tell
+            us roughly what you&apos;re after and we&apos;ll have those pianos uncovered and in
+            tune when you arrive{locationName ? <> at {locationName}</> : null}.
           </Reveal>
 
           <Reveal as="ul" delay={0.3} className="flex flex-wrap items-center justify-center gap-2.5 mb-11">
@@ -85,7 +85,7 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
               onClick={() => setOpen(true)}
               className="group inline-flex items-center gap-3 px-11 py-6 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.22em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-pearl"
             >
-              Book an appointment
+              Schedule a Tour
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>

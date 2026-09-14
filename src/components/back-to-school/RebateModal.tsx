@@ -76,7 +76,7 @@ export function RebateModal({ open, onClose, data, locationName, onBook }: Rebat
         className="fixed inset-0 z-[9011] flex items-center justify-center p-0 sm:p-6 lg:p-10 pointer-events-none"
         role="dialog"
         aria-modal="true"
-        aria-label="Back to School rebates"
+        aria-label="Back to School featured products"
       >
         <div
           className="btsm-panel pointer-events-auto w-full max-w-[1040px] bg-kawai-pearl overflow-hidden shadow-[0_40px_100px_rgba(30,27,22,0.34),0_12px_32px_rgba(30,27,22,0.16)] flex flex-col"
@@ -107,12 +107,18 @@ export function RebateModal({ open, onClose, data, locationName, onBook }: Rebat
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  Our Rebates
+                  Featured Products
                 </h2>
                 <p
                   className="text-kawai-charcoal/65 mt-2"
                   style={{ fontFamily: CORMORANT, fontStyle: 'italic', fontSize: '1.02rem', lineHeight: 1.3 }}
                 >
+                  Save up to $4,500 in instant rebates, plus in-store discounts.
+                </p>
+                {/* The count and the affordance both still earn their place —
+                    they just aren't the headline any more, so they drop to the
+                    supporting line under it. */}
+                <p className="text-kawai-charcoal/50 text-[0.82rem] mt-1.5">
                   {visibleCount} {visibleCount === 1 ? 'model' : 'models'} — tap any one for the
                   full card.
                 </p>
@@ -120,7 +126,7 @@ export function RebateModal({ open, onClose, data, locationName, onBook }: Rebat
               <button
                 onClick={onClose}
                 className="w-9 h-9 flex-shrink-0 flex items-center justify-center text-kawai-charcoal/45 hover:text-kawai-pearl hover:bg-kawai-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
-                aria-label="Close rebates"
+                aria-label="Close featured products"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -152,7 +158,7 @@ export function RebateModal({ open, onClose, data, locationName, onBook }: Rebat
               onClick={handleBook}
               className="group w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
             >
-              Book an appointment
+              Schedule a Tour
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
               </svg>

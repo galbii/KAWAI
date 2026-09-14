@@ -407,6 +407,7 @@ export function RebateLedger({
         categoryLabel={selected?.categoryLabel ?? ''}
         isShigeru={selected?.isShigeru ?? false}
         variant="campaign"
+        ctaLabel="Schedule a Tour"
         onSignUp={() => {
           setSelected(null)
           onBook?.()

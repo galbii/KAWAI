@@ -85,7 +85,7 @@ export function DeadlineDock({ storeslug, locationName, hours, campaignHref }: D
                 href={campaignHref}
                 className="flex items-center gap-2 pl-5 pr-4 py-3 hover:bg-white/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 tabIndex={visible ? 0 : -1}
-                aria-label="See the Back to School rebates"
+                aria-label="Browse the Back to School catalog"
               >
                 {label}
               </Link>
@@ -99,7 +99,7 @@ export function DeadlineDock({ storeslug, locationName, hours, campaignHref }: D
             className="bg-kawai-red hover:bg-kawai-red-600 text-white text-xs tracking-[0.16em] uppercase font-semibold px-5 py-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             tabIndex={visible ? 0 : -1}
           >
-            Book
+            Schedule
           </button>
         </div>
       </div>

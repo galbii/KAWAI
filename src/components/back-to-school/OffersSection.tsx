@@ -38,7 +38,7 @@ const OFFER_DETAIL: OfferDetail[] = [
     value: '$4,500',
     prefix: 'Up to',
     body: 'The rebate comes off the price at the counter on the day you buy — no mail-in form, no waiting on a check. Amounts vary by model; every one of them is in the ledger below.',
-    cta: { label: 'See our rebates', href: '#rebates' },
+    cta: { label: 'Browse the catalog', href: '#rebates' },
   },
   {
     value: '+$500',

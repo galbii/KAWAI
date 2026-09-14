@@ -31,7 +31,7 @@ export function BookCta({
   storeslug,
   locationName,
   hours,
-  label = 'Book an appointment',
+  label = 'Schedule a Tour',
   tone = 'light',
   className = '',
 }: BookCtaProps) {

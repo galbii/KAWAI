@@ -36,6 +36,13 @@ type Props = {
    * look like the ledger it came from.
    */
   variant?: 'gold' | 'campaign'
+  /**
+   * Overrides the card's call to action. The campaign variant is rendered by
+   * two pages that ask for different things — /signup3 asks for a sign-up,
+   * Back to School asks for a showroom tour — so the label is a prop rather
+   * than a second meaning read off `variant`.
+   */
+  ctaLabel?: string
   /** Opens the dealer sign-up offer popup (closes this modal first). */
   onSignUp: () => void
   onClose: () => void
@@ -163,6 +170,7 @@ export default function RebateModelModal({
   categoryLabel,
   isShigeru,
   variant = 'gold',
+  ctaLabel: ctaLabelProp,
   onSignUp,
   onClose,
 }: Props) {
@@ -270,7 +278,7 @@ export default function RebateModelModal({
     ? 'group inline-flex w-full items-center justify-center gap-2.5 bg-kawai-red px-6 py-4 font-[family-name:var(--font-oswald)] text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-kawai-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
     : 'group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-kawai-red px-6 py-3.5 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-white transition-all duration-300 hover:bg-kawai-red/90 hover:shadow-[0_8px_28px_rgba(225,25,34,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-black'
 
-  const ctaLabel = campaign ? 'Book an appointment' : 'Sign Up Now'
+  const ctaLabel = ctaLabelProp ?? (campaign ? 'Book an appointment' : 'Sign Up Now')
 
   return (
     <Modal

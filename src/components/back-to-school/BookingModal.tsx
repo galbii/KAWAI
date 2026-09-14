@@ -94,7 +94,7 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
       storeName: locationName ?? 'Kawai',
       isoDate: toIsoDate(selectedDate),
       time: selectedTime,
-      details: 'Your Back to School appointment. The pianos will be uncovered and in tune when you arrive.',
+      details: 'Your Back to School showroom tour. The pianos will be uncovered and in tune when you arrive.',
     })
   }, [selectedDate, selectedTime, locationName])
 
@@ -166,7 +166,7 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
         className="fixed inset-0 z-[9011] flex items-center justify-center p-4 sm:p-8 pointer-events-none"
         role="dialog"
         aria-modal="true"
-        aria-label="Book an appointment"
+        aria-label="Schedule a tour"
       >
         <div
           className="btsm-panel pointer-events-auto w-full max-w-[520px] bg-kawai-pearl overflow-hidden shadow-[0_40px_100px_rgba(30,27,22,0.34),0_12px_32px_rgba(30,27,22,0.16)] flex flex-col relative"
@@ -190,7 +190,7 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  {booked ? 'Your invitation is on its way.' : step === 1 ? 'Book an appointment' : 'Circle a day'}
+                  {booked ? 'Your invitation is on its way.' : step === 1 ? 'Schedule a tour' : 'Circle a day'}
                 </h2>
                 {/* The page's counterpoint voice, once, where the visitor is
                     deciding whether this is worth their afternoon. */}
@@ -200,7 +200,7 @@ export function BookingModal({ open, onClose, storeslug, locationName, hours }: 
                     style={{ fontFamily: CORMORANT, fontStyle: 'italic', fontSize: '1.02rem', lineHeight: 1.3 }}
                   >
                     {step === 1
-                      ? 'We’ll have them tuned and uncovered for you.'
+                      ? 'A minute to book — we’ll have the pianos tuned and uncovered for you.'
                       : 'Pick a day and we’ll confirm it by email.'}
                   </p>
                 )}

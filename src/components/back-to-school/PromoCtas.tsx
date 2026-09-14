@@ -37,7 +37,7 @@ export function PromoCtas({ storeslug, locationName, hours }: PromoCtasProps) {
           onClick={() => setOpen(true)}
           className="inline-flex items-center justify-center px-9 py-5 border border-kawai-pearl/45 text-kawai-pearl hover:bg-kawai-pearl hover:text-kawai-black text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-pearl"
         >
-          Book an appointment
+          Schedule a Tour
         </button>
       </div>
 

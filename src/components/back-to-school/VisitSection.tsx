@@ -123,7 +123,7 @@ export function VisitSection({
                     onClick={() => setBookingOpen(true)}
                     className="w-full inline-flex items-center justify-center px-6 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
                   >
-                    Book an appointment
+                    Schedule a Tour
                   </button>
                   {resolvedDirections && (
                     <a
@@ -136,6 +136,11 @@ export function VisitSection({
                       Get directions
                     </a>
                   )}
+                  {/* The hours above tell them when we’re open; this tells them
+                      they don’t have to work out which of those suits us. */}
+                  <p className="text-kawai-charcoal/55 text-sm leading-relaxed text-center">
+                    Tell us when you’re free and we’ll confirm by email.
+                  </p>
                 </div>
               </div>
 

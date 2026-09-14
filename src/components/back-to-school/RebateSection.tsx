@@ -48,8 +48,8 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
         <div className={`relative ${BTS_CONTAINER} py-16 md:py-24`}>
           <SectionHead
             eyebrow="Instant Rebates"
-            title="Our Rebates"
-            subhead="Up to $4,500 across new digital, upright, and grand pianos"
+            title="Featured Products"
+            subhead="Save up to $4,500 in instant rebates, plus in-store discounts."
             meta={`${visibleCount} ${visibleCount === 1 ? 'model' : 'models'} · Ends ${DEADLINE_LONG}`}
             className="mb-10"
           />
@@ -63,15 +63,22 @@ export function RebateSection({ data, locationName, hours, storeslug }: RebateSe
           />
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 mt-10">
-            <button
-              onClick={openBooking}
-              className="group inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
-            >
-              Book an appointment
-              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
-            </button>
+            {/* The ledger is a table of numbers; the reason to come in is that
+                the models behind them can be played. So the ask names that. */}
+            <div className="flex-shrink-0">
+              <button
+                onClick={openBooking}
+                className="group inline-flex items-center justify-center gap-3 px-9 py-5 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.18em] uppercase font-semibold transition-colors w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
+              >
+                Schedule a Tour
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+              </button>
+              <p className="mt-3 text-kawai-charcoal/55 text-sm leading-relaxed">
+                Play the models on rebate and we’ll walk you through what comes off.
+              </p>
+            </div>
             <RebateFootnote
               locationName={locationName}
               dateRange={DATE_RANGE}

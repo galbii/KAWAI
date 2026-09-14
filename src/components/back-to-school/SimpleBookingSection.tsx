@@ -36,11 +36,11 @@ export function SimpleBookingSection({
       <div className={`relative ${BTS_CONTAINER} py-14 md:py-20`}>
         <SectionHead
           eyebrow={`Ends ${DEADLINE_LONG}`}
-          title="Book an appointment"
+          title="Schedule a Tour"
           aside={
             locationName
-              ? `We’ll have them tuned and uncovered for you at ${locationName}.`
-              : 'We’ll have them tuned and uncovered for you.'
+              ? `Pick a day and a time — we’ll have the pianos tuned and uncovered for you at ${locationName}.`
+              : 'Pick a day and a time — we’ll have the pianos tuned and uncovered for you.'
           }
           className="mb-9"
         />

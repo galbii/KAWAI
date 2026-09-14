@@ -42,7 +42,7 @@ const STEPS = [
   },
   {
     number: '02',
-    heading: 'Book your visit',
+    heading: 'Schedule your tour',
     body: 'Pick a time during the program window. If you have a written independent appraisal, bring it; if not, we can help you arrange one.',
   },
   {
@@ -116,7 +116,8 @@ export function TradeInBand({ storeslug, phone, locationName, hours }: TradeInBa
             className="bts-serif text-kawai-pearl/70 mb-12 max-w-2xl"
             style={{ fontSize: 'clamp(1.15rem, 2.1vw, 1.5rem)', lineHeight: 1.35 }}
           >
-            Come to our official showroom and reserve these special offers.
+            Come see it all in person — schedule a tour of our official showroom and we’ll
+            have everything ready for your visit.
           </Reveal>
 
           <ol className="grid md:grid-cols-3 gap-y-12 md:gap-y-0">

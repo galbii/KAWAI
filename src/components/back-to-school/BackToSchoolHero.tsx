@@ -138,7 +138,8 @@ export function BackToSchoolHero({ storeslug, locationName, hours, ctas }: BackT
             className="bts-in bts-serif text-kawai-pearl/85 mt-5 max-w-xl leading-snug"
             style={{ fontSize: 'clamp(1.2rem, 2vw, 1.55rem)', animationDelay: T.subhead }}
           >
-            Book an appointment and visit our official Kawai {storeName} location.
+            Schedule a tour of our official Kawai {storeName} location — play the pianos and
+            see every rebate in person.
           </p>
         </div>
 
