@@ -431,7 +431,7 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         },
         {
           title: 'Missed Lessons',
-          body: 'Lessons missed without 24-hour advance notice are non-refundable; makeup provided via Recorded Video. Lessons cancelled with 24-hour notice will be rescheduled or a substitute teacher provided. Group class absences are non-refundable with no makeup.',
+          body: "Lessons cancelled with at least 24 hours' advance notice may be rescheduled — limited to one makeup lesson per month — or covered by a substitute teacher. Lessons missed without 24-hour advance notice are non-refundable; makeup provided via Recorded Video. Group class absences are non-refundable with no makeup.",
         },
         {
           title: 'Child Supervision',
@@ -441,6 +441,12 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           title: 'Conduct',
           body: 'No food or drinks inside the school except bottled water.',
         },
+      ],
+      makeupLessonPolicy:
+        "Only one makeup lesson per month may be rescheduled. To qualify, the cancellation must be made at least 24 hours in advance — lessons cancelled with less than 24 hours' notice are not eligible for a rescheduled makeup.",
+      makeupOptions: [
+        { option: 'One makeup per month' },
+        { option: '24-hour advance notice required' },
       ],
       faqs: [
         {

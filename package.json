@@ -24,6 +24,8 @@
     "migrate:artists:publish:dry-run": "tsx scripts/migrate-artists-publish.ts --dry-run",
     "migrate:artists:publish:v2": "tsx scripts/migrate-artists-publish-v2.ts",
     "migrate:artists:publish:v2:dry-run": "tsx scripts/migrate-artists-publish-v2.ts --dry-run",
+    "policy:dallas-makeup": "tsx scripts/update-dallas-makeup-policy.ts",
+    "policy:dallas-makeup:dry-run": "tsx scripts/update-dallas-makeup-policy.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
     "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",
