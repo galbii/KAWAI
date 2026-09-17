@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { HeroVideoBackground } from './HeroVideoBackground'
+import Image from 'next/image'
+import { HeroVideoBackground, CAMPAIGN_FILM } from './HeroVideoBackground'
 import { HeroParallax } from './HeroParallax'
 import { DATE_RANGE, OFFERS } from './campaign'
 import { BTS_CONTAINER } from './RuledGround'
@@ -22,12 +23,13 @@ interface BackToSchoolHeroProps {
 /**
  * The hero is the poster; everything below it is the program notes.
  *
- * The earlier version framed the footage inside a white print with a margin, so
- * the hero was one more sheet on the ruled page. This one goes full bleed and
- * full height: the title is set at poster scale in condensed caps, the third
- * line is outlined the way a sale poster outlines its event name, and the three
- * offers run edge to edge along the bottom as a rail rather than a list tucked
- * beside the copy. The paper picks up again at the section below.
+ * The brand leads the poster: the KAWAI logotype at poster scale is the title,
+ * with the storefront's name set right beside it so the pair reads as one
+ * lockup — the same signature the site header carries, at poster size. "Back to
+ * School" sits one line under it at a clearly smaller size, the event name lit
+ * as a neon sign below that, and the three offers run edge to edge along the
+ * bottom as a rail. The footage plays bare — no scrims — so the frame belongs
+ * to the film and the lockup. The paper picks up again at the section below.
  *
  * Server-rendered so the headline is in the initial HTML. Client JS is limited
  * to the video (playback + drift), the scroll parallax wrapper, and the booking
@@ -38,8 +40,9 @@ interface BackToSchoolHeroProps {
  */
 
 /**
- * Entrance choreography. The order is the argument: the dates, then the title
- * one line at a time, then the invitation, the ask, and last the terms.
+ * Entrance choreography. The order is the argument: the dates, then the brand
+ * lockup, the campaign line, the event name, then the invitation, the ask, and
+ * last the terms.
  *
  * Everything animates on transform / opacity / clip-path so nothing reflows
  * mid-entrance. The keyframes live in CampaignStyles.
@@ -68,11 +71,9 @@ export function BackToSchoolHero({ storeslug, locationName, hours, ctas }: BackT
 
   return (
     <section className="relative flex flex-col min-h-[92svh] bg-kawai-black overflow-hidden">
-      <HeroVideoBackground />
+      <HeroVideoBackground src={CAMPAIGN_FILM} filter="none" overlay={false} />
 
       <HeroParallax>
-        {/* The site header two inches above already signs the page with the
-            same storefront lockup, so the poster starts on the dates. */}
         <div className="flex-1 min-h-[1rem] pt-12 md:pt-16" aria-hidden />
 
         {/* ── Poster ── */}
@@ -83,28 +84,61 @@ export function BackToSchoolHero({ storeslug, locationName, hours, ctas }: BackT
               style={{ animationDelay: T.dash }}
               aria-hidden
             />
-            {/* The storefront signs the poster here, at eyebrow size, rather
-                than as a second full lockup under the header's. */}
+            {/* The storefront now signs the lockup itself, so the eyebrow is
+                only the dates. */}
             <span
               className="bts-in bts-eyebrow text-kawai-pearl/80"
               style={{ animationDelay: T.date }}
             >
-              {cleanedName ? `Kawai ${cleanedName} · ${DATE_RANGE}` : DATE_RANGE}
+              {DATE_RANGE}
             </span>
           </div>
 
           <h1 className="bts-display text-kawai-pearl">
-            <span
-              className="bts-inline"
-              style={{ fontSize: 'clamp(2.8rem, 9.9vw, 8.4rem)', animationDelay: T.line1 }}
-            >
-              Back to
+            <span className="sr-only">
+              {cleanedName
+                ? `Kawai ${cleanedName} Back to School Piano Sale Event — ${DATE_RANGE}`
+                : `Kawai Back to School Piano Sale Event — ${DATE_RANGE}`}
             </span>
+
+            {/* The brand leads: the KAWAI logotype at poster scale with the
+                storefront's name set beside it, one lockup — the header's
+                signature at poster size. Decorative here — the sr-only line
+                above already carries both names. A logo is exempt from 1.4.3,
+                so it can sit on the bare footage. */}
             <span
-              className="bts-inline"
-              style={{ fontSize: 'clamp(2.8rem, 9.9vw, 8.4rem)', animationDelay: T.line2 }}
+              aria-hidden
+              className="bts-in flex flex-wrap items-end gap-x-4 gap-y-2 sm:gap-x-6"
+              style={{ animationDelay: T.line1 }}
             >
-              School
+              <Image
+                src="/images/logos/kawai-logo-new-red.png"
+                alt=""
+                width={1030}
+                height={207}
+                priority
+                quality={90}
+                sizes="(max-width: 768px) 82vw, 600px"
+                className="object-contain h-auto"
+                style={{ width: 'clamp(250px, 52vw, 600px)' }}
+              />
+              {cleanedName && (
+                <span
+                  className="leading-none pb-[0.08em] whitespace-nowrap"
+                  style={{ fontSize: 'clamp(1.5rem, 3.8vw, 3.1rem)' }}
+                >
+                  {cleanedName}
+                </span>
+              )}
+            </span>
+
+            {/* The campaign under the brand, one line, well below logo scale. */}
+            <span
+              aria-hidden
+              className="bts-inline mt-4 sm:mt-5"
+              style={{ fontSize: 'clamp(1.9rem, 5.8vw, 4.4rem)', animationDelay: T.line2 }}
+            >
+              Back to School
             </span>
             {/* The event name as a neon sign under the title — outlined type is
                 already a glass tube, so it only wanted lighting. Large display
@@ -115,6 +149,7 @@ export function BackToSchoolHero({ storeslug, locationName, hours, ctas }: BackT
                 flicker. The wipe's clip is inset negatively top and bottom so
                 it never cuts the glyphs or the glow coming off them. */}
             <span
+              aria-hidden
               className="bts-wipe block mt-3 sm:mt-4"
               style={{ animationDelay: T.line3 }}
             >

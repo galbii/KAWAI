@@ -32,22 +32,22 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
 
   return (
     <>
-      {/* The trade-in band above is now dark too, so the close needs a seam —
-          without it the two sections read as one very long black run. */}
+      {/* The trade-in band above is dark, so the close comes back to the paper —
+          the white sheet after the black run is the seam. */}
       <section
         id="book"
-        className="relative bg-kawai-black border-t border-kawai-pearl/12 overflow-hidden scroll-mt-24"
+        className="relative bg-kawai-pearl border-t border-kawai-black/10 overflow-hidden scroll-mt-24"
       >
-        <RuledGround tone="dark" marginRule={false} />
+        <RuledGround marginRule={false} />
 
         <div className={`relative ${BTS_CONTAINER} py-20 md:py-32 text-center`}>
-          <Reveal as="p" className="bts-eyebrow text-kawai-red-400 mb-8">
+          <Reveal as="p" className="bts-eyebrow text-kawai-red mb-8">
             {daysLeft !== null && daysLeft > 0
               ? `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} of the program left`
               : `Program ends ${DEADLINE_LONG}`}
           </Reveal>
 
-          <h2 className="bts-display text-kawai-pearl mx-auto" style={{ fontSize: 'clamp(2.8rem, 9vw, 7rem)' }}>
+          <h2 className="bts-display text-kawai-black mx-auto" style={{ fontSize: 'clamp(2.8rem, 9vw, 7rem)' }}>
             <Reveal as="span" variant="line" className="block" delay={0.06}>
               See you soon!
             </Reveal>
@@ -56,13 +56,13 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
           <Reveal
             as="p"
             delay={0.16}
-            className="bts-serif text-kawai-pearl/85 mt-6 max-w-2xl mx-auto"
+            className="bts-serif text-kawai-charcoal/80 mt-6 max-w-2xl mx-auto"
             style={{ fontSize: 'clamp(1.25rem, 2.4vw, 1.8rem)', lineHeight: 1.35 }}
           >
             Schedule a tour and we’ll send your official invitation.
           </Reveal>
 
-          <Reveal as="p" delay={0.24} className="text-kawai-pearl/60 text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-8 mb-10">
+          <Reveal as="p" delay={0.24} className="text-kawai-charcoal/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto mt-8 mb-10">
             Pick a day and a time — it takes about a minute. The invitation lands in your inbox
             with the date, the address, and a link that drops it straight into your calendar. Tell
             us roughly what you&apos;re after and we&apos;ll have those pianos uncovered and in
@@ -73,7 +73,7 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
             {OFFER_PILLS.map((pill) => (
               <li
                 key={pill}
-                className="px-4 py-2 border border-kawai-pearl/25 text-kawai-pearl/70 text-xs tracking-[0.12em] uppercase"
+                className="px-4 py-2 border border-kawai-black/20 text-kawai-charcoal/70 text-xs tracking-[0.12em] uppercase"
               >
                 {pill}
               </li>
@@ -83,7 +83,7 @@ export function BookingSection({ locationName, hours, storeslug }: BookingSectio
           <Reveal delay={0.36}>
             <button
               onClick={() => setOpen(true)}
-              className="group inline-flex items-center gap-3 px-11 py-6 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.22em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-pearl"
+              className="group inline-flex items-center gap-3 px-11 py-6 bg-kawai-red hover:bg-kawai-red-600 text-white text-sm tracking-[0.22em] uppercase font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
             >
               Schedule a Tour
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>

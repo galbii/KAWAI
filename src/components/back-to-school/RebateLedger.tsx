@@ -426,15 +426,22 @@ export function RebateFootnote({
   locationName,
   dateRange,
   deadline,
+  tone = 'light',
   className = '',
 }: {
   locationName?: string | null | undefined
   dateRange: string
   deadline: string
+  /** 'dark' sets the terms in pearl for sections grounded on footage or black. */
+  tone?: 'light' | 'dark'
   className?: string
 }) {
   return (
-    <p className={`text-kawai-charcoal/50 text-xs leading-relaxed ${className}`}>
+    <p
+      className={`${
+        tone === 'dark' ? 'text-kawai-pearl/60' : 'text-kawai-charcoal/50'
+      } text-xs leading-relaxed ${className}`}
+    >
       Savings shown are off MSRP and include the additional rebate, taken off the price at the
       counter on qualifying new Kawai pianos
       {locationName

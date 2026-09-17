@@ -21,6 +21,14 @@ import { RuledGround } from './RuledGround'
 const VIDEO_SRC =
   'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Timeline%201.webm'
 
+/**
+ * The campaign film (R2), shared by every section that runs it — the heroes on
+ * /signup3 and the store campaign pages, and the rebate section's backdrop.
+ * Always run bare: pass `filter="none"` and `overlay={false}` with it.
+ */
+export const CAMPAIGN_FILM =
+  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/make_just_the_scene_without_th.mp4'
+
 const POSTER_SRC = '/images/kawai-piano.jpeg'
 
 /** The Back to School footage is a dark stage, so it takes a lift. */
@@ -44,6 +52,13 @@ interface HeroVideoBackgroundProps {
    * display figure) clears 4.5:1.
    */
   baseScrim?: number
+  /**
+   * Set false to drop every layer over the footage — base scrim, gradients, and
+   * the ruled ground — leaving the clip bare. The caller then owns the contrast
+   * of anything drawn on top (a logo lockup is exempt from 1.4.3; body copy is
+   * not).
+   */
+  overlay?: boolean
 }
 
 /** Under the poster copy. */
@@ -58,6 +73,7 @@ export function HeroVideoBackground({
   poster = POSTER_SRC,
   filter = DEFAULT_FILTER,
   baseScrim = 0.32,
+  overlay = true,
 }: HeroVideoBackgroundProps = {}) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -115,14 +131,21 @@ export function HeroVideoBackground({
           tabIndex={-1}
         />
 
-        {/* Base — keeps the mid-frame from washing out the outlined display line. */}
-        <div className="absolute inset-0" style={{ background: `rgba(18,16,13,${baseScrim})` }} />
-        <div className="absolute inset-0" style={{ background: BOTTOM_SCRIM }} />
-        <div className="absolute inset-0" style={{ background: TOP_SCRIM }} />
+        {overlay && (
+          <>
+            {/* Base — keeps the mid-frame from washing out the outlined display line. */}
+            <div
+              className="absolute inset-0"
+              style={{ background: `rgba(18,16,13,${baseScrim})` }}
+            />
+            <div className="absolute inset-0" style={{ background: BOTTOM_SCRIM }} />
+            <div className="absolute inset-0" style={{ background: TOP_SCRIM }} />
 
-        {/* The paper rules carry over the footage so the poster still belongs to
-            the page the rest of the sections are drawn on. */}
-        <RuledGround tone="dark" marginRule={false} />
+            {/* The paper rules carry over the footage so the poster still belongs to
+                the page the rest of the sections are drawn on. */}
+            <RuledGround tone="dark" marginRule={false} />
+          </>
+        )}
       </div>
 
       {/* WCAG 2.2.2 — a 10s loop running beside other content needs a stop. */}

@@ -16,7 +16,7 @@ export { RuledGround, BTS_CONTAINER } from './RuledGround'
 export { CampaignStyles, CampaignNoScript } from './CampaignStyles'
 export { Reveal } from './Choreography'
 export { SectionHead } from './SectionHead'
-export { HeroVideoBackground } from './HeroVideoBackground'
+export { HeroVideoBackground, CAMPAIGN_FILM } from './HeroVideoBackground'
 export { HeroParallax } from './HeroParallax'
 
 // ── The simplified page (/store/[storeslug]/back-to-school2) ──

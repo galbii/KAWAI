@@ -1,12 +1,13 @@
 import Image from 'next/image'
-import { HeroVideoBackground, HeroParallax, BTS_CONTAINER } from '@/components/back-to-school'
+import {
+  HeroVideoBackground,
+  HeroParallax,
+  BTS_CONTAINER,
+  CAMPAIGN_FILM,
+} from '@/components/back-to-school'
 import { heroPoster, offerRail } from './campaign'
 import { aboutImages } from './images'
 import { HeroCtas } from './CampaignCtas'
-
-/** Summer-savings background film (R2). Poster + scrims guarantee legible copy. */
-const HERO_VIDEO =
-  'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/summersavingsbackground.mp4'
 
 interface HeroPosterProps {
   /** 'cad' swaps the rail's rebate ceiling to the Canadian program figure. */
@@ -16,13 +17,13 @@ interface HeroPosterProps {
 /**
  * The hero is the poster; everything below it is the program notes.
  *
- * Same poster as the Back to School hero — full bleed, full height, the title
- * set at poster scale in condensed caps with the third line outlined the way a
- * sale poster outlines its event name, and three figures running edge to edge
- * along the bottom as a rail. It carries the same campaign title and dates; what
- * differs is that this page has no storefront behind it, so the poster starts on
- * the dates rather than a store lockup, the rail states the national offer, and
- * the CTAs open the dealer sign-up popup instead of a store booking calendar.
+ * The brand leads the poster: the KAWAI logotype at poster scale is the title,
+ * with "Back to School" set one line under it at a clearly smaller size and the
+ * event name outlined below that, the way a sale poster outlines its event
+ * name. Three figures run edge to edge along the bottom as a rail. The footage
+ * plays bare — no scrims — so the frame belongs to the film and the lockup.
+ * The rail states the national offer, and the CTAs open the dealer sign-up
+ * popup instead of a store booking calendar.
  *
  * Server-rendered so the headline is in the initial HTML. Client JS is limited
  * to the video (playback + drift), the parallax wrapper, and the CTA pair.
@@ -32,8 +33,9 @@ interface HeroPosterProps {
  */
 
 /**
- * Entrance choreography. The order is the argument: the dates, then the title
- * one line at a time, then the invitation, the rail, and last the ask.
+ * Entrance choreography. The order is the argument: the dates, then the logo,
+ * the campaign line, the event name, then the invitation, the rail, and last
+ * the ask.
  *
  * Everything animates on transform / opacity / clip-path so nothing reflows
  * mid-entrance. The keyframes live in the shared CampaignStyles.
@@ -56,14 +58,13 @@ export function HeroPoster({ site = 'us' }: HeroPosterProps) {
 
   return (
     <section className="relative flex flex-col min-h-[92svh] bg-kawai-black overflow-hidden">
-      {/* Unlike the Back to School stage footage this clip is a sunlit room, so
-          it takes no brightness lift and a heavier base scrim — the title sits
-          in the middle band, which the gradients barely reach. */}
+      {/* The clip runs bare — no scrims, no colour treatment — so the footage
+          carries the frame and the logo lockup sits directly on it. */}
       <HeroVideoBackground
-        src={HERO_VIDEO}
+        src={CAMPAIGN_FILM}
         poster={aboutImages.soundboard}
-        filter="brightness(0.82) contrast(1.05) saturate(0.95)"
-        baseScrim={0.52}
+        filter="none"
+        overlay={false}
       />
 
       <HeroParallax>
@@ -88,19 +89,30 @@ export function HeroPoster({ site = 'us' }: HeroPosterProps) {
           <h1 className="bts-display text-kawai-pearl">
             <span className="sr-only">{heroPoster.a11yHeadline}</span>
 
-            <span
-              aria-hidden
-              className="bts-inline"
-              style={{ fontSize: 'clamp(2.9rem, 10.5vw, 8.6rem)', animationDelay: T.line1 }}
-            >
-              {heroPoster.headlineLead}
+            {/* The brand leads: the KAWAI logotype at poster scale is the title.
+                Decorative here — the sr-only line above already says "Kawai".
+                A logo is exempt from 1.4.3, so it can sit on the bare footage. */}
+            <span aria-hidden className="bts-in block" style={{ animationDelay: T.line1 }}>
+              <Image
+                src="/images/logos/kawai-logo-new-red.png"
+                alt=""
+                width={1030}
+                height={207}
+                priority
+                quality={90}
+                sizes="(max-width: 768px) 88vw, 680px"
+                className="object-contain h-auto"
+                style={{ width: 'clamp(280px, 62vw, 680px)' }}
+              />
             </span>
+
+            {/* The campaign under the brand, one line, well below logo scale. */}
             <span
               aria-hidden
-              className="bts-inline"
-              style={{ fontSize: 'clamp(2.9rem, 10.5vw, 8.6rem)', animationDelay: T.line2 }}
+              className="bts-inline mt-4 sm:mt-5"
+              style={{ fontSize: 'clamp(1.9rem, 5.8vw, 4.4rem)', animationDelay: T.line2 }}
             >
-              {heroPoster.headlineFigure}
+              {heroPoster.headlineLead} {heroPoster.headlineFigure}
             </span>
             {/* Outlined, the way a sale poster outlines the event name under the
                 title. Large display type only — a hairline stroke at body size
