@@ -12,6 +12,10 @@ import { SignUpButton, CampaignLink } from './CampaignCtas'
  * Pearl ground, so it reads as the next sheet after the ledger rather than a
  * new page. The Kawai wordmark sits on the heading's cap height the way the
  * Back to School showroom heading signs itself with the storefront's.
+ *
+ * Reduced-motion only. The /signup2 cinematic owns this slot on the live page;
+ * CinematicOutro renders these three sheets instead when the visitor has asked
+ * for less motion, so the page never loses a section — only its choreography.
  */
 export function ShowroomsSection() {
   return (

@@ -8,6 +8,10 @@ import { SignUpButton, CampaignLink } from './CampaignCtas'
  * Back on pearl after the dark trust strip, and deliberately sparse — every
  * other section on the page has already made an argument, so this one only
  * has to be the button.
+ *
+ * Reduced-motion only. The /signup2 cinematic owns this slot on the live page;
+ * CinematicOutro renders these three sheets instead when the visitor has asked
+ * for less motion, so the page never loses a section — only its choreography.
  */
 export function CodaSection() {
   return (

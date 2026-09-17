@@ -138,7 +138,10 @@ function ModelsPanel({
                   className="flex items-end justify-center px-4 pb-1"
                   style={{ borderBottom: `1px solid ${ink(0.18)}`, minHeight: '10.5rem' }}
                 >
-                  <span className="relative block" style={{ width: '100%', height: '9.5rem' }}>
+                  <span
+                    className="relative block overflow-hidden"
+                    style={{ width: '100%', height: '9.5rem' }}
+                  >
                     {image && (
                       // mix-blend-multiply drops the white-lit product shot onto
                       // the pearl stage. Nothing is layered over the photograph.
@@ -148,6 +151,24 @@ function ModelsPanel({
                         fill
                         sizes="(min-width: 1536px) 288px, 25vw"
                         className="object-contain object-bottom mix-blend-multiply"
+                        // The SK-EX source photo (unlike SK-2–SK-7's matched, tightly
+                        // cropped set) has real dead margin baked into the file itself,
+                        // concentrated below and right of the piano rather than evenly
+                        // around it — so at the same object-contain fit it reads visibly
+                        // smaller than its neighbors, floating above the shared floor
+                        // line. scale(1.298) grows it to match their height; translateY
+                        // then shifts the (now larger) image down so the piano's feet —
+                        // not the source file's empty margin — land on that floor line,
+                        // with enough headroom left over that the lid isn't clipped by
+                        // the frame's overflow-hidden top edge.
+                        style={
+                          detail?.slug === 'sk-ex'
+                            ? {
+                                transform: 'translateY(26px) scale(1.298)',
+                                transformOrigin: 'bottom center',
+                              }
+                            : undefined
+                        }
                       />
                     )}
                   </span>

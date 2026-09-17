@@ -3,6 +3,7 @@ import { RebateLedger } from './RebateLedger'
 import { ShowroomsSection } from './ShowroomsSection'
 import { StatsSection } from './StatsSection'
 import { CodaSection } from './CodaSection'
+import CinematicOutro from './cinematic/CinematicOutro'
 import { OfferModalProvider } from './OfferModalContext'
 import type { RebateCategory } from '@/lib/payload/rebate-types'
 
@@ -19,15 +20,16 @@ type SignupCampaignProps = {
  * /signup3 — the /signup2 Summer Savings campaign in the Back to School house
  * style. Same offer, same copy, same conversion flow; a different type system.
  *
- * /signup2 is a cinematic: a pinned canvas cross-fading layered piano
- * photography under scroll-scrubbed scene windows. That machinery is gone here.
- * The Back to School register is print — a full-bleed poster, then flat sheets
- * of ruled paper — and it needs no scroll orchestration at all: the hero
- * animates itself with CSS on load (so nothing gates the LCP text) and every
- * section below reveals off an IntersectionObserver. Which also means there is
- * no separate reduced-motion fallback to keep in sync: the global
- * reduced-motion rule in globals.css collapses both mechanisms to their
- * finished state.
+ * The page is printed, then it plays: the poster and the rebate ledger are flat
+ * sheets in the Back to School register — no scroll orchestration, the hero
+ * animates itself with CSS on load (so nothing gates the LCP text) and the
+ * ledger reveals off an IntersectionObserver — and then the /signup2 cinematic
+ * takes the closing third, pinned and scroll-scrubbed, carrying showrooms →
+ * trust strip → coda.
+ *
+ * The flat versions of those three sections are still here and still rendered:
+ * CinematicOutro hands them back verbatim under reduced motion, so the page
+ * never loses a section, only its choreography.
  *
  * Only the offer modal needs client state, and it stays where /signup2 put it —
  * in OfferModalProvider, which outlives the modal so a submitted lead is always
@@ -38,9 +40,15 @@ export function SignupCampaign({ rebateData, site = 'us', testMode = false }: Si
     <OfferModalProvider testMode={testMode}>
       <HeroPoster site={site} />
       <RebateLedger data={rebateData} />
-      <ShowroomsSection />
-      <StatsSection />
-      <CodaSection />
+      <CinematicOutro
+        fallback={
+          <>
+            <ShowroomsSection />
+            <StatsSection />
+            <CodaSection />
+          </>
+        }
+      />
     </OfferModalProvider>
   )
 }

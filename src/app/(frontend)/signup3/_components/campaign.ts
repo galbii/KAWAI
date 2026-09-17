@@ -22,8 +22,12 @@ export const heroPoster = {
   headlineFigure: 'School',
   /** Outlined under the title, the way a sale poster outlines its event name. */
   headlineTail: 'Piano Sale Event',
-  /** The one italic serif line the poster gets. */
-  sub: '200+ Authorized Dealers Nationwide',
+  /**
+   * The one italic serif line the poster gets. It states the offer in the human
+   * voice — deliberately NOT the dealer count, which the rail below already
+   * sets as a figure; the same fact twice, forty pixels apart, reads as filler.
+   */
+  sub: 'Instant rebates at your local Authorized Kawai dealer.',
   signUpCta: 'Sign Up Now',
   viewRebatesCta: 'View Rebates',
   /** Screen-reader h1 — the display lines above are split across spans. */
@@ -38,15 +42,26 @@ const TOP_REBATE = { us: '$4,500', cad: '$2,600' } as const
  * way the Back to School rail states its three: the numbers are the argument
  * for the button below them, so they get the full width rather than a column.
  *
+ * Each cell leads with the number a buyer is actually weighing — the money, the
+ * reach, the deadline. The rebate cell used to read "Instant / Rebates" with
+ * the dollar figure demoted into the grey detail line, which put the largest
+ * claim on the page in its smallest type.
+ *
+ * `prefix` is the qualifier on an advertised rebate, so it stays welded to the
+ * figure rather than moving down to the detail line — but it is set small, so
+ * the money still reads first. "Up to $4,500" at one uniform size makes the
+ * reader take in two words before reaching the number that matters.
+ *
  * Built per site rather than declared flat — the rebate ceiling is the one
  * number on this page that differs between kawaius.com and ca.kawaius.com.
  */
 export function offerRail(site: 'us' | 'cad') {
   return [
     {
-      value: 'Instant',
-      label: 'Rebates',
-      detail: `Up to ${TOP_REBATE[site]} off, taken at the counter`,
+      prefix: 'Up to',
+      value: TOP_REBATE[site],
+      label: 'Instant Rebates',
+      detail: 'Taken off at the counter on select models',
     },
     {
       value: '200+',
@@ -114,7 +129,15 @@ export const hubspotSignupForm = {
  */
 export const offerCopy = {
   eyebrow: 'Exclusive Offer',
-  headline: 'Sign up for instant rebates at your local Authorized dealer',
+  /**
+   * Short on purpose. Set in condensed caps inside a ~384px panel, the longer
+   * "Sign up for instant rebates at your local Authorized dealer" ran three
+   * poster-scale lines and pushed the first field under the fold — and the
+   * visitor has already clicked a button that said Sign Up, so the headline
+   * does not have to repeat the ask. "Authorized" is not lost: the ZIP field's
+   * help text below names the dealer network again.
+   */
+  headline: 'Instant rebates at your local dealer',
   body: "We'll reach out soon to tell you about availability and potential savings.",
   /** Unified label for every call to action on the page — all open the signup popup. */
   signUp: 'Sign Up Now',

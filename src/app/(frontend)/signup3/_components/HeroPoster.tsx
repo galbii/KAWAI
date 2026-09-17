@@ -124,30 +124,47 @@ export function HeroPoster({ site = 'us' }: HeroPosterProps) {
           >
             {heroPoster.sub}
           </p>
-
         </div>
 
         {/* ── Offer rail ──
             Edge to edge under the poster: the numbers are the argument for the
-            CTA above them, so they get the full width rather than a column. */}
+            CTA above them, so they get the full width rather than a column.
+
+            Two layouts, because a third of the container is not a third of a
+            phone. On phones each cell is a full-width row — figure left, words
+            right — which stays compact under an already tall poster. From `sm`
+            the cells become columns and the figure sits ON its label rather
+            than beside it: side by side, a cell at the 640–900px range is only
+            ~150px wide and a figure like "Up to $4,500" eats the whole of it,
+            leaving the label nowhere to go. */}
         <div className="w-full border-t border-kawai-pearl/25 bg-[rgba(18,16,13,0.55)] backdrop-blur-[2px]">
           <ul className={`${BTS_CONTAINER} grid grid-cols-1 sm:grid-cols-3`}>
-            {rail.map(({ value, label, detail }, i) => (
+            {rail.map((cell, i) => (
               <li
-                key={label}
-                className="bts-in flex items-baseline gap-4 py-3.5 sm:py-5 sm:px-6 sm:first:pl-0 sm:last:pr-0 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 border-kawai-pearl/15"
+                key={cell.label}
+                className="bts-in flex items-baseline gap-4 sm:block py-3.5 sm:py-5 sm:px-6 sm:first:pl-0 sm:last:pr-0 border-b sm:border-b-0 sm:border-r last:border-b-0 sm:last:border-r-0 border-kawai-pearl/15"
                 style={{ animationDelay: `${T.rail + i * 0.09}s` }}
               >
                 <span
-                  className="bts-num text-kawai-red-400 leading-none flex-shrink-0"
-                  style={{ fontSize: 'clamp(1.7rem, 3.4vw, 2.9rem)' }}
+                  className="bts-num block text-kawai-red-400 leading-none flex-shrink-0 whitespace-nowrap"
+                  style={{ fontSize: 'clamp(1.7rem, 2.9vw, 2.6rem)' }}
                 >
-                  {value}
+                  {/* Set at 0.42em so the qualifier is legible and adjacent but
+                      never competes with the figure it qualifies. */}
+                  {'prefix' in cell && (
+                    <span
+                      className="mr-[0.35em] align-baseline tracking-[0.12em] uppercase opacity-80"
+                      style={{ fontSize: '0.42em' }}
+                    >
+                      {cell.prefix}
+                    </span>
+                  )}
+                  {cell.value}
                 </span>
-                <span className="min-w-0">
-                  <span className="block bts-eyebrow text-kawai-pearl">{label}</span>
+                <span className="min-w-0 sm:mt-3 sm:block">
+                  <span className="block bts-eyebrow text-kawai-pearl">{cell.label}</span>
                   <span className="block text-kawai-pearl/60 text-sm mt-1 leading-snug">
-                    {detail}
+                    {cell.detail}
                   </span>
                 </span>
               </li>

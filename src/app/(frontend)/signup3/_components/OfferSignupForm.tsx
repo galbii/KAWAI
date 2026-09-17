@@ -42,17 +42,18 @@ export function OfferSignupForm() {
       {/* Set in the campaign's type system, not the site's: the popup opens out
           of a page of poster type, and a serif card would read as furniture
           borrowed from somewhere else. */}
-      <div className="mb-4 flex items-center gap-3">
+      {/* pr-10 keeps the header clear of the panel's close button, which is
+          pinned to the same top-right corner. */}
+      <div className="mb-4 flex items-center gap-3 pr-10">
         <span aria-hidden className="h-px w-8 flex-shrink-0 bg-kawai-red" />
         <span className="bts-eyebrow text-kawai-red">{offerCopy.eyebrow}</span>
       </div>
-      <h2
-        className="bts-display text-kawai-black"
-        style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.2rem)' }}
-      >
-        {offerCopy.headline}
-      </h2>
-      <p className="bts-serif mt-4 mb-6 leading-snug text-kawai-charcoal/75 text-[1.05rem]">
+      {/* A fixed size, not the page's clamp: the panel is ~384px wide whatever
+          the viewport is, so a vw-scaled heading only ever overshoots it. */}
+      <h2 className="bts-display pr-10 text-[1.9rem] text-kawai-black">{offerCopy.headline}</h2>
+      {/* mt-5, not mt-4 — the display line-height is 0.86, so a tighter gap
+          lets the caps' descenders crowd the serif line under them. */}
+      <p className="bts-serif mt-5 mb-6 leading-snug text-kawai-charcoal/75 text-[1.05rem]">
         {offerCopy.body}
       </p>
 

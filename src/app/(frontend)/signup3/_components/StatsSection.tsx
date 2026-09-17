@@ -13,6 +13,10 @@ import { stats, statsCopy } from './campaign'
  *
  * The values are NOT headings: three <h3>s here would put "1927" into
  * screen-reader heading navigation (see the Accessibility notes in CLAUDE.md).
+ *
+ * Reduced-motion only. The /signup2 cinematic owns this slot on the live page;
+ * CinematicOutro renders these three sheets instead when the visitor has asked
+ * for less motion, so the page never loses a section — only its choreography.
  */
 export function StatsSection() {
   return (

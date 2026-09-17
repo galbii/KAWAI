@@ -1348,9 +1348,9 @@ export function ProductHeroBlock({
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Warranty</p>
                     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1">
-                      <Link href="/warranty-registration" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">Register yours →</Link>
+                      <Link href="/warranty-registration" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">Register yours</Link>
                       <span aria-hidden="true" className="text-[9px] text-kawai-neutral">|</span>
-                      <Link href="/warranty" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">View coverage →</Link>
+                      <Link href="/warranty" className="text-[9px] text-kawai-red leading-tight underline underline-offset-2 hover:no-underline transition-all">View coverage</Link>
                     </span>
                   </div>
                 </div>
@@ -1361,7 +1361,7 @@ export function ProductHeroBlock({
                     <RotateCcw className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Returns</p>
-                      <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">15-day policy →</p>
+                      <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">15-day policy</p>
                     </div>
                   </Link>
                 )}
@@ -1374,7 +1374,7 @@ export function ProductHeroBlock({
                   <HeadphonesIcon className="w-3.5 h-3.5 text-kawai-red mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold tracking-widest text-kawai-charcoal uppercase leading-none">Support</p>
-                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Get help →</p>
+                    <p className="text-[9px] text-kawai-red mt-1 leading-tight underline underline-offset-2 group-hover:no-underline transition-all">Get help</p>
                   </div>
                 </Link>
 
