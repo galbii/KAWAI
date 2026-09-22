@@ -3,6 +3,7 @@
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient, getFeaturedCollections } from '@/lib/payload/queries'
 import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
+import { excludeHiddenFrom, type ProductSurface } from '@/lib/products/visibility'
 import type { NavProduct } from '@/lib/payload/products-navigation'
 
 /**
@@ -17,18 +18,29 @@ import type { NavProduct } from '@/lib/payload/products-navigation'
  *
  * Cached 5 min; tagged for on-demand revalidation (incl. `collections` so a
  * collection priority/featured change busts this cache too).
+ *
+ * `surface` picks which per-product visibility flag applies, because this one query
+ * feeds two different surfaces: the mega menu's collection tab ('navigation') and
+ * the /collections browse grid ('browsers'). It is part of the cache key so the two
+ * variants never share an entry.
  */
-export async function getProductsByCollection(handle: string): Promise<NavProduct[]> {
+export async function getProductsByCollection(
+  handle: string,
+  surface: ProductSurface = 'navigation',
+): Promise<NavProduct[]> {
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'products',
         where: {
-          'shopifyCollections.handle': { equals: handle },
-          status: { equals: 'active' },
-          type: { not_equals: 'accessory' },
-          'shopify.shopifyStatus': { not_equals: 'UNLISTED' },
+          and: [
+            { 'shopifyCollections.handle': { equals: handle } },
+            { status: { equals: 'active' } },
+            { type: { not_equals: 'accessory' } },
+            { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+            excludeHiddenFrom(surface),
+          ],
         },
         select: {
           id: true,
@@ -88,7 +100,7 @@ export async function getProductsByCollection(handle: string): Promise<NavProduc
           : null,
       }))
     },
-    [`collection-products-${handle}`],
+    [`collection-products-${handle}-${surface}`],
     { tags: [`collection-${handle}`, 'products', 'collections'], revalidate: 300 },
   )()
 }

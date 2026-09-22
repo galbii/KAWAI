@@ -1347,7 +1347,37 @@ export const Products: CollectionConfig = {
                   admin: {
                     description: 'Sort order (lower numbers appear first)'
                   }
-                }
+                },
+                // Per-surface hiding. These are display-only — none of them unpublish
+                // the product: /products/[slug] still renders, the sitemap still lists
+                // it, and site search still finds it. To take a product down entirely
+                // use status: 'draft'; for the greyed-out "Legacy" treatment in the
+                // catalog browsers use Shopify UNLISTED.
+                // Filters live in src/lib/products/visibility.ts — add new query sites there.
+                {
+                  name: 'hideFromNavigation',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Hide from the header menus — the desktop Products mega menu, the mobile products sheet, and the nav accessories strip. Browse grids and the product page are unaffected.',
+                  },
+                },
+                {
+                  name: 'hideFromBrowsers',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Hide from the catalog browse grids — /pianos, the category pages (/pianos/digital, /grand, /upright, /hybrid), the series pages, /accessories, and /collections. The header menu and the product page are unaffected.',
+                  },
+                },
+                {
+                  name: 'hideFromCollectionPages',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Hide from Shopify collection landing pages at /pianos/[collection-handle]. Use when a product must belong to a collection for pricing or sync reasons but should not be displayed on that collection’s page.',
+                  },
+                },
               ],
               admin: {
                 description: 'Product visibility and display settings'

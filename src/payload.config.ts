@@ -29,6 +29,7 @@ import { Artists } from './collections/Artists'
 import { FaqCategories } from './collections/FaqCategories'
 import { Faqs } from './collections/Faqs'
 import { SupportGroups } from './collections/SupportGroups'
+import { SoftwareReleases } from './collections/SoftwareReleases'
 import { ConcertArtistPage } from './collections/ConcertArtistPage'
 import { ConstantContactSettings } from './collections/ConstantContactSettings'
 import { ConstantContactCustomFields } from './collections/ConstantContactCustomFields'
@@ -313,6 +314,7 @@ export default buildConfig({
     FaqCategories,
     Faqs,
     SupportGroups,
+    SoftwareReleases,
 
     // Commerce Collections
     Products,

@@ -654,7 +654,9 @@ function CategoryView({ collections, allTabProducts, categoryHref, label, onClos
     if (activeCollectionHandle === 'all') { setFetchedProducts([]); return }
     let cancelled = false
     setIsLoadingProducts(true)
-    getProductsByCollection(activeCollectionHandle)
+    // 'navigation' surface — respects the product's "Hide from navigation menu" flag,
+    // not the browse-grid one (/collections passes 'browsers' to the same action).
+    getProductsByCollection(activeCollectionHandle, 'navigation')
       .then((products) => { if (!cancelled) setFetchedProducts(products) })
       .catch(() => { if (!cancelled) setFetchedProducts([]) })
       .finally(() => { if (!cancelled) setIsLoadingProducts(false) })

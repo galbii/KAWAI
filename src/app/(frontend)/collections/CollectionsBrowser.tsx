@@ -133,7 +133,9 @@ function ProductStrip({ handle }: { handle: string }) {
           hasTriggered.current = true
           setStatus('loading')
           observer.disconnect()
-          getProductsByCollection(handle)
+          // 'browsers' surface — this is a browse grid, so it respects the product's
+          // "Hide from browse grids" flag, not the mega menu's.
+          getProductsByCollection(handle, 'browsers')
             .then((result) => { setProducts(result); setStatus('done') })
             .catch(() => setStatus('done'))
         }

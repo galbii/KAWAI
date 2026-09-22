@@ -7,6 +7,10 @@ import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
+import {
+  HIDE_FROM_BROWSERS,
+  HIDE_FROM_COLLECTION_PAGES,
+} from '@/lib/products/visibility'
 import { sortStandardFirst } from '@/lib/piano/non-standard-model'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
@@ -924,9 +928,12 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
     const result = await payload.find({
       collection: 'products',
       where: {
-        // UNLISTED products are intentionally included so the browser can surface
-        // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
-        status: { not_equals: 'draft' },
+        and: [
+          // UNLISTED products are intentionally included so the browser can surface
+          // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
+          { status: { not_equals: 'draft' } },
+          HIDE_FROM_BROWSERS,
+        ],
       },
       select: {
         model: true,
@@ -1469,9 +1476,12 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
     const result = await payload.find({
       collection: 'products',
       where: {
-        'shopifyCollections.handle': { equals: handle },
-        status: { equals: 'active' },
-        'shopify.shopifyStatus': { not_equals: 'UNLISTED' },
+        and: [
+          { 'shopifyCollections.handle': { equals: handle } },
+          { status: { equals: 'active' } },
+          { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+          HIDE_FROM_COLLECTION_PAGES,
+        ],
       },
       select: {
         model: true,
@@ -2318,6 +2328,7 @@ export function getCatalogProductsByCategory(
             // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
             { status: { not_equals: 'draft' } },
             { or: orConditions as Where[] },
+            HIDE_FROM_BROWSERS,
           ],
         },
         select: {
@@ -2522,6 +2533,7 @@ export const getCatalogPianoProducts = unstable_cache(
             { status: { equals: 'active' } },
             { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             { type: { not_equals: 'accessory' } },
+            HIDE_FROM_BROWSERS,
           ],
         },
         select: {
@@ -2579,6 +2591,7 @@ export const getAccessoriesForPage = unstable_cache(
           and: [
             { status: { equals: 'active' } },
             { type: { equals: 'accessory' } },
+            HIDE_FROM_BROWSERS,
           ],
         },
         // No select restriction — accessories are few and we need compatibleProducts reliably.
@@ -2637,6 +2650,7 @@ export const getProductsByModelPrefix = (prefix: string) =>
             { status: { equals: 'active' } },
             { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             { model: { contains: prefix } },
+            HIDE_FROM_BROWSERS,
           ],
         },
         select: {

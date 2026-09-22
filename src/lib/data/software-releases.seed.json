@@ -1,0 +1,1023 @@
+[
+  {
+    "slug": "ca901-ca701",
+    "model": "CA901/CA701",
+    "aliases": [
+      "CA901",
+      "CA701"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "LCD Touch Panel",
+        "version": "1.3.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310.zip",
+        "fileBytes": 161410073,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310_en.pdf"
+      },
+      {
+        "label": "System",
+        "version": "1.0.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax01/ca901_ca701_sys_v110.zip",
+        "fileBytes": 3545482,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax01/ca901_ca701_sys_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca99-ca79",
+    "model": "CA99/CA79",
+    "aliases": [
+      "CA99",
+      "CA79"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "LCD Touch Panel",
+        "version": "1.3.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310.zip",
+        "fileBytes": 161410073,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310_en.pdf"
+      },
+      {
+        "label": "System",
+        "version": "2.19",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax9/ca99_ca79_sys_v219.zip",
+        "fileBytes": 1206343,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax9/ca99_ca79_sys_v219_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca98-ca78",
+    "model": "CA98/CA78",
+    "aliases": [
+      "CA98",
+      "CA78"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.2m",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca98_ca78_v102m.zip",
+        "fileBytes": 17805008,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca98_ca78_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca97",
+    "model": "CA97",
+    "aliases": [
+      "CA97"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca97_v110.zip",
+        "fileBytes": 886732,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca97_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca67",
+    "model": "CA67",
+    "aliases": [
+      "CA67"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca67_v110.zip",
+        "fileBytes": 890209,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca67_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca95",
+    "model": "CA95",
+    "aliases": [
+      "CA95"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.02",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca95_v202.zip",
+        "fileBytes": 483060,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca95_v202_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca65",
+    "model": "CA65",
+    "aliases": [
+      "CA65"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.02",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca65_v202.zip",
+        "fileBytes": 482994,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca65_v202_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca93",
+    "model": "CA93",
+    "aliases": [
+      "CA93"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.09",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca93_v109.zip",
+        "fileBytes": 426999,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca93_v109_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca63",
+    "model": "CA63",
+    "aliases": [
+      "CA63"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.09",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca63_v109.zip",
+        "fileBytes": 436949,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca63_v109_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca501",
+    "model": "CA501",
+    "aliases": [
+      "CA501"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.05",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax01/ca501_v105.zip",
+        "fileBytes": 1410743,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax01/ca501_v105_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca59",
+    "model": "CA59",
+    "aliases": [
+      "CA59"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.20",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax9/ca59_v120.zip",
+        "fileBytes": 864621,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax9/ca59_v120_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca401",
+    "model": "CA401",
+    "aliases": [
+      "CA401"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.08",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax01/ca401_v108.zip",
+        "fileBytes": 682988,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax01/ca401_v108_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ca49",
+    "model": "CA49",
+    "aliases": [
+      "CA49"
+    ],
+    "category": "digital",
+    "series": "CA",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cax9/ca49_v110.zip",
+        "fileBytes": 936553,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cax9/ca49_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "dg30",
+    "model": "DG30",
+    "aliases": [
+      "DG30"
+    ],
+    "category": "digital",
+    "series": "DG",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.22",
+        "fileUrl": "https://www.kawai-global.com/data/updates/dg/dg30_v122.zip",
+        "fileBytes": 516888,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/dg/dg30_v122_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs11",
+    "model": "CS11",
+    "aliases": [
+      "CS11"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs11_v110.zip",
+        "fileBytes": 888400,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs11_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs8",
+    "model": "CS8",
+    "aliases": [
+      "CS8"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs8_v110.zip",
+        "fileBytes": 890283,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs8_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs10",
+    "model": "CS10",
+    "aliases": [
+      "CS10"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.02",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs10_v202.zip",
+        "fileBytes": 482950,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs10_v202_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs7",
+    "model": "CS7",
+    "aliases": [
+      "CS7"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.02",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs7_v202.zip",
+        "fileBytes": 483013,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs7_v202_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs9",
+    "model": "CS9",
+    "aliases": [
+      "CS9"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.07",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs9_v107.zip",
+        "fileBytes": 439235,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs9_v107_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cs6",
+    "model": "CS6",
+    "aliases": [
+      "CS6"
+    ],
+    "category": "digital",
+    "series": "CS",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.07",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cs6_v107.zip",
+        "fileBytes": 437814,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cs6_v107_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn201",
+    "model": "CN201",
+    "aliases": [
+      "CN201"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cnx01/cn201_v110.zip",
+        "fileBytes": 682846,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cnx01/cn201_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn301",
+    "model": "CN301",
+    "aliases": [
+      "CN301"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.5",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cnx01/cn301_v105.zip",
+        "fileBytes": 503328,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cnx01/cn301_v105_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn43",
+    "model": "CN43",
+    "aliases": [
+      "CN43"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.05",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn43_v105.zip",
+        "fileBytes": 503847,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn43_v105_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn39",
+    "model": "CN39",
+    "aliases": [
+      "CN39"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn39_v110.zip",
+        "fileBytes": 517417,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn39_v110_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn37",
+    "model": "CN37",
+    "aliases": [
+      "CN37"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.06",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn37_v106.zip",
+        "fileBytes": 680497,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn37_v106_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn35",
+    "model": "CN35",
+    "aliases": [
+      "CN35"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.09",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn35_v109.zip",
+        "fileBytes": 592704,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn35_v109_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn34",
+    "model": "CN34",
+    "aliases": [
+      "CN34"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.11",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn34_v111.zip",
+        "fileBytes": 445526,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn34_v111_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cn33",
+    "model": "CN33",
+    "aliases": [
+      "CN33"
+    ],
+    "category": "digital",
+    "series": "CN",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.21",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cn33_v121.zip",
+        "fileBytes": 464534,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cn33_v121_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cx102",
+    "model": "CX102",
+    "aliases": [
+      "CX102"
+    ],
+    "category": "digital",
+    "series": "CX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.02",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cxx02/cx102_v102.zip",
+        "fileBytes": 652411,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cxx02/cx102_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cx202",
+    "model": "CX202",
+    "aliases": [
+      "CX202"
+    ],
+    "category": "digital",
+    "series": "CX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.04",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cxx02/cx202_v104.zip",
+        "fileBytes": 657309,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cxx02/cx202_v104_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cx302",
+    "model": "CX302",
+    "aliases": [
+      "CX302"
+    ],
+    "category": "digital",
+    "series": "CX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.01",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cxx02/cx302_v101.zip",
+        "fileBytes": 653459,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cxx02/cx302_v101_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp11",
+    "model": "MP11",
+    "aliases": [
+      "MP11"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.16",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp11_v116.zip",
+        "fileBytes": 794496,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp11_v116_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp11se",
+    "model": "MP11SE",
+    "aliases": [
+      "MP11SE"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.06",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp11se_v106.zip",
+        "fileBytes": 743214,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp11se_v106_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp7",
+    "model": "MP7",
+    "aliases": [
+      "MP7"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.16",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp7_v116.zip",
+        "fileBytes": 902206,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp7_v116_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp7se",
+    "model": "MP7SE",
+    "aliases": [
+      "MP7SE"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.06",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp7se_v106.zip",
+        "fileBytes": 801384,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp7se_v106_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp10",
+    "model": "MP10",
+    "aliases": [
+      "MP10"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.07",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp10_v107.zip",
+        "fileBytes": 393535,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp10_v107_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "mp6",
+    "model": "MP6",
+    "aliases": [
+      "MP6"
+    ],
+    "category": "digital",
+    "series": "MP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.13",
+        "fileUrl": "https://www.kawai-global.com/data/updates/mp6_v113.zip",
+        "fileBytes": 439919,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/mp6_v113_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "es920",
+    "model": "ES920",
+    "aliases": [
+      "ES920"
+    ],
+    "category": "digital",
+    "series": "ES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.25",
+        "fileUrl": "https://www.kawai-global.com/data/updates/esx20/es920_v125.zip",
+        "fileBytes": 918448,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/esx20/es920_v125_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "es520",
+    "model": "ES520",
+    "aliases": [
+      "ES520"
+    ],
+    "category": "digital",
+    "series": "ES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.24",
+        "fileUrl": "https://www.kawai-global.com/data/updates/esx20/es520_v124.zip",
+        "fileBytes": 600532,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/esx20/es520_v124_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "es8",
+    "model": "ES8",
+    "aliases": [
+      "ES8"
+    ],
+    "category": "digital",
+    "series": "ES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.08",
+        "fileUrl": "https://www.kawai-global.com/data/updates/es8_v108.zip",
+        "fileBytes": 375464,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/es8_v108_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "es7",
+    "model": "ES7",
+    "aliases": [
+      "ES7"
+    ],
+    "category": "digital",
+    "series": "ES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.17",
+        "fileUrl": "https://www.kawai-global.com/data/updates/es7_v117.zip",
+        "fileBytes": 441777,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/es7_v117_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cp1",
+    "model": "CP1",
+    "aliases": [
+      "CP1"
+    ],
+    "category": "digital",
+    "series": "CP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.06",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cp/CP1_ver106.zip",
+        "fileBytes": 9340149,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cp/CP1_ver106_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cp2",
+    "model": "CP2",
+    "aliases": [
+      "CP2"
+    ],
+    "category": "digital",
+    "series": "CP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.07",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cp/CP2_ver107.zip",
+        "fileBytes": 9340129,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cp/CP2_ver107_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "cp3",
+    "model": "CP3",
+    "aliases": [
+      "CP3"
+    ],
+    "category": "digital",
+    "series": "CP",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.07",
+        "fileUrl": "https://www.kawai-global.com/data/updates/cp/CP3_ver107.zip",
+        "fileBytes": 9216426,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/cp/CP3_ver107_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv12",
+    "model": "Novus NV12",
+    "aliases": [
+      "NV12"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.12",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv12_nv6/nv12_sys_v1012.zip",
+        "fileBytes": 2661630,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv12_nv6/nv12_sys_v1012_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv6",
+    "model": "Novus NV6",
+    "aliases": [
+      "NV6"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.11",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv12_nv6/nv6_sys_v1011.zip",
+        "fileBytes": 2651697,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv12_nv6/nv6_sys_v1011_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv10s",
+    "model": "Novus NV10S",
+    "aliases": [
+      "NV10S"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "LCD Touch Panel",
+        "version": "1.3.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310.zip",
+        "fileBytes": 161410073,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310_en.pdf"
+      },
+      {
+        "label": "System",
+        "version": "2.19",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv10s_nv5s/nv10s_sys_v219.zip",
+        "fileBytes": 1165775,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv10s_nv5s/nv10s_sys_v219_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv5s",
+    "model": "Novus NV5S",
+    "aliases": [
+      "NV5S"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "LCD Touch Panel",
+        "version": "1.3.10",
+        "fileUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310.zip",
+        "fileBytes": 161410073,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/ca_nv_lcd/ca_nv_lcd_v1310_en.pdf"
+      },
+      {
+        "label": "System",
+        "version": "2.19",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv10s_nv5s/nv5s_sys_v219.zip",
+        "fileBytes": 1168808,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv10s_nv5s/nv5s_sys_v219_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv10",
+    "model": "Novus NV10",
+    "aliases": [
+      "NV10"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.2m",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv10/download.php?model=nv10&version=102m",
+        "fileBytes": 17813839,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv10/nv10_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "nv5",
+    "model": "Novus NV5",
+    "aliases": [
+      "NV5"
+    ],
+    "category": "hybrid",
+    "series": "NV",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.0.2m",
+        "fileUrl": "https://www.kawai-global.com/data/updates/nv5/nv5_v102m.zip",
+        "fileBytes": 17821265,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/nv5/nv5_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ar2",
+    "model": "AURES AR2",
+    "aliases": [
+      "AR2"
+    ],
+    "category": "anytime",
+    "series": "AURES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.19",
+        "fileUrl": "https://www.kawai-global.com/data/updates/atx4aures2/atx4_ar2_sys_v219.zip",
+        "fileBytes": 3357432,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/atx4aures2/atx4_ar2_sys_v219_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "atx4",
+    "model": "AnyTime ATX4",
+    "aliases": [
+      "ATX4"
+    ],
+    "category": "anytime",
+    "series": "ATX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "2.19",
+        "fileUrl": "https://www.kawai-global.com/data/updates/atx4aures2/atx4_ar2_sys_v219.zip",
+        "fileBytes": 3357432,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/atx4aures2/atx4_ar2_sys_v219_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "ar",
+    "model": "AURES AR",
+    "aliases": [
+      "AR"
+    ],
+    "category": "anytime",
+    "series": "AURES",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.02m",
+        "fileUrl": "https://www.kawai-global.com/data/updates/atx3aures/atx3aures_v102m.zip",
+        "fileBytes": 17824724,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/atx3aures/atx3aures_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "atx3",
+    "model": "AnyTime ATX3",
+    "aliases": [
+      "ATX3"
+    ],
+    "category": "anytime",
+    "series": "ATX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.02m",
+        "fileUrl": "https://www.kawai-global.com/data/updates/atx3aures/atx3aures_v102m.zip",
+        "fileBytes": 17824724,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/atx3aures/atx3aures_v102_en.pdf"
+      }
+    ]
+  },
+  {
+    "slug": "atx2",
+    "model": "AnyTime ATX2",
+    "aliases": [
+      "ATX2"
+    ],
+    "category": "anytime",
+    "series": "ATX",
+    "downloads": [
+      {
+        "label": "System",
+        "version": "1.05",
+        "fileUrl": "https://www.kawai-global.com/data/updates/atx2_v105.zip",
+        "fileBytes": 486713,
+        "instructionsUrl": "https://www.kawai-global.com/data/updates/atx2_v105_en.pdf"
+      }
+    ]
+  }
+]

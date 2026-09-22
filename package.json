@@ -32,6 +32,10 @@
     "migrate:product-featured:dry-run": "tsx scripts/migrate-product-featured.ts --dry-run",
     "migrate:dealers:rsm": "tsx scripts/migrate-dealers-rsm-list.ts",
     "migrate:dealers:rsm:dry-run": "tsx scripts/migrate-dealers-rsm-list.ts --dry-run",
+    "nav:software": "tsx scripts/add-software-resource-link.ts",
+    "nav:software:dry-run": "tsx scripts/add-software-resource-link.ts --dry-run",
+    "seed:software": "tsx scripts/seed-software-releases.ts",
+    "seed:software:dry-run": "tsx scripts/seed-software-releases.ts --dry-run",
     "test:s3": "tsx scripts/test-s3-connection.ts"
   },
   "dependencies": {

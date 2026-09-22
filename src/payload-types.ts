@@ -163,6 +163,7 @@ export interface Config {
     'faq-categories': FaqCategory;
     faqs: Faq;
     'support-groups': SupportGroup;
+    'software-releases': SoftwareRelease;
     products: Product;
     collections: Collection;
     dealers: Dealer;
@@ -203,6 +204,7 @@ export interface Config {
     'faq-categories': FaqCategoriesSelect<false> | FaqCategoriesSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     'support-groups': SupportGroupsSelect<false> | SupportGroupsSelect<true>;
+    'software-releases': SoftwareReleasesSelect<false> | SoftwareReleasesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     collections: CollectionsSelect<false> | CollectionsSelect<true>;
     dealers: DealersSelect<false> | DealersSelect<true>;
@@ -2696,6 +2698,18 @@ export interface Product {
      * Sort order (lower numbers appear first)
      */
     sortOrder?: number | null;
+    /**
+     * Hide from the header menus — the desktop Products mega menu, the mobile products sheet, and the nav accessories strip. Browse grids and the product page are unaffected.
+     */
+    hideFromNavigation?: boolean | null;
+    /**
+     * Hide from the catalog browse grids — /pianos, the category pages (/pianos/digital, /grand, /upright, /hybrid), the series pages, /accessories, and /collections. The header menu and the product page are unaffected.
+     */
+    hideFromBrowsers?: boolean | null;
+    /**
+     * Hide from Shopify collection landing pages at /pianos/[collection-handle]. Use when a product must belong to a collection for pricing or sync reasons but should not be displayed on that collection’s page.
+     */
+    hideFromCollectionPages?: boolean | null;
   };
   /**
    * Inventory management settings
@@ -10294,6 +10308,80 @@ export interface Storefront {
   createdAt: string;
 }
 /**
+ * Firmware downloads listed on /software. To publish a new version, open the model and update the Version and Update file URL.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "software-releases".
+ */
+export interface SoftwareRelease {
+  id: string;
+  /**
+   * Model name exactly as Kawai lists it, e.g. "ES920" or "CA901/CA701". Shown as the row heading.
+   */
+  model: string;
+  /**
+   * Anchor id used for deep links, e.g. /software#es920. Lowercase, kebab-case.
+   */
+  slug: string;
+  /**
+   * Top-level group in the sidebar.
+   */
+  category: 'digital' | 'hybrid' | 'anytime';
+  /**
+   * Series group nested under the category in the sidebar.
+   */
+  series: 'CA' | 'CN' | 'CS' | 'CX' | 'DG' | 'ES' | 'MP' | 'CP' | 'NV' | 'ATX' | 'AURES';
+  /**
+   * Extra names the search box should match. For combined models add each half separately (CA901, CA701) so either owner finds the row.
+   */
+  aliases?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Usually one row ("System"). A few instruments (CA901/CA701, CA99/CA79, NV10S, NV5S) also ship a separately-versioned LCD touch panel image — add it as a second row.
+   */
+  downloads: {
+    /**
+     * What this file updates, e.g. "System" or "LCD Touch Panel".
+     */
+    label: string;
+    /**
+     * Version number without the "v", e.g. 1.25 or 1.0.10.
+     */
+    version: string;
+    /**
+     * Optional. Shown as "Updated <month> <year>" next to the version.
+     */
+    releaseDate?: string | null;
+    /**
+     * Direct link to the .zip on kawai-global.com. This is the field to change when new firmware ships.
+     */
+    fileUrl: string;
+    /**
+     * Optional file size in bytes, shown on the download button (e.g. 918448 renders as "897 KB"). Leave blank to hide the size.
+     */
+    fileBytes?: number | null;
+    /**
+     * Link to the English instructions PDF.
+     */
+    instructionsUrl?: string | null;
+    id?: string | null;
+  }[];
+  /**
+   * Optional short note shown under the model, e.g. a prerequisite or a caveat about the update.
+   */
+  notes?: string | null;
+  /**
+   * Uncheck to hide this model from /software without deleting it.
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage authorized Kawai piano dealers with location, contact information, and service details for the dealer finder map.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -11669,6 +11757,10 @@ export interface PayloadLockedDocument {
         value: string | SupportGroup;
       } | null)
     | ({
+        relationTo: 'software-releases';
+        value: string | SoftwareRelease;
+      } | null)
+    | ({
         relationTo: 'products';
         value: string | Product;
       } | null)
@@ -12792,6 +12884,37 @@ export interface SupportGroupsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "software-releases_select".
+ */
+export interface SoftwareReleasesSelect<T extends boolean = true> {
+  model?: T;
+  slug?: T;
+  category?: T;
+  series?: T;
+  aliases?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  downloads?:
+    | T
+    | {
+        label?: T;
+        version?: T;
+        releaseDate?: T;
+        fileUrl?: T;
+        fileBytes?: T;
+        instructionsUrl?: T;
+        id?: T;
+      };
+  notes?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -12979,6 +13102,9 @@ export interface ProductsSelect<T extends boolean = true> {
     | T
     | {
         sortOrder?: T;
+        hideFromNavigation?: T;
+        hideFromBrowsers?: T;
+        hideFromCollectionPages?: T;
       };
   inventory?:
     | T
@@ -13841,6 +13967,7 @@ export interface TaskCreateCollectionExport {
       | 'faq-categories'
       | 'faqs'
       | 'support-groups'
+      | 'software-releases'
       | 'products'
       | 'collections'
       | 'dealers'

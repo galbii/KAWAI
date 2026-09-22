@@ -31,6 +31,7 @@ import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloa
 import { SharePreviewLinkButton as SharePreviewLinkButton_d1c442685b80744adadd1e8da7d06906 } from '../../../components/admin/SharePreviewLinkButton'
 import { SeedPostsButton as SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7 } from '../../../components/admin/SeedPostsButton'
 import { SeedArtistsButton as SeedArtistsButton_4b079c3f25a81e3b38d51126776e1754 } from '../../../components/admin/ArtistsButton'
+import { SoftwareDownloadRowLabel as SoftwareDownloadRowLabel_011c92a38be8c4311c284a08aa4709f3 } from '../../../components/admin/SoftwareDownloadRowLabel'
 import { CustomMediaRowLabel as CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149 } from '../../../components/admin/CustomMediaRowLabel'
 import { ProductTypeCell as ProductTypeCell_2ee4334009970004c1a3c71e772c87c1 } from '../../../components/admin/ProductTypeCell'
 import { SpecificationRowLabel as SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7 } from '../../../components/admin/SpecificationRowLabel'
@@ -121,6 +122,7 @@ export const importMap = {
   "/components/admin/SharePreviewLinkButton#SharePreviewLinkButton": SharePreviewLinkButton_d1c442685b80744adadd1e8da7d06906,
   "/components/admin/SeedPostsButton#SeedPostsButton": SeedPostsButton_426f4390a0ceb7b702a9ca8700ffecd7,
   "/components/admin/ArtistsButton#SeedArtistsButton": SeedArtistsButton_4b079c3f25a81e3b38d51126776e1754,
+  "/components/admin/SoftwareDownloadRowLabel#SoftwareDownloadRowLabel": SoftwareDownloadRowLabel_011c92a38be8c4311c284a08aa4709f3,
   "/components/admin/CustomMediaRowLabel#CustomMediaRowLabel": CustomMediaRowLabel_a21c52456ab73f6055854ecc285d9149,
   "/components/admin/ProductTypeCell#ProductTypeCell": ProductTypeCell_2ee4334009970004c1a3c71e772c87c1,
   "/components/admin/SpecificationRowLabel#SpecificationRowLabel": SpecificationRowLabel_1091d94778fdba3b9f9086a79ac873b7,

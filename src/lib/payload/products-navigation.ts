@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import config from '@/payload.config'
 import type { Product } from '@/payload-types'
+import { HIDE_FROM_NAVIGATION } from '@/lib/products/visibility'
 
 // ============================================================================
 // Types (compatible with existing ProductsMegaMenu)
@@ -263,6 +264,7 @@ export async function getProductTypesWithProducts(options?: {
         and: [
           { status: { equals: 'active' } },
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+          HIDE_FROM_NAVIGATION,
         ],
       },
       select: {
@@ -440,6 +442,7 @@ export async function getProductsByTypeForNav(
           { status: { equals: 'active' } },
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
           { category: { equals: normalizedCategory } },
+          HIDE_FROM_NAVIGATION,
         ],
       },
       select: {
@@ -629,7 +632,14 @@ export async function getAccessoriesForNav(limit = 8): Promise<NavAccessory[]> {
     const payload = await getPayload({ config })
     const result = await payload.find({
       collection: 'products',
-      where: { and: [{ status: { equals: 'active' } }, { type: { equals: 'accessory' } }, { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } }] },
+      where: {
+        and: [
+          { status: { equals: 'active' } },
+          { type: { equals: 'accessory' } },
+          { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+          HIDE_FROM_NAVIGATION,
+        ],
+      },
       select: { model: true, name: true, slug: true, imageUrl: true, accessoryType: true },
       depth: 0,
       limit,

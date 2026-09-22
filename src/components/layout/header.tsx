@@ -17,6 +17,8 @@ import { RegisterPianoModal } from '@/components/navigation/RegisterPianoModal'
 import { NewsMegaMenu } from '@/components/navigation/NewsMegaMenu'
 import { RecentsDropdown } from '@/components/navigation/RecentsDropdown'
 import { SearchBar } from '@/components/search/SearchBar'
+import { LocaleSwitcher } from '@/components/layout/LocaleSwitcher'
+import { FRENCH_ENABLED } from '@/lib/i18n/flags'
 import { cn } from '@/lib/utils'
 import { useNavigationContext } from '@/contexts/NavigationContext'
 import { usePageHistory } from '@/contexts/PageHistoryContext'
@@ -798,6 +800,11 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
             {/* Right Side - Cart + CTA/Dealer Link + Mobile Menu */}
             <div className="flex items-center gap-2">
+              {/* Language switcher — CA domain only. The /fr prefix doesn't
+                  exist on the US site, so the control would be a dead end there.
+                  Gated until the translation layer ships (see i18n/flags). */}
+              {site === 'cad' && FRENCH_ENABLED && <LocaleSwitcher />}
+
               {/* Find a Dealer - Desktop (non-storefront pages) */}
               {!isSignaturePage && !currentLocationData && (
                 <motion.div

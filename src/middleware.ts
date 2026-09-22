@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { ResolvedRedirect } from '@/app/(frontend)/api/redirects-list/route'
+import { DEFAULT_UI_LOCALE, parseLocalePath, withLocale } from '@/lib/i18n/locale-path'
+import { FRENCH_ENABLED } from '@/lib/i18n/flags'
 
 // ---------------------------------------------------------------------------
 // Module-level redirect cache
@@ -56,45 +58,72 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Add the pathname to headers so server components can access it
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-pathname', pathname)
 
   // Detect domain — used by layouts, metadata, sitemap, and robots for site-specific rendering
   const host = request.headers.get('host') ?? ''
   const site = host.startsWith('ca.') ? 'cad' : 'us'
   requestHeaders.set('x-site', site)
 
+  // Language lives in the path (/fr), country lives in the domain. Parse the
+  // prefix off up front so everything downstream — the redirect lookup, the
+  // dealer cookie, x-pathname — sees the real route rather than the prefixed
+  // one, and the existing route tree resolves without an app/[lang]/ segment.
+  const { locale, pathname: barePathname } = parseLocalePath(pathname)
+
+  // /fr only exists on the CA domain, and only once French is switched on.
+  // Anywhere else, strip it rather than serving the same content under two URLs.
+  if (locale !== DEFAULT_UI_LOCALE && (site !== 'cad' || !FRENCH_ENABLED)) {
+    return NextResponse.redirect(
+      new URL(`${barePathname}${request.nextUrl.search}`, request.url),
+      { status: 308 },
+    )
+  }
+
+  requestHeaders.set('x-locale', locale)
+
+  // Add the pathname to headers so server components can access it
+  requestHeaders.set('x-pathname', barePathname)
+
   // Shigeru Kawai pages are US-only — redirect CA visitors to the US domain
-  if (site === 'cad' && pathname.startsWith('/shigeru')) {
-    return NextResponse.redirect(`https://kawaius.com${pathname}`, { status: 302 })
+  if (site === 'cad' && barePathname.startsWith('/shigeru')) {
+    return NextResponse.redirect(`https://kawaius.com${barePathname}`, { status: 302 })
   }
 
   // Check CMS-managed redirects
   // Normalize pathname by stripping trailing slash (except root "/") so that
   // /old-page/ matches a stored redirect of /old-page
-  const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname
+  const normalizedPathname =
+    barePathname.length > 1 ? barePathname.replace(/\/$/, '') : barePathname
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin
   const redirects = await getRedirects(baseUrl)
   const match = redirects.find((r) => r.from === normalizedPathname)
 
   if (match) {
-    // Support both absolute URLs (https://...) and relative paths (/new-path)
+    // Support both absolute URLs (https://...) and relative paths (/new-path).
+    // Relative destinations keep the visitor's language — a French visitor
+    // following /fr/old-page lands on /fr/new-page, not the English one.
     const destination = match.to.startsWith('http')
       ? match.to
-      : new URL(match.to, request.url).toString()
+      : new URL(withLocale(match.to, locale), request.url).toString()
 
     return NextResponse.redirect(destination, { status: Number(match.type) })
   }
 
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  })
+  // Serve the prefixed URL from the unprefixed route tree. Rewrite (not
+  // redirect) so /fr/pianos stays in the address bar and keeps its own
+  // Cloudflare cache key, while Next.js resolves the existing /pianos route.
+  const response =
+    locale === DEFAULT_UI_LOCALE
+      ? NextResponse.next({ request: { headers: requestHeaders } })
+      : NextResponse.rewrite(new URL(`${barePathname}${request.nextUrl.search}`, request.url), {
+          request: { headers: requestHeaders },
+        })
 
   // Dealer context cookie — readable server-side via cookies() and client-side via document.cookie.
   // Set when entering a storefront, clear when returning to the homepage.
-  if (pathname.startsWith('/store/')) {
-    const slug = pathname.split('/')[2]
+  if (barePathname.startsWith('/store/')) {
+    const slug = barePathname.split('/')[2]
     if (slug) {
       response.cookies.set('kawai-dealer-slug', slug, {
         path: '/',
@@ -103,7 +132,7 @@ export async function middleware(request: NextRequest) {
         // No maxAge — session cookie, cleared when browser closes
       })
     }
-  } else if (pathname === '/' || pathname === '') {
+  } else if (barePathname === '/' || barePathname === '') {
     response.cookies.delete('kawai-dealer-slug')
   }
 

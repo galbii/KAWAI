@@ -206,6 +206,15 @@ const DEFAULT_RESOURCE_LINKS: ResourceLink[] = [
     enabled: true,
   },
   {
+    title: 'Software & Firmware',
+    description:
+      'Download the latest system software for Kawai digital, hybrid, AnyTime and AURES instruments.',
+    href: '/software',
+    icon: 'cpu',
+    openInNewTab: false,
+    enabled: true,
+  },
+  {
     title: 'Warranty',
     description: "View Kawai's warranty coverage, terms, and claim information for your piano.",
     href: 'https://kawaius.com/warranty',
