@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { ResolvedRedirect } from '@/app/(frontend)/api/redirects-list/route'
-import { DEFAULT_UI_LOCALE, parseLocalePath, withLocale } from '@/lib/i18n/locale-path'
-import { FRENCH_ENABLED } from '@/lib/i18n/flags'
+import { DEFAULT_UI_LOCALE, parseLocalePath } from '@/lib/i18n/locale-path'
 
 // ---------------------------------------------------------------------------
 // Module-level redirect cache
@@ -65,22 +64,18 @@ export async function middleware(request: NextRequest) {
   const site = host.startsWith('ca.') ? 'cad' : 'us'
   requestHeaders.set('x-site', site)
 
-  // Language lives in the path (/fr), country lives in the domain. Parse the
-  // prefix off up front so everything downstream — the redirect lookup, the
-  // dealer cookie, x-pathname — sees the real route rather than the prefixed
-  // one, and the existing route tree resolves without an app/[lang]/ segment.
+  // French is applied client-side by the browser's on-device translator, so no
+  // /fr routes exist and nothing is served in French. Any /fr link is stale —
+  // from the brief window when path-prefixed French was wired up — so redirect
+  // it to the real page rather than 404ing a URL that may have been crawled.
   const { locale, pathname: barePathname } = parseLocalePath(pathname)
 
-  // /fr only exists on the CA domain, and only once French is switched on.
-  // Anywhere else, strip it rather than serving the same content under two URLs.
-  if (locale !== DEFAULT_UI_LOCALE && (site !== 'cad' || !FRENCH_ENABLED)) {
+  if (locale !== DEFAULT_UI_LOCALE) {
     return NextResponse.redirect(
       new URL(`${barePathname}${request.nextUrl.search}`, request.url),
       { status: 308 },
     )
   }
-
-  requestHeaders.set('x-locale', locale)
 
   // Add the pathname to headers so server components can access it
   requestHeaders.set('x-pathname', barePathname)
@@ -100,25 +95,17 @@ export async function middleware(request: NextRequest) {
   const match = redirects.find((r) => r.from === normalizedPathname)
 
   if (match) {
-    // Support both absolute URLs (https://...) and relative paths (/new-path).
-    // Relative destinations keep the visitor's language — a French visitor
-    // following /fr/old-page lands on /fr/new-page, not the English one.
+    // Support both absolute URLs (https://...) and relative paths (/new-path)
     const destination = match.to.startsWith('http')
       ? match.to
-      : new URL(withLocale(match.to, locale), request.url).toString()
+      : new URL(match.to, request.url).toString()
 
     return NextResponse.redirect(destination, { status: Number(match.type) })
   }
 
-  // Serve the prefixed URL from the unprefixed route tree. Rewrite (not
-  // redirect) so /fr/pianos stays in the address bar and keeps its own
-  // Cloudflare cache key, while Next.js resolves the existing /pianos route.
-  const response =
-    locale === DEFAULT_UI_LOCALE
-      ? NextResponse.next({ request: { headers: requestHeaders } })
-      : NextResponse.rewrite(new URL(`${barePathname}${request.nextUrl.search}`, request.url), {
-          request: { headers: requestHeaders },
-        })
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  })
 
   // Dealer context cookie — readable server-side via cookies() and client-side via document.cookie.
   // Set when entering a storefront, clear when returning to the homepage.

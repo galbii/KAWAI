@@ -9,7 +9,6 @@ import {
   UI_LOCALES,
   isUiLocale,
   parseLocalePath,
-  withLocale,
 } from './locale-path'
 
 describe('UI_LOCALES', () => {
@@ -80,32 +79,5 @@ describe('parseLocalePath', () => {
 
   test('preserves a trailing slash on nested paths', () => {
     expect(parseLocalePath('/fr/pianos/')).toEqual({ locale: 'fr', pathname: '/pianos/' })
-  })
-})
-
-describe('withLocale', () => {
-  test('adds the /fr prefix', () => {
-    expect(withLocale('/pianos', 'fr')).toBe('/fr/pianos')
-    expect(withLocale('/', 'fr')).toBe('/fr')
-  })
-
-  test('removes the prefix for English', () => {
-    expect(withLocale('/fr/pianos', 'en')).toBe('/pianos')
-    expect(withLocale('/fr', 'en')).toBe('/')
-  })
-
-  test('is idempotent', () => {
-    expect(withLocale('/fr/pianos', 'fr')).toBe('/fr/pianos')
-    expect(withLocale('/pianos', 'en')).toBe('/pianos')
-  })
-
-  test('round-trips through both locales', () => {
-    const original = '/store/st-louis/signature'
-    expect(withLocale(withLocale(original, 'fr'), 'en')).toBe(original)
-  })
-
-  test('does not mangle paths that merely start with the locale letters', () => {
-    expect(withLocale('/french-horn', 'fr')).toBe('/fr/french-horn')
-    expect(withLocale('/french-horn', 'en')).toBe('/french-horn')
   })
 })

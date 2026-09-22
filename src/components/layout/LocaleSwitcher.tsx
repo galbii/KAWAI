@@ -1,49 +1,74 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronDown, Globe } from 'lucide-react'
+import { Check, ChevronDown, Globe, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { parseLocalePath, withLocale, type UiLocale } from '@/lib/i18n/locale-path'
+import {
+  isBrowserTranslateSupported,
+  restoreEnglish,
+  translatePageToFrench,
+  type TranslateStatus,
+} from '@/lib/i18n/browser-translate'
 
-/** Remembers the visitor's choice for their next visit. The URL always wins. */
-const LOCALE_COOKIE = 'kawai-ui-locale'
+type UiLocale = 'en' | 'fr'
 
-const OPTIONS: ReadonlyArray<{
-  locale: UiLocale
-  /** Always written in its own language — never "French" in an English menu. */
-  label: string
-  short: string
-  hrefLang: string
-}> = [
-  { locale: 'en', label: 'English', short: 'EN', hrefLang: 'en-CA' },
-  { locale: 'fr', label: 'Français', short: 'FR', hrefLang: 'fr-CA' },
+/** Remembers the choice so it re-applies as the visitor moves around the site. */
+const STORAGE_KEY = 'kawai-ui-locale'
+
+const OPTIONS: ReadonlyArray<{ locale: UiLocale; label: string; short: string }> = [
+  // Each language is named in its own language, never translated into the other.
+  { locale: 'en', label: 'English', short: 'EN' },
+  { locale: 'fr', label: 'Français', short: 'FR' },
 ]
 
 /**
- * Globe dropdown for switching between English and French on the CA domain.
+ * Globe dropdown that translates the page into French using the browser's
+ * built-in on-device translator.
  *
- * Locale comes from the URL via `usePathname()` rather than a cookie or a
- * server prop, so this stays a pure client component and never drags the
- * layout into dynamic rendering (see the `headers()` note in CLAUDE.md).
+ * Nothing is fetched and no URL changes — the page is rewritten in place. The
+ * control hides entirely in browsers without the API rather than offering a
+ * button that does nothing.
  */
 export function LocaleSwitcher({ className }: { className?: string }) {
-  const pathname = usePathname() || '/'
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const [isSupported, setIsSupported] = useState(false)
+  const [locale, setLocale] = useState<UiLocale>('en')
+  const [status, setStatus] = useState<TranslateStatus>('idle')
+  const [progress, setProgress] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const { locale: activeLocale } = parseLocalePath(pathname)
-  const activeOption = OPTIONS.find((o) => o.locale === activeLocale) ?? OPTIONS[0]!
+  const onStatus = useCallback((next: TranslateStatus, value?: number) => {
+    setStatus(next)
+    if (typeof value === 'number') setProgress(value)
+  }, [])
 
-  // The root layout renders a static lang="en" (it can't read headers without
-  // forcing every page dynamic), so correct it here once the client knows the
-  // locale. Assistive tech reads the live DOM attribute; crawlers get the
-  // language signal from the hreflang alternates instead.
+  // Support is only knowable on the client, so the control renders nothing on
+  // the server and appears after mount — which also keeps SSR and the first
+  // client render identical (no hydration mismatch).
   useEffect(() => {
-    document.documentElement.lang = activeLocale === 'fr' ? 'fr-CA' : 'en-CA'
-  }, [activeLocale])
+    setIsSupported(isBrowserTranslateSupported())
+  }, [])
+
+  // Re-apply French after client-side navigation, since the new page renders
+  // in English. The browser may require a fresh tap if it withholds activation;
+  // the menu still shows FR so the visitor can re-trigger it.
+  useEffect(() => {
+    if (!isSupported) return
+
+    let stored: string | null = null
+    try {
+      stored = window.localStorage.getItem(STORAGE_KEY)
+    } catch {
+      /* private mode / blocked storage — treat as English */
+    }
+    if (stored !== 'fr') return
+
+    setLocale('fr')
+    void translatePageToFrench(onStatus)
+  }, [pathname, isSupported, onStatus])
 
   // Close on outside click and on Escape.
   useEffect(() => {
@@ -64,10 +89,34 @@ export function LocaleSwitcher({ className }: { className?: string }) {
     }
   }, [isOpen])
 
-  const handleSelect = useCallback((locale: UiLocale) => {
-    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`
-    setIsOpen(false)
-  }, [])
+  const handleSelect = useCallback(
+    async (next: UiLocale) => {
+      setIsOpen(false)
+      if (next === locale) return
+
+      setLocale(next)
+      try {
+        window.localStorage.setItem(STORAGE_KEY, next)
+      } catch {
+        /* non-fatal — the choice just won't survive navigation */
+      }
+
+      if (next === 'fr') {
+        // Called straight from the click so the browser's user-activation
+        // requirement for creating a translator is satisfied.
+        await translatePageToFrench(onStatus)
+      } else {
+        restoreEnglish()
+        setStatus('idle')
+      }
+    },
+    [locale, onStatus],
+  )
+
+  if (!isSupported) return null
+
+  const isBusy = status === 'downloading' || status === 'translating'
+  const active = OPTIONS.find((o) => o.locale === locale) ?? OPTIONS[0]!
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
@@ -79,9 +128,13 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         aria-haspopup="menu"
         aria-expanded={isOpen}
       >
-        <Globe className="h-4 w-4 text-kawai-charcoal" aria-hidden="true" />
+        {isBusy ? (
+          <Loader2 className="h-4 w-4 text-kawai-charcoal animate-spin" aria-hidden="true" />
+        ) : (
+          <Globe className="h-4 w-4 text-kawai-charcoal" aria-hidden="true" />
+        )}
         <span className="text-[11px] font-semibold tracking-[0.08em] text-kawai-charcoal">
-          {activeOption.short}
+          {isBusy ? `${progress}%` : active.short}
         </span>
         <ChevronDown
           className={cn(
@@ -92,40 +145,54 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         />
       </button>
 
+      {/* Announce progress without stealing focus. */}
+      <span role="status" aria-live="polite" className="sr-only">
+        {status === 'downloading' && `Downloading language pack, ${progress} percent`}
+        {status === 'translating' && `Translating page, ${progress} percent`}
+        {status === 'translated' && 'Page translated to French'}
+        {status === 'error' && 'Translation failed'}
+      </span>
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
             role="menu"
             aria-label="Language"
-            className="absolute right-0 top-full mt-1 w-44 bg-white border border-kawai-neutral rounded-lg shadow-brand-medium overflow-hidden z-50"
+            className="absolute right-0 top-full mt-1 w-48 bg-white border border-kawai-neutral rounded-lg shadow-brand-medium overflow-hidden z-50"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
           >
             {OPTIONS.map((option) => {
-              const isActive = option.locale === activeLocale
+              const isActive = option.locale === locale
 
               return (
-                <Link
+                <button
                   key={option.locale}
+                  type="button"
                   role="menuitem"
-                  href={withLocale(pathname, option.locale)}
-                  hrefLang={option.hrefLang}
                   lang={option.locale}
+                  disabled={isBusy}
                   aria-current={isActive ? 'true' : undefined}
-                  onClick={() => handleSelect(option.locale)}
+                  onClick={() => void handleSelect(option.locale)}
                   className={cn(
-                    'flex items-center justify-between gap-2 px-3 py-2.5 text-sm transition-colors',
-                    'text-kawai-charcoal hover:bg-kawai-pearl',
+                    'flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm text-left transition-colors',
+                    'text-kawai-charcoal hover:bg-kawai-pearl disabled:opacity-50',
                     isActive && 'font-semibold',
                   )}
                 >
                   {option.label}
                   {isActive && <Check className="h-3.5 w-3.5 text-kawai-red" aria-hidden="true" />}
-                </Link>
+                </button>
               )
             })}
+
+            {status === 'error' && (
+              <p className="px-3 py-2 text-xs text-kawai-charcoal border-t border-kawai-neutral">
+                Translation unavailable right now.
+              </p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

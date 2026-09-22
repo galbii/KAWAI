@@ -58,14 +58,3 @@ export function parseLocalePath(pathname: string): ParsedLocalePath {
   }
 }
 
-/**
- * Rewrites a pathname to the given locale, adding or removing the prefix.
- * Idempotent, and safe to feed its own output.
- */
-export function withLocale(pathname: string, locale: UiLocale): string {
-  const { pathname: bare } = parseLocalePath(pathname)
-
-  if (locale === DEFAULT_UI_LOCALE) return bare
-
-  return bare === '/' ? `/${locale}` : `/${locale}${bare}`
-}
