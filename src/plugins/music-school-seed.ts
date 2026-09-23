@@ -244,8 +244,9 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
       isActive: true,
       officialName: 'Kawai Music School (KMS)',
       directorName: 'Azin Hakimi',
+      instruments: [{ instrument: 'Piano' }, { instrument: 'Violin' }],
       about:
-        'The Private Lessons Program at Kawai Music School is a personalized music program serving Dallas and surrounding areas. It offers weekly not-for-credit one-on-one individual piano lessons taught by professional instructors. The school supplements the private lesson experience with group music theory classes, group lessons, and recitals. The environment is small yet personalized, catering to students of all ages and skill levels in classical, jazz, and pop styles. Minimum age for private lessons is age five. All instruction takes place exclusively at the Kawai Piano Gallery.',
+        'The Private Lessons Program at Kawai Music School is a personalized music program serving Dallas and surrounding areas. It offers weekly not-for-credit one-on-one individual lessons in piano, strings, voice, and guitar taught by professional instructors. The school supplements the private lesson experience with group music theory classes, group lessons, and recitals. The environment is small yet personalized, catering to students of all ages and skill levels in classical, jazz, and pop styles. Minimum age for private lessons is age five. All instruction takes place exclusively at the Kawai Piano Gallery.',
       contactInfo: {
         address: '601 W. Plano Parkway, Suite 153',
         city: 'Plano',
@@ -454,6 +455,49 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
               degree: 'M.M., University of North Texas (awarded Teaching Fellowship)',
             },
             { degree: 'B.M., Cameron University (Presser Scholar Award)' },
+          ],
+        },
+        {
+          name: 'Mi Sun Cheong',
+          title: 'Concert Pianist and Educator',
+          role: 'Teaching Fellow and Teaching Assistant',
+          background:
+            "Mi Sun Cheong is a concert pianist and educator whose work encompasses solo performance, collaborative artistry, and advanced pedagogy. She is currently a doctoral candidate in Piano Performance at the University of North Texas, where she serves as a Teaching Fellow and Teaching Assistant.\n\nSince 2015, Cheong has maintained an active and wide-ranging teaching career, working with students of all ages and levels—from young beginners to pre-professional and collegiate pianists; non-majors. Her pedagogical experience spans private instruction, group piano, and institutional teaching. She holds a teaching license for middle and high school in South Korea and completed extensive teaching practice across diverse settings, including arts schools, public middle and high schools, and community outreach programs serving students with varied educational needs. She continues this work in the United States, teaching both university-level courses at University of North Texas and private students in the Dallas–Fort Worth area. Her teaching emphasizes technical precision, stylistic fluency, and efficient practice strategies, informed by both historical traditions and contemporary pedagogical approaches.\n\nAn active performer, Cheong has appeared as a soloist in the United States and South Korea, in addition to maintaining a substantial collaborative career. She was invited to perform Lewisville Lake Symphony International Chamber series in both 2023-2024 season and 2025-2026 season as a soloist and collaborative pianist. She has partnered with singers and instrumentalists across a broad range of repertoire in recitals, competitions, and academic settings. Her professional activities include engagements as a staff pianist for festivals and competitions, studio pianist for violin and voice programs, and collaborative pianist for concerto competitions and opera productions.\n\nCheong holds both the Bachelor of Music and Master of Music degrees from Seoul National University—the most prestigious music education institution in South Korea—graduating with the honor of summa cum laude. Her scholarly work has been presented at national conferences, including the Music Teachers National Association National Conference and the Texas Music Teachers Association Conference, with a focus on piano pedagogy and practice methodologies.\n\nA prizewinner in numerous national competitions in South Korea, Cheong brings a rigorous and informed approach to both performance and teaching, with a commitment to cultivating high-level artistry across diverse educational contexts.",
+          education: [],
+        },
+        {
+          name: 'Christopher Richardson',
+          title: 'Piano Teacher',
+          role: 'Piano teacher',
+          specialties: 'Piano Performance',
+          background:
+            "Christopher Richardson is an award-winning pianist and dedicated educator who has taught students of all ages and skill levels since 2019. His honors include First Prize at the 2021 LA International Liszt Competition, Second Prize at the 2022 Virginia Waring International Piano Competition, and First Prize/Chopin Prize at the 2016 Music Teachers National Association Competition. He has performed at notable venues including Carnegie Hall, Benaroya Hall, McCallum Theater, Finney Chapel, the Music Tent in Aspen, and the Liszt Museum in Budapest, and has appeared as a soloist with several orchestras including the Minnesota Orchestra. His other major piano instructors have included Mack McCray, Duane Hulbert, and Frederick Weldy.",
+          education: [
+            {
+              degree:
+                'M.M. in Piano Performance, University of Southern California (under Jeffrey Kahane)',
+            },
+            { degree: 'M.B.A., Cornell University' },
+            {
+              degree:
+                'B.A. with honors in Music, Economics, and Molecular and Cell Biology, University of California, Berkeley',
+            },
+          ],
+        },
+        {
+          name: 'Hyun Jung Kim',
+          title: 'Violin Teacher',
+          role: 'Violin teacher',
+          specialties: 'Violin, chamber music, orchestral performance',
+          background:
+            "Hyun Jung Kim is a violinist from South Korea who began her musical journey at the age of five. She started her studies at Ewha Womans University under Professor Taekju Lee, where her undergraduate work laid the groundwork for a profound love and deep passion for the violin. After graduating she focused on teaching and performing before pursuing a Master of Music at the University of Texas at Austin under Sandy Yamamoto. She is currently advancing her expertise through doctoral studies at the University of North Texas as an Anshel Brusilow Scholarship full-scholarship recipient, under the mentorship of Professor Julia Bushkova. Alongside her academic work she serves as a Teaching Assistant and is a violinist in the Bancroft Quartet, where she continues to shine in chamber music; she previously honed her chamber music skills as a member of the Marie A. Moore Piano Trio. She is deeply committed to her orchestral performances and dedicates significant time to teaching young musicians, fostering the next generation of musicians.",
+          education: [
+            {
+              degree:
+                'Doctoral studies in Violin Performance, University of North Texas (Anshel Brusilow Scholarship full-scholarship recipient; under Prof. Julia Bushkova)',
+            },
+            { degree: 'M.M., University of Texas at Austin (under Sandy Yamamoto)' },
+            { degree: 'B.M., Ewha Womans University, South Korea (under Prof. Taekju Lee)' },
           ],
         },
       ],
