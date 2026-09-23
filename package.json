@@ -26,6 +26,8 @@
     "migrate:artists:publish:v2:dry-run": "tsx scripts/migrate-artists-publish-v2.ts --dry-run",
     "policy:dallas-makeup": "tsx scripts/update-dallas-makeup-policy.ts",
     "policy:dallas-makeup:dry-run": "tsx scripts/update-dallas-makeup-policy.ts --dry-run",
+    "content:houston-school": "tsx scripts/update-houston-music-school.ts",
+    "content:houston-school:dry-run": "tsx scripts/update-houston-music-school.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
     "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",

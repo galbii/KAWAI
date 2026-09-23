@@ -1,10 +1,15 @@
 /**
- * Kill switch for the French UI locale.
+ * Kill switch for the French translate button on ca.kawaius.com.
  *
- * The routing, switcher, and hreflang wiring all land before the translation
- * layer does. Until French pages actually render in French, advertising
- * /fr URLs to crawlers would publish duplicate English content under a second
- * set of URLs — so everything user-visible stays behind this flag.
+ * The button never produces a French *URL* and never translates anything
+ * itself — it just tells the visitor how to use their own browser's translate
+ * feature. So there is nothing for a crawler to index and no duplicate content
+ * to worry about; the flag exists purely so the control can be pulled from the
+ * header without a code change.
+ *
+ * Note: this is a convenience, not Quebec Bill 96 compliance. Visitor-initiated
+ * machine translation does not satisfy the Charter of the French Language —
+ * that needs a real fr-CA locale with human-reviewed copy.
  *
  * Set NEXT_PUBLIC_FRENCH_ENABLED=true to turn it on.
  */

@@ -12,7 +12,7 @@
  * and redirects are all keyed to those paths.
  *
  * These are pure string functions with no Next.js imports, so both the
- * middleware (server, edge-ish) and the LocaleSwitcher (client) can use them.
+ * middleware (server, edge-ish) and client components can use them.
  */
 
 export const UI_LOCALES = ['en', 'fr'] as const

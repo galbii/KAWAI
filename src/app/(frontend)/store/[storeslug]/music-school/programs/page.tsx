@@ -237,7 +237,6 @@ export default async function ProgramsPage({ params }: Props) {
                     {cls.tuition != null && (
                       <p className="text-kawai-red font-bold text-lg">
                         ${cls.tuition.toLocaleString()}
-                        <span className="text-kawai-charcoal/40 text-sm font-normal ml-1">/ mo</span>
                       </p>
                     )}
 

@@ -800,9 +800,9 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
 
             {/* Right Side - Cart + CTA/Dealer Link + Mobile Menu */}
             <div className="flex items-center gap-2">
-              {/* Language switcher — CA domain only. The /fr prefix doesn't
-                  exist on the US site, so the control would be a dead end there.
-                  Gated until the translation layer ships (see i18n/flags). */}
+              {/* CA domain only; the US site is English-only. Real EN/FR toggle
+                  on Chrome/Edge via the on-device Translator API; elsewhere it
+                  shows the visitor their browser's own steps (see i18n/flags). */}
               {site === 'cad' && FRENCH_ENABLED && <LocaleSwitcher />}
 
               {/* Find a Dealer - Desktop (non-storefront pages) */}

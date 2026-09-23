@@ -65,9 +65,10 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
       slug: 'kpm-houston',
       isActive: true,
       officialName: 'Kawai School of Music (KSM)',
-      directorName: 'Zhu Zhu',
+      directorName: 'Dr. Zhu Zhu',
       about:
-        'The Private Lesson Program at KSM is a small and selective music program serving Houston and surrounding areas. It offers weekly not-for-credit one-on-one individual piano lessons taught by professional instructors. KSM supplements the private lesson experience with group music theory classes, group lessons, and recitals. The school caters to students of all ages and skill levels in classical, jazz, and pop styles. Minimum age requirement for private lessons is age five. All instruction takes place exclusively at the Kawai Piano Gallery.',
+        'The private lesson program at the Kawai School of Music (KSM) is a small and selective music program serving Houston and the surrounding neighborhoods. We offer weekly not-for-credit one-on-one piano lessons to admitted students, taught by locally contracted professional instructors. We supplement the private lesson experience with other musical opportunities such as group music theory classes, group lessons, and recitals. The minimum age requirement for private lessons is five. Our environment is small yet personalized, catering to exceptionally gifted students and educating them in the art of traditional classical music performance. Students in the program have access to the Kawai School of Music’s top-notch concert hall and many inspiring musical activities. All instruction takes place exclusively at the Kawai Piano Gallery, 5800 Richmond Ave, Houston, TX 77057.',
+      minimumAge: 5,
       contactInfo: {
         address: '5800 Richmond Ave',
         city: 'Houston',
@@ -91,8 +92,11 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
         {
           name: 'Private Piano Lessons',
           description:
-            'Weekly one-on-one lessons for beginner to advanced students ages 5 and up (30, 45, or 60 min)',
+            'Weekly one-on-one lessons for students of all ages, minimum age five. Choose a 30-, 45-, or 60-minute lesson length. Students perform in two recitals each year, in December and May.',
           ageRange: '5+',
+          duration: '30 / 45 / 60 min',
+          price: '$190–$370 per 4 lessons',
+          isHighlighted: true,
         },
         {
           name: 'Group Piano Lessons',
@@ -109,10 +113,30 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           description:
             'Vocal instruction for students of all ages, covering classical, pop, and musical theater styles. Lessons focus on technique, breath support, and performance skills.',
         },
+      ],
+      groupClasses: [
         {
           name: 'Adult Group Keyboard Class',
-          description: '14 weekly sessions, Tues @ 6pm–6:45pm',
-          price: '$420 for 14 weekly sessions',
+          description: 'Tuition is $420 in total, due in full at the first class.',
+          studentsMin: 4,
+          studentsMax: 8,
+          tuition: 420,
+          schedule: 'Thursdays @ 6:45–7:30 pm',
+          sessionsInfo:
+            '14 weekly 45-minute sessions · Three sessions per year: Jan–Apr, May–Aug, Sep–Dec',
+          isHighlighted: true,
+        },
+        {
+          // Tuition + meeting time deliberately omitted — the school-supplied copy
+          // repeated the adult class's $420 and its Thurs 6:45–7:30pm slot for an
+          // 8 × 30-min course. Fill in once Houston confirms.
+          name: 'Kids Group Keyboard Class',
+          description:
+            'Call the school at 832-392-0702 for the current session’s meeting time and tuition.',
+          ageRange: '4–6',
+          studentsMax: 4,
+          sessionsInfo:
+            '8 weekly 30-minute sessions · Three sessions per year: Feb–Mar, May–Aug, Sep–Dec',
         },
       ],
       facilities: [
@@ -126,29 +150,30 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           dimensions: "33′ × 20′ stage",
         },
       ],
+      tuitionPaymentType: 'monthly',
+      tuitionDueDate: 'Beginning of each month',
       tuitionSemesters: [
-        { semester: 'Fall',   weeks: '14 weeks',  price30min: '$630',       price45min: '$910',       price60min: '$1,190' },
-        { semester: 'Spring', weeks: '18 weeks',  price30min: '$810',       price45min: '$1,170',     price60min: '$1,530' },
-        { semester: 'Summer', weeks: '6–8 weeks', price30min: '$270–$350',  price45min: '$390–$520',  price60min: '$510–$680' },
+        {
+          semester: 'Private Lessons',
+          weeks: 'Billed monthly — four lessons',
+          lessonPackages: [{ lessonCount: 4, price30: 190, price45: 280, price60: 370 }],
+          semesterNotes:
+            'Tuition is billed monthly in blocks of four lessons and is due at the beginning of each month.',
+        },
       ],
       fees: [
         { feeName: 'Registration Fee (per student)', amount: '$25' },
         { feeName: 'Registration Fee (per family)',  amount: '$30' },
-        { feeName: 'Supply Fee — Fall semester',     amount: '$10' },
-        { feeName: 'Supply Fee — Spring semester',   amount: '$15' },
       ],
+      makeupLessonPolicy: 'Makeup lessons are scheduled directly through your studio teacher.',
       policies: [
         {
-          title: 'Semester Structure',
-          body: 'Fall: 14 lessons (Aug–Dec). Spring: 18 lessons (Jan–May). Summer: 6–8 lessons (Jun–Aug). Summer is not required but highly recommended.',
-        },
-        {
-          title: 'Registration Deadlines',
-          body: 'Fall: August 10. Spring: December 1. Summer: May 1.',
-        },
-        {
           title: 'Tuition Payment',
-          body: 'Tuition is due by the 10th of each month or may be paid in full per semester in advance.',
+          body: 'Tuition is billed monthly in blocks of four lessons and is due at the beginning of each month.',
+        },
+        {
+          title: 'Recitals',
+          body: 'Students perform in two recitals each year, in December and May.',
         },
         {
           title: 'New Student Trial',
@@ -161,14 +186,14 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
       ],
       faculty: [
         {
-          name: 'Zhu Zhu',
+          name: 'Dr. Zhu Zhu',
           title: 'Director, Kawai School of Music',
           role: 'Director of KSM and piano instructor',
           specialties: 'Piano Performance',
           teachingFocus:
-            'Pre-collegiate students; passionate about cultivating love for music, art, discipline',
+            'Pre-collegiate and conservatory-track students; cultivating a love for music, art, discipline, and one another',
           background:
-            'Studied under Dr. Robert Roux at Rice. Won the Shepherd School concerto competition and soloed with the Shepherd School symphony orchestra. Awarded the Lodieska Stockbridge Vaughn Fellowship. Most outstanding undergraduate student award at University of Michigan. Performed at the Gilmore Festival, Kennedy Center Conservatory Project, and Musiqa concert series. Distinguished Professor at Qingdao University School of Music; Director of International Neoarts Foundation.',
+            'Dr. Zhu Zhu is an internationally active pianist, educator, and studio director whose career spans the concert stage, the university classroom, and the private teaching studio. A graduate of the Interlochen Center for the Arts, the University of Michigan, and Rice University’s Shepherd School of Music — where she earned both her Master’s and Doctorate on full scholarship — she has performed at venues and festivals across the United States, China, Mexico, and Europe, including the Gilmore Festival, the Conservatory Project at the Kennedy Center, and Houston’s Musiqa concert series. She currently serves as President of the Houston Music Teachers Association (2026–2028) and Director of the Kawai School of Music in Houston. As a teacher, Dr. Zhu Zhu is as demanding as she is devoted: she holds her students to the highest musical standards while believing that the deepest purpose of music education is the cultivation of love — for music, for art, for discipline, and for one another. Her studio’s graduates have gone on to the nation’s most selective conservatories and universities, including The Juilliard School, Manhattan School of Music, Oberlin Conservatory, and the Shepherd School of Music at Rice, among others. She directs her Houston studio alongside her husband, Dr. Richard Marshall, and is the mother of two children, Vivi and Jackie.',
           education: [
             { degree: 'D.M.A. Piano Performance, Rice University (Shepherd School of Music)' },
             { degree: 'M.M. Piano Performance, Rice University' },
@@ -183,6 +208,18 @@ async function seedMusicSchools(payload: import('payload').Payload): Promise<voi
           background:
             "Performed in every US state except Alaska, plus Canada, UK, Germany, Greece, Italy, Turkey, Scotland, Spain, Iceland, Australia, and Japan. Performed with The New Christy Minstrels, Les Brown Band, The Glenn Miller Band, and The Henry Mancini Orchestra. Sang at Kennedy Center for President Bush Sr.'s Inaugural Ball. Voice on national commercials (TV Land, Viacom). Owner of Star Singers Studio. Theater credits include Theater Under the Stars, Actors Workshop, The Country Playhouse.",
           education: [],
+        },
+        {
+          name: 'Tian Qin',
+          title: 'Composer and Keyboardist',
+          specialties: 'Piano, composition, music theory, organ',
+          background:
+            'Houston-based Chinese composer and keyboardist Tian Qin creates music that’s compelling, humorous, and visually vivid — blending text, craft, film, and choreography, often pushing the boundaries of traditional forms while incorporating her cultural heritage, engaging communal experiences, and guiding the explorations of body and mind. She has collaborated with The Rhythm Method, Loop38, Rhapsode Guild, Loadbang, Musiqa, Asia Society, and Roomful of Teeth, and is the 2024 American Guild of Organists Student Commissioning Project winner and a 2025 Houston Arts Alliance “Let Creativity Happen” Award recipient. Tian serves as a teaching artist at American Festival for the Arts & MusiqaLab, theory instructor at Opus One Chamber Music School, Auxiliary Programs Piano Instructor at Annunciation Orthodox School, organist at Trinity Episcopal Church (Houston), and a member of Gamelan of the New Moon, and she studies raga with Ragavan Manian.',
+          education: [
+            { degree: 'M.M. Rice University (Brown Fellow)' },
+            { degree: 'B.M. Manhattan School of Music' },
+            { degree: 'Shanghai Conservatory of Music' },
+          ],
         },
       ],
     }

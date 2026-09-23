@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronDown, Globe, Loader2 } from 'lucide-react'
@@ -11,6 +11,7 @@ import {
   translatePageToFrench,
   type TranslateStatus,
 } from '@/lib/i18n/browser-translate'
+import { getTranslateHint, type TranslateHint } from '@/lib/i18n/translate-hints'
 
 type UiLocale = 'en' | 'fr'
 
@@ -24,39 +25,53 @@ const OPTIONS: ReadonlyArray<{ locale: UiLocale; label: string; short: string }>
 ]
 
 /**
- * Globe dropdown that translates the page into French using the browser's
- * built-in on-device translator.
+ * Globe dropdown offering French on the Canadian site.
  *
- * Nothing is fetched and no URL changes — the page is rewritten in place. The
- * control hides entirely in browsers without the API rather than offering a
- * button that does nothing.
+ * On Chrome 138+ / Edge 148+ this is a real toggle: picking Français hands the
+ * page to the browser's own on-device translation model, and picking English
+ * restores the original text exactly from a snapshot. Back and forth, no
+ * reload, no vendor, no API key, nothing to pay for.
+ *
+ * Everywhere else — Firefox, Safari, all mobile — no browser lets a page invoke
+ * its native translate command, so there is nothing to toggle. Those visitors
+ * get the two taps for their own browser instead of a hidden control.
+ *
+ * Not Quebec Bill 96 compliance; see i18n/flags.ts.
  */
 export function LocaleSwitcher({ className }: { className?: string }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const [isSupported, setIsSupported] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [canTranslateInPage, setCanTranslateInPage] = useState(false)
+  const [hint, setHint] = useState<TranslateHint | null>(null)
+  const [prefersFrench, setPrefersFrench] = useState(false)
   const [locale, setLocale] = useState<UiLocale>('en')
   const [status, setStatus] = useState<TranslateStatus>('idle')
   const [progress, setProgress] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  // Ties the inert "Français" row to the how-to steps below it.
+  const hintId = useId()
 
   const onStatus = useCallback((next: TranslateStatus, value?: number) => {
     setStatus(next)
     if (typeof value === 'number') setProgress(value)
   }, [])
 
-  // Support is only knowable on the client, so the control renders nothing on
-  // the server and appears after mount — which also keeps SSR and the first
-  // client render identical (no hydration mismatch).
+  // Capability and UA are only knowable on the client. Rendering nothing until
+  // mounted keeps SSR and the first client render identical (no hydration
+  // mismatch) — the same guard KawaiLogo uses for NavigationContext.
   useEffect(() => {
-    setIsSupported(isBrowserTranslateSupported())
+    setMounted(true)
+    setCanTranslateInPage(isBrowserTranslateSupported())
+    setHint(getTranslateHint(navigator.userAgent))
+    setPrefersFrench(navigator.language.toLowerCase().startsWith('fr'))
   }, [])
 
   // Re-apply French after client-side navigation, since the new page renders
-  // in English. The browser may require a fresh tap if it withholds activation;
-  // the menu still shows FR so the visitor can re-trigger it.
+  // in English. The translator instance created by the original click is kept
+  // alive precisely so this works without a fresh user gesture.
   useEffect(() => {
-    if (!isSupported) return
+    if (!canTranslateInPage) return
 
     let stored: string | null = null
     try {
@@ -68,7 +83,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
 
     setLocale('fr')
     void translatePageToFrench(onStatus)
-  }, [pathname, isSupported, onStatus])
+  }, [pathname, canTranslateInPage, onStatus])
 
   // Close on outside click and on Escape.
   useEffect(() => {
@@ -91,9 +106,16 @@ export function LocaleSwitcher({ className }: { className?: string }) {
 
   const handleSelect = useCallback(
     async (next: UiLocale) => {
-      setIsOpen(false)
-      if (next === locale) return
+      if (next === locale) {
+        setIsOpen(false)
+        return
+      }
 
+      // On browsers without the API, picking Français can't do anything by
+      // itself — leave the menu open so the instructions stay on screen.
+      if (next === 'fr' && !canTranslateInPage) return
+
+      setIsOpen(false)
       setLocale(next)
       try {
         window.localStorage.setItem(STORAGE_KEY, next)
@@ -110,20 +132,25 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         setStatus('idle')
       }
     },
-    [locale, onStatus],
+    [locale, canTranslateInPage, onStatus],
   )
 
-  if (!isSupported) return null
-
   const isBusy = status === 'downloading' || status === 'translating'
-  const active = OPTIONS.find((o) => o.locale === locale) ?? OPTIONS[0]!
+  const active = useMemo(() => OPTIONS.find((o) => o.locale === locale) ?? OPTIONS[0]!, [locale])
+
+  if (!mounted) return null
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
-        className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-kawai-pearl transition-colors"
+        className={cn(
+          'flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-kawai-pearl transition-colors',
+          // A visitor whose browser is already set to French is the one person
+          // guaranteed to want this — make the control easier to spot for them.
+          prefersFrench && locale === 'en' && 'ring-1 ring-kawai-red/40',
+        )}
         aria-label="Change language"
         aria-haspopup="menu"
         aria-expanded={isOpen}
@@ -158,7 +185,10 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           <motion.div
             role="menu"
             aria-label="Language"
-            className="absolute right-0 top-full mt-1 w-48 bg-white border border-kawai-neutral rounded-lg shadow-brand-medium overflow-hidden z-50"
+            className={cn(
+              'absolute right-0 top-full mt-1 bg-white border border-kawai-neutral rounded-lg shadow-brand-medium overflow-hidden z-50',
+              canTranslateInPage ? 'w-48' : 'w-72',
+            )}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -166,6 +196,9 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           >
             {OPTIONS.map((option) => {
               const isActive = option.locale === locale
+              // Français isn't a switch on these browsers — it's a label for
+              // the instructions below, so it must not look clickable.
+              const isInert = option.locale === 'fr' && !canTranslateInPage
 
               return (
                 <button
@@ -173,12 +206,21 @@ export function LocaleSwitcher({ className }: { className?: string }) {
                   type="button"
                   role="menuitem"
                   lang={option.locale}
-                  disabled={isBusy}
+                  // `disabled` would take this out of the tab order, but on
+                  // these browsers the instructions it points at are the whole
+                  // point of opening the menu — a keyboard or screen-reader
+                  // user has to be able to land on it. aria-disabled keeps it
+                  // focusable and still announces it as unavailable.
+                  disabled={isBusy && !isInert}
+                  aria-disabled={isInert ? 'true' : undefined}
+                  aria-describedby={isInert ? hintId : undefined}
                   aria-current={isActive ? 'true' : undefined}
                   onClick={() => void handleSelect(option.locale)}
                   className={cn(
                     'flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm text-left transition-colors',
-                    'text-kawai-charcoal hover:bg-kawai-pearl disabled:opacity-50',
+                    'text-kawai-charcoal',
+                    !isInert && 'hover:bg-kawai-pearl disabled:opacity-50',
+                    isInert && 'cursor-default font-semibold',
                     isActive && 'font-semibold',
                   )}
                 >
@@ -187,6 +229,21 @@ export function LocaleSwitcher({ className }: { className?: string }) {
                 </button>
               )
             })}
+
+            {!canTranslateInPage && hint && (
+              <div id={hintId} className="px-3 py-2.5 border-t border-kawai-neutral bg-kawai-pearl">
+                <p className="text-xs font-semibold text-kawai-black">
+                  {hint.hasNativeTranslation
+                    ? `Translate this page with ${hint.label}`
+                    : `${hint.label} can’t translate pages`}
+                </p>
+                <ol className="mt-1.5 space-y-1 text-xs text-kawai-charcoal list-decimal list-inside">
+                  {hint.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
             {status === 'error' && (
               <p className="px-3 py-2 text-xs text-kawai-charcoal border-t border-kawai-neutral">
