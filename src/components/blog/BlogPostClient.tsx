@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Post } from '@/payload-types'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 interface BlogPostClientProps {
   post: Post
@@ -21,13 +22,6 @@ interface BlogPostClientProps {
 }
 
 const easeKawai: [number, number, number, number] = [0.4, 0, 0.2, 1]
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-  )
-  return match?.[1] ?? null
-}
 
 export function BlogPostClient({
   post,

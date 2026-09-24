@@ -8,6 +8,7 @@ import type { Post } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/payload'
 import { BlogCardAnimated } from './BlogCardAnimated'
 import { cn } from '@/lib/utils'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 export interface BlogGridClientProps {
   heading: string
@@ -24,13 +25,6 @@ export interface BlogGridClientProps {
 }
 
 /** Extract the 11-char video ID from any standard YouTube URL */
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-  )
-  return match?.[1] ?? null
-}
-
 const EASE_PIANO = [0.4, 0, 0.2, 1] as const
 const VIEWPORT = { once: true, margin: '-60px' } as const
 

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
 import type { NavProduct } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
@@ -30,20 +31,6 @@ const NAV_BTN_CLASS =
   'absolute top-[42%] -translate-y-1/2 w-10 h-10 rounded-full bg-[#FAF9F7] border border-[#E0DCD6] shadow-md flex items-center justify-center text-[#8A8078] hover:border-[#A01829] hover:text-[#A01829] transition-colors z-10'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(
-    /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|v\/|shorts\/))([A-Za-z0-9_-]{11})/,
-  )
-  return match?.[1] ?? null
-}
-
-function buildEmbedUrl(videoId: string): string {
-  return (
-    `https://www.youtube-nocookie.com/embed/${videoId}` +
-    `?autoplay=1&mute=1&loop=1&controls=0&rel=0&modestbranding=1&playsinline=1&playlist=${videoId}`
-  )
-}
 
 function hasMedia(c: CollectionForBrowser): boolean {
   return Boolean(c.youtubeUrl || c.mediaUrl || c.imageUrl)
@@ -255,20 +242,17 @@ function CollectionMediaRow({
   index: number
 }) {
   const isEven = index % 2 === 0
-  const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
   // Prefer CMS-uploaded mediaUrl over Shopify-synced imageUrl
   const imageSrc = collection.mediaUrl ?? collection.imageUrl ?? null
 
   const mediaPane = (
     <div className="relative overflow-hidden bg-[#1E1B16]/8 w-full lg:w-[55%] shrink-0 aspect-[4/3] lg:aspect-auto lg:min-h-[520px]">
-      {videoId ? (
-        <iframe
-          src={buildEmbedUrl(videoId)}
-          title={collection.title}
-          allow="autoplay; encrypted-media"
-          allowFullScreen={false}
-          className="absolute inset-0 w-full h-full pointer-events-none scale-[1.02]"
-          style={{ border: 'none' }}
+      {collection.youtubeUrl ? (
+        <BackgroundYouTube
+          url={collection.youtubeUrl}
+          poster={imageSrc}
+          title={`${collection.title} video`}
+          sizes="(max-width: 1024px) 100vw, 55vw"
         />
       ) : imageSrc ? (
         <Image

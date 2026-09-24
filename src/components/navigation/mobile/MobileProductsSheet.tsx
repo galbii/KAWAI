@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Bluetooth, BookOpen, ChevronRight, Cpu, Music2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductsNavigation, NavCollection } from '@/lib/payload/products-navigation'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,11 +40,6 @@ const MOBILE_COMPANION_APPS = [
 ] as const
 
 type CategoryKey = (typeof CATEGORIES)[number]['key']
-
-function extractYouTubeId(url: string): string | null {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
-  return m?.[1] ?? null
-}
 
 function hasMedia(col: NavCollection): boolean {
   if (col.youtubeUrl) return true

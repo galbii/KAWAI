@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft } from 'lucide-react'
 import type { NavCollection } from '@/lib/payload/products-navigation'
 import { cn } from '@/lib/utils'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,17 +58,8 @@ const itemVariants = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/)
-  return match?.[1] ?? null
-}
-
 function getStaticImageUrl(collection: NavCollection): string | null {
   return collection.mediaUrl ?? collection.imageUrl ?? null
-}
-
-function getVideoId(collection: NavCollection): string | null {
-  return collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
 }
 
 function getCategoryLabel(collection: NavCollection): string {
@@ -178,7 +170,6 @@ export function FeaturedCollectionsCarousel({
   // video does not autoplay.
   const [isPlaying, setIsPlaying] = useState(true)
   const [isPaused, setIsPaused] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(false)
 
   // Derive available categories from all collections
   const availableCategories = Array.from(
@@ -201,17 +192,14 @@ export function FeaturedCollectionsCarousel({
   useEffect(() => { setIdx(0) }, [selectedCategory])
 
   const currentCollection = total > 0 ? active[Math.min(idx, total - 1)] : undefined
-  const videoId = currentCollection ? getVideoId(currentCollection) : null
+  const videoUrl = currentCollection?.youtubeUrl ?? null
 
-  // Respect prefers-reduced-motion: start paused and follow live changes.
+  // Respect prefers-reduced-motion for slide auto-advance. The background
+  // player reads the same query itself and simply holds its poster.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
     if (mq.matches) setIsPlaying(false)
-    const onChange = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches)
-      setIsPlaying(!e.matches)
-    }
+    const onChange = (e: MediaQueryListEvent) => setIsPlaying(!e.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
   }, [])
@@ -226,7 +214,8 @@ export function FeaturedCollectionsCarousel({
   if (collections.length === 0) return null
 
   const collection = active[Math.min(idx, active.length - 1)]!
-  const imageUrl = videoId ? null : getStaticImageUrl(collection)
+  const staticImage = getStaticImageUrl(collection)
+  const imageUrl = videoUrl ? null : staticImage
   const displayTitle = collection.title || collection.heading || 'Piano Collection'
   const collectionHref = `/pianos/${collection.handle}`
 const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
@@ -274,17 +263,14 @@ const idxDisplay = String(Math.min(idx, active.length - 1) + 1).padStart(2, '0')
                 sizes="100vw"
                 className="object-cover"
               />
-            ) : videoId ? (
-              <div className="absolute inset-0 overflow-hidden">
-                <iframe
-                  key={`${videoId}-${reducedMotion ? 'still' : 'auto'}`}
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=${reducedMotion ? 0 : 1}&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`}
-                  allow="autoplay; encrypted-media"
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
-                  title={displayTitle}
-                />
-              </div>
+            ) : videoUrl ? (
+              <BackgroundYouTube
+                key={videoUrl}
+                url={videoUrl}
+                poster={staticImage}
+                title={displayTitle}
+                priority
+              />
             ) : (
               <div className="absolute inset-0 bg-kawai-black" />
             )}

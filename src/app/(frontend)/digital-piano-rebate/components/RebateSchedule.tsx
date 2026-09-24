@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 export type RebateModel = {
   model: string
@@ -75,11 +76,6 @@ function formatPrice(amount: number, currency?: string): string {
 
 function maxRebate(series: RebateSeries): number {
   return Math.max(...series.models.map((m) => m.consumerRebate))
-}
-
-function extractYouTubeId(url: string): string | null {
-  const match = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/.exec(url)
-  return match?.[1] ?? null
 }
 
 // ─── Price Display — animated strikethrough + sale price + % badge ────────────

@@ -7,6 +7,7 @@ import { motion, useInView } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import type { NavCollection } from '@/lib/payload/products-navigation'
 import { cn } from '@/lib/utils'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,11 +36,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 function getCategoryLabels(collection: NavCollection): string[] {
   if (!collection.pianoCategories?.length) return []
   return collection.pianoCategories.map((c) => CATEGORY_LABELS[c] ?? c)
-}
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/)
-  return match?.[1] ?? null
 }
 
 function getImageUrl(collection: NavCollection): string | null {

@@ -12,29 +12,53 @@
  * - https://youtube.com/watch?v=VIDEO_ID
  * - https://youtu.be/VIDEO_ID
  * - https://www.youtube.com/embed/VIDEO_ID
+ * - https://www.youtube.com/shorts/VIDEO_ID
+ * - https://www.youtube.com/v/VIDEO_ID
+ * - https://www.youtube-nocookie.com/embed/VIDEO_ID
+ * - a bare 11-character VIDEO_ID
+ *
+ * This is the union of every local copy that used to live beside a call site.
+ * `/shorts/` and bare IDs are here because the regex copies handled them and
+ * the original URL-based implementation did not — dropping either would have
+ * silently blanked whichever CMS records use those forms.
  *
  * @param url - YouTube video URL in any supported format
  * @returns Video ID or null if URL is invalid or not recognized
  */
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/
+
 export function extractYouTubeId(url: string | null | undefined): string | null {
   if (!url) return null
 
-  try {
-    const urlObj = new URL(url)
+  const trimmed = url.trim()
+  if (!trimmed) return null
 
-    // youtube.com/watch?v=VIDEO_ID
-    if (urlObj.hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
-      return urlObj.searchParams.get('v')
-    }
+  // Editors paste bare IDs into the URL fields often enough to accept them.
+  if (YOUTUBE_ID.test(trimmed)) return trimmed
+
+  try {
+    const urlObj = new URL(trimmed)
+    const host = urlObj.hostname.replace(/^www\./, '')
 
     // youtu.be/VIDEO_ID
-    if (urlObj.hostname === 'youtu.be') {
-      return urlObj.pathname.slice(1) // Remove leading slash
+    if (host === 'youtu.be') {
+      const id = urlObj.pathname.slice(1).split('/')[0]
+      return id && YOUTUBE_ID.test(id) ? id : null
     }
 
-    // youtube.com/embed/VIDEO_ID
-    if (urlObj.pathname.includes('/embed/')) {
-      return urlObj.pathname.split('/embed/')[1]?.split('?')[0] || null
+    if (host !== 'youtube.com' && host !== 'youtube-nocookie.com' && host !== 'm.youtube.com') {
+      return null
+    }
+
+    // youtube.com/watch?v=VIDEO_ID
+    const v = urlObj.searchParams.get('v')
+    if (v && YOUTUBE_ID.test(v)) return v
+
+    // /embed/ID, /shorts/ID, /v/ID, /live/ID
+    const segments = urlObj.pathname.split('/').filter(Boolean)
+    if (segments.length >= 2 && ['embed', 'shorts', 'v', 'live'].includes(segments[0]!)) {
+      const id = segments[1]!
+      return YOUTUBE_ID.test(id) ? id : null
     }
 
     return null

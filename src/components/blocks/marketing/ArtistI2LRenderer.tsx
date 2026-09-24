@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, ChevronUp, Play, X } from 'lucide-react'
 import type { ArtistI2LBlockData, VideoItem } from '../ArtistI2LBlock'
 import { cn } from '@/lib/utils'
 import { BackgroundMotionToggle } from '@/components/ui/background-motion-toggle'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -898,22 +899,17 @@ export function ArtistI2LRenderer({
         className="hidden md:block relative"
         style={{ height: 'clamp(640px, 82vh, 980px)' }}
       >
-        {/* Background video — single iframe, swapped via key. No fade. */}
+        {/* Background video — one player, swapped via key. It crossfades from
+            the video's own still rather than cutting to YouTube's black-and-
+            spinner, and restarts itself on ENDED so the "More videos" grid
+            never lands on top of the hero. */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute inset-0 overflow-hidden bg-kawai-black">
-            {/* Decorative background video: aria-hidden + tabIndex={-1} keep
-                YouTube's player UI out of the accessibility tree and the tab
-                order (axe: aria-prohibited-attr, aria-allowed-attr and
-                button-name all originate inside this frame). */}
-            <iframe
+            <BackgroundYouTube
               key={current.youtubeId}
-              src={`https://www.youtube.com/embed/${current.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${current.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
-              allow="autoplay; encrypted-media"
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none border-0"
-              style={{ width: 'max(100%, 177.78vh)', height: 'max(100%, 56.25vw)' }}
+              url={current.youtubeId}
               title={current.title}
-              aria-hidden="true"
-              tabIndex={-1}
+              priority
             />
           </div>
         </div>

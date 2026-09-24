@@ -8,26 +8,11 @@ import type { MarketingI2LBlock, Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { getImagePropsWithFallback } from '@/lib/fallbacks/media'
 import { trackVideoInteraction, trackCTAClick, trackBlockImpression } from '@/lib/analytics/unified-tracking'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 interface MarketingI2LRendererProps extends MarketingI2LBlock {}
 
 // Extract YouTube video ID from various URL formats
-function extractYouTubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-    /youtube\.com\/embed\/([^&\n?#]+)/,
-  ]
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match && match[1]) {
-      return match[1]
-    }
-  }
-
-  return null
-}
-
 export function MarketingI2LRenderer({
   sectionLabel,
   subheading,

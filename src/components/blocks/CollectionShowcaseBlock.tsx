@@ -4,6 +4,7 @@ import { Collection, Media, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import React, { useState } from 'react'
 import Image from 'next/image'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 interface CollectionShowcaseBlockProps {
   enabled?: boolean | null
@@ -17,26 +18,6 @@ interface CollectionShowcaseBlockProps {
   featuresLabel?: string | null
   /** When true, renders a "View Collection" CTA linking to /pianos/[handle]. Use on product pages. */
   showViewCollectionLink?: boolean
-}
-
-/**
- * Parse YouTube URL to extract video ID
- * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID
- */
-function parseYouTubeId(url: string): string | null {
-  if (!url) return null
-
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/,
-    /^([a-zA-Z0-9_-]{11})$/ // Direct ID
-  ]
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match) return match[1] ?? null
-  }
-
-  return null
 }
 
 /**
@@ -57,7 +38,6 @@ export function CollectionShowcaseBlock({
   featuresLabel,
   showViewCollectionLink = false,
 }: CollectionShowcaseBlockProps) {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
   // Don't render if disabled
@@ -70,13 +50,12 @@ export function CollectionShowcaseBlock({
   // Extract only what we need from the collection (video + fallback image)
   const { youtubeUrl, media, heading } = collection
 
-  const activeYoutubeUrl = overrideYoutubeUrl || youtubeUrl
-  const videoId = activeYoutubeUrl ? parseYouTubeId(activeYoutubeUrl) : null
+  const activeYoutubeUrl = overrideYoutubeUrl || youtubeUrl || null
 
-  let fallbackImage: string | null = null
-  if (!videoId && media && typeof media === 'object') {
-    fallbackImage = (media as Media).url || null
-  }
+  // Kept even when a video is present — it paints under the player until the
+  // first real frame, so nobody sees YouTube's black-and-spinner.
+  const posterImage =
+    media && typeof media === 'object' ? ((media as Media).url ?? null) : null
 
   // Build tabs from action / tone / features string arrays
   const safeStringArray = (val: unknown): string[] => {
@@ -91,32 +70,27 @@ export function CollectionShowcaseBlock({
   ].filter(t => t.items.length > 0)
 
   // Nothing to show — don't render
-  if (tabs.length === 0 && !videoId && !fallbackImage) return null
+  if (tabs.length === 0 && !activeYoutubeUrl && !posterImage) return null
   if (product && tabs.length === 0) return null
 
   const active = tabs[activeIndex] ?? tabs[0]
 
   return (
     <section className="relative w-full overflow-hidden bg-black text-white" style={{ minHeight: '420px' }}>
-      {/* Video background */}
-      {videoId && (
+      {/* Video background — chrome-free player, poster underneath */}
+      {activeYoutubeUrl && (
         <div className="absolute inset-0 z-0">
-          <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
-            className={cn(
-              'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none',
-              'transition-opacity duration-1000',
-              isVideoLoaded ? 'opacity-100' : 'opacity-0'
-            )}
-            allow="autoplay; encrypted-media"
-            onLoad={() => setIsVideoLoaded(true)}
+          <BackgroundYouTube
+            url={activeYoutubeUrl}
+            poster={posterImage}
             title="Collection showcase video"
+            priority
           />
         </div>
       )}
-      {!videoId && fallbackImage && (
+      {!activeYoutubeUrl && posterImage && (
         <div className="absolute inset-0 z-0">
-          <Image src={fallbackImage} alt={heading || 'Collection showcase'} fill className="object-cover" sizes="100vw" priority />
+          <Image src={posterImage} alt={heading || 'Collection showcase'} fill className="object-cover" sizes="100vw" priority />
         </div>
       )}
       <div className="absolute inset-0 z-10 bg-black/60" />

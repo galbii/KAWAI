@@ -10,6 +10,7 @@ import type { CollectionForBrowser } from '@/lib/payload/queries'
 import { FeaturedCollectionsCarousel } from '@/components/piano/featured-collections-carousel'
 import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
 import type { NavCollection } from '@/lib/payload/products-navigation'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 export interface CatalogProduct {
   id: string
@@ -80,19 +81,6 @@ function formatPrice(price?: CatalogProduct['price']): string {
   return formatCurrency(price.msrp, price.currency ?? 'USD')
 }
 
-function parseYouTubeId(url: string): string | null {
-  if (!url) return null
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-    /^([a-zA-Z0-9_-]{11})$/,
-  ]
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match?.[1]) return match[1]
-  }
-  return null
-}
-
 const bannerHeightClasses: Record<string, string> = {
   xxs: 'h-[150px]',
   xs: 'h-[250px]',
@@ -133,9 +121,7 @@ const bannerItemVariants = {
 }
 
 function CollectionBanner({ collection }: { collection: CollectionForBrowser }) {
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false)
-
-  const videoId = collection.youtubeUrl ? parseYouTubeId(collection.youtubeUrl) : null
+  const videoUrl = collection.youtubeUrl ?? null
   const fallbackImage = collection.mediaUrl ?? collection.imageUrl ?? null
 
   const safeBannerSize = 'small'
@@ -145,7 +131,7 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
   const safeHeadingSize = collection.headingSize ?? 'medium'
   const safeFontFamily = collection.fontFamily ?? 'serif'
 
-  const hasMedia = !!(videoId || fallbackImage)
+  const hasMedia = !!(videoUrl || fallbackImage)
   const hasContent = !!(collection.heading || collection.subheading)
 
   // Render nothing if no media and no content
@@ -158,25 +144,20 @@ function CollectionBanner({ collection }: { collection: CollectionForBrowser }) 
         bannerHeightClasses[safeBannerSize] ?? bannerHeightClasses.xs,
       )}
     >
-      {/* YouTube video background — full-cover 16:9 technique */}
-      {videoId && (
+      {/* YouTube video background — chrome-free player, poster underneath */}
+      {videoUrl && (
         <div className="absolute inset-0 z-0">
-          <iframe
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`}
-            className={cn(
-              'absolute top-1/2 left-1/2 w-[177.77777778vh] min-w-full h-[56.25vw] min-h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none',
-              'transition-opacity duration-1000',
-              isVideoLoaded ? 'opacity-100' : 'opacity-0',
-            )}
-            allow="autoplay; encrypted-media"
-            onLoad={() => setIsVideoLoaded(true)}
+          <BackgroundYouTube
+            url={videoUrl}
+            poster={fallbackImage}
             title={`${collection.title} video`}
+            priority
           />
         </div>
       )}
 
       {/* Fallback image */}
-      {!videoId && fallbackImage && (
+      {!videoUrl && fallbackImage && (
         <div className="absolute inset-0 z-0">
           <Image src={fallbackImage} alt={collection.heading ?? collection.title} fill className="object-cover" sizes="100vw" priority />
         </div>

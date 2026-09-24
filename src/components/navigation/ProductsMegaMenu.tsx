@@ -10,6 +10,8 @@ import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, ChevronDown, ChevronUp, Cpu
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
+import { extractYouTubeId } from '@/lib/utils/youtube'
+import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -72,11 +74,6 @@ interface ProductsMegaMenuProps {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function extractYouTubeId(url: string): string | null {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
-  return m?.[1] ?? null
-}
 
 function getProductsForSidebarKey(productTypes: ProductTypeNav[], terms: readonly string[]): NavProduct[] {
   return productTypes
@@ -271,13 +268,6 @@ function ProductCard({ product, onClose }: { product: NavProduct; onClose: () =>
 const STAGE_EASE = [0.22, 0.61, 0.36, 1] as const
 const SCROLLER_ATTR = 'data-mega-scroller'
 
-// A YouTube player accepts exactly one `listening` handshake; a second one is
-// answered with `alreadyInitialized` and the player then stays silent. React
-// StrictMode double-invokes effects in dev, so track which player windows have
-// already been greeted. Messages are posted to the whole parent window, so a
-// later listener still receives them even though an earlier effect registered.
-const greetedPlayers = new WeakSet<Window>()
-
 // scrollIntoView walks every scrollable ancestor and fights scroll-snap, so move
 // the panel's own scroller by the exact delta instead. Mandatory snap re-targets
 // a programmatic smooth scroll and strands it part-way, so lift snapping for the
@@ -325,74 +315,6 @@ function CollectionStage({ collection, onClose, onReveal, tabHidden }: {
   tabHidden: boolean
 }) {
   const prefersReducedMotion = useReducedMotion()
-  const videoId = collection.youtubeUrl ? extractYouTubeId(collection.youtubeUrl) : null
-
-  // maxresdefault 404s for videos never published at 1080p — fall back to hqdefault,
-  // which YouTube always generates.
-  const [posterFailed, setPosterFailed] = useState(false)
-  const ytPoster = videoId
-    ? `https://img.youtube.com/vi/${videoId}/${posterFailed ? 'hqdefault' : 'maxresdefault'}.jpg`
-    : null
-  const posterUrl = collection.mediaUrl ?? collection.imageUrl ?? ytPoster
-
-  // Defer the iframe so clicking through pills doesn't spawn and destroy players.
-  const [showVideo, setShowVideo] = useState(false)
-  const [frameLoaded, setFrameLoaded] = useState(false)
-  const [playing, setPlaying] = useState(false)
-  const frameRef = useRef<HTMLIFrameElement>(null)
-  useEffect(() => {
-    if (!videoId || prefersReducedMotion) return
-    const t = setTimeout(() => setShowVideo(true), 180)
-    return () => clearTimeout(t)
-  }, [videoId, prefersReducedMotion])
-
-  // The player's state channel does two jobs: hold the poster until real frames
-  // are painting (an iframe `load` fires long before that, so the viewer would
-  // otherwise watch YouTube's black-and-spinner), and restart the film the
-  // instant it ends so the "More videos" grid never appears inside the nav.
-  useEffect(() => {
-    if (!frameLoaded || !videoId) return
-    const frame = frameRef.current
-    const player = frame?.contentWindow
-    if (!frame || !player) return
-
-    const send = (func: string, args: unknown[] = []) =>
-      player.postMessage(JSON.stringify({ event: 'command', func, args }), '*')
-
-    let heard = false
-    const onMessage = (event: MessageEvent) => {
-      if (event.source !== player) return
-      let state: unknown
-      try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
-        heard = true
-        state = data?.info?.playerState
-      } catch {
-        return
-      }
-      if (typeof state !== 'number') return
-      if (state === 1) setPlaying(true)
-      if (state === 0) {
-        send('seekTo', [0, true])
-        send('playVideo')
-      }
-    }
-    window.addEventListener('message', onMessage)
-
-    if (!greetedPlayers.has(player)) {
-      greetedPlayers.add(player)
-      player.postMessage(JSON.stringify({ event: 'listening', id: frame.id, channel: 'widget' }), '*')
-    }
-
-    // If the channel never opens we keep the still rather than reveal a black
-    // player mid-buffer — but don't hold a working video hostage to silence.
-    const giveUp = window.setTimeout(() => { if (!heard) setPlaying(true) }, 6000)
-
-    return () => {
-      window.removeEventListener('message', onMessage)
-      window.clearTimeout(giveUp)
-    }
-  }, [frameLoaded, videoId])
 
   const displayTitle = collection.heading || collection.title
   const collectionHref = `/pianos/${collection.handle}`
@@ -406,34 +328,13 @@ function CollectionStage({ collection, onClose, onReveal, tabHidden }: {
       className="relative h-full w-full flex-none snap-start overflow-hidden bg-[#0B0A09]"
     >
       {/* Poster paints instantly; the player crossfades over it once ready. */}
-      {posterUrl && (
-        <Image
-          src={posterUrl}
-          alt=""
-          fill
-          sizes="95vw"
-          priority
-          onError={() => setPosterFailed(true)}
-          className="object-cover"
-        />
-      )}
-
-      {showVideo && videoId && (
-        <iframe
-          ref={frameRef}
-          id={`nav-film-${videoId}`}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&iv_load_policy=3&enablejsapi=1`}
-          title={`${displayTitle} film`}
-          tabIndex={-1}
-          aria-hidden="true"
-          allow="autoplay; encrypted-media"
-          onLoad={() => setFrameLoaded(true)}
-          className={cn(
-            'pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 transition-opacity duration-700',
-            playing ? 'opacity-100' : 'opacity-0'
-          )}
-        />
-      )}
+      <BackgroundYouTube
+        url={collection.youtubeUrl}
+        poster={collection.mediaUrl ?? collection.imageUrl}
+        title={`${displayTitle} film`}
+        priority
+        sizes="95vw"
+      />
 
       {/* Scrim — dense enough under the title block to hold 4.5:1, clearing fast so
           the footage itself still reads. One gradient, not two: the title sits in

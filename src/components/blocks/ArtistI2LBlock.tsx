@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/lib/payload/queries'
 import type { Artist, Media } from '@/payload-types'
 import { ArtistI2LRenderer } from './marketing/ArtistI2LRenderer'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,11 +53,6 @@ export type ArtistI2LBlockData = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function extractYouTubeId(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/)
-  return match?.[1] ?? null
-}
 
 function getArtistImage(artist: Artist): string | null {
   if (artist.heroImageUrl) return artist.heroImageUrl

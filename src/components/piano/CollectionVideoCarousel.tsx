@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CollectionForBrowser } from '@/lib/payload/queries'
+import { extractYouTubeId as parseYouTubeId } from '@/lib/utils/youtube'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,19 +28,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function parseYouTubeId(url: string): string | null {
-  if (!url) return null
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-    /^([a-zA-Z0-9_-]{11})$/,
-  ]
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match) return match[1] ?? null
-  }
-  return null
-}
 
 const heightClasses = {
   medium: 'h-[50vh] min-h-[420px]',

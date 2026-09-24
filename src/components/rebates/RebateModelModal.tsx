@@ -9,6 +9,7 @@ import { DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn, formatPrice } from '@/lib/utils'
 import { getRebateModelDetail } from '@/lib/actions/rebate-model-detail'
 import type { RebateModelDetail, RebateProduct } from '@/lib/payload/rebate-types'
+import { extractYouTubeId as parseYouTubeId } from '@/lib/utils/youtube'
 
 type SpecKey = 'action' | 'tone' | 'features'
 type SectionKey = 'details' | SpecKey
@@ -49,12 +50,6 @@ type Props = {
 }
 
 const OSWALD = 'var(--font-oswald), sans-serif'
-
-function parseYouTubeId(url: string | null): string | null {
-  if (!url) return null
-  const m = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/.exec(url)
-  return m?.[1] ?? (/^[a-zA-Z0-9_-]{11}$/.test(url) ? url : null)
-}
 
 const ARROW = (
   <svg

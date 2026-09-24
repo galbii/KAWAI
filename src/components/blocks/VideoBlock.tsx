@@ -4,6 +4,7 @@ import React from 'react'
 import type { ContentVideoBlock as VideoBlockType } from '@/payload-types'
 import type { Media } from '@/payload-types'
 import { cn } from '@/lib/utils'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 
 interface VideoBlockProps extends VideoBlockType {}
 
@@ -108,22 +109,6 @@ export function VideoBlock({
 }
 
 // Helper function to extract YouTube video ID
-function extractYouTubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-    /youtube\.com\/v\/([^&?/]+)/,
-  ]
-
-  for (const pattern of patterns) {
-    const match = url.match(pattern)
-    if (match && match[1]) {
-      return match[1]
-    }
-  }
-
-  return null
-}
-
 // Helper function to extract Vimeo video ID
 function extractVimeoId(url: string): string | null {
   const pattern = /vimeo\.com\/(?:video\/)?(\d+)/
