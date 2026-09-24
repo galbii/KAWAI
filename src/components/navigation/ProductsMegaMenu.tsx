@@ -6,7 +6,7 @@ import { useQueryStates, parseAsString } from 'nuqs'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence, useInView, useReducedMotion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, ChevronDown, ChevronUp, Music2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, ChevronDown, ChevronUp, Cpu, Music2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
@@ -37,7 +37,7 @@ const SIDEBAR_CATEGORIES = [
   {
     label: 'Apps & Software',
     key: 'apps-software',
-    href: '/apps-software',
+    href: '/software',
     terms: [],
     bannerOnly: true as const,
     appsPanel: true as const,
@@ -1012,83 +1012,104 @@ function AccessoriesBannerView({ onClose, accessories }: { onClose: () => void; 
 }
 
 // ─── Apps & Software Panel ────────────────────────────────────────────────────
-// Shown when "Apps & Software" is selected in the sidebar.
+// Shown when "Apps & Software" is selected in the sidebar. The firmware register at
+// /software is live, so it leads the panel; the companion apps are still unannounced
+// and sit beside it as a muted roster rather than taking the whole panel themselves.
+
+const COMPANION_APPS = [
+  { name: 'Piano Remote',  icon: Bluetooth, blurb: 'Sounds and settings from your phone.' },
+  { name: 'PiaBookPlayer', icon: BookOpen,  blurb: 'Play along with built-in lesson books.' },
+  { name: 'Aures Music',   icon: Music2,    blurb: 'Stream and record on AURES instruments.' },
+] as const
 
 function AppsSoftwarePanelView({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex flex-col items-center justify-center text-center py-16 px-8"
     >
-      {/* Ornamental rule */}
-      <div className="flex items-center gap-3 mb-8 w-full max-w-[260px]">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
-        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
-        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold text-[#2C2C2C] font-serif leading-none">Apps &amp; Software</h2>
       </div>
 
-      <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#B8AFA6] mb-3">
-        Apps &amp; Software
-      </p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+        {/* Firmware register — the one thing in this panel you can use today. */}
+        <Link
+          href="/software"
+          onClick={onClose}
+          className="group relative flex min-h-[300px] flex-col justify-between overflow-hidden rounded-2xl bg-[#1E1B16] p-8 transition-colors duration-200 hover:bg-[#262118] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A01829] focus-visible:ring-offset-2"
+        >
+          <Cpu
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-8 -top-8 h-48 w-48 text-white/[0.04] transition-transform duration-500 group-hover:scale-105"
+          />
 
-      <h2 className="text-4xl font-serif text-[#1E1B16] leading-[1.1] mb-4">
-        Coming Soon
-      </h2>
+          <div className="relative">
+            <div className="mb-6 flex w-full max-w-[180px] items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-[#D5C78C] to-transparent" />
+              <div className="h-1 w-1 flex-shrink-0 rounded-full bg-[#D5C78C]" />
+            </div>
 
-      {/* App icons */}
-      <div className="flex items-center gap-8 mb-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
-            <Bluetooth className="h-5 w-5 text-[#8A8078]" />
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-[#D5C78C]">
+              Owner support
+            </p>
+            <h3 className="font-serif text-[32px] leading-[1.1] text-white">
+              Software &amp; firmware
+            </h3>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/70">
+              System updates for Kawai digital and hybrid instruments with a ‘USB to Device’
+              port. Search your model to find the update file and instructions.
+            </p>
           </div>
-          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">Piano Remote</span>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
-            <BookOpen className="h-5 w-5 text-[#8A8078]" />
+
+          <div className="relative mt-8">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#1E1B16] transition-colors duration-150 group-hover:bg-[#F2EFE9]">
+              Find your model
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+            </span>
           </div>
-          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">PiaBookPlayer</span>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-12 h-12 rounded-2xl bg-[#F0EDE7] flex items-center justify-center">
-            <Music2 className="h-5 w-5 text-[#8A8078]" />
+        </Link>
+
+        {/* Companion apps — announced, not shipped. */}
+        <div className="flex flex-col rounded-2xl border border-[#E8E4DF] bg-[#FAF9F7] p-7">
+          <div className="mb-5 flex items-baseline justify-between gap-3">
+            <h3 className="font-serif text-lg text-[#1E1B16]">Companion apps</h3>
+            <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8A8078]">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#A01829] opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#A01829]" />
+              </span>
+              Coming soon
+            </span>
           </div>
-          <span className="text-[10px] font-medium tracking-wide text-[#B8AFA6]">Aures Music</span>
+
+          <ul className="flex-1 divide-y divide-[#E8E4DF]">
+            {COMPANION_APPS.map(({ name, icon: Icon, blurb }) => (
+              <li key={name} className="flex items-start gap-3.5 py-3.5 first:pt-0 last:pb-0">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[#F0EDE7]">
+                  <Icon aria-hidden="true" className="h-4 w-4 text-[#8A8078]" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-semibold text-[#2C2C2C]">{name}</span>
+                  <span className="block text-xs leading-relaxed text-[#8A8078]">{blurb}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-5 border-t border-[#E8E4DF] pt-4 text-xs leading-relaxed text-[#8A8078]">
+            Need help with an update?{' '}
+            <Link
+              href="/technical-support-division"
+              onClick={onClose}
+              className="font-medium text-[#A01829] underline underline-offset-2 hover:text-[#8A1423]"
+            >
+              Contact technical support
+            </Link>
+            .
+          </p>
         </div>
-      </div>
-
-      <p className="text-sm text-[#8A8078] leading-relaxed max-w-[220px] mb-5">
-        Companion apps and software to elevate your playing experience.
-      </p>
-
-      <div className="flex items-center gap-2 mb-8">
-        <span className="relative flex h-4 w-4">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A01829] opacity-60" />
-          <span className="relative inline-flex h-4 w-4 rounded-full bg-[#A01829]" />
-        </span>
-        <span className="text-[11px] font-medium tracking-wide text-[#B8AFA6]">More details coming soon</span>
-      </div>
-
-      <Link
-        href="/pianos"
-        onClick={onClose}
-        className={cn(
-          'group inline-flex items-center gap-2.5 px-6 py-2.5',
-          'border border-[#2C2C2C] rounded-full',
-          'text-xs font-semibold tracking-[0.12em] uppercase text-[#2C2C2C]',
-          'hover:bg-[#2C2C2C] hover:text-white transition-all duration-200'
-        )}
-      >
-        Explore Pianos
-        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </Link>
-
-      {/* Ornamental rule */}
-      <div className="flex items-center gap-3 mt-8 w-full max-w-[260px]">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#D5C78C]" />
-        <div className="w-1 h-1 rounded-full bg-[#D5C78C]" />
-        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#D5C78C]" />
       </div>
     </motion.div>
   )

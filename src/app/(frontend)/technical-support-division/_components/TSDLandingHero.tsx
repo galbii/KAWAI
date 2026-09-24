@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { ArrowRight, Cpu } from 'lucide-react'
 import { FaqSearch } from './FaqSearch'
 
 interface GroupWindow {
@@ -84,8 +85,28 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
         <div className="h-px w-12 bg-kawai-red/40" />
       </motion.div>
 
+      {/* Search leads: most people arrive with a question, not a category. */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="max-w-3xl w-full"
+      >
+        <FaqSearch variant="hero" placeholder="Search for answers, guides, manuals…" />
+      </motion.div>
+
+      {/* Typing prompt */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.35, duration: 0.5 }}
+        className="mb-16"
+      >
+        <TypingAnimation />
+      </motion.div>
+
       {/* Hub Cards — full-width architectural panels */}
-      <div className={`grid grid-cols-1 gap-px w-full mb-24 border border-kawai-black/[0.08] mx-auto ${
+      <div className={`grid grid-cols-1 gap-px w-full border-x border-t border-kawai-black/[0.08] mx-auto ${
         groups.length === 1
           ? 'md:grid-cols-1 max-w-2xl'
           : groups.length === 2
@@ -184,23 +205,74 @@ export function TSDLandingHero({ groups }: { groups: GroupWindow[] }) {
         ))}
       </div>
 
-      {/* Search section */}
+      {/* A fourth panel in the same frame as the hubs, set apart only by its height:
+          firmware is an errand, not a destination like the three above it. */}
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="max-w-3xl w-full"
+        transition={{ duration: 0.7, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className={`w-full mx-auto border-x border-b border-kawai-black/[0.08] ${
+          groups.length === 1 ? 'max-w-2xl' : groups.length === 2 ? 'max-w-5xl' : 'max-w-screen-2xl'
+        }`}
       >
-        <FaqSearch variant="hero" placeholder="Search for answers, guides, manuals…" />
-      </motion.div>
+        <Link
+          href="/software"
+          className="group relative flex flex-col overflow-hidden bg-white hover:bg-[#F0EDE8] transition-colors duration-500 sm:flex-row sm:items-center"
+        >
+          {/* Left red accent bar — grows on hover */}
+          <div className="absolute left-0 top-0 w-[3px] h-0 bg-kawai-red group-hover:h-full transition-all duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
 
-      {/* Typing prompt */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.75, duration: 0.5 }}
-      >
-        <TypingAnimation />
+          {/* Oversized ghost mark — the hub cards' architectural backdrop, in icon form */}
+          <Cpu
+            aria-hidden
+            strokeWidth={1}
+            className="pointer-events-none absolute right-[-0.05em] bottom-[-0.35em] h-56 w-56 select-none
+              text-kawai-black/[0.04] group-hover:text-kawai-black/[0.07]
+              transition-colors duration-700"
+          />
+
+          <div className="relative flex flex-1 flex-col p-10 md:p-12 lg:px-16 lg:py-14">
+            {/* Small index tag — matches the hub cards' 01 / 02 / 03 */}
+            <div className="flex items-center gap-3 mb-8">
+              <span className="text-[9px] text-kawai-red/50 tracking-[0.45em] font-semibold font-[family-name:var(--font-brand-sans)] group-hover:text-kawai-red transition-colors duration-400">
+                DOWNLOADS
+              </span>
+              <div className="h-px flex-1 bg-kawai-black/[0.08] group-hover:bg-kawai-red/20 transition-colors duration-500" />
+            </div>
+
+            <h2 className="text-4xl md:text-5xl lg:text-[3.4rem] font-light leading-[1.05] tracking-tight
+              text-kawai-black font-[family-name:var(--font-brand-serif)]
+              transition-colors duration-500">
+              Software &amp; Firmware
+            </h2>
+
+            {/* Animated red rule */}
+            <div className="mt-6 h-px w-6 bg-kawai-red/30 group-hover:w-14 group-hover:bg-kawai-red/70 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]" />
+
+            <p className="mt-6 max-w-[46ch] text-base text-kawai-black leading-relaxed
+              font-[family-name:var(--font-brand-sans)] transition-colors duration-500">
+              System updates for digital and hybrid instruments. Search your model to find
+              the file and its instructions.
+            </p>
+          </div>
+
+          {/* CTA rail — echoes the hub cards' "Enter", stated rather than revealed
+              because this panel is the errand itself, not a way through to one. */}
+          <div className="relative flex items-center gap-2 px-10 pb-10 md:px-12 md:pb-12 lg:px-16 lg:pb-0 lg:pl-0">
+            <span className="text-[11px] text-kawai-red/70 group-hover:text-kawai-red
+              font-[family-name:var(--font-brand-sans)] font-semibold tracking-[0.25em] uppercase whitespace-nowrap
+              transition-colors duration-300">
+              Find your model
+            </span>
+            <ArrowRight
+              aria-hidden="true"
+              className="h-3.5 w-3.5 flex-shrink-0 text-kawai-red/70 group-hover:text-kawai-red group-hover:translate-x-1 transition-all duration-300"
+            />
+          </div>
+
+          {/* Bottom red sweep — fills on hover */}
+          <div className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-kawai-red/60 to-kawai-red/10 transition-all duration-700 delay-100" />
+        </Link>
       </motion.div>
 
     </div>

@@ -29,7 +29,9 @@ export function TSDGlobalSearch() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-          className="fixed left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-kawai-neutral/40"
+          // z-40, not z-50: the site header is a fixed z-50 element earlier in the DOM,
+          // so an equal tier here would let this bar and its results paint over the nav.
+          className="fixed left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-kawai-neutral/40"
           style={{ top: 'var(--header-bottom, 80px)' }}
         >
           <div className="max-w-7xl mx-auto px-8 py-2.5 flex items-center gap-6">

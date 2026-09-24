@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ChevronRight, X } from 'lucide-react'
+import { ArrowLeft, Bluetooth, BookOpen, ChevronRight, Cpu, Music2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProductsNavigation, NavCollection } from '@/lib/payload/products-navigation'
 
@@ -29,6 +29,13 @@ const CATEGORIES = [
   { label: 'Grand',         key: 'grand',         href: '/pianos/grand',         terms: ['grand', 'baby grand', 'baby-grand', 'gl series'] },
   { label: 'Shigeru Kawai', key: 'shigeru-kawai', href: '/shigeru', terms: ['shigeru'] },
   { label: 'Accessories',   key: 'accessories',   href: '/accessories',          terms: [] },
+  { label: 'Apps & Software', key: 'apps-software', href: '/software',           terms: [] },
+] as const
+
+const MOBILE_COMPANION_APPS = [
+  { name: 'Piano Remote',  icon: Bluetooth },
+  { name: 'PiaBookPlayer', icon: BookOpen },
+  { name: 'Aures Music',   icon: Music2 },
 ] as const
 
 type CategoryKey = (typeof CATEGORIES)[number]['key']
@@ -62,7 +69,7 @@ function isShigeruCollection(col: NavCollection): boolean {
 
 function getCollectionsForKey(collections: NavCollection[], key: CategoryKey): NavCollection[] {
   if (key === 'all') return sortCollections(collections)
-  if (key === 'accessories') return []
+  if (key === 'accessories' || key === 'apps-software') return []
   const cat = CATEGORIES.find((c) => c.key === key)
   if (!cat || cat.terms.length === 0) return []
   const filtered = collections.filter((col) => {
@@ -273,6 +280,42 @@ export function MobileProductsSheet({
                     <ChevronRight className="w-4 h-4 text-kawai-red" />
                   </Link>
                 </div>
+              ) : activeKey === 'apps-software' ? (
+                <div className="pt-4 space-y-3">
+                  <Link
+                    href="/software"
+                    onClick={onNavigate}
+                    className="flex items-start gap-3.5 w-full px-5 py-4 bg-kawai-black rounded-xl text-white transition-colors hover:bg-kawai-charcoal"
+                  >
+                    <Cpu aria-hidden="true" className="w-5 h-5 mt-0.5 flex-shrink-0 text-kawai-gold" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold">Software &amp; Firmware</span>
+                      <span className="block text-xs leading-relaxed text-white/70 mt-0.5">
+                        System updates for digital and hybrid instruments. Search your model.
+                      </span>
+                    </span>
+                    <ChevronRight className="w-4 h-4 mt-0.5 flex-shrink-0 text-white/60" />
+                  </Link>
+
+                  <div className="rounded-xl border border-kawai-neutral/40 bg-white px-5 py-4">
+                    <div className="flex items-baseline justify-between gap-3 mb-3">
+                      <span className="text-sm font-semibold text-kawai-black">Companion apps</span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-kawai-charcoal/60">
+                        Coming soon
+                      </span>
+                    </div>
+                    <ul className="divide-y divide-kawai-neutral/40">
+                      {MOBILE_COMPANION_APPS.map(({ name, icon: Icon }) => (
+                        <li key={name} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+                          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-kawai-pearl">
+                            <Icon aria-hidden="true" className="h-4 w-4 text-kawai-charcoal/60" />
+                          </span>
+                          <span className="text-[13px] text-kawai-charcoal">{name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               ) : filteredCollections.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   {filteredCollections.map((col) => (
@@ -298,7 +341,7 @@ export function MobileProductsSheet({
               )}
 
               {/* footer link */}
-              {activeKey !== 'accessories' && filteredCollections.length > 0 && (
+              {activeKey !== 'accessories' && activeKey !== 'apps-software' && filteredCollections.length > 0 && (
                 <div className="pt-4">
                   <Link
                     href={activeCat.href}

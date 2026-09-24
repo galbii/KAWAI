@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload/queries'
+import { matchesSoftwareIntent, SOFTWARE_DESTINATION, stripSoftwareTerms } from '@/lib/software/intent'
+
+/**
+ * `/software` is a hardcoded route, so the Payload search plugin never indexed it
+ * and "firmware" returned nothing. Shaped as a `pages` hit so the existing result
+ * renderer resolves it to /software and labels it a Page with no changes there.
+ */
+const SOFTWARE_RESULT = {
+  id: 'destination-software',
+  title: SOFTWARE_DESTINATION.title,
+  doc: { relationTo: 'pages' as const, value: { slug: 'software' } },
+  excerpt: SOFTWARE_DESTINATION.description,
+  category: 'Support',
+  tags: [] as string[],
+  pageSlug: 'software',
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,6 +78,13 @@ export async function GET(request: NextRequest) {
     // Check if query matches any synonym and expand search terms
     const expandedTerms: string[] = [query] // Always include original query
     const queryLower = query.toLowerCase().trim()
+
+    // "ES920 firmware" matches no indexed title verbatim. Search the model portion
+    // alongside the literal query so naming the errand doesn't cost you the product.
+    const withoutSoftwareTerms = stripSoftwareTerms(query)
+    if (withoutSoftwareTerms && withoutSoftwareTerms !== queryLower) {
+      expandedTerms.push(withoutSoftwareTerms)
+    }
 
     // Add synonyms if matched
     if (synonymMap[queryLower]) {
@@ -169,9 +192,19 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // A generic software/firmware query is an unambiguous request for the register,
+    // so it leads. Guarded against a real indexed page ever claiming the same slug.
+    const wantsSoftware =
+      matchesSoftwareIntent(query) &&
+      !transformedResults.some((r) => r.pageSlug === 'software')
+
+    const finalResults = wantsSoftware
+      ? [SOFTWARE_RESULT, ...transformedResults]
+      : transformedResults
+
     return NextResponse.json({
-      results: transformedResults,
-      totalDocs: results.totalDocs,
+      results: finalResults,
+      totalDocs: results.totalDocs + (wantsSoftware ? 1 : 0),
     })
   } catch (error) {
     console.error('Search API error:', error)
