@@ -151,6 +151,39 @@ export const ProductHero: Block = {
       }
     },
     {
+      name: 'dealerCta',
+      type: 'group',
+      fields: [
+        {
+          name: 'url',
+          type: 'text',
+          admin: {
+            placeholder: '/find-a-dealer',
+            description: 'Send the button somewhere other than /find-a-dealer (e.g. "/store/st-louis", "/contact", or a full https:// URL). Leave blank for the default.'
+          }
+        },
+        {
+          name: 'text',
+          type: 'text',
+          admin: {
+            placeholder: 'Find a Dealer',
+            description: 'Optional button label override'
+          }
+        },
+        {
+          name: 'openInNewTab',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Open the link in a new tab'
+          }
+        }
+      ],
+      admin: {
+        description: '📍 Override the "Find a Dealer" button. Only takes effect when that button actually renders — i.e. the product has no Shopify link, or the selected finish is out of stock. Ignored while Buy Now / Add to Cart is showing.'
+      }
+    },
+    {
       name: 'floatingCart',
       type: 'group',
       fields: [

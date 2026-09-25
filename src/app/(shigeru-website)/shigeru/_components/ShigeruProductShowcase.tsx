@@ -10,8 +10,9 @@ import type { ShigeruModelShopifyData } from '../_data/shopify'
 
 const ease = [0.25, 0.46, 0.45, 0.94] as const
 
-// The entire range is differentiated by length (180cm → 278cm), so every
-// piano image — stage and filmstrip — renders at cm/MAX_CM of its container.
+// The entire range is differentiated by length (180cm → 278cm), so the stage
+// renders each piano at cm/MAX_CM of its container. The filmstrip below it does
+// not: see the selector for why.
 const MAX_CM = 278
 
 function parseCm(cm: string): number {
@@ -477,17 +478,22 @@ export function ShigeruProductShowcase({ productData }: Props) {
               style={{ background: ink(0.18) }}
             />
 
-      {/* Filmstrip selector — the six pianos to scale on a shared floor */}
+      {/* Filmstrip selector — one equal cell per model.
+          The stage is where the range is drawn to scale; down here the thumbs
+          are targets, and sizing them by length made the row read as ragged
+          rather than proportional: the shots are framed differently from one
+          another, so apparent size followed each photo's padding instead of the
+          piano. Six equal columns also keep the strip inside its own column at
+          every width, which the content-sized flex row did not. */}
       <LayoutGroup id="sk-filmstrip">
         <div
           role="tablist"
           aria-label="Select piano model"
-          className="mt-4 hidden lg:flex items-end justify-center gap-1 overflow-x-auto sk-scroll-hide px-2"
+          className="mt-4 hidden lg:grid grid-cols-6 items-end gap-1 px-2"
           style={{ borderBottom: '1px solid transparent' }}
         >
           {SHIGERU_MODELS.map((m, i) => {
             const active = i === activeIndex
-            const s = parseCm(m.cm) / MAX_CM
             const key = m.slug.replace(/-/g, '')
             const thumb = productData?.[key]?.imageUrl ?? null
             const thumbProps = thumb ? getOptimizedImageProps(thumb, 'thumbnail') : null
@@ -497,16 +503,13 @@ export function ShigeruProductShowcase({ productData }: Props) {
                 role="tab"
                 aria-selected={active}
                 onClick={() => goTo(i)}
-                className="relative flex-shrink-0 flex flex-col items-center justify-end pb-4 pt-2 px-2 sm:px-3 group/tab focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
+                className="relative flex min-w-0 flex-col items-center justify-end pb-4 pt-2 px-2 sm:px-3 group/tab focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-black"
               >
                 {thumbProps?.src && (
                   <span
                     aria-hidden="true"
                     className="relative block"
-                    style={{
-                      width: `${s * 7.5}rem`,
-                      height: `${s * 4.6}rem`,
-                    }}
+                    style={{ width: '100%', aspectRatio: '7.5 / 4.6' }}
                   >
                     {/* opacity lives on the img itself — an opacity wrapper would
                         isolate the blend group and the white-bg shots would show

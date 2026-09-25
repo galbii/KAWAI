@@ -2856,6 +2856,23 @@ export interface ProductHeroBlock {
     scrollToBlockIndex?: number | null;
   };
   /**
+   * 📍 Override the "Find a Dealer" button. Only takes effect when that button actually renders — i.e. the product has no Shopify link, or the selected finish is out of stock. Ignored while Buy Now / Add to Cart is showing.
+   */
+  dealerCta?: {
+    /**
+     * Send the button somewhere other than /find-a-dealer (e.g. "/store/st-louis", "/contact", or a full https:// URL). Leave blank for the default.
+     */
+    url?: string | null;
+    /**
+     * Optional button label override
+     */
+    text?: string | null;
+    /**
+     * Open the link in a new tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  /**
    * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
    */
   floatingCart?: {

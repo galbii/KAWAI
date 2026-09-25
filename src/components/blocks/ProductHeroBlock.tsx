@@ -35,6 +35,12 @@ interface ProductHeroBlockProps {
     url?: string | null
     scrollToBlockIndex?: number | null
   } | null
+  /** Overrides for the "Find a Dealer" fallback button (see dealerHref below). */
+  dealerCta?: {
+    url?: string | null
+    text?: string | null
+    openInNewTab?: boolean | null
+  } | null
   // NEW: Floating cart configuration (integrated with variation selection)
   floatingCart?: {
     enabled?: boolean | null
@@ -158,6 +164,7 @@ export function ProductHeroBlock({
   site = 'us',
   layout = {},
   secondaryCta = {},
+  dealerCta,
   floatingCart = {}, // NEW: Floating cart configuration
   overrides = {},
   ctaTracking,
@@ -186,7 +193,6 @@ export function ProductHeroBlock({
   const mobileTouchStartX = useRef<number | null>(null)
   const sliderRef = useRef<HTMLDivElement>(null)
 
-  const sectionRef = useRef<HTMLElement>(null)
   const galleryRef = useRef<HTMLDivElement>(null)
 
   // Sync selectedVariation when variations change (handles async product loading)
@@ -220,11 +226,24 @@ export function ProductHeroBlock({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Scroll trap: gallery scrolls first with smooth lerp animation; page resumes at gallery bottom
+  // Scroll trap: while the cursor is over the gallery, the wheel scrolls the gallery
+  // first (smooth lerp), then hands the page back at its top/bottom edge.
+  // Two guards keep it from stealing the page mid-approach:
+  //   1. The listener lives on the gallery, so wheeling over the sticky text column
+  //      always scrolls the page normally.
+  //   2. It only arms once the gallery is framed from the direction of travel —
+  //      coming back up from below, the page keeps scrolling until the gallery's top
+  //      edge is reached, so the block is never trapped half off-screen.
   useEffect(() => {
-    const section = sectionRef.current
     const gallery = galleryRef.current
-    if (!section || !gallery) return
+    if (!gallery) return
+
+    // Take the container out of the native scroll chain for mouse users: Chromium
+    // latches a gesture to the scroller under the cursor, so an overflow that stays
+    // `auto` would eat upward wheels before the handler below ever gets a say.
+    // Touch devices keep native scrolling — there is no wheel event to drive them.
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    if (finePointer) gallery.style.overflowY = 'hidden'
 
     let targetScrollTop = gallery.scrollTop
     let rafId: number | null = null
@@ -244,25 +263,36 @@ export function ProductHeroBlock({
     }
 
     const handleWheel = (e: WheelEvent) => {
-      const { scrollHeight, clientHeight } = gallery
-      const maxScroll = scrollHeight - clientHeight
+      if (e.deltaY === 0) return // horizontal / trackpad swipe — leave it alone
+
+      const rect = gallery.getBoundingClientRect()
+      const scrollingDown = e.deltaY > 0
+      const armed = scrollingDown
+        ? rect.bottom <= window.innerHeight + 1
+        : rect.top >= -1
+      if (!armed) return
+
+      // Resync between gestures — focus scrolling can move the gallery behind our back
+      if (!rafId) targetScrollTop = gallery.scrollTop
+
+      const maxScroll = gallery.scrollHeight - gallery.clientHeight
       const atBottom = targetScrollTop >= maxScroll - 2
       const atTop = targetScrollTop <= 0
 
-      if (e.deltaY > 0 && !atBottom) {
+      if (scrollingDown && !atBottom) {
         e.preventDefault()
         targetScrollTop = Math.min(targetScrollTop + e.deltaY, maxScroll)
         if (!rafId) rafId = requestAnimationFrame(animateScroll)
-      } else if (e.deltaY < 0 && !atTop) {
+      } else if (!scrollingDown && !atTop) {
         e.preventDefault()
         targetScrollTop = Math.max(targetScrollTop + e.deltaY, 0)
         if (!rafId) rafId = requestAnimationFrame(animateScroll)
       }
     }
 
-    section.addEventListener('wheel', handleWheel, { passive: false })
+    gallery.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      section.removeEventListener('wheel', handleWheel)
+      gallery.removeEventListener('wheel', handleWheel)
       if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
@@ -481,6 +511,47 @@ export function ProductHeroBlock({
 
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
+
+  // "Find a Dealer" is the fallback CTA: it renders only when the cart can't (no
+  // Shopify product at all, or the selected finish is out of stock). The block can
+  // point it elsewhere — a specific storefront, a contact page — without touching
+  // the cart path, since an override on a purchasable product is simply never read.
+  const DEFAULT_DEALER_HREF = '/find-a-dealer'
+  const dealerHref = dealerCta?.url?.trim() || DEFAULT_DEALER_HREF
+  const dealerLabel = dealerCta?.text?.trim() || 'Find a Dealer'
+  // An absolute URL leaves the app, so it needs a plain <a> — next/link would try to
+  // client-navigate it. Protocol-relative and mailto/tel count as external too.
+  const dealerIsExternal = /^(https?:|mailto:|tel:|\/\/)/i.test(dealerHref)
+  const dealerOpensNewTab = dealerCta?.openInNewTab === true
+
+  const trackDealerCtaClick = () => trackCTAClick({
+    blockType: 'product-hero',
+    blockData: { ctaTracking: ctaTracking ?? undefined },
+    ctaText: dealerLabel,
+    destination: dealerHref,
+    additionalProps: {
+      product_name: product?.name,
+      product_slug: product?.slug,
+      button_type: 'find_a_dealer',
+      reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
+      is_override: dealerHref !== DEFAULT_DEALER_HREF,
+    },
+  })
+
+  const dealerCtaContent = (
+    <>
+      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+        <span>{dealerLabel}</span>
+        <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </span>
+    </>
+  )
+  const dealerNewTabProps = dealerOpensNewTab
+    ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+    : {}
 
   // Free shipping and returns describe buying direct from Kawai, which requires a
   // digital piano AND stock on hand. An out-of-stock variant routes to a dealer just
@@ -882,7 +953,7 @@ export function ProductHeroBlock({
   }
 
   return (
-    <section ref={sectionRef} className={`relative overflow-visible ${backgroundClass}`}>
+    <section className={`relative overflow-visible ${backgroundClass}`}>
       {/* Subtle gradient overlay for better image blending */}
       {backgroundColor !== 'black' && (
         <div className="absolute inset-0 bg-gradient-to-b from-stone-50/30 via-white to-stone-50/30" />
@@ -1291,29 +1362,23 @@ export function ProductHeroBlock({
                         "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
                       )}
                     >
-                      <Link
-                        href="/find-a-dealer"
-                        onClick={() => trackCTAClick({
-                          blockType: 'product-hero',
-                          blockData: { ctaTracking: ctaTracking ?? undefined },
-                          ctaText: 'Find a Dealer',
-                          destination: '/find-a-dealer',
-                          additionalProps: {
-                            product_name: product?.name,
-                            product_slug: product?.slug,
-                            button_type: 'find_a_dealer',
-                            reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
-                          },
-                        })}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                          <span>Find a Dealer</span>
-                          <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </span>
-                      </Link>
+                      {dealerIsExternal ? (
+                        <a
+                          href={dealerHref}
+                          {...dealerNewTabProps}
+                          onClick={trackDealerCtaClick}
+                        >
+                          {dealerCtaContent}
+                        </a>
+                      ) : (
+                        <Link
+                          href={dealerHref}
+                          {...dealerNewTabProps}
+                          onClick={trackDealerCtaClick}
+                        >
+                          {dealerCtaContent}
+                        </Link>
+                      )}
                     </Button>
                   </div>
                 )}
