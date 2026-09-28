@@ -144,7 +144,7 @@ export default async function ModelsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── HERO — the wordmark, then the whole range to scale ────────── */}
+      {/* ── HERO — the wordmark, then the whole range ───────────────── */}
       <section className="relative overflow-hidden bg-kawai-pearl">
         <div className="relative mx-auto max-w-[86rem] px-6 pt-24 pb-20 lg:px-12 lg:pt-28 lg:pb-24">
           {/* The asset is gold on transparent — brightness(0) renders it as
@@ -205,7 +205,7 @@ export default async function ModelsPage() {
 
           {/* Each instrument jumps to its own entry further down the page. */}
           <div className="mt-14 lg:mt-16">
-            <RangeFloor productData={productData} heightRem={12} linkMode="anchor" />
+            <RangeFloor productData={productData} linkMode="anchor" />
           </div>
         </div>
       </section>

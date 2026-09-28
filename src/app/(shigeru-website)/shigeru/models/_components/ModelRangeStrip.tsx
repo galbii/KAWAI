@@ -4,11 +4,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SHIGERU_MODELS } from '../../_data/models'
 import type { ShigeruPageData } from '../../_data/shopify'
-import { GOLD, OSWALD, PEARL, ink, lengthRatio } from '@/lib/shigeru/tokens'
+import { GOLD, OSWALD, PEARL, SHOT_FRAME_ASPECT, ink, shotFix } from '@/lib/shigeru/tokens'
 import { useReveal } from '@/lib/shigeru/use-reveal'
 
-/** Column widths track length too, so the row is to scale along both axes. */
-const COLUMNS = SHIGERU_MODELS.map((m) => `${lengthRatio(m.cm)}fr`).join(' ')
+/** One equal cell per model — the row is a set of six targets, not a ruler. */
+const COLUMNS = `repeat(${SHIGERU_MODELS.length}, minmax(0, 1fr))`
 
 /** Fixed name block under every instrument, so the floor line sits flat. */
 const NAME_BLOCK = '3.25rem'
@@ -21,8 +21,6 @@ type FloorProps = {
    * the subject and all six are drawn at full strength.
    */
   activeSlug?: string
-  /** Height of the SK-EX in rem; every other model is drawn against it. */
-  heightRem?: number
   /**
    * `page` links out to each model's own page. `anchor` jumps down to that
    * model's entry on the current page — what the collection page wants, since
@@ -32,14 +30,22 @@ type FloorProps = {
 }
 
 /**
- * The six grands standing on one floor line, drawn to true relative scale.
+ * The six grands standing on one floor line, one frame each.
  *
- * Column widths are proportional to length, so the widest-aspect shot — the
- * SK-EX, on its white studio background — is what decides how tall the row can
- * get before its column starts cropping it instead of its own height. The
- * 70rem minimum keeps every instrument height-bound, which is what makes the
- * scaling honest; below that the row scrolls rather than lying about the
- * proportions.
+ * The row used to size every column and every frame by length, on the claim
+ * that it drew the range to true relative scale. It never did: the six files
+ * are framed differently from one another, so apparent size followed each
+ * photo's padding rather than the piano — measured against the SK-EX the other
+ * five came out 18–27% oversized, and which of the two numbers you got
+ * depended on the viewport, because the SK-EX's frame crossed from
+ * width-bound to height-bound partway through the range of row widths. A
+ * measurement that moves when you resize the window is not a measurement.
+ *
+ * So: equal columns, one frame ratio (SHOT_FRAME_ASPECT), `shotFix` to undo
+ * what each file bakes in. Every instrument renders at the same height with
+ * its feet on the shared floor, and length is stated in words on each model's
+ * page. The 70rem minimum is now only about legibility — below it the row
+ * scrolls rather than crushing six cells.
  *
  * On the blend trap: the shots are a mix of transparent PNGs and
  * white-background JPEGs, and the JPEGs only disappear into the pearl because
@@ -49,12 +55,7 @@ type FloorProps = {
  * which is invisible against the page and gives the multiply something to
  * land on.
  */
-export function RangeFloor({
-  productData,
-  activeSlug,
-  heightRem = 11,
-  linkMode = 'page',
-}: FloorProps) {
+export function RangeFloor({ productData, activeSlug, linkMode = 'page' }: FloorProps) {
   const { ref, shown } = useReveal<HTMLDivElement>(0.2)
 
   return (
@@ -75,24 +76,36 @@ export function RangeFloor({
             const body = (
               <>
                 <span
-                  className="sk-reveal sk-reveal-up relative block w-full"
+                  className="sk-reveal sk-reveal-up relative block w-full overflow-hidden"
                   style={
                     {
-                      height: `${lengthRatio(m.cm) * heightRem}rem`,
+                      aspectRatio: SHOT_FRAME_ASPECT,
                       background: PEARL,
                       '--sk-delay': `${i * 0.075}s`,
                     } as React.CSSProperties
                   }
                 >
+                  {/* The frame clips, and the shot hangs 0.5rem below its top
+                      edge. Both are about the SK-EX: shotFix scales its canvas
+                      up until the instrument fills the frame, so the white
+                      margin baked into that file spills past all four edges —
+                      and mid-reveal the frame is an isolated blend group whose
+                      pearl backdrop stops at its own border box, so the spill
+                      would flash as a white box before settling. Clipping it
+                      costs nothing (after the fix the instrument reaches the
+                      frame edge, and what is cut is margin) but it would eat
+                      the hover lift, hence the headroom to lift into. */}
                   {image && (
-                    <Image
-                      src={image}
-                      alt=""
-                      fill
-                      sizes="280px"
-                      className="object-contain object-bottom mix-blend-multiply transition-transform duration-500 ease-out group-hover:-translate-y-2"
-                      style={{ opacity: ghosted ? 0.55 : 1 }}
-                    />
+                    <span className="absolute inset-x-0 top-2 bottom-0 block">
+                      <Image
+                        src={image}
+                        alt=""
+                        fill
+                        sizes="240px"
+                        className="object-contain object-bottom mix-blend-multiply transition-transform duration-500 ease-out group-hover:-translate-y-2"
+                        style={{ opacity: ghosted ? 0.55 : 1, ...shotFix(m.slug) }}
+                      />
+                    </span>
                   )}
                 </span>
 
@@ -192,7 +205,7 @@ export function ModelRangeStrip({
 }) {
   return (
     <section
-      aria-label="The six Shigeru Kawai grand pianos, drawn to scale"
+      aria-label="The six Shigeru Kawai grand pianos"
       className="bg-kawai-pearl"
     >
       <div

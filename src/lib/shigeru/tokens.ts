@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 /**
  * Shigeru Kawai microsite — shared design tokens.
  *
@@ -69,10 +71,72 @@ export const EDITORIAL_GRID =
 const parseCm = (cm: string): number => parseInt(cm, 10) || 0
 
 /**
- * The range is differentiated by length (180 cm → 278 cm), so wherever more
- * than one instrument shares a floor line they are drawn to true relative
- * scale against the SK-EX. A lone instrument is drawn at full size — with no
- * sibling beside it a 65%-size piano reads as timid, not as small.
+ * The range is differentiated by length (180 cm → 278 cm). Used by the
+ * collection entries, where each instrument gets a section of its own and the
+ * page is read top to bottom, so the range can grow as you scroll.
+ *
+ * Not used by the range strip: see SHOT_FRAME_ASPECT for why a row of six
+ * cannot be drawn to scale from these files.
  */
 export const lengthRatio = (cm: string, longestCm = 278): number =>
   longestCm ? parseCm(cm) / longestCm : 1
+
+/**
+ * Uniform frame ratio for the product shots.
+ *
+ * A row of six is read as a set of six destinations, not as a measurement, and
+ * these files cannot carry a measurement anyway: SK-2–SK-7 are one matched
+ * set, each cropped tight and rendered at the same pixel height, so the files
+ * already normalise the instrument and encode length only as canvas width. Any
+ * frame that scales by length therefore shrinks the SK-2 in the wrong axis —
+ * and the SK-EX, whose file is framed differently again, lands 18–27% off the
+ * ratio it is supposed to be showing. One frame per model instead, and the
+ * length is stated in words beside it.
+ *
+ * The ratio itself is load-bearing. `object-contain` gives every model the
+ * same rendered height only while it binds on height, i.e. while the frame is
+ * at least as wide as the widest shot. The SK-EX canvas is 1.36:1 and
+ * `shotFix` scales it a further 1.177×, so the frame must clear 1.60:1 or the
+ * blend group clips. 7.5/4.6 ≈ 1.63 is the ratio the homepage filmstrip
+ * already uses.
+ */
+export const SHOT_FRAME_ASPECT = '7.5 / 4.6'
+
+/**
+ * How much of its own file each instrument actually occupies — measured from
+ * the live assets, not eyeballed.
+ *
+ * SK-2–SK-7 are transparent PNGs cropped flush to the instrument on all four
+ * edges, so in a uniform frame they already fill it with their feet on the
+ * floor and need no entry here. The SK-EX is a different asset: a 5616×4134
+ * JPEG on white carrying real margin, in which the piano fills 85.0% of the
+ * height and stands 11.8% of it above the bottom edge. Dropped into the same
+ * frame it renders 15% short and floats off the floor line.
+ *
+ * Re-crop the SK-EX to match the set and this table becomes identity. That is
+ * the real fix — it also retires the mix-blend-multiply workaround that the
+ * one white-background file forces on every wrapper that animates. This is the
+ * fix that needs no asset pipeline.
+ */
+const SHOT_FILL: Record<string, { fillsHeight: number; bottomPad: number }> = {
+  'sk-ex': { fillsHeight: 0.85, bottomPad: 0.118 },
+}
+
+/**
+ * Normalises one shot inside a uniform frame: translate the feet down onto the
+ * floor, then scale up from that floor until the instrument fills the frame.
+ *
+ * Both figures are fractions of the frame's height, which holds only while the
+ * image is height-bound — hence SHOT_FRAME_ASPECT. Order matters: the scale is
+ * written first so it applies last, over a translate it then carries with it.
+ */
+export const shotFix = (slug: string): CSSProperties | undefined => {
+  const fill = SHOT_FILL[slug]
+  if (!fill) return undefined
+  return {
+    transform: `scale(${(1 / fill.fillsHeight).toFixed(4)}) translateY(${(
+      fill.bottomPad * 100
+    ).toFixed(2)}%)`,
+    transformOrigin: 'bottom center',
+  }
+}

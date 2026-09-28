@@ -89,13 +89,13 @@ export type ModelImages = Record<string, string | null>
  * The grand-piano mega menu — the homepage collection filmstrip, moved into
  * the header.
  *
- * The /shigeru/models range strip draws the six pianos to true relative scale,
- * because on that page the range IS the subject. A menu is not — it is read as
- * a list of destinations, and a scale rule there leaves the SK-2 two-thirds the
- * size of the SK-EX to see and to click. So every model gets an identical
- * frame here; the length is still stated, in words, under each name. The pearl
- * stage stays — the product shots are lit on white and blend into pearl, not
- * into the header's near-black.
+ * Every model gets an identical frame: a menu is read as a list of
+ * destinations, and a rule that sizes them by length leaves the SK-2
+ * two-thirds of the SK-EX to see and to click. The length is still stated, in
+ * words, under each name. The /shigeru/models range strip now works the same
+ * way — see SHOT_FRAME_ASPECT for why those files cannot carry a measurement.
+ * The pearl stage stays — the product shots are lit on white and blend into
+ * pearl, not into the header's near-black.
  */
 function ModelsPanel({
   item,
