@@ -2856,7 +2856,7 @@ export interface ProductHeroBlock {
     scrollToBlockIndex?: number | null;
   };
   /**
-   * 📍 Override the "Find a Dealer" button. Only takes effect when that button actually renders — i.e. the product has no Shopify link, or the selected finish is out of stock. Ignored while Buy Now / Add to Cart is showing.
+   * 📍 Override the "Find a Dealer" button. This button always renders — as the black secondary next to Buy Now on a purchasable variant, and on its own when the product has no Shopify link or the selected finish is out of stock.
    */
   dealerCta?: {
     /**
@@ -2873,11 +2873,11 @@ export interface ProductHeroBlock {
     openInNewTab?: boolean | null;
   };
   /**
-   * 🛒 Configure floating add to cart button - syncs with variation selection in hero section
+   * 🛒 Configure floating Buy Now button - syncs with variation selection in hero section
    */
   floatingCart?: {
     /**
-     * Show floating add to cart button that follows as user scrolls (syncs with variation selection)
+     * Show floating Buy Now button that follows as user scrolls (syncs with variation selection)
      */
     enabled?: boolean | null;
     /**
@@ -2893,7 +2893,7 @@ export interface ProductHeroBlock {
      */
     scrollThreshold?: number | null;
     /**
-     * Display selected variation name above Add to Cart button (e.g., "Ebony Polish")
+     * Display selected variation name below the Buy Now button (e.g., "Ebony Polish")
      */
     showVariantName?: boolean | null;
   };
@@ -2927,7 +2927,7 @@ export interface ProductHeroBlock {
     viewportThreshold?: number | null;
   };
   /**
-   * Configure analytics for the Buy Now and Add to Cart buttons
+   * Configure analytics for the Buy Now buttons (hero + floating) and the Find a Dealer button
    */
   ctaTracking?: {
     /**

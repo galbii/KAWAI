@@ -180,7 +180,7 @@ export const ProductHero: Block = {
         }
       ],
       admin: {
-        description: '📍 Override the "Find a Dealer" button. Only takes effect when that button actually renders — i.e. the product has no Shopify link, or the selected finish is out of stock. Ignored while Buy Now / Add to Cart is showing.'
+        description: '📍 Override the "Find a Dealer" button. This button always renders — as the black secondary next to Buy Now on a purchasable variant, and on its own when the product has no Shopify link or the selected finish is out of stock.'
       }
     },
     {
@@ -192,7 +192,7 @@ export const ProductHero: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Show floating add to cart button that follows as user scrolls (syncs with variation selection)'
+            description: 'Show floating Buy Now button that follows as user scrolls (syncs with variation selection)'
           }
         },
         {
@@ -234,13 +234,13 @@ export const ProductHero: Block = {
           type: 'checkbox',
           defaultValue: true,
           admin: {
-            description: 'Display selected variation name above Add to Cart button (e.g., "Ebony Polish")',
+            description: 'Display selected variation name below the Buy Now button (e.g., "Ebony Polish")',
             condition: (data) => data.floatingCart?.enabled === true
           }
         }
       ],
       admin: {
-        description: '🛒 Configure floating add to cart button - syncs with variation selection in hero section'
+        description: '🛒 Configure floating Buy Now button - syncs with variation selection in hero section'
       }
     },
     trackImpressionField({ trackViewport: true, viewportThreshold: 0.5 }),
@@ -249,7 +249,7 @@ export const ProductHero: Block = {
       defaultMetaEvent: 'AddToCart',
       defaultCategory: 'conversion',
       label: '📊 Add to Cart Tracking',
-      adminDescription: 'Configure analytics for the Buy Now and Add to Cart buttons',
+      adminDescription: 'Configure analytics for the Buy Now buttons (hero + floating) and the Find a Dealer button',
     }),
   ]
 }

@@ -14,10 +14,10 @@ import { hasFreeShipping } from '@/lib/free-shipping'
 import { isDigitalProduct } from '@/lib/product-type'
 import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
-import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
-import { createCart, buildCheckoutUrl, getUTMCartAttributes } from '@/lib/shopify'
-import { trackAddToCart, trackBeginCheckout, trackBlockImpression, trackCTAClick } from '@/lib/analytics/unified-tracking'
+import { addVariantToCart } from '@/lib/shopify'
+import { useCart } from '@/contexts/CartContext'
+import { trackAddToCart, trackBlockImpression, trackCTAClick } from '@/lib/analytics/unified-tracking'
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
 
 interface ProductHeroBlockProps {
@@ -187,6 +187,9 @@ export function ProductHeroBlock({
   const [isFavorited, setIsFavorited] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
+  const [buyNowError, setBuyNowError] = useState<string | null>(null)
+  // Buy Now writes to the shared cart and opens the drawer (state lives in CartContext)
+  const { setCartData, openCart } = useCart()
   const [mobileCarouselIndex, setMobileCarouselIndex] = useState(0)
   const [lightboxStartIndex, setLightboxStartIndex] = useState(0)
   const mobileSwipeInProgress = useRef(false)
@@ -331,36 +334,43 @@ export function ProductHeroBlock({
   const showPrice = layout.showPrice === true
   const showBuyButton = layout.showBuyButton !== false
 
-  const handleBuyNow = async () => {
+  /**
+   * Buy Now adds the selected variant to the persistent cart and slides the cart
+   * drawer open. It deliberately does NOT jump to Shopify checkout — checkout now
+   * starts from the drawer, so begin_checkout fires once in CartSummary rather
+   * than being double-counted here.
+   *
+   * setCartData() seeds the context with the cart the mutation just returned so
+   * the drawer opens on fresh data instead of repainting the previous state.
+   */
+  const handleBuyNow = async (source: 'hero' | 'floating' = 'hero') => {
     if (!selectedVariant || buyNowLoading) return
     setBuyNowLoading(true)
+    setBuyNowError(null)
     try {
-      const formattedVariantId = selectedVariant.id.startsWith('gid://')
-        ? selectedVariant.id
-        : `gid://shopify/ProductVariant/${selectedVariant.id}`
-      const cart = await createCart(
-        [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity: 1 }],
-        getUTMCartAttributes(),
-      )
-      if (cart.checkoutUrl) {
-        const buyNowParams = {
-          blockType: 'product-hero',
-          blockData: { ctaTracking: ctaTracking ?? undefined },
-          productName: product?.name || '',
-          variantId: selectedVariant.id,
-          variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
-          price: selectedVariant.price,
-          currency: shopifyProduct?.price.currency ?? 'USD',
-          productId: shopifyProduct?.handle ?? null,
-          productCategory: shopifyProduct?.type ?? null,
-          additionalProps: { button_type: 'buy_now' },
-        }
-        trackAddToCart(buyNowParams)
-        trackBeginCheckout(buyNowParams)
-        window.open(buildCheckoutUrl(cart.checkoutUrl), '_blank', 'noopener,noreferrer')
-      }
+      const cart = await addVariantToCart(selectedVariant.id, 1)
+
+      trackAddToCart({
+        blockType: 'product-hero',
+        blockData: { ctaTracking: ctaTracking ?? undefined },
+        productName: product?.name || '',
+        variantId: selectedVariant.id,
+        variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
+        price: selectedVariant.price,
+        currency: shopifyProduct?.price.currency ?? 'USD',
+        productId: shopifyProduct?.handle ?? null,
+        productCategory: shopifyProduct?.type ?? null,
+        additionalProps: {
+          button_type: source === 'floating' ? 'floating_buy_now' : 'buy_now',
+        },
+      })
+
+      setCartData(cart)
+      openCart()
     } catch (err) {
       console.error('[ProductHeroBlock] Buy Now error:', err)
+      setBuyNowError('Could not add to cart. Please try again.')
+      setTimeout(() => setBuyNowError(null), 4000)
     } finally {
       setBuyNowLoading(false)
     }
@@ -503,7 +513,7 @@ export function ProductHeroBlock({
   // Buy button logic - buyButton field removed from Product schema, use layout setting only
   const shouldShowBuyButton = showBuyButton
 
-  // Unified rendering condition for Add to Cart functionality.
+  // Unified rendering condition for the Buy Now (add-to-cart) path.
   // Uses Shopify's standard availableForSale signal (selectedVariant.available).
   // CRITICAL: This condition is used by BOTH the hero button AND the floating button
   // to ensure consistent behavior across the page.
@@ -512,10 +522,11 @@ export function ProductHeroBlock({
   // True when Shopify data exists but the selected variant is out of stock
   const isOutOfStock = !!shopifyProduct && !!selectedVariant && !selectedVariant.available
 
-  // "Find a Dealer" is the fallback CTA: it renders only when the cart can't (no
-  // Shopify product at all, or the selected finish is out of stock). The block can
-  // point it elsewhere — a specific storefront, a contact page — without touching
-  // the cart path, since an override on a purchasable product is simply never read.
+  // "Find a Dealer" is a permanent CTA: it renders in every state of this block —
+  // next to Buy Now on a purchasable variant, and on its own when the cart can't
+  // run (no Shopify product at all, or the selected finish is out of stock). The
+  // block can point it elsewhere — a specific storefront, a contact page — and that
+  // override now always applies, whatever else is on screen.
   const DEFAULT_DEALER_HREF = '/find-a-dealer'
   const dealerHref = dealerCta?.url?.trim() || DEFAULT_DEALER_HREF
   const dealerLabel = dealerCta?.text?.trim() || 'Find a Dealer'
@@ -533,14 +544,14 @@ export function ProductHeroBlock({
       product_name: product?.name,
       product_slug: product?.slug,
       button_type: 'find_a_dealer',
-      reason: isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
+      reason: canAddToCart ? 'alongside_purchase' : isOutOfStock ? 'out_of_stock' : 'no_ecommerce',
       is_override: dealerHref !== DEFAULT_DEALER_HREF,
     },
   })
 
   const dealerCtaContent = (
     <>
-      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-r from-kawai-charcoal to-kawai-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
         <span>{dealerLabel}</span>
         <svg className="w-3.5 h-3.5 lg:w-4 lg:h-4 transform group-hover:translate-x-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -552,6 +563,40 @@ export function ProductHeroBlock({
   const dealerNewTabProps = dealerOpensNewTab
     ? { target: '_blank' as const, rel: 'noopener noreferrer' }
     : {}
+
+  // Shared geometry for both hero CTAs so Buy Now and Find a Dealer sit as a matched pair.
+  const heroCtaBaseClasses =
+    'group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base'
+
+  /**
+   * Find a Dealer, rendered black so it reads as the secondary to Buy Now's red.
+   * White on kawai-black (#1E1B16) is ~16:1, well past the 4.5:1 AA floor.
+   *
+   * @param widthClass - how the button fills its row (paired vs. standalone)
+   */
+  const renderDealerCta = (widthClass: string) => (
+    <Button
+      asChild
+      className={cn(
+        heroCtaBaseClasses,
+        widthClass,
+        // hover:bg-kawai-black is load-bearing: without a hover bg in the class list,
+        // twMerge keeps Button's default hover:bg-primary/90, which flashes through
+        // while the black overlay fades in.
+        'bg-kawai-black text-white hover:bg-kawai-black hover:shadow-kawai-black/25'
+      )}
+    >
+      {dealerIsExternal ? (
+        <a href={dealerHref} {...dealerNewTabProps} onClick={trackDealerCtaClick}>
+          {dealerCtaContent}
+        </a>
+      ) : (
+        <Link href={dealerHref} {...dealerNewTabProps} onClick={trackDealerCtaClick}>
+          {dealerCtaContent}
+        </Link>
+      )}
+    </Button>
+  )
 
   // Free shipping and returns describe buying direct from Kawai, which requires a
   // digital piano AND stock on hand. An out-of-stock variant routes to a dealer just
@@ -1294,93 +1339,56 @@ export function ProductHeroBlock({
             )}
 
             {/* Compact CTA Buttons */}
+            {/* Find a Dealer renders in every state; Buy Now joins it only when the
+                selected variant is actually purchasable. */}
             {shouldShowBuyButton && (
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-col gap-2 pt-2">
                 {hasVariations && selectedVariation < 0 && !!shopifyProduct ? (
-                  <div className="w-full py-2 text-center">
-                    <p className={cn("text-sm font-medium", accentColorClass)}>
+                  // No finish chosen yet — the cart can't act, but a dealer still can.
+                  <>
+                    <p className={cn("text-sm font-medium text-center py-1", accentColorClass)}>
                       Select a variation above to continue
                     </p>
-                  </div>
+                    {renderDealerCta('w-full')}
+                  </>
                 ) : canAddToCart && selectedVariant ? (
                   <>
-                    {/* Primary: Buy Now — creates fresh cart, opens Shopify checkout in new tab */}
-                    <Button
-                      onClick={handleBuyNow}
-                      disabled={buyNowLoading}
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                      )}
-                    >
-                      <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
-                        <span>{buyNowLoading ? 'Loading...' : 'Buy Now'}</span>
-                      </span>
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      {/* Primary: Buy Now — adds to the shared cart, then opens the cart drawer */}
+                      <Button
+                        onClick={() => handleBuyNow('hero')}
+                        disabled={buyNowLoading}
+                        className={cn(
+                          heroCtaBaseClasses,
+                          "w-full sm:flex-1",
+                          "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
+                        )}
+                      >
+                        <span className="relative flex items-center justify-center space-x-1.5 lg:space-x-2">
+                          <span>{buyNowLoading ? 'Adding...' : 'Buy Now'}</span>
+                        </span>
+                      </Button>
 
-                    {/* Secondary: Add to Cart — existing cart flow */}
-                    <AddToCartButton
-                      variantId={selectedVariant.id}
-                      quantity={1}
-                      available={selectedVariant.available}
-                      variant="outline"
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full sm:flex-1",
-                        "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 hover:border-gray-400"
-                      )}
-                      onSuccess={() => {
-                        const addToCartParams = {
-                          blockType: 'product-hero',
-                          blockData: { ctaTracking: ctaTracking ?? undefined },
-                          productName: product?.name || '',
-                          variantId: selectedVariant.id,
-                          variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
-                          price: selectedVariant.price,
-                          currency: shopifyProduct?.price.currency ?? 'USD',
-                          productId: shopifyProduct?.handle ?? null,
-                          productCategory: shopifyProduct?.type ?? null,
-                          additionalProps: { button_type: 'add_to_cart' },
-                        }
-                        trackAddToCart(addToCartParams)
-                      }}
-                    >
-                      Add to Cart
-                    </AddToCartButton>
+                      {/* Secondary: Find a Dealer */}
+                      {renderDealerCta('w-full sm:flex-1')}
+                    </div>
+
+                    {buyNowError && (
+                      <p role="alert" className="text-xs text-kawai-red text-center">
+                        {buyNowError}
+                      </p>
+                    )}
                   </>
                 ) : (
-                  <div className="w-full flex flex-col gap-2">
+                  <>
                     {isOutOfStock && (
                       <p className="text-xs text-kawai-muted text-center tracking-wide">
                         Find this product at a local authorized dealer near you.
                       </p>
                     )}
 
-                    <Button
-                      asChild
-                      className={cn(
-                        "group relative overflow-hidden px-5 lg:px-6 py-2.5 lg:py-3 font-medium rounded-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-sm lg:text-base w-full",
-                        "bg-gradient-to-r from-kawai-red to-red-600 text-white hover:from-red-600 hover:to-red-700 hover:shadow-kawai-red/20"
-                      )}
-                    >
-                      {dealerIsExternal ? (
-                        <a
-                          href={dealerHref}
-                          {...dealerNewTabProps}
-                          onClick={trackDealerCtaClick}
-                        >
-                          {dealerCtaContent}
-                        </a>
-                      ) : (
-                        <Link
-                          href={dealerHref}
-                          {...dealerNewTabProps}
-                          onClick={trackDealerCtaClick}
-                        >
-                          {dealerCtaContent}
-                        </Link>
-                      )}
-                    </Button>
-                  </div>
+                    {renderDealerCta('w-full')}
+                  </>
                 )}
               </div>
             )}
@@ -1574,7 +1582,7 @@ export function ProductHeroBlock({
         onClose={() => setIsGalleryOpen(false)}
       />
 
-      {/* NEW: Integrated Floating Add to Cart Button */}
+      {/* Integrated Floating Buy Now Button */}
       {/* CRITICAL: This button receives variant selection from parent state */}
       {/* User selects variation → Both hero AND floating button add same variant */}
       {floatingEnabled && canAddToCart && selectedVariant && (() => {
@@ -1599,21 +1607,11 @@ export function ProductHeroBlock({
             onVariationChange={(index) => {
               setSelectedVariation(index)
             }}
-            onAddToCart={() => {
-              const floatingParams = {
-                blockType: 'product-hero',
-                blockData: { ctaTracking: ctaTracking ?? undefined },
-                productName: product?.name || '',
-                variantId: selectedVariant.id,
-                variantName: selectedVariation >= 0 ? allVariations[selectedVariation]?.name ?? null : null,
-                price: selectedVariant.price,
-                currency: shopifyProduct?.price.currency ?? 'USD',
-                productId: shopifyProduct?.handle ?? null,
-                productCategory: shopifyProduct?.type ?? null,
-                additionalProps: { button_type: 'floating_add_to_cart' },
-              }
-              trackAddToCart(floatingParams)
-            }}
+            // Shares the hero's handler — one cart write, one add_to_cart event, one
+            // drawer open — but reports button_type 'floating_buy_now' so the two
+            // entry points stay distinguishable in analytics.
+            onBuyNow={() => handleBuyNow('floating')}
+            loading={buyNowLoading}
           />
         )
       })()}

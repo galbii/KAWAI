@@ -47,13 +47,21 @@ type FloorProps = {
  * page. The 70rem minimum is now only about legibility — below it the row
  * scrolls rather than crushing six cells.
  *
- * On the blend trap: the shots are a mix of transparent PNGs and
- * white-background JPEGs, and the JPEGs only disappear into the pearl because
- * of mix-blend-multiply. Any ancestor that animates transform or opacity
- * isolates the blend group and the SK-EX renders as a white box — so every
- * animated wrapper in here paints an opaque pearl background of its own,
- * which is invisible against the page and gives the multiply something to
- * land on.
+ * `shotFix` is identity for all six today — every shot is a transparent PNG
+ * cropped flush, so there is nothing left to undo. It stays wired in because a
+ * replaced asset is exactly how the row breaks: the SK-EX was once a
+ * white-background JPEG with margin baked in, and when it was re-cropped the
+ * correction for the old file was left behind and went on scaling the new one
+ * 1.18× and pushing it below the floor line. See SHOT_FILL.
+ *
+ * On the blend trap: mix-blend-multiply is still applied here, and is now
+ * near-inert — it was what dropped the white-background SK-EX onto the pearl,
+ * and every shot carries an alpha channel instead. It is kept only because the
+ * same class is used by five other components on this site that have not been
+ * revisited; retiring it is one change across all six, not one here. While it
+ * is present the rule it imposes still holds: any ancestor that animates
+ * transform or opacity isolates the blend group, so every animated wrapper in
+ * here paints an opaque pearl background of its own.
  */
 export function RangeFloor({ productData, activeSlug, linkMode = 'page' }: FloorProps) {
   const { ref, shown } = useReveal<HTMLDivElement>(0.2)
@@ -85,16 +93,14 @@ export function RangeFloor({ productData, activeSlug, linkMode = 'page' }: Floor
                     } as React.CSSProperties
                   }
                 >
-                  {/* The frame clips, and the shot hangs 0.5rem below its top
-                      edge. Both are about the SK-EX: shotFix scales its canvas
-                      up until the instrument fills the frame, so the white
-                      margin baked into that file spills past all four edges —
-                      and mid-reveal the frame is an isolated blend group whose
-                      pearl backdrop stops at its own border box, so the spill
-                      would flash as a white box before settling. Clipping it
-                      costs nothing (after the fix the instrument reaches the
-                      frame edge, and what is cut is margin) but it would eat
-                      the hover lift, hence the headroom to lift into. */}
+                  {/* The shot hangs 0.5rem below the frame's top edge so the
+                      hover lift has somewhere to go — `-translate-y-2` is the
+                      same 0.5rem, so the instrument rises to the frame edge and
+                      no further. The frame clips, which now only matters for
+                      that lift. (It used to matter much more: shotFix scaled the
+                      old white-background SK-EX up until it filled the frame,
+                      spilling its baked-in margin past all four edges. That
+                      asset and that correction are both gone.) */}
                   {image && (
                     <span className="absolute inset-x-0 top-2 bottom-0 block">
                       <Image

@@ -33,7 +33,7 @@ export type PreFormField = {
   /** Field key + react-hook-form name. Defaults to the HubSpot internal name. */
   name: string
   label: string
-  type?: 'text' | 'email' | 'tel' | 'select' | 'checkbox-group'
+  type?: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox-group'
   placeholder?: string
   required?: boolean
   icon?: React.ComponentType<{ className?: string }>
@@ -44,6 +44,8 @@ export type PreFormField = {
   hubspotName?: string
   /** Choices for `select` / `checkbox-group`. Ignored by text-style fields. */
   options?: readonly PreFormOption[]
+  /** Visible rows for a `textarea`. Ignored by every other type. */
+  rows?: number
   /** Validation rules. `email` enforces an email shape; otherwise min-length / pattern. */
   validation?: {
     email?: boolean
@@ -255,6 +257,18 @@ const selectControl = cn(
   'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
 )
 
+/**
+ * Mirrors `selectControl` at multi-line height so a free-text question sits
+ * flush with the fields above it. `field-sizing-content` lets it grow with what
+ * the visitor types where the browser supports it, with `rows` as the floor.
+ */
+const textareaControl = cn(
+  'border-input flex w-full min-w-0 rounded-md border bg-transparent px-3 py-2 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] md:text-sm',
+  'field-sizing-content resize-y',
+  'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+  'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+)
+
 /** Tappable pill wrapping each checkbox — the whole pill is the label/hit target. */
 const checkboxPill = cn(
   'inline-flex cursor-pointer items-center gap-2 rounded-full border border-input px-4 py-2',
@@ -454,6 +468,30 @@ export function TwoStepHubSpotForm({
                     f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
                   )}
                 </fieldset>
+              )
+            }
+
+            if (f.type === 'textarea') {
+              return (
+                <div key={f.name} className="space-y-2">
+                  <label htmlFor={f.name} className={fieldLabel}>
+                    {f.label}
+                    {f.required && <span className="ml-1 text-kawai-red">*</span>}
+                  </label>
+                  <textarea
+                    id={f.name}
+                    rows={f.rows ?? 3}
+                    aria-invalid={!!errorMessage}
+                    className={textareaControl}
+                    {...(f.placeholder !== undefined && { placeholder: f.placeholder })}
+                    {...register(f.name)}
+                  />
+                  {errorMessage ? (
+                    <p className="text-sm text-kawai-red">{errorMessage}</p>
+                  ) : (
+                    f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
+                  )}
+                </div>
               )
             }
 

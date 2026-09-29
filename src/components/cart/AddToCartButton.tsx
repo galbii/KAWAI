@@ -3,9 +3,7 @@
 import { useState } from 'react'
 import { ShoppingCart, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { createCart, addToCart as addToExistingCart, getUTMCartAttributes } from '@/lib/shopify'
-import { updateCartAttributes } from '@/lib/shopify/cart'
-import { getCartId, saveCartId } from '@/lib/shopify/cart-storage'
+import { addVariantToCart } from '@/lib/shopify'
 import { cn } from '@/lib/utils'
 
 interface AddToCartButtonProps {
@@ -51,40 +49,7 @@ export function AddToCartButton({
     setError(null)
 
     try {
-      // Format variant ID as Shopify GID
-      const formattedVariantId = variantId.startsWith('gid://')
-        ? variantId
-        : `gid://shopify/ProductVariant/${variantId}`
-
-      // Check if cart exists in storage
-      let cartId = getCartId()
-      let cart
-
-      if (!cartId) {
-        // No cart exists - create a new one with this item
-        console.log('[AddToCartButton] Creating new cart with item')
-        cart = await createCart(
-          [{ merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`, quantity }],
-          getUTMCartAttributes(),
-        )
-
-        // Save cart ID to storage
-        saveCartId(cart.id)
-        console.log('[AddToCartButton] New cart created:', cart.id)
-      } else {
-        // Cart exists - add item to existing cart
-        console.log('[AddToCartButton] Adding to existing cart:', cartId)
-        cart = await addToExistingCart(cartId, [{
-          merchandiseId: formattedVariantId as `gid://shopify/${string}/${string}`,
-          quantity,
-        }])
-        // Write UTM attributes to the existing cart so the Order captures attribution
-        // even when the cart pre-dates the current paid-traffic session.
-        const utmAttrs = getUTMCartAttributes()
-        if (utmAttrs.length > 0) {
-          updateCartAttributes(cartId, utmAttrs).catch(() => {})
-        }
-      }
+      const cart = await addVariantToCart(variantId, quantity)
 
       if (cart) {
         setAdded(true)

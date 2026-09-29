@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { cn } from '@/lib/utils'
 import { ChevronDown, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -12,7 +11,7 @@ interface Variation {
 }
 
 interface FloatingAddToCartIntegratedProps {
-  /** Shopify variant ID to add to cart (from parent ProductHeroBlock) */
+  /** Shopify variant ID the parent will add (used for logging/context only) */
   variantId: string
   /** Optional variant name to display (e.g., "Ebony Polish") */
   variantName?: string | null
@@ -32,18 +31,26 @@ interface FloatingAddToCartIntegratedProps {
   selectedVariationIndex?: number
   /** Callback when variation is changed */
   onVariationChange?: (index: number) => void
-  /** Callback after successful add to cart (for analytics) */
-  onAddToCart?: () => void
+  /**
+   * Buy Now handler, owned by the parent (ProductHeroBlock.handleBuyNow) so the
+   * floating button and the hero button share one cart write, one analytics
+   * event and one drawer open.
+   */
+  onBuyNow?: () => void
+  /** Whether the parent's Buy Now is mid-flight */
+  loading?: boolean
 }
 
 /**
- * FloatingAddToCartIntegrated - Integrated floating cart button
+ * FloatingAddToCartIntegrated - Integrated floating Buy Now button
+ *
+ * Despite the name (kept so the `floatingCart` block field and existing CMS docs
+ * stay stable), this now renders **Buy Now**, not Add to Cart: the hero dropped
+ * its separate Add to Cart button, so the parent's single handler adds the
+ * selected variant to the cart and opens the cart drawer.
  *
  * CRITICAL: This component receives variant selection from parent ProductHeroBlock.
- * It displays the SELECTED variant and adds the CORRECT variant to cart.
- *
- * This solves the variation selection disconnect issue where floating button
- * would add a different variant than what the user selected.
+ * It displays the SELECTED variant, and the parent adds the CORRECT variant to cart.
  *
  * Integration Benefits:
  * - Single source of truth for variant selection (lives in parent)
@@ -61,6 +68,8 @@ interface FloatingAddToCartIntegratedProps {
  *   showOnScroll={true}
  *   scrollThreshold={300}
  *   available={selectedVariant.available}
+ *   onBuyNow={handleBuyNow}
+ *   loading={buyNowLoading}
  * />
  */
 export function FloatingAddToCartIntegrated({
@@ -74,7 +83,8 @@ export function FloatingAddToCartIntegrated({
   availableVariations = [],
   selectedVariationIndex = -1,
   onVariationChange,
-  onAddToCart,
+  onBuyNow,
+  loading = false,
 }: FloatingAddToCartIntegratedProps) {
   const [isVisible, setIsVisible] = useState(!showOnScroll)
   const [isMobile, setIsMobile] = useState(false)
@@ -83,12 +93,14 @@ export function FloatingAddToCartIntegrated({
   // Debug logging
   useEffect(() => {
     console.log('[FloatingAddToCartIntegrated] Props:', {
+      productName,
+      variantId,
       variantName,
       availableVariationsCount: availableVariations.length,
       selectedVariationIndex,
       hasOnVariationChange: !!onVariationChange
     })
-  }, [variantName, availableVariations.length, selectedVariationIndex, onVariationChange])
+  }, [productName, variantId, variantName, availableVariations.length, selectedVariationIndex, onVariationChange])
 
   // Mobile detection for proper positioning (avoid SearchBar overlap)
   useEffect(() => {
@@ -146,7 +158,7 @@ export function FloatingAddToCartIntegrated({
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'
       )}
-      aria-label="Floating add to cart button"
+      aria-hidden={!isVisible}
     >
       {/* Glass Container - Vibrant Kawai Red */}
       <div
@@ -176,38 +188,26 @@ export function FloatingAddToCartIntegrated({
 
         {/* Content */}
         <div className="relative px-8 py-4">
-          {/* Add to Cart Button */}
-          <AddToCartButton
-            variantId={variantId}
-            quantity={1}
-            available={available}
+          {/* Buy Now Button — delegates to the parent's handler (adds to cart, opens drawer) */}
+          <button
+            type="button"
+            onClick={onBuyNow}
+            // The wrapper only fades out, so without this the hidden button stays
+            // in the tab order (WCAG 2.4.3 / 2.4.7 — focus lands on nothing visible).
+            tabIndex={isVisible ? 0 : -1}
+            disabled={!available || loading || !onBuyNow}
             className={cn(
-              // Reset styles
-              '!relative !m-0 !p-0',
-              // Ensure clickability
-              'w-full cursor-pointer',
-              // Remove default styling
+              'relative z-10 w-full cursor-pointer',
               'bg-transparent border-0 shadow-none',
-              // Typography
-              'text-white font-semibold text-lg tracking-wide',
-              'uppercase',
-              // Smooth hover
+              'text-white font-semibold text-lg tracking-wide uppercase',
               'transition-all duration-300',
               'hover:text-red-50 hover:scale-[1.02]',
-              // Proper z-index
-              'z-10'
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-kawai-red',
+              'disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100'
             )}
-            onSuccess={() => {
-              console.log('[FloatingAddToCartIntegrated] Added to cart:', {
-                variantId,
-                variantName,
-                productName
-              })
-              onAddToCart?.()
-            }}
           >
-            Add to Cart
-          </AddToCartButton>
+            {!available ? 'Out of Stock' : loading ? 'Adding...' : 'Buy Now'}
+          </button>
 
           {/* Variant Name Display - Clickable to change variation */}
           {variantName && availableVariations.length > 1 && (

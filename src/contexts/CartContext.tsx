@@ -33,10 +33,24 @@ interface CartContextType {
   loading: boolean
   /** Refresh cart from API */
   refreshCart: () => Promise<void>
+  /**
+   * Seed the context with a cart a mutation just returned.
+   *
+   * Callers that already hold the updated cart (add to cart, Buy Now) use this
+   * instead of refreshCart() so the drawer opens on fresh data rather than
+   * repainting the previous cart while a redundant round-trip resolves.
+   */
+  setCartData: (cart: SimpleCart) => void
   /** Get total item count */
   getItemCount: () => number
   /** Check if cart is empty */
   isEmpty: () => boolean
+  /** Whether the cart drawer is open */
+  isCartOpen: boolean
+  /** Open the cart drawer */
+  openCart: () => void
+  /** Close the cart drawer */
+  closeCart: () => void
 }
 
 // ============================================================================
@@ -56,6 +70,12 @@ interface CartProviderProps {
 export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<SimpleCart | null>(null)
   const [loading, setLoading] = useState(true)
+  // Drawer open state lives here, not in the header, so any component under the
+  // provider (e.g. the product hero's Buy Now) can open the cart.
+  const [isCartOpen, setIsCartOpen] = useState(false)
+
+  const openCart = useCallback(() => setIsCartOpen(true), [])
+  const closeCart = useCallback(() => setIsCartOpen(false), [])
 
   /**
    * Refresh cart from Shopify API
@@ -99,6 +119,20 @@ export function CartProvider({ children }: CartProviderProps) {
     } finally {
       setLoading(false)
     }
+  }, [])
+
+  /**
+   * Adopt a cart returned by a mutation, skipping the refetch
+   */
+  const setCartData = useCallback((cartData: SimpleCart) => {
+    setCart(cartData)
+    setLoading(false)
+    saveCartMetadata({
+      lastUpdated: Date.now(),
+      itemCount: cartData.totalQuantity,
+      total: cartData.total,
+      currency: cartData.currency,
+    })
   }, [])
 
   /**
@@ -182,8 +216,12 @@ export function CartProvider({ children }: CartProviderProps) {
     cart,
     loading,
     refreshCart,
+    setCartData,
     getItemCount,
     isEmpty,
+    isCartOpen,
+    openCart,
+    closeCart,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

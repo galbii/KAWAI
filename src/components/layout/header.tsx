@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { KawaiLogo } from '@/components/ui/kawai-logo'
 import { CartIcon } from '@/components/cart/CartIcon'
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { useCart } from '@/contexts/CartContext'
 import { ProductsMegaMenu } from '@/components/navigation/ProductsMegaMenu'
 import { ResourcesMegaMenu } from '@/components/navigation/ResourcesMegaMenu'
 import type { ResourceLink, StoreLocationNavItem } from '@/components/layout/header-dynamic'
@@ -278,7 +279,9 @@ export function Header({ navigation = defaultNavigation, locationData, isSignatu
   const isOnFindADealerPage = isFindADealerPage || pathname.startsWith('/find-a-dealer')
   const [isMounted, setIsMounted] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isCartOpen, setIsCartOpen] = useState(false)
+  // Drawer state lives in CartContext so Buy Now buttons elsewhere on the page
+  // can open the cart too (see ProductHeroBlock).
+  const { isCartOpen, openCart, closeCart } = useCart()
   const [isScrolled, setIsScrolled] = useState(false)
   const [openMobileItems, setOpenMobileItems] = useState<Set<string>>(new Set())
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
@@ -921,14 +924,14 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35, duration: 0.4 }}
                 >
-                  <CartIcon onOpen={() => setIsCartOpen(true)} />
+                  <CartIcon onOpen={openCart} />
                 </motion.div>
               )}
 
               {/* Cart Icon - Mobile */}
               {!isSignaturePage && (
                 <div className="xl:hidden flex items-center">
-                  <CartIcon onOpen={() => setIsCartOpen(true)} />
+                  <CartIcon onOpen={openCart} />
                 </div>
               )}
 
@@ -1479,7 +1482,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false)
     {/* Cart Drawer - rendered outside <header> so its z-[9500] is in the root stacking context,
         above the floating add-to-cart button's z-[9000] which is also in root stacking context.
         (Inside <header z-50>, child z-indexes are capped at that stacking context level.) */}
-    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
 
     {/* Mobile sheets — rendered outside <header> to escape stacking context */}
     {isMounted && (

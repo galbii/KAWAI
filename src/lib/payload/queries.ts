@@ -14,6 +14,8 @@ import {
 import { sortStandardFirst } from '@/lib/piano/non-standard-model'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
+import type { FinancedCategory, FinancedProduct } from '@/lib/payload/financing-types'
+import type { PromoGroup, PromoProduct } from '@/lib/payload/promo-types'
 import { REBATE_BY_MODEL, REBATE_PROGRAM, normalizeModel } from '@/lib/data/rebates'
 import { getCanadaRebate } from '@/lib/rebates/canada-rebates'
 import type {
@@ -843,6 +845,273 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
     // v5: CA now includes acoustic models (MSRP-only) + the KCM Q3 rebate amounts.
     [`rebate-showcase-v5-${site}`],
     { tags: ['products', 'rebates'], revalidate: 3600 },
+  )()
+}
+
+/**
+ * Acoustic categories the financing promotion covers. Digital and hybrid
+ * instruments are excluded by the program, so they never reach the ledger.
+ */
+const FINANCING_CATEGORIES: readonly PianoCategorySlug[] = ['grand', 'upright', 'shigeru']
+
+/**
+ * Models the program names as excluded even though their category qualifies.
+ * Normalized through `normalizeModel` before comparison so "SK-EX", "SK EX" and
+ * "skex" all match.
+ */
+const FINANCING_EXCLUDED_MODELS: ReadonlySet<string> = new Set(['SKEX'])
+
+const FINANCING_CATEGORY_LABELS: Record<PianoCategorySlug, string> = {
+  digital: 'Digital',
+  grand: 'Grand',
+  hybrid: 'Hybrid',
+  upright: 'Upright',
+  shigeru: 'Shigeru Kawai',
+}
+
+/**
+ * Instruments that qualify for the Q4 2026 financing promotion, grouped by
+ * category and sorted cheapest-first inside each group.
+ *
+ * Eligibility is the program's, not the catalog's: new Kawai and Shigeru Kawai
+ * ACOUSTIC grands and uprights, with digital, hybrid and the SK-EX concert grand
+ * excluded. Anything without a usable price is dropped rather than shown with a
+ * blank or a zero — the whole point of the row is the monthly figure, and a
+ * priceless row cannot produce one.
+ *
+ * US-only by design: the promotion is a US-market Synchrony offer (see the fine
+ * print), so there is no `site` parameter and prices come from the USD fields.
+ * /fall-financing 404s on ca.kawaius.com rather than showing USD credit terms
+ * to a Canadian visitor.
+ */
+export async function getFinancingEligibleProducts(): Promise<FinancedCategory[]> {
+  // The try/catch sits OUTSIDE unstable_cache deliberately, and this is the
+  // whole point of the shape.
+  //
+  // With the catch inside, a transient failure — an Atlas cold start, a dropped
+  // connection — returns `[]`, and unstable_cache dutifully memoizes that empty
+  // array for the full hour. Every visitor then sees "qualifying models are
+  // confirmed by your dealer" instead of the ledger, long after the database
+  // recovered. That happened in development and it would happen in production.
+  //
+  // Letting the inner function throw means nothing is written to the cache, so
+  // the next request retries. The outer catch still degrades this one request
+  // gracefully rather than 500-ing a marketing page.
+  try {
+    return await cachedFinancingEligibleProducts()
+  } catch (error) {
+    console.error('Error fetching financing-eligible products:', error)
+    return []
+  }
+}
+
+/**
+ * Products in a set of Shopify collections, grouped by collection, for the Q4
+ * promotion blocks.
+ *
+ * Callers pass the handles in the order they want the tabs to appear; a handle
+ * that matches nothing is dropped rather than rendering an empty tab.
+ *
+ * Unpriced models are excluded. Across this catalogue an unpriced digital is a
+ * discontinued one — CN23/25/27, CA48/58/65, ES1/3/4/6 and the rest are all
+ * legacy — and a promotion covers what a dealer can actually order. Same rule
+ * the financing ledger applies to acoustics, for the same reason.
+ */
+export async function getPromoCollections(handles: readonly string[]): Promise<PromoGroup[]> {
+  // Failures are caught OUTSIDE unstable_cache so an empty result is never
+  // memoised — see getFinancingEligibleProducts for the full reasoning.
+  try {
+    return await cachedPromoCollections(handles)
+  } catch (error) {
+    console.error('Error fetching promo collection products:', error)
+    return []
+  }
+}
+
+function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[]> {
+  const key = handles.join('+')
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          status: { equals: 'active' },
+          'shopifyCollections.handle': { in: [...handles] },
+        },
+        select: {
+          model: true,
+          modelLabel: true,
+          name: true,
+          slug: true,
+          imageUrl: true,
+          price: true,
+          shopifyCollections: true,
+        },
+        depth: 0,
+        limit: 500,
+        pagination: false,
+      })
+
+      const byHandle = new Map<string, PromoGroup>()
+
+      for (const doc of result.docs) {
+        if (!doc.model) continue
+        const raw = doc.price?.msrp ?? null
+        const price = raw != null && raw > 0 ? raw : null
+        if (price == null) continue
+
+        // A model can sit in several collections; file it under the one this
+        // promotion asked for, not whichever Shopify happens to list first.
+        const match = (doc.shopifyCollections ?? []).find(
+          (c) => c?.handle && handles.includes(c.handle),
+        )
+        if (!match?.handle) continue
+
+        const group = byHandle.get(match.handle) ?? {
+          handle: match.handle,
+          title: match.title || match.handle,
+          products: [] as PromoProduct[],
+        }
+        group.products.push({
+          model: doc.model,
+          label: doc.modelLabel || doc.model,
+          name: doc.name || doc.model,
+          slug: doc.slug,
+          imageUrl: doc.imageUrl ?? null,
+          price,
+          collectionHandle: match.handle,
+          collectionTitle: match.title ?? null,
+        })
+        byHandle.set(match.handle, group)
+      }
+
+      // Caller order for the tabs, cheapest-first inside each.
+      return handles
+        .map((h) => byHandle.get(h))
+        .filter((g): g is PromoGroup => g !== undefined)
+        .map((g) => ({
+          ...g,
+          products: g.products.sort(
+            (a, b) =>
+              (a.price ?? 0) - (b.price ?? 0) ||
+              a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' }),
+          ),
+        }))
+    },
+    [`promo-collections-v1-${key}`],
+    { tags: ['products', 'promotions'], revalidate: 3600 },
+  )()
+}
+
+function cachedFinancingEligibleProducts(): Promise<FinancedCategory[]> {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: {
+          status: { equals: 'active' },
+          type: { not_equals: 'accessory' },
+        },
+        select: {
+          model: true,
+          modelLabel: true,
+          name: true,
+          slug: true,
+          imageUrl: true,
+          type: true,
+          price: true,
+          variations: true,
+          shopifyCollections: true,
+        },
+        depth: 0,
+        limit: 1000,
+        pagination: false,
+      })
+
+      const byCategory = new Map<PianoCategorySlug, FinancedProduct[]>()
+
+      for (const doc of result.docs) {
+        if (!doc.model) continue
+        if (FINANCING_EXCLUDED_MODELS.has(normalizeModel(doc.model))) continue
+
+        const category = rebateTypeToCategory(doc.type)
+        if (!category || !FINANCING_CATEGORIES.includes(category)) continue
+
+        // price.msrp is the current selling price (Shopify min); the true MSRP
+        // is the variant compare-at. Same anchoring the rebate ledger uses.
+        const raw = doc.price?.msrp ?? null
+        const price = raw != null && raw > 0 ? raw : null
+
+        // A missing price means two different things depending on the line,
+        // and the promotion covers only NEW instruments, so the two cannot be
+        // treated alike:
+        //
+        //   grand / upright — an unpriced model is a discontinued one. Every
+        //     acoustic in the catalogue without a price is legacy stock (the
+        //     RX and GM series, GE-30, K-2/3/5/8, the 907, the UST-9). Listing
+        //     them would advertise financing on pianos nobody can buy new.
+        //
+        //   shigeru — the whole line is unpriced deliberately: it is sold by
+        //     consultation, not online. Every model is current production and
+        //     the promotion names Shigeru Kawai explicitly, so dropping them
+        //     would tell a visitor researching an SK-3 that it does not
+        //     qualify, which is the opposite of true.
+        //
+        // So: a price is required everywhere except Shigeru, where its absence
+        // is expected and the ledger shows "price on request" instead.
+        if (price == null && category !== 'shigeru') continue
+
+        const compareAt = price == null ? null : minCompareAtPrice(doc.variations)
+        const msrp = price != null && compareAt != null && compareAt > price ? compareAt : price
+
+        // First collection wins. A model can sit in several (a GX-2 is in both
+        // "GX Series" and "Grand Pianos"), and the series-level one is listed
+        // first by the Shopify sync, which is the one the filter wants.
+        const collection = (doc.shopifyCollections ?? [])[0] ?? null
+
+        const list = byCategory.get(category) ?? []
+        list.push({
+          model: doc.model,
+          label: doc.modelLabel || doc.model,
+          name: doc.name || doc.model,
+          slug: doc.slug,
+          imageUrl: doc.imageUrl ?? null,
+          price,
+          msrp,
+          currency: 'USD',
+          collectionHandle: collection?.handle ?? null,
+          collectionTitle: collection?.title ?? null,
+        })
+        byCategory.set(category, list)
+      }
+
+      return FINANCING_CATEGORIES.slice()
+        .sort((a, b) => PIANO_CATEGORIES[a].sortOrder - PIANO_CATEGORIES[b].sortOrder)
+        .map((slug) => ({
+          slug,
+          label: FINANCING_CATEGORY_LABELS[slug],
+          // Cheapest first: the visitor is shopping a monthly payment, so the
+          // smallest one is the most useful row to land on. Unpriced models
+          // cannot take part in that ordering, so they sit together at the end
+          // of their category rather than interleaving at an arbitrary rank.
+          products: (byCategory.get(slug) ?? []).sort((a, b) => {
+            if (a.price == null !== (b.price == null)) return a.price == null ? 1 : -1
+            if (a.price != null && b.price != null && a.price !== b.price) return a.price - b.price
+            return a.label.localeCompare(b.label, undefined, {
+              numeric: true,
+              sensitivity: 'base',
+            })
+          }),
+        }))
+        .filter((category) => category.products.length > 0)
+    },
+    // v3: unpriced models kept for the Shigeru line only; unpriced grands and
+    // uprights are discontinued stock and stay out.
+    // v4: carries each model's Shopify collection for the series filter.
+    ['financing-eligible-v4'],
+    { tags: ['products', 'financing'], revalidate: 3600 },
   )()
 }
 

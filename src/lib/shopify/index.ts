@@ -256,6 +256,8 @@ export {
   calculateSavings,
 } from './cart'
 
+export { addVariantToCart } from './add-to-cart'
+
 // ============================================================================
 // Cart Storage Exports
 // ============================================================================

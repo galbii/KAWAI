@@ -95,10 +95,12 @@ export const lengthRatio = (cm: string, longestCm = 278): number =>
  *
  * The ratio itself is load-bearing. `object-contain` gives every model the
  * same rendered height only while it binds on height, i.e. while the frame is
- * at least as wide as the widest shot. The SK-EX canvas is 1.36:1 and
- * `shotFix` scales it a further 1.177×, so the frame must clear 1.60:1 or the
- * blend group clips. 7.5/4.6 ≈ 1.63 is the ratio the homepage filmstrip
- * already uses.
+ * at least as wide as the widest shot. The widest is the SK-EX at 1900×1674 =
+ * 1.14:1, so 7.5/4.6 ≈ 1.63 clears it comfortably and every shot stays
+ * height-bound. (The margin used to be far thinner: the old SK-EX file was
+ * 1.36:1 and `shotFix` scaled it another 1.177×, which needed 1.60:1. Both of
+ * those are gone — see SHOT_FILL — but the ratio is kept because it is what the
+ * homepage filmstrip uses and the row is built around it.)
  */
 export const SHOT_FRAME_ASPECT = '7.5 / 4.6'
 
@@ -106,21 +108,28 @@ export const SHOT_FRAME_ASPECT = '7.5 / 4.6'
  * How much of its own file each instrument actually occupies — measured from
  * the live assets, not eyeballed.
  *
- * SK-2–SK-7 are transparent PNGs cropped flush to the instrument on all four
- * edges, so in a uniform frame they already fill it with their feet on the
- * floor and need no entry here. The SK-EX is a different asset: a 5616×4134
- * JPEG on white carrying real margin, in which the piano fills 85.0% of the
- * height and stands 11.8% of it above the bottom edge. Dropped into the same
- * frame it renders 15% short and floats off the floor line.
+ * Empty, and correctly so: every shot in the range is now a transparent PNG
+ * cropped flush to the instrument on all four edges, so a uniform frame already
+ * renders each one at full height with its feet on the floor. Measured from the
+ * live files:
  *
- * Re-crop the SK-EX to match the set and this table becomes identity. That is
- * the real fix — it also retires the mix-blend-multiply workaround that the
- * one white-background file forces on every wrapper that animates. This is the
- * fix that needs no asset pipeline.
+ *   SK-2  1364×1652   SK-3  1411×1653   SK-5  1482×1661
+ *   SK-6  1575×1657   SK-7  1647×1674   SK-EX 1900×1674
+ *
+ * all six with an alpha bounding box of the full canvas (SK-EX within 0.5%).
+ *
+ * This table used to carry `'sk-ex': { fillsHeight: 0.85, bottomPad: 0.118 }`,
+ * describing a 5616×4134 JPEG on white with real margin baked in. That asset
+ * was replaced with a flush PNG and the correction was left behind, so the
+ * SK-EX went on being scaled 1/0.85 = 1.177× and translated down 11.8% — it
+ * rendered 18% larger than its siblings and hung below the shared floor line.
+ * A correction outlives the defect it corrects unless someone deletes it.
+ *
+ * Before adding an entry here, measure the file rather than eyeballing the row:
+ * the alpha bounding box is the answer, and if it is the full canvas the asset
+ * needs no entry.
  */
-const SHOT_FILL: Record<string, { fillsHeight: number; bottomPad: number }> = {
-  'sk-ex': { fillsHeight: 0.85, bottomPad: 0.118 },
-}
+const SHOT_FILL: Record<string, { fillsHeight: number; bottomPad: number }> = {}
 
 /**
  * Normalises one shot inside a uniform frame: translate the feet down onto the
