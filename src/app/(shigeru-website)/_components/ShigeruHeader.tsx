@@ -143,32 +143,30 @@ function ModelsPanel({
                     style={{ width: '100%', height: '9.5rem' }}
                   >
                     {image && (
-                      // mix-blend-multiply drops the white-lit product shot onto
-                      // the pearl stage. Nothing is layered over the photograph.
+                      // No per-model corrections. Every shot in the range is a
+                      // transparent PNG cropped flush to the instrument, so
+                      // object-contain alone puts each one at full height with
+                      // its feet on the shared floor.
+                      //
+                      // The SK-EX used to need one: it was a white-background
+                      // JPEG with dead margin baked in, and this frame grew it
+                      // `scale(1.298) translateY(26px)` to compensate. That
+                      // asset was replaced with a flush PNG, the correction was
+                      // left behind, and it went on inflating a file that was
+                      // already right — the piano overflowed the frame and its
+                      // feet sat below the floor line. The identical correction
+                      // also survived in the models range strip; see SHOT_FILL
+                      // in @/lib/shigeru/tokens for the measurements.
+                      //
+                      // mix-blend-multiply is kept for now because five other
+                      // components on this site still apply it; it is near-inert
+                      // against a transparent PNG.
                       <Image
                         src={image}
                         alt=""
                         fill
                         sizes="(min-width: 1536px) 288px, 25vw"
                         className="object-contain object-bottom mix-blend-multiply"
-                        // The SK-EX source photo (unlike SK-2–SK-7's matched, tightly
-                        // cropped set) has real dead margin baked into the file itself,
-                        // concentrated below and right of the piano rather than evenly
-                        // around it — so at the same object-contain fit it reads visibly
-                        // smaller than its neighbors, floating above the shared floor
-                        // line. scale(1.298) grows it to match their height; translateY
-                        // then shifts the (now larger) image down so the piano's feet —
-                        // not the source file's empty margin — land on that floor line,
-                        // with enough headroom left over that the lid isn't clipped by
-                        // the frame's overflow-hidden top edge.
-                        style={
-                          detail?.slug === 'sk-ex'
-                            ? {
-                                transform: 'translateY(26px) scale(1.298)',
-                                transformOrigin: 'bottom center',
-                              }
-                            : undefined
-                        }
                       />
                     )}
                   </span>
