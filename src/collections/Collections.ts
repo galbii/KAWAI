@@ -1,9 +1,31 @@
 import type { CollectionConfig, Condition } from 'payload'
-import { imageField } from '@/lib/payload/fields'
+import { imageField, mediaArrayField } from '@/lib/payload/fields'
 
-// Shared condition for the Successor Promo tab — fields only appear once the
-// promo is enabled. siblingData is the successorPromo tab's own data.
+// Shared conditions for the Promo Popup tab — fields only appear once the promo
+// is enabled, and style-specific fields only for their own style. siblingData is
+// the successorPromo tab's own data.
 const promoEnabled: Condition = (_, siblingData) => Boolean(siblingData?.enabled)
+
+// Docs saved before the style field existed are successor promos
+const promoStyleIs = (siblingData: any, style: 'single' | 'successor' | 'bundle'): boolean =>
+  Boolean(siblingData?.enabled) && (siblingData?.style ?? 'successor') === style
+
+const singleStyle: Condition = (_, siblingData) => promoStyleIs(siblingData, 'single')
+const successorStyle: Condition = (_, siblingData) => promoStyleIs(siblingData, 'successor')
+const bundleStyle: Condition = (_, siblingData) => promoStyleIs(siblingData, 'bundle')
+// The single and bundle styles both need an explicit CTA target; the successor
+// style takes its link from the successor relationship instead.
+const needsCtaTarget: Condition = (_, siblingData) =>
+  promoStyleIs(siblingData, 'single') || promoStyleIs(siblingData, 'bundle')
+// mediaArrayField's admin.condition takes the two-argument form
+const bundleStyleCondition = (_data: any, siblingData: any): boolean =>
+  promoStyleIs(siblingData, 'bundle')
+
+// CTA target fields — shown for the chosen link type only
+const ctaTypeIs =
+  (type: 'product' | 'collection' | 'custom'): Condition =>
+  (data, siblingData, ctx) =>
+    needsCtaTarget(data, siblingData, ctx) && (siblingData?.ctaType ?? 'product') === type
 
 /**
  * Collections Collection
@@ -212,19 +234,35 @@ export const Collections: CollectionConfig = {
           ],
         },
 
-        // Successor Promo Tab — popup pointing a legacy collection at its replacement
+        // Promo Popup Tab — an interrupting popup on this collection's page.
+        // Field name stays `successorPromo` so existing promo data survives.
         {
           name: 'successorPromo',
-          label: 'Successor Promo',
+          label: 'Promo Popup',
           description:
-            'Show a small popup on this collection page that points visitors to its successor (e.g. a discontinued series superseded by a new one)',
+            'Show a popup on this collection page — either pointing visitors to a successor collection, or showcasing a product bundle',
           fields: [
             {
               name: 'enabled',
               type: 'checkbox',
               defaultValue: false,
               admin: {
-                description: 'Enable the successor popup on this collection page',
+                description: 'Enable the popup on this collection page',
+              },
+            },
+            {
+              name: 'style',
+              type: 'select',
+              defaultValue: 'successor',
+              options: [
+                { label: 'Single — one image, headline and link', value: 'single' },
+                { label: 'Successor — point visitors at a newer collection', value: 'successor' },
+                { label: 'Bundle — showcase products sold together', value: 'bundle' },
+              ],
+              admin: {
+                description:
+                  'Single: one image over centred copy, linking wherever you point it. Successor: the same, with a lineage marque and a link to the replacement collection. Bundle: an image carousel plus the products in the bundle, their separate total crossed out, and the bundle price.',
+                condition: promoEnabled,
               },
             },
             {
@@ -235,15 +273,16 @@ export const Collections: CollectionConfig = {
               filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true),
               admin: {
                 description: 'The newer collection to promote — the popup links to its page',
-                condition: promoEnabled,
+                condition: successorStyle,
               },
             },
             {
               name: 'eyebrow',
               type: 'text',
-              defaultValue: 'The Next Generation',
               admin: {
-                description: 'Small uppercase label above the popup headline',
+                description:
+                  'Small uppercase label above the popup headline. Leave blank for "The Next Generation" (successor) or "Bundle Offer" (bundle)',
+                placeholder: 'Starting October 1',
                 condition: promoEnabled,
               },
             },
@@ -251,8 +290,9 @@ export const Collections: CollectionConfig = {
               name: 'title',
               type: 'text',
               admin: {
-                description: 'Popup headline. Leave blank to use "Meet the {successor title}"',
-                placeholder: 'Meet the CA Series',
+                description:
+                  'Popup headline. Successor style leaves blank to use "Meet the {successor title}"; single and bundle styles require one',
+                placeholder: 'Designer Stand Bundle',
                 condition: promoEnabled,
               },
             },
@@ -269,19 +309,172 @@ export const Collections: CollectionConfig = {
             {
               name: 'ctaLabel',
               type: 'text',
-              defaultValue: 'Explore the New Collection',
               admin: {
-                description: 'Button label — clicking it navigates to the successor collection page',
+                description:
+                  'Button label. Leave blank for "Explore the New Collection" (successor), "Shop the Bundle" (bundle) or "Learn More" (single)',
                 condition: promoEnabled,
               },
             },
             imageField('image', {
               admin: {
                 description:
-                  "Optional image override — defaults to the successor collection's Shopify image",
-                condition: promoEnabled,
+                  "Popup image. Required for the Single style; the Successor style falls back to the successor collection's Shopify image. Bundle style uses the carousel below instead.",
+                condition: (data, siblingData, ctx) =>
+                  singleStyle(data, siblingData, ctx) || successorStyle(data, siblingData, ctx),
               },
             }),
+
+            // ── Bundle style ──────────────────────────────────────────────────
+            {
+              name: 'bundleItems',
+              type: 'array',
+              minRows: 2,
+              maxRows: 4,
+              admin: {
+                description:
+                  'The products in the bundle, in showcase order. Each piece shows its thumbnail, model and price, joined by "+". Two to four reads best.',
+                condition: bundleStyle,
+                initCollapsed: false,
+              },
+              fields: [
+                {
+                  name: 'product',
+                  type: 'relationship',
+                  relationTo: 'products',
+                  required: true,
+                  admin: {
+                    description: 'Pick the product — its model, price and image are pulled in',
+                  },
+                },
+                {
+                  name: 'label',
+                  type: 'text',
+                  admin: {
+                    description:
+                      "Optional name override — defaults to the product's display label or model",
+                    placeholder: 'HML-3 Designer Stand',
+                  },
+                },
+                {
+                  name: 'priceOverride',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description:
+                      "US price override (USD) — defaults to the product's synced MSRP. Set 0 to hide this piece's price.",
+                  },
+                },
+                {
+                  name: 'priceOverrideCAD',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description:
+                      "CA price override (CAD) — defaults to the product's synced CA price. Only used on ca.kawaius.com.",
+                  },
+                },
+                imageField('image', {
+                  admin: {
+                    description:
+                      "Optional thumbnail override — defaults to the product's Shopify image",
+                  },
+                }),
+              ],
+            },
+            mediaArrayField('bundleMedia', {
+              maxRows: 6,
+              filterOptions: { mimeType: { contains: 'image' } },
+              admin: {
+                description:
+                  "Bundle imagery carousel shown beside the offer. Leave empty to fall back to the pieces' own product shots.",
+                condition: bundleStyleCondition,
+              },
+            }),
+            {
+              name: 'bundlePrice',
+              type: 'number',
+              min: 0,
+              admin: {
+                description:
+                  'Bundle price in USD — shown in red in place of the crossed-out separate total. Leave blank to showcase the bundle without pricing.',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'bundlePriceCAD',
+              type: 'number',
+              min: 0,
+              admin: {
+                description:
+                  'Bundle price in CAD — used on ca.kawaius.com. Leave blank and the CA popup shows no pricing (US figures are never shown there).',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'priceNote',
+              type: 'text',
+              admin: {
+                description: 'Fine print under the bundle price',
+                placeholder: 'Until December 1st, at participating dealers',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'ctaType',
+              type: 'select',
+              defaultValue: 'product',
+              options: [
+                { label: 'Product page', value: 'product' },
+                { label: 'Collection page', value: 'collection' },
+                { label: 'Custom URL', value: 'custom' },
+              ],
+              admin: {
+                description: 'Where the CTA button sends visitors',
+                condition: needsCtaTarget,
+              },
+            },
+            {
+              name: 'ctaProduct',
+              type: 'relationship',
+              relationTo: 'products',
+              admin: {
+                description: 'Product page the CTA links to',
+                condition: ctaTypeIs('product'),
+              },
+            },
+            {
+              name: 'ctaCollection',
+              type: 'relationship',
+              relationTo: 'collections',
+              admin: {
+                description: 'Collection page the CTA links to',
+                condition: ctaTypeIs('collection'),
+              },
+            },
+            {
+              name: 'ctaUrl',
+              type: 'text',
+              admin: {
+                description: 'Any path or URL — e.g. /find-a-dealer',
+                placeholder: '/find-a-dealer',
+                condition: ctaTypeIs('custom'),
+              },
+            },
+            {
+              name: 'sites',
+              type: 'select',
+              defaultValue: 'both',
+              options: [
+                { label: 'Both sites', value: 'both' },
+                { label: 'US only (kawaius.com)', value: 'us' },
+                { label: 'Canada only (ca.kawaius.com)', value: 'cad' },
+              ],
+              admin: {
+                description:
+                  'Which storefront shows this popup. US-market offers (e.g. a US dealer promotion) must be set to US only, or the Canadian site advertises an offer its visitors cannot redeem.',
+                condition: promoEnabled,
+              },
+            },
             {
               name: 'displayFrequency',
               type: 'select',

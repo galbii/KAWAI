@@ -168,7 +168,7 @@ export default async function ProductPage(props: PageProps) {
         <ErrorBoundary fallback={ProductErrorFallback}>
           <ProductPageRenderer product={product} />
         </ErrorBoundary>
-        <ProductPromoPopup product={product} />
+        <ProductPromoPopup product={product} site={site} />
       </div>
     )
   } catch (error) {

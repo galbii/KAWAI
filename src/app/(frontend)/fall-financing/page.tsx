@@ -1,41 +1,84 @@
-import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getSite, getSiteUrl } from '@/lib/site-context'
-import { getFinancingEligibleProducts, getPromoCollections } from '@/lib/payload/queries'
+import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import {
+  getCollectionArt,
+  getFinancingEligibleProducts,
+  getPromoCollections,
+  getRebateModelArt,
+} from '@/lib/payload/queries'
 import { FinancingLeadProvider } from './_components/FinancingLeadProvider'
-import { PromoStyles } from './_components/PromoStyles'
+import { PromoStyles, PromoSideNav, PromoOfferDock } from '@/components/fall-promo'
 import { PromoHero } from './_components/PromoHero'
 import { Sh9BundleBlock } from './_components/Sh9BundleBlock'
 import { FinancingBlock } from './_components/FinancingBlock'
+import { AcousticRebateBlock } from './_components/AcousticRebateBlock'
 import { EsRebateBlock } from './_components/EsRebateBlock'
-import { DealerBlock, QuestionsBlock, DisclosuresBlock } from './_components/CloseBlocks'
-import { bundle, rebate, INTRO_APR, PROGRAM_END, TERMS_SENTENCE } from './_components/campaign'
+import { DealerCinematic } from './_components/DealerCinematic'
+import {
+  acousticRebateModels,
+  bundle,
+  rebate,
+  navSectionsFor,
+  financingRanges,
+  SECTION,
+  CTA_LABEL_SHORT,
+  INTRO_APR,
+  PROGRAM_END,
+  PROGRAM_END_ISO,
+  PROGRAM_END_SHORT,
+  TERMS_SENTENCE,
+} from './_components/campaign'
 
 export const revalidate = 3600
 
-const TITLE = 'Kawai piano offers: 0% financing, free SH-9 headphones, ES rebates'
-const DESCRIPTION =
-  `Three Kawai offers through ${PROGRAM_END}: ${INTRO_APR} financing for 24 months on acoustic ` +
-  `grands and uprights, a free pair of SH-9 headphones with every CN or CA Series digital, and ` +
-  `up to $150 off ES Series portables. ${TERMS_SENTENCE}`
+/**
+ * Title and description per site.
+ *
+ * The financing offer is USA-only, so CA's metadata must not mention it — §4.5
+ * of the developer requirements explicitly reaches page titles, meta
+ * descriptions, alt text and OG preview text, and the safest way to satisfy a
+ * rule about how an offer is described is not to describe it at all where it
+ * does not run.
+ */
+const META = {
+  us: {
+    title: 'Kawai piano offers: 0% financing, free SH-9 headphones, ES rebates',
+    description:
+      `Three Kawai offers through ${PROGRAM_END}: ${INTRO_APR} financing for 24 months on ` +
+      `acoustic grands and uprights, a free pair of SH-9 headphones with every CN or CA Series ` +
+      `digital, and up to $150 off ES Series portables. ${TERMS_SENTENCE}`,
+  },
+  cad: {
+    title: 'Kawai piano offers: free SH-9 headphones and ES Series rebates',
+    description:
+      `Two Kawai offers through ${PROGRAM_END}: a free pair of SH-9 headphones with every ` +
+      `qualifying CN or CA Series digital piano, and instant rebates on ES Series portables at ` +
+      `your Authorized Kawai dealer.`,
+  },
+} as const
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Always the US URL: these are US-market promotions, so there is no CA
-  // counterpart to declare an alternate for. A self-referencing canonical with
-  // no hreflang languages is the correct shape when a page has no sibling —
-  // inventing an en-CA alternate would point Google at a 404.
-  const url = `${getSiteUrl('us')}/fall-financing`
+  const site = await getSite()
+  const { title, description } = META[site]
+
+  // The page now exists on both domains — the offers inside it differ, not the
+  // route — so the canonical is self-referencing and both hreflang alternates
+  // are real. It used to hardcode the US URL because ca.kawaius.com 404'd here.
+  const url = `${getSiteUrl(site)}/fall-financing`
 
   return {
-    title: TITLE,
-    description: DESCRIPTION,
-    alternates: { canonical: url },
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: getSiteAlternates('/fall-financing'),
+    },
     openGraph: {
       type: 'website',
       url,
       siteName: 'KAWAI',
-      title: TITLE,
-      description: DESCRIPTION,
+      title,
+      description,
       images: [
         {
           url: '/images/banners/GX-7-BLAK-grand-styling.webp',
@@ -47,8 +90,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: TITLE,
-      description: DESCRIPTION,
+      title,
+      description,
       images: ['/images/banners/GX-7-BLAK-grand-styling.webp'],
     },
   }
@@ -77,31 +120,88 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function FallFinancingPage() {
   const site = await getSite()
 
-  // USA only. ca.kawaius.com must not serve a page quoting a US lender's credit
-  // terms and USD prices to Canadian visitors, so the route does not exist there.
-  if (site === 'cad') notFound()
+  /**
+   * The Synchrony offer is USA-only, so it is filtered out of ca.kawaius.com
+   * rather than the whole route 404ing there.
+   *
+   * The page used to `notFound()` on CA because everything in it was
+   * US-market. The bundle and the ES rebates now run in Canada too —
+   * `esRebatesFor(site)` carries the CAD amounts — so what is US-only is this
+   * one offer, and this one flag removes all of it: the block, the Supporting
+   * Disclosure that exists to serve it, its hero slide, its rail anchor and
+   * its metadata. Nothing on the Canadian page may quote a US lender's credit
+   * terms.
+   */
+  const showFinancing = site === 'us'
 
-  const [financingData, bundleGroups, rebateGroups] = await Promise.all([
-    getFinancingEligibleProducts(),
+  /**
+   * Canada's acoustic offer, which exists because the US one cannot cross the
+   * border. The two are mutually exclusive by construction: `showFinancing` and
+   * `showAcoustic` are the same boolean read both ways, so the page always has
+   * exactly one acoustic offer and never two or none.
+   */
+  const showAcoustic = site === 'cad'
+
+  const [financingData, bundleGroups, rebateGroups, rangeArt, acousticArt] = await Promise.all([
+    // Skipped entirely on CA — no point querying for a section that will not
+    // render, and an empty result is the correct shape if it somehow does.
+    showFinancing ? getFinancingEligibleProducts() : Promise.resolve([]),
     getPromoCollections(bundle.collections),
     getPromoCollections([rebate.collectionHandle]),
+    // Showcase art for the financing carousel. A range with no art is dropped
+    // by FinancingBlock rather than rendered as an empty tile.
+    showFinancing
+      ? getCollectionArt(financingRanges.map((r) => r.handle))
+      : Promise.resolve({} as Record<string, string>),
+    // CA only. A model with no catalogue entry is simply missing from the map
+    // and the ledger falls back to a placeholder — ND-21 has no product record
+    // yet, and the rebate is real whether or not the catalogue has caught up.
+    showAcoustic
+      ? getRebateModelArt(acousticRebateModels)
+      : Promise.resolve({} as Awaited<ReturnType<typeof getRebateModelArt>>),
   ])
 
   // Server-side only — the browser cannot turn staging mode on or off.
   const testMode = process.env.FALL_FINANCING_TEST_MODE === 'true'
 
   return (
-    <div className="q4 bg-[color:var(--paper)]">
+    <div className="promo promo-a">
       <PromoStyles />
 
       <FinancingLeadProvider testMode={testMode}>
-        <PromoHero />
+        <PromoHero site={site} />
         <Sh9BundleBlock groups={bundleGroups} />
-        <FinancingBlock data={financingData} />
-        <EsRebateBlock products={rebateGroups[0]?.products ?? []} />
-        <DealerBlock />
-        <QuestionsBlock />
-        <DisclosuresBlock />
+        {/* US only. It quotes a US lender's credit terms and now carries
+            the Supporting Disclosure that qualifies them, so the whole section
+            is gated rather than just the query behind it. */}
+        {showFinancing && <FinancingBlock data={financingData} rangeArt={rangeArt} />}
+        {/* CA's acoustic offer, in the slot the US financing block occupies —
+            both cover new acoustic grands and uprights, and a visitor should
+            meet one where the other visitor meets the other. */}
+        {showAcoustic && <AcousticRebateBlock art={acousticArt} />}
+        {/* Last of the three offers, and the last thing that is still an
+            offer — the cinematic close follows it. `site` picks the currency:
+            USD on kawaius.com, CAD on ca.kawaius.com. */}
+        <EsRebateBlock products={rebateGroups[0]?.products ?? []} site={site} />
+        <DealerCinematic />
+
+        {/* Inside `.promo`, and it has to be: the rail paints itself from the
+            variation's semantic tokens, which resolve from its DOM parent
+            rather than from where `position: fixed` puts it on screen. */}
+        <PromoSideNav sections={navSectionsFor(site)} />
+
+        {/* The corner pill. It opens the same modal as every PromoButton —
+            same provider, same config — and runs from the first offer to the
+            disclosure, which is the one part of the page an urgency pill has no
+            business sitting over. On ca.kawaius.com there is no disclosure, so
+            the dock's own fallback carries it to the end of the page. */}
+        <PromoOfferDock
+          endsOn={PROGRAM_END_ISO}
+          endsLabel={PROGRAM_END_SHORT}
+          label={CTA_LABEL_SHORT}
+          afterId={SECTION.bundle}
+          beforeId={SECTION.disclosures}
+        />
       </FinancingLeadProvider>
     </div>
   )

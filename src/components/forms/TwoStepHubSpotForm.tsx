@@ -1,8 +1,14 @@
 'use client'
 
 import * as React from 'react'
-import { useMemo, useState } from 'react'
-import { useForm, type Resolver } from 'react-hook-form'
+import { useMemo, useState, type ReactNode } from 'react'
+import {
+  useForm,
+  useWatch,
+  type Control,
+  type Resolver,
+  type UseFormRegister,
+} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -46,6 +52,14 @@ export type PreFormField = {
   options?: readonly PreFormOption[]
   /** Visible rows for a `textarea`. Ignored by every other type. */
   rows?: number
+  /**
+   * Hard character limit for a `textarea`. Sets the native `maxLength`, adds a
+   * live counter under the field, and enforces the same ceiling in the schema
+   * so a paste that outruns the native cap still fails validation.
+   *
+   * Ignored by every other type.
+   */
+  maxLength?: number
   /** Validation rules. `email` enforces an email shape; otherwise min-length / pattern. */
   validation?: {
     email?: boolean
@@ -116,6 +130,17 @@ type Props = {
   /** GDPR consent text — only pass when the HubSpot form has consent enabled. */
   consentText?: string
   /** Confirmation copy shown after a successful submission. */
+  /**
+   * Rendered under the confirmation copy once the form has submitted.
+   *
+   * The success state used to be a full stop: an icon, a title, a sentence, and
+   * no control at all, so the only way out of a modal was the corner X. A
+   * campaign page with several offers wants to hand the visitor somewhere next.
+   *
+   * Optional, and nothing renders when it is absent — the pages that were happy
+   * with a plain confirmation keep it.
+   */
+  successActions?: ReactNode
   successTitle?: string
   successBody?: string
 }
@@ -234,6 +259,9 @@ function buildSchema(fields: PreFormField[]) {
       if (f.validation?.pattern) {
         schema = schema.regex(f.validation.pattern.regex, f.validation.pattern.message)
       }
+      if (f.maxLength !== undefined) {
+        schema = schema.max(f.maxLength, `${f.label} must be ${f.maxLength} characters or fewer`)
+      }
     }
     shape[f.name] = f.required ? schema : schema.optional().or(z.literal(''))
   }
@@ -249,6 +277,76 @@ const primaryButton = cn(
 
 /** Matches the `<Label>` used by FormField so all field types read as one form. */
 const fieldLabel = 'flex items-center text-sm leading-none font-medium text-foreground select-none'
+
+/**
+ * A textarea with an optional live character counter.
+ *
+ * Extracted from the field map because the counter subscribes to the field's
+ * value, and a hook cannot be called inside a `.map()`. `useWatch` keeps that
+ * subscription local, so typing here re-renders this field rather than every
+ * field in the form.
+ *
+ * The counter renders only when `maxLength` is set, so every existing caller is
+ * untouched. When it is set, the cap is enforced three ways: the native
+ * attribute stops typing, the schema rejects an over-long paste, and the
+ * counter tells the visitor where they are before either fires.
+ */
+function TextareaField({
+  field: f,
+  errorMessage,
+  register,
+  control,
+}: {
+  field: PreFormField
+  errorMessage: string | undefined
+  register: UseFormRegister<FormState>
+  control: Control<FormState>
+}) {
+  const value = useWatch({ control, name: f.name })
+  const used = typeof value === 'string' ? value.length : 0
+  const counterId = `${f.name}-counter`
+
+  return (
+    <div className="space-y-2">
+      <label htmlFor={f.name} className={fieldLabel}>
+        {f.label}
+        {f.required && <span className="ml-1 text-kawai-red">*</span>}
+      </label>
+      <textarea
+        id={f.name}
+        rows={f.rows ?? 3}
+        aria-invalid={!!errorMessage}
+        className={textareaControl}
+        {...(f.maxLength !== undefined && {
+          maxLength: f.maxLength,
+          'aria-describedby': counterId,
+        })}
+        {...(f.placeholder !== undefined && { placeholder: f.placeholder })}
+        {...register(f.name)}
+      />
+
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          {errorMessage ? (
+            <p className="text-sm text-kawai-red">{errorMessage}</p>
+          ) : (
+            f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
+          )}
+        </div>
+        {f.maxLength !== undefined && (
+          <p
+            id={counterId}
+            // aria-live off: announcing a count on every keystroke is noise.
+            // The value is readable on demand via aria-describedby instead.
+            className="shrink-0 text-sm tabular-nums text-muted-foreground"
+          >
+            {used}/{f.maxLength}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
 
 /** Mirrors the `<Input>` control styling so the select sits flush with the text fields. */
 const selectControl = cn(
@@ -296,6 +394,7 @@ export function TwoStepHubSpotForm({
   formName = 'dealer_discount_signup',
   skipSubmit = false,
   consentText,
+  successActions,
   successTitle = 'You’re all set',
   successBody = 'Thanks for signing up. Your local Authorized Kawai dealer will be in touch shortly.',
 }: Props) {
@@ -323,6 +422,7 @@ export function TwoStepHubSpotForm({
     register,
     handleSubmit,
     trigger,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormState>({
     resolver: zodResolver(schema) as Resolver<FormState>,
@@ -410,6 +510,7 @@ export function TwoStepHubSpotForm({
           {successTitle}
         </p>
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-kawai-charcoal/70">{successBody}</p>
+        {successActions && <div className="mt-7">{successActions}</div>}
       </motion.div>
     )
   }
@@ -473,25 +574,13 @@ export function TwoStepHubSpotForm({
 
             if (f.type === 'textarea') {
               return (
-                <div key={f.name} className="space-y-2">
-                  <label htmlFor={f.name} className={fieldLabel}>
-                    {f.label}
-                    {f.required && <span className="ml-1 text-kawai-red">*</span>}
-                  </label>
-                  <textarea
-                    id={f.name}
-                    rows={f.rows ?? 3}
-                    aria-invalid={!!errorMessage}
-                    className={textareaControl}
-                    {...(f.placeholder !== undefined && { placeholder: f.placeholder })}
-                    {...register(f.name)}
-                  />
-                  {errorMessage ? (
-                    <p className="text-sm text-kawai-red">{errorMessage}</p>
-                  ) : (
-                    f.helpText && <p className="text-sm text-muted-foreground">{f.helpText}</p>
-                  )}
-                </div>
+                <TextareaField
+                  key={f.name}
+                  field={f}
+                  errorMessage={errorMessage}
+                  register={register}
+                  control={control}
+                />
               )
             }
 

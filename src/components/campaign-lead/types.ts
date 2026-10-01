@@ -48,4 +48,13 @@ export interface LeadCampaignCopy {
   consent: string
   successTitle: string
   successBody: string
+  /**
+   * Label on the button that closes the form after a successful submission.
+   *
+   * Optional. Without it the confirmation is a dead end — an icon, a title, a
+   * sentence and no control, so a visitor's only way out of the dialog is the
+   * corner X. A campaign page with more than one offer should hand them back to
+   * the others instead.
+   */
+  successCta?: string
 }

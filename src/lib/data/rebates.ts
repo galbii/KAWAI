@@ -8,6 +8,12 @@
  * To update each quarter: edit REBATE_PROGRAM and the REBATES list below. A model
  * that has no matching active product is simply skipped (logged server-side).
  * Amounts are USD (Kawai America Corporation program).
+ *
+ * NOTE: the three ES rows carry Q4 amounts; everything else is still Q3. The ES
+ * figures were rolled forward because /fall-financing advertises them from
+ * October 1 and two live pages must not quote different rebates on the same
+ * piano. The CN, CA, CX and acoustic rows need the same treatment as soon as
+ * their Q4 amounts are known.
  */
 
 export const REBATE_PROGRAM = 'Q3 Rebates'
@@ -38,9 +44,14 @@ export const REBATES: RebateEntry[] = [
   { model: 'CA501', rebate: 250 },
   { model: 'CA701', rebate: 300 },
   { model: 'CA901', rebate: 400 },
-  { model: 'ES60', rebate: 30, note: 'B' },
-  { model: 'ES120', rebate: 50, note: 'B/W/G' },
-  { model: 'ES920', rebate: 100, note: 'B/W' },
+  // Q4 amounts, matching the /fall-financing ES block. Raised from the Q3
+  // figures (30/50/100) so the two pages cannot quote a shopper two different
+  // rebates on the same instrument at the same time — see REBATE_AMOUNTS in
+  // src/app/(frontend)/fall-financing/_components/campaign.ts, which stays the
+  // source for that page.
+  { model: 'ES60', rebate: 50, note: 'B' },
+  { model: 'ES120', rebate: 100, note: 'B/W/G' },
+  { model: 'ES920', rebate: 150, note: 'B/W' },
   { model: 'CX102', rebate: 75, note: 'B/W' },
   { model: 'CX202', rebate: 100, note: 'RO/SB/WH' },
 ]

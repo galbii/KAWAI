@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { getSite, getSiteName, getSiteUrl } from '@/lib/site-context'
-import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans, Oswald, Great_Vibes } from "next/font/google";
+import { Inter, Crimson_Text, Playfair_Display, Cormorant_Garamond, Noto_Sans, Oswald, Great_Vibes, Fraunces, Instrument_Sans } from "next/font/google";
 import { GoogleTagManager } from '@next/third-parties/google';
 import Script from 'next/script';
 import { Suspense } from 'react';
@@ -66,6 +66,34 @@ const greatVibes = Great_Vibes({
   preload: false,
 });
 
+/**
+ * Fall Promo 2026 campaign faces — the brand guidelines name exactly these two
+ * and split them by job, so they are loaded as a pair and used as a pair.
+ *
+ *   Fraunces         headlines and campaign names ONLY, regular weight,
+ *                    sentence case, never all caps.
+ *   Instrument Sans  sublines, body, prices, buttons and fine print.
+ *
+ * `preload: false` because only /fall-financing and /fall-financing2 use them —
+ * every other route would pay for a font it never paints.
+ */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+  // 400 only: the guidelines forbid a bold campaign headline outright.
+  weight: ["400"],
+  preload: false,
+});
+
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  display: "swap",
+  weight: ["400", "500", "600"],
+  preload: false,
+});
+
 // Condensed bold display font — primary for Shigeru Kawai microsite
 const oswald = Oswald({
   subsets: ["latin"],
@@ -111,7 +139,7 @@ export default function RootLayout({
     // var() can only resolve variables that are set on <html> itself.
     <html
       lang="en"
-      className={`scroll-smooth ${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable}`}
+      className={`scroll-smooth ${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} ${fraunces.variable} ${instrumentSans.variable}`}
     >
       <head>
         <link

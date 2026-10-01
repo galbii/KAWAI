@@ -4,11 +4,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { useLeadCampaign } from '@/components/campaign-lead'
+import { PromoCta } from '@/components/fall-promo'
 import { formatPrice } from '@/lib/utils'
 import type { PromoProduct } from '@/lib/payload/promo-types'
 
 /**
- * The small shared pieces every Q4 block draws from.
+ * The small shared pieces every block on this page draws from.
+ *
+ * Nothing here takes a `tone` any more. Every colour is a semantic token that
+ * the section it lands in re-points, so a component dropped on the Walnut
+ * dealer sheet inverts on its own — and the same components will carry over to
+ * Stack the Savings' Ink ground untouched. A `tone` prop is a second source of
+ * truth for the same fact and the two drift.
  *
  * Buttons carry no trailing arrow. An arrow after button text says nothing the
  * verb has not already said, and once it is on every control it stops meaning
@@ -20,85 +27,59 @@ import type { PromoProduct } from '@/lib/payload/promo-types'
  * read, inside the heading block, where it is actually useful.
  */
 
-const BTN =
-  'q4-focus inline-flex items-center justify-center px-7 py-4 text-[0.95rem] font-semibold leading-none transition-colors duration-200'
-
-/** The conversion action. Opens the shared lead modal. */
-export function PromoButton({ children, tone = 'light' }: { children?: ReactNode; tone?: 'light' | 'dark' }) {
+/**
+ * The conversion action, and on this page the only one. Opens the shared lead
+ * modal; the label comes from `config.copy.openLabel`, i.e. `CTA_LABEL`.
+ *
+ * Ember fill in both variations — the guidelines make the button the one thing
+ * that does not change between the calm look and the loud one.
+ *
+ * `size` exists for the same reason PromoCta has it: a button repeated down a
+ * list of models has to be smaller than the section's own call to action.
+ */
+export function PromoButton({
+  children,
+  size,
+}: {
+  children?: ReactNode
+  size?: 'default' | 'compact'
+}) {
   const { open, config } = useLeadCampaign()
   return (
-    <button
-      type="button"
-      onClick={open}
-      className={`${BTN} ${
-        tone === 'dark'
-          ? 'bg-white text-[color:var(--ink)] hover:bg-white/90'
-          : 'bg-[color:var(--ink)] text-white hover:bg-[color:var(--ink)]/88'
-      }`}
-    >
+    <PromoCta onClick={open} hasPopup="dialog" {...(size ? { size } : {})}>
       {children ?? config.copy.openLabel}
-    </button>
-  )
-}
-
-/** Matched secondary — same size, outlined. */
-export function PromoLink({
-  href,
-  children,
-  tone = 'light',
-}: {
-  href: string
-  children: ReactNode
-  tone?: 'light' | 'dark'
-}) {
-  return (
-    <Link
-      href={href}
-      className={`${BTN} border ${
-        tone === 'dark'
-          ? 'border-white/35 text-white hover:bg-white hover:text-[color:var(--ink)]'
-          : 'border-[color:var(--rule)] text-[color:var(--ink)] hover:bg-[color:var(--ink)] hover:text-white'
-      }`}
-    >
-      {children}
-    </Link>
+    </PromoCta>
   )
 }
 
 /**
  * A block's opening. Heading, then the sentence that says what it covers —
  * no label above it.
+ *
+ * The heading is Fraunces at the guideline's 56 step, regular weight and
+ * sentence case. It must never be set bold or in caps.
  */
 export function BlockHead({
   heading,
   standfirst,
-  tone = 'light',
   aside,
 }: {
   heading: string
   standfirst: string
-  tone?: 'light' | 'dark'
   /** Right-hand detail: a count, a deadline. Optional by design. */
   aside?: ReactNode
 }) {
-  const dark = tone === 'dark'
   return (
     <header className="mb-10 md:mb-14">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-12">
-        <h2 className={`q4-h2 max-w-[20ch] ${dark ? 'text-white' : 'text-[color:var(--ink)]'}`}>
-          {heading}
-        </h2>
+        <h2 className="promo-h2 max-w-[20ch] text-[color:var(--on-ground)]">{heading}</h2>
         {aside && (
-          <div
-            className={`q4-num shrink-0 text-[0.92rem] ${dark ? 'text-white/55' : 'text-[color:var(--muted-dim)]'}`}
-          >
+          <div className="promo-num shrink-0 text-[0.92rem] text-[color:var(--body-dim)]">
             {aside}
           </div>
         )}
       </div>
-      <p className={`q4-lede mt-5 ${dark ? 'text-white/70' : 'text-[color:var(--muted)]'}`}>
-        {standfirst}
-      </p>
+      <p className="promo-lede mt-5 text-[color:var(--body)]">{standfirst}</p>
     </header>
   )
 }
@@ -126,9 +107,13 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="q4-focus group flex flex-col border border-[color:var(--rule-soft)] bg-[color:var(--card)] transition-colors duration-200 hover:border-[color:var(--rule)]"
+      className="promo-focus group flex flex-col border border-[color:var(--rule-soft)] bg-[color:var(--surface)] transition-colors duration-200 hover:border-[color:var(--rule)]"
     >
-      <span className="relative block aspect-[4/3] w-full overflow-hidden bg-[color:var(--paper)]">
+      {/* Pure white, not the page ground. Kawai's product photography is shot
+          on white, so an Ivory or Parchment mat shows as a visible frame around
+          the cut-out and every card looks like a different crop. White is the
+          only value that disappears into the photograph. */}
+      <span className="relative block aspect-[4/3] w-full overflow-hidden bg-white">
         {product.imageUrl && (
           <Image
             src={product.imageUrl}
@@ -141,7 +126,7 @@ export function ProductCard({
       </span>
 
       <span className="flex flex-1 flex-col border-t border-[color:var(--rule-soft)] p-4">
-        <span className="q4-model text-[1.05rem] text-[color:var(--ink)]">{product.label}</span>
+        <span className="promo-body font-medium text-[1.05rem] text-[color:var(--on-ground)]">{product.label}</span>
 
         {savingLabel && (
           <span className="mt-1.5 text-[0.82rem] font-medium text-[color:var(--money)]">
@@ -150,21 +135,21 @@ export function ProductCard({
         )}
 
         {saving != null && (
-          <span className="q4-num mt-1.5 text-[1.05rem] text-[color:var(--money)]">
+          <span className="promo-num mt-1.5 text-[1.05rem] text-[color:var(--money)]">
             {formatPrice(saving)} off
           </span>
         )}
 
-        <span className="mt-auto pt-3 text-[0.82rem] text-[color:var(--muted-dim)]">
+        <span className="mt-auto pt-3 text-[0.82rem] text-[color:var(--body-dim)]">
           {product.price == null ? (
             'Price on request'
           ) : finalPrice != null ? (
             <>
-              <span className="q4-num text-[color:var(--ink)]">{formatPrice(finalPrice)}</span>
-              <span className="q4-num ml-2 line-through">{formatPrice(product.price)}</span>
+              <span className="promo-num text-[color:var(--on-ground)]">{formatPrice(finalPrice)}</span>
+              <span className="promo-num ml-2 line-through">{formatPrice(product.price)}</span>
             </>
           ) : (
-            <span className="q4-num">{formatPrice(product.price)}</span>
+            <span className="promo-num">{formatPrice(product.price)}</span>
           )}
         </span>
       </span>
@@ -178,42 +163,95 @@ export function ProductCard({
  * Underline-marked rather than filled: a filled pill row reads as a set of
  * buttons competing with the page's actual call to action, and these only
  * change what is already on screen.
+ *
+ * Toggle buttons, NOT an ARIA tablist. `role="tablist"` is a promise of
+ * arrow-key roving focus and tab/panel wiring, and half a tabs pattern is worse
+ * for a screen-reader user than none — it advertises keys that do nothing and
+ * panels that claim no owner. `aria-pressed` describes what these actually are,
+ * and matches the series filter rendered directly beneath them.
  */
 export function TabRow({
   label,
   tabs,
   active,
   onSelect,
+  variant = 'underline',
 }: {
   label: string
   tabs: ReadonlyArray<{ id: string; label: string; count?: number }>
   active: string
   onSelect: (id: string) => void
+  /**
+   * `underline` is the quiet default — a filter that only reorders what is
+   * already on screen should not compete with the page's call to action.
+   *
+   * `filled` is for a row that has to hold its own against a photograph or a
+   * dense grid, where an underline is too fine a signal to find. The selected
+   * tab takes a solid Ink fill, which is the strongest mark available that is
+   * still not the Ember reserved for buttons.
+   */
+  variant?: 'underline' | 'filled'
 }) {
+  const filled = variant === 'filled'
+
   return (
     <div
-      role="tablist"
+      role="group"
       aria-label={label}
-      className="flex flex-wrap items-stretch gap-x-7 gap-y-1 border-b border-[color:var(--rule)]"
+      className={
+        filled
+          ? 'flex flex-wrap items-stretch gap-2'
+          : 'flex flex-wrap items-stretch gap-x-7 gap-y-1 border-b border-[color:var(--rule)]'
+      }
     >
       {tabs.map((tab) => {
         const on = tab.id === active
+
+        if (filled) {
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onSelect(tab.id)}
+              // Ground-relative, so one definition works on a light card and
+              // on a dark one: the selected tab always takes the ground's own
+              // text colour as its fill and reverses out of it.
+              className={`promo-focus promo-body flex items-baseline gap-2 rounded-[3px] px-4 py-2.5 text-[0.9rem] font-semibold transition-colors duration-200 ${
+                on
+                  ? 'bg-[color:var(--on-ground)] text-[color:var(--ground)]'
+                  : 'bg-[color:var(--on-ground)]/10 text-[color:var(--on-ground)] hover:bg-[color:var(--on-ground)]/20'
+              }`}
+            >
+              {tab.label}
+              {tab.count !== undefined && (
+                <span
+                  className={`promo-num text-[0.78rem] ${
+                    on ? 'text-[color:var(--ground)]/70' : 'text-[color:var(--body-dim)]'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          )
+        }
+
         return (
           <button
             key={tab.id}
             type="button"
-            role="tab"
-            aria-selected={on}
+            aria-pressed={on}
             onClick={() => onSelect(tab.id)}
-            className={`q4-focus relative -mb-px flex items-baseline gap-2 border-b-2 pb-3 pt-1 text-[0.95rem] font-medium transition-colors duration-200 ${
+            className={`promo-focus relative -mb-px flex items-baseline gap-2 border-b-2 pb-3 pt-1 text-[0.95rem] font-medium transition-colors duration-200 ${
               on
-                ? 'border-[color:var(--ink)] text-[color:var(--ink)]'
-                : 'border-transparent text-[color:var(--muted-dim)] hover:text-[color:var(--ink)]'
+                ? 'border-[color:var(--on-ground)] text-[color:var(--on-ground)]'
+                : 'border-transparent text-[color:var(--body-dim)] hover:text-[color:var(--on-ground)]'
             }`}
           >
             {tab.label}
             {tab.count !== undefined && (
-              <span className="q4-num text-[0.78rem] text-[color:var(--muted-dim)]">{tab.count}</span>
+              <span className="promo-num text-[0.78rem] text-[color:var(--body-dim)]">{tab.count}</span>
             )}
           </button>
         )

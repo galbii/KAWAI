@@ -38,18 +38,157 @@ type Props = {
    */
   variant?: 'gold' | 'campaign'
   /**
+   * Which palette and type the chosen `variant` is poured in.
+   *
+   * `variant` is STRUCTURE — the type scale, square or rounded, where the rail
+   * sits. `theme` is only the values, so a page can keep the campaign's layout
+   * and still paint in its own system. `/fall-financing` needs exactly that:
+   * the Back to School structure is right for a card opening out of a ledger
+   * row, but kawai-red and Oswald belong to that campaign and not to this one.
+   *
+   * Defaults to `brand`, whose every value is what this file hardcoded before
+   * the theme existed — so a caller that passes no `theme` renders identically.
+   */
+  theme?: CardTheme
+  /**
    * Overrides the card's call to action. The campaign variant is rendered by
    * two pages that ask for different things — /signup3 asks for a sign-up,
    * Back to School asks for a showroom tour — so the label is a prop rather
    * than a second meaning read off `variant`.
    */
   ctaLabel?: string
+  /**
+   * The quiet link under the primary button. `null` removes it.
+   *
+   * It is a prop because a page whose every CTA opens one form cannot also
+   * offer a link that navigates away from it: on /fall-financing this card sat
+   * a "Find a dealer" link directly under a "Find a Kawai Dealer" button, two
+   * labels a shopper cannot tell apart going to two different places. That
+   * page passes `null`; everyone else gets the locator link as before.
+   */
+  secondaryCta?: { label: string; href: string } | null
   /** Opens the dealer sign-up offer popup (closes this modal first). */
   onSignUp: () => void
   onClose: () => void
 }
 
+/**
+ * The colour and type values the card paints with — see the `theme` prop.
+ *
+ * `promo` is the Fall Promo system on a dark ground. Its accents are split by
+ * size exactly as PromoStyles splits them, and the split is forced rather than
+ * stylistic: `--money-accent` (#E86A26, 5.34:1 on Ink) is the only one that may
+ * carry a label, and `--money-display` (Ember, 3.41:1) is for figures at 24px
+ * and over, where 1.4.3's large-text 3:1 applies. Never move the display colour
+ * onto a caption. The button is `PromoCta`'s fill and label verbatim, including
+ * the white label `--btn-label` exists for — Ivory on Ember is 4.40:1 and fails
+ * at button size.
+ *
+ * Fonts are set as arbitrary `font-[family-name:…]` utilities rather than the
+ * `.promo-*` classes. Those classes come from an injected `<style>` tag, so
+ * pairing one with a Tailwind font utility leaves the winner down to stylesheet
+ * order; an arbitrary utility is something `twMerge` can actually reconcile.
+ */
+/** Declared here rather than below: the theme table reads it. */
 const OSWALD = 'var(--font-oswald), sans-serif'
+
+export type CardTheme = 'brand' | 'promo'
+
+type ThemeTokens = {
+  /** Small accent text: the eyebrow, "You save", the rebate note. */
+  accentText: string
+  accentTextSoft: string
+  accentTextDim: string
+  /** The savings figure, at display size only. */
+  displayText: string
+  /** Graphic accents — the spec bullet, the rail mark, the active pill border. */
+  accentBar: string
+  accentBorder: string
+  /** The primary button: fill, hover and label. */
+  fill: string
+  /** The condensed/label face, and the headline face. */
+  capsFont: string
+  displayFont: string
+  /** For the figures whose size is set inline, beside `fontFamily`. */
+  figureFont: string
+  /**
+   * Undoes the structure's type treatment where a brand rule forbids it.
+   *
+   * The campaign structure sets its headings `uppercase font-semibold`, which
+   * is correct for Oswald and forbidden for Fraunces — PromoStyles is explicit:
+   * "Regular weight and sentence case are brand rules, not defaults — do not
+   * add a bold variant or an uppercase utility to either of these." So the promo
+   * theme resets both. It goes LAST in every `cn()` that uses it, because that
+   * is what lets `twMerge` drop the utility it replaces.
+   */
+  headingReset: string
+  /**
+   * Extra classes on the modal shell, so the tokens below resolve.
+   *
+   * It has to be a class and not an inline style: `ModalProps` has no `style`
+   * prop, so a token block passed that way is dropped without a type error and
+   * every `var()` in this file silently resolves to nothing.
+   */
+  rootClass: string
+}
+
+const THEMES: Record<CardTheme, ThemeTokens> = {
+  brand: {
+    accentText: 'text-kawai-red-400',
+    accentTextSoft: 'text-kawai-red-400/85',
+    accentTextDim: 'text-kawai-red-400/90',
+    displayText: 'text-kawai-red-400',
+    accentBar: 'bg-kawai-red-400',
+    accentBorder: 'border-kawai-red',
+    fill: 'bg-kawai-red text-white hover:bg-kawai-red-600',
+    capsFont: 'font-[family-name:var(--font-oswald)]',
+    displayFont: 'font-[family-name:var(--font-oswald)]',
+    figureFont: OSWALD,
+    headingReset: '',
+    rootClass: '',
+  },
+  promo: {
+    accentText: 'text-[color:var(--money-accent)]',
+    accentTextSoft: 'text-[color:var(--money-accent)]/85',
+    accentTextDim: 'text-[color:var(--money-accent)]/90',
+    /**
+     * `--money-accent`, not `--money-display`, for the big savings figure.
+     *
+     * PromoStyles splits money by size because brand Ember is only legible as
+     * large text, and `--money-display` is the one that carries it: 3.41:1 on
+     * Ink, which clears 1.4.3's large-text 3:1 and nothing more. On a dark
+     * ground `.promo-on-dark` deliberately does not define it, and its own note
+     * says why — "a dark ground needs a LIGHTER red than Ember". So this figure
+     * takes the lifted Ember the dark set does define, at 5.34:1, which passes
+     * AA outright rather than only as large text.
+     */
+    displayText: 'text-[color:var(--money-accent)]',
+    accentBar: 'bg-[color:var(--money-accent)]',
+    accentBorder: 'border-[color:var(--ember)]',
+    fill: 'bg-[color:var(--ember)] text-[color:var(--btn-label)] hover:bg-[color:var(--ember)]/90',
+    capsFont: 'font-[family-name:var(--font-instrument)]',
+    displayFont: 'font-[family-name:var(--font-fraunces)]',
+    figureFont: 'var(--font-instrument), system-ui, sans-serif',
+    headingReset: 'normal-case font-normal',
+    /**
+     * `promo` carries the raw palette (`--ember`, `--btn-label`);
+     * `promo-on-dark` re-points the semantic tokens for a dark ground, which is
+     * where `--money-accent` and `--focus-ring` come from. Both are needed: the
+     * shared Modal portals to the body, so the page's own `.promo.promo-a`
+     * scope does not reach in here.
+     *
+     * Note what this is NOT: `.promo-b`. That class would also supply these
+     * tokens, but it is Variation B, it sets a background and a colour of its
+     * own, and the campaign's guidelines forbid mixing the two looks. This is a
+     * dark region on a Variation A page, which is what `.promo-on-dark` is for.
+     */
+    rootClass: 'promo promo-on-dark',
+  },
+}
+
+/** The locator link every caller but /fall-financing shows under the button. */
+const DEFAULT_SECONDARY_CTA = { label: 'Find a dealer', href: '/find-a-dealer' } as const
+
 
 const ARROW = (
   <svg
@@ -100,12 +239,18 @@ function FilmBackground({
 }
 
 /** MSRP struck, the savings reward at display scale, then the resulting price. */
-function RebateReveal({ product, campaign }: { product: RebateProduct; campaign: boolean }) {
-  const accent = campaign ? 'text-kawai-red-400' : 'text-kawai-gold'
-  const accentSoft = campaign ? 'text-kawai-red-400/85' : 'text-kawai-gold/80'
-  const label = campaign
-    ? cn(LABEL, 'font-[family-name:var(--font-oswald)] tracking-[0.24em]')
-    : LABEL
+function RebateReveal({
+  product,
+  campaign,
+  t,
+}: {
+  product: RebateProduct
+  campaign: boolean
+  t: ThemeTokens
+}) {
+  const accent = campaign ? t.displayText : 'text-kawai-gold'
+  const accentSoft = campaign ? t.accentTextSoft : 'text-kawai-gold/80'
+  const label = campaign ? cn(LABEL, t.capsFont, 'tracking-[0.24em]') : LABEL
   return (
     <div>
       <div className="flex items-baseline gap-2">
@@ -120,7 +265,12 @@ function RebateReveal({ product, campaign }: { product: RebateProduct; campaign:
           className={cn('mt-1 leading-[0.9]', accent)}
           style={
             campaign
-              ? { fontFamily: OSWALD, fontSize: '4rem', fontWeight: 600, letterSpacing: '-0.015em' }
+              ? {
+                  fontFamily: t.figureFont,
+                  fontSize: '4rem',
+                  fontWeight: 600,
+                  letterSpacing: '-0.015em',
+                }
               : {
                   fontFamily: 'var(--font-brand-serif)',
                   fontSize: '3.75rem',
@@ -138,7 +288,7 @@ function RebateReveal({ product, campaign }: { product: RebateProduct; campaign:
           className="text-2xl text-white"
           style={
             campaign
-              ? { fontFamily: OSWALD, fontWeight: 500 }
+              ? { fontFamily: t.figureFont, fontWeight: 500 }
               : { fontFamily: 'var(--font-brand-serif)', fontWeight: 500 }
           }
         >
@@ -146,7 +296,13 @@ function RebateReveal({ product, campaign }: { product: RebateProduct; campaign:
         </span>
       </div>
       {product.rebate > 0 && product.msrp - product.yourPrice > product.rebate ? (
-        <p className={cn('mt-2.5 text-xs font-semibold uppercase tracking-[0.14em]', campaign ? 'text-kawai-red-400/90' : 'text-kawai-gold/90')} style={campaign ? { fontFamily: OSWALD } : undefined}>
+        <p
+          className={cn(
+            'mt-2.5 text-xs font-semibold uppercase tracking-[0.14em]',
+            campaign ? t.accentTextDim : 'text-kawai-gold/90',
+          )}
+          style={campaign ? { fontFamily: t.figureFont } : undefined}
+        >
           Includes {formatPrice(product.rebate, product.currency)} instant rebate
         </p>
       ) : null}
@@ -165,12 +321,18 @@ export default function RebateModelModal({
   categoryLabel,
   isShigeru,
   variant = 'gold',
+  theme = 'brand',
   ctaLabel: ctaLabelProp,
+  secondaryCta,
   onSignUp,
   onClose,
 }: Props) {
   const reduce = useReducedMotion() ?? false
   const campaign = variant === 'campaign'
+  const t = THEMES[theme]
+  // `undefined` means "the caller did not say", which keeps the locator link
+  // every page had before this prop existed. `null` means "the caller said no".
+  const secondary = secondaryCta === undefined ? DEFAULT_SECONDARY_CTA : secondaryCta
 
   // Retain the last product so the close animation has content to render.
   const [shown, setShown] = useState<RebateProduct | null>(product)
@@ -270,7 +432,11 @@ export default function RebateModelModal({
   // Square and heavier on the campaign page — the same button the page's own
   // sections use, so the card doesn't hand off to a differently-shaped CTA.
   const signUpPill = campaign
-    ? 'group inline-flex w-full items-center justify-center gap-2.5 bg-kawai-red px-6 py-4 font-[family-name:var(--font-oswald)] text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-kawai-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
+    ? cn(
+        'group inline-flex w-full items-center justify-center gap-2.5 px-6 py-4 text-sm font-semibold uppercase tracking-[0.18em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black',
+        t.fill,
+        t.capsFont,
+      )
     : 'group inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-kawai-red px-6 py-3.5 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-white transition-all duration-300 hover:bg-kawai-red/90 hover:shadow-[0_8px_28px_rgba(225,25,34,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2 focus-visible:ring-offset-black'
 
   const ctaLabel = ctaLabelProp ?? (campaign ? 'Book an appointment' : 'Sign Up Now')
@@ -281,7 +447,10 @@ export default function RebateModelModal({
       onClose={onClose}
       size="full"
       showCloseButton={false}
-      className="w-[94vw] max-w-5xl overflow-hidden rounded-2xl border-0 bg-kawai-black p-0 text-white lg:w-[92vw]"
+      className={cn(
+        'w-[94vw] max-w-5xl overflow-hidden rounded-2xl border-0 bg-kawai-black p-0 text-white lg:w-[92vw]',
+        t.rootClass,
+      )}
     >
       <DialogTitle className="sr-only">{`${p.name} — current rebate and specifications`}</DialogTitle>
       <DialogDescription className="sr-only">
@@ -314,7 +483,7 @@ export default function RebateModelModal({
               className={cn(
                 EYEBROW,
                 campaign
-                  ? 'font-[family-name:var(--font-oswald)] text-kawai-red-400'
+                  ? cn(t.capsFont, t.accentText)
                   : isShigeru
                     ? 'text-kawai-gold'
                     : 'text-kawai-red',
@@ -326,7 +495,11 @@ export default function RebateModelModal({
               className={cn(
                 'mt-2 leading-tight text-white transition-all duration-300 sm:text-4xl lg:!text-4xl',
                 campaign
-                  ? 'font-[family-name:var(--font-oswald)] font-semibold uppercase !leading-[0.92] tracking-[-0.01em]'
+                  ? cn(
+                      'font-semibold uppercase !leading-[0.92] tracking-[-0.01em]',
+                      t.displayFont,
+                      t.headingReset,
+                    )
                   : 'font-[family-name:var(--font-brand-serif)] font-medium tracking-tight',
                 pricingOpen ? 'text-[2rem]' : 'text-2xl',
               )}
@@ -345,7 +518,7 @@ export default function RebateModelModal({
             )}
           >
             <div className="overflow-hidden">
-              <RebateReveal product={p} campaign={campaign} />
+              <RebateReveal product={p} campaign={campaign} t={t} />
             </div>
           </div>
 
@@ -383,7 +556,7 @@ export default function RebateModelModal({
                       campaign && active ? 'w-[2px]' : 'w-px',
                       active
                         ? campaign
-                          ? 'h-8 bg-kawai-red-400'
+                          ? cn('h-8', t.accentBar)
                           : 'h-8 bg-kawai-red'
                         : 'h-5 bg-white/25 group-hover:bg-white/55',
                     )}
@@ -392,7 +565,7 @@ export default function RebateModelModal({
                     className={cn(
                       'text-xs font-semibold uppercase transition-colors',
                       campaign
-                        ? 'font-[family-name:var(--font-oswald)] tracking-[0.22em]'
+                        ? cn(t.capsFont, 'tracking-[0.22em]')
                         : 'font-[family-name:var(--font-brand-sans)] tracking-[0.18em]',
                       active ? 'text-white' : 'text-white/55 group-hover:text-white/85',
                     )}
@@ -410,12 +583,14 @@ export default function RebateModelModal({
               {ctaLabel}
               {ARROW}
             </button>
-            <Link
-              href="/find-a-dealer"
-              className="mt-3 block text-center font-[family-name:var(--font-brand-sans)] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white"
-            >
-              Find a dealer
-            </Link>
+            {secondary && (
+              <Link
+                href={secondary.href}
+                className="mt-3 block text-center font-[family-name:var(--font-brand-sans)] text-[11px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white"
+              >
+                {secondary.label}
+              </Link>
+            )}
           </div>
         </aside>
 
@@ -436,9 +611,10 @@ export default function RebateModelModal({
                       'shrink-0 whitespace-nowrap text-xs font-semibold uppercase transition-colors',
                       campaign
                         ? cn(
-                            'border-b-2 px-3 py-2 font-[family-name:var(--font-oswald)] tracking-[0.18em]',
+                            'border-b-2 px-3 py-2 tracking-[0.18em]',
+                            t.capsFont,
                             active
-                              ? 'border-kawai-red text-white'
+                              ? cn(t.accentBorder, 'text-white')
                               : 'border-transparent text-white/55 hover:text-white/85',
                           )
                         : cn(
@@ -476,7 +652,7 @@ export default function RebateModelModal({
                   className={cn(
                     'px-6 pt-6 text-4xl uppercase text-kawai-black sm:px-8 sm:pt-8 sm:text-5xl lg:px-10 lg:pt-10 lg:text-6xl',
                     campaign
-                      ? 'font-[family-name:var(--font-oswald)] font-semibold tracking-[-0.01em]'
+                      ? cn('font-semibold tracking-[-0.01em]', t.displayFont, t.headingReset)
                       : 'font-[family-name:var(--font-brand-serif)] font-light tracking-[0.06em]',
                   )}
                 >
@@ -543,7 +719,7 @@ export default function RebateModelModal({
                   className={cn(
                     'max-w-2xl text-4xl uppercase text-white sm:text-5xl lg:text-6xl',
                     campaign
-                      ? 'font-[family-name:var(--font-oswald)] font-semibold tracking-[-0.01em]'
+                      ? cn('font-semibold tracking-[-0.01em]', t.displayFont, t.headingReset)
                       : 'font-[family-name:var(--font-brand-serif)] font-light tracking-[0.06em]',
                   )}
                 >
@@ -559,7 +735,7 @@ export default function RebateModelModal({
                         aria-hidden
                         className={cn(
                           'mt-[0.6em] block h-1.5 w-1.5 flex-shrink-0',
-                          campaign ? 'bg-kawai-red-400' : 'rounded-full',
+                          campaign ? t.accentBar : 'rounded-full',
                           !campaign && (isShigeru ? 'bg-kawai-gold' : 'bg-kawai-red'),
                         )}
                       />

@@ -45,7 +45,7 @@ export const REBATE_SCHEDULE: RebateSeries[] = [
     seriesName: 'ES Series',
     models: [
       { model: 'ES60', finishes: 'Black', consumerRebate: 30 },
-      { model: 'ES120', finishes: 'Black / White / Gold', consumerRebate: 50 },
+      { model: 'ES120', finishes: 'Black / White / Light Gray', consumerRebate: 50 },
       { model: 'ES920', finishes: 'Black / White', consumerRebate: 100 },
     ],
   },

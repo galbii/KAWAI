@@ -12,6 +12,7 @@ import {
   HIDE_FROM_COLLECTION_PAGES,
 } from '@/lib/products/visibility'
 import { sortStandardFirst } from '@/lib/piano/non-standard-model'
+import { extractYouTubeId } from '@/lib/utils/youtube'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
 import type { FinancedCategory, FinancedProduct } from '@/lib/payload/financing-types'
@@ -843,7 +844,11 @@ export function getRebateShowcase(site: 'us' | 'cad' = 'us'): Promise<RebateCate
       }
     },
     // v5: CA now includes acoustic models (MSRP-only) + the KCM Q3 rebate amounts.
-    [`rebate-showcase-v5-${site}`],
+    // v6: ES amounts rolled to Q4 (50/100/150). The rebate figures are baked into
+    // the cached value, so a bump is required whenever they change — otherwise the
+    // old amounts serve for up to an hour after deploy, which for a promotion with
+    // a start date is exactly the wrong hour.
+    [`rebate-showcase-v6-${site}`],
     { tags: ['products', 'rebates'], revalidate: 3600 },
   )()
 }
@@ -917,6 +922,111 @@ export async function getFinancingEligibleProducts(): Promise<FinancedCategory[]
  * legacy — and a promotion covers what a dealer can actually order. Same rule
  * the financing ledger applies to acoustics, for the same reason.
  */
+/**
+ * Showcase art for a set of Shopify collections, by handle.
+ *
+ * Three sources, in order:
+ *
+ *   1. `media` — the upload on the collection's Content tab. Always wins; it
+ *      is the one an editor chose for this purpose.
+ *   2. `imageUrl` — from the Shopify sync.
+ *   3. `youtubeUrl` — the still from the collection's video, via
+ *      {@link youTubePoster}.
+ *
+ * A handle with none of the three is absent from the result rather than
+ * present with a null — callers decide what an artless collection means, and
+ * on /fall-financing it means the range is not shown.
+ *
+ * ── Why the video counts as art ──────────────────────────────────────────
+ *
+ * A collection that has had a film made for it is not a collection without a
+ * picture. Shigeru Kawai is the case that forced this: every SK model is
+ * financing-eligible and the ledger returns all five of them, but the range
+ * was dropped from the carousel for want of an image while its own video sat
+ * on the same document. The still is that film's opening frame — Kawai's own
+ * footage of the instrument, not a stand-in.
+ *
+ * As of Q4 2026 gl-series, gx-series, k-series-professional and master-series
+ * carry `media`; shigeru-kawai carries only `youtubeUrl` and reaches the page
+ * through source 3. Nothing carries `imageUrl`. Setting a collection's media
+ * in the admin still overrides all of this.
+ */
+export async function getCollectionArt(
+  handles: readonly string[],
+): Promise<Record<string, string>> {
+  // Failures caught OUTSIDE unstable_cache so an empty result is never
+  // memoised — see getFinancingEligibleProducts for the full reasoning.
+  try {
+    return await cachedCollectionArt(handles)
+  } catch (error) {
+    console.error('Error fetching collection art:', error)
+    return {}
+  }
+}
+
+/**
+ * The poster frame for a collection's video, as a last-resort showcase image.
+ *
+ * `maxresdefault` is the 1280x720 still and the only size worth putting in a
+ * tile, but YouTube does not generate it for every upload — older and
+ * lower-resolution videos have no maxres and the URL 404s, which in a
+ * `next/image` renders as a broken tile rather than a missing one. `hqdefault`
+ * is generated for everything, so the HEAD decides between them.
+ *
+ * The check is cheap: it runs only for a collection with a video and no
+ * picture, and the whole result is memoised for an hour by the caller.
+ */
+async function youTubePoster(youtubeUrl: string | null | undefined): Promise<string | null> {
+  const id = extractYouTubeId(youtubeUrl)
+  if (!id) return null
+
+  const maxres = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+  try {
+    const res = await fetch(maxres, { method: 'HEAD', next: { revalidate: 86400 } })
+    if (res.ok) return maxres
+  } catch {
+    // Network failure here is not worth failing the page over — the always-
+    // present hqdefault below is a correct answer, just a smaller one.
+  }
+  return `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+}
+
+function cachedCollectionArt(handles: readonly string[]): Promise<Record<string, string>> {
+  const key = handles.join('+')
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'collections',
+        where: { handle: { in: [...handles] } },
+        select: { handle: true, media: true, imageUrl: true, youtubeUrl: true },
+        // depth 1 populates the media upload so its URL is readable. Media has
+        // no relationships of its own, so there is nothing deeper to fetch.
+        depth: 1,
+        limit: 100,
+        pagination: false,
+      })
+
+      const art: Record<string, string> = {}
+      for (const doc of result.docs) {
+        if (!doc.handle) continue
+        const uploaded =
+          doc.media && typeof doc.media === 'object' && 'url' in doc.media ? doc.media.url : null
+        // The poster is only reached when neither picture exists, so a
+        // collection that has both keeps the one an editor chose — and the
+        // await costs nothing for every handle that never gets there.
+        const url = uploaded || doc.imageUrl || (await youTubePoster(doc.youtubeUrl))
+        if (url) art[doc.handle] = url
+      }
+      return art
+    },
+    // v2: video stills are now a third art source, so v1's cached values are
+    // missing every collection that has only a video.
+    [`collection-art-v2-${key}`],
+    { tags: ['collections'], revalidate: 3600 },
+  )()
+}
+
 export async function getPromoCollections(handles: readonly string[]): Promise<PromoGroup[]> {
   // Failures are caught OUTSIDE unstable_cache so an empty result is never
   // memoised — see getFinancingEligibleProducts for the full reasoning.
@@ -1119,6 +1229,72 @@ function cachedFinancingEligibleProducts(): Promise<FinancedCategory[]> {
  * Fetch a specific set of products by model identifier, preserving the supplied order.
  * Used by event landing pages (e.g. university piano sale) to pull live CMS pricing.
  */
+/** What a rebate ledger needs for a model: a name, a picture, a link. */
+export type RebateModelArt = {
+  model: string
+  label: string
+  name: string | null
+  slug: string | null
+  imageUrl: string | null
+}
+
+/**
+ * Catalogue art for a list of models, keyed by model.
+ *
+ * For the CA acoustic rebate ledger, which is driven by a hardcoded list of
+ * models from a Kawai Canada bulletin rather than by a Shopify collection —
+ * `getPromoCollections` cannot serve it, because these six models do not share
+ * one collection handle.
+ *
+ * A model with no product in Payload is simply absent from the map. That is a
+ * normal state, not an error: ND21 has no catalogue entry yet, and the ledger
+ * falls back to a placeholder for anything missing rather than dropping the
+ * row — the rebate is real whether or not the catalogue has caught up.
+ */
+export async function getRebateModelArt(
+  models: readonly string[],
+): Promise<Record<string, RebateModelArt>> {
+  try {
+    return await cachedRebateModelArt(models)
+  } catch (error) {
+    console.error('Error fetching rebate model art:', error)
+    return {}
+  }
+}
+
+function cachedRebateModelArt(
+  models: readonly string[],
+): Promise<Record<string, RebateModelArt>> {
+  return unstable_cache(
+    async () => {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'products',
+        where: { model: { in: [...models] } },
+        select: { model: true, modelLabel: true, name: true, slug: true, imageUrl: true },
+        depth: 0,
+        limit: models.length,
+        pagination: false,
+      })
+
+      const art: Record<string, RebateModelArt> = {}
+      for (const doc of result.docs) {
+        if (!doc.model) continue
+        art[doc.model] = {
+          model: doc.model,
+          label: doc.modelLabel ?? doc.model,
+          name: doc.name ?? null,
+          slug: doc.slug ?? null,
+          imageUrl: doc.imageUrl ?? null,
+        }
+      }
+      return art
+    },
+    [`rebate-model-art-${[...models].sort().join('+')}`],
+    { tags: ['products'], revalidate: 3600 },
+  )()
+}
+
 export async function getUniversityEventProducts(models: string[]): Promise<Product[]> {
   try {
     const payload = await getPayloadClient()

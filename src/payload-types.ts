@@ -2621,6 +2621,10 @@ export interface Product {
      */
     enabled?: boolean | null;
     /**
+     * Single: one image over centred copy. Bundle: an image carousel plus the products in the bundle, their separate total crossed out, and the bundle price. Both use the link below for the CTA.
+     */
+    style?: ('single' | 'bundle') | null;
+    /**
      * What the popup CTA links to
      */
     linkType?: ('product' | 'collection' | 'custom') | null;
@@ -2641,7 +2645,7 @@ export interface Product {
      */
     eyebrow?: string | null;
     /**
-     * Popup headline. Leave blank to use "Meet the {linked product/collection name}" — required for Custom URL promos
+     * Popup headline. Single style leaves blank to use "Meet the {linked product/collection name}" — required for Custom URL promos. Bundle style leaves blank to use "{this product} Bundle".
      */
     title?: string | null;
     /**
@@ -2653,9 +2657,62 @@ export interface Product {
      */
     ctaLabel?: string | null;
     /**
-     * Optional image override — defaults to the linked product's or collection's image
+     * Single style only — optional image override, defaults to the linked product's or collection's image
      */
     image?: (string | null) | Media;
+    /**
+     * The products in the bundle, in showcase order. Each piece shows its thumbnail, model and price, joined by "+". Two to four reads best.
+     */
+    bundleItems?:
+      | {
+          /**
+           * Pick the product — its model, price and image are pulled in
+           */
+          product: string | Product;
+          /**
+           * Optional name override — defaults to the product's display label or model
+           */
+          label?: string | null;
+          /**
+           * US price override (USD) — defaults to the product's synced MSRP. Set 0 to hide this piece's price.
+           */
+          priceOverride?: number | null;
+          /**
+           * CA price override (CAD) — defaults to the product's synced CA price. Only used on ca.kawaius.com.
+           */
+          priceOverrideCAD?: number | null;
+          /**
+           * Optional thumbnail override — defaults to the product's Shopify image
+           */
+          image?: (string | null) | Media;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Bundle imagery carousel shown beside the offer. Leave empty to fall back to the pieces' own product shots.
+     */
+    bundleMedia?:
+      | {
+          image: string | Media;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Bundle price in USD — shown in red in place of the crossed-out separate total. Leave blank to showcase the bundle without pricing.
+     */
+    bundlePrice?: number | null;
+    /**
+     * Bundle price in CAD — used on ca.kawaius.com. Leave blank and the CA popup shows no pricing (US figures are never shown there).
+     */
+    bundlePriceCAD?: number | null;
+    /**
+     * Fine print under the bundle price
+     */
+    priceNote?: string | null;
+    /**
+     * Which storefront shows this popup. US-market offers (e.g. a US dealer promotion) must be set to US only, or the Canadian site advertises an offer its visitors cannot redeem.
+     */
+    sites?: ('both' | 'us' | 'cad') | null;
     /**
      * How often a visitor sees the popup after dismissing it
      */
@@ -3434,19 +3491,23 @@ export interface Collection {
   fontFamily?: ('serif' | 'sans') | null;
   successorPromo?: {
     /**
-     * Enable the successor popup on this collection page
+     * Enable the popup on this collection page
      */
     enabled?: boolean | null;
+    /**
+     * Single: one image over centred copy, linking wherever you point it. Successor: the same, with a lineage marque and a link to the replacement collection. Bundle: an image carousel plus the products in the bundle, their separate total crossed out, and the bundle price.
+     */
+    style?: ('single' | 'successor' | 'bundle') | null;
     /**
      * The newer collection to promote — the popup links to its page
      */
     successorCollection?: (string | null) | Collection;
     /**
-     * Small uppercase label above the popup headline
+     * Small uppercase label above the popup headline. Leave blank for "The Next Generation" (successor) or "Bundle Offer" (bundle)
      */
     eyebrow?: string | null;
     /**
-     * Popup headline. Leave blank to use "Meet the {successor title}"
+     * Popup headline. Successor style leaves blank to use "Meet the {successor title}"; single and bundle styles require one
      */
     title?: string | null;
     /**
@@ -3454,13 +3515,82 @@ export interface Collection {
      */
     message?: string | null;
     /**
-     * Button label — clicking it navigates to the successor collection page
+     * Button label. Leave blank for "Explore the New Collection" (successor), "Shop the Bundle" (bundle) or "Learn More" (single)
      */
     ctaLabel?: string | null;
     /**
-     * Optional image override — defaults to the successor collection's Shopify image
+     * Popup image. Required for the Single style; the Successor style falls back to the successor collection's Shopify image. Bundle style uses the carousel below instead.
      */
     image?: (string | null) | Media;
+    /**
+     * The products in the bundle, in showcase order. Each piece shows its thumbnail, model and price, joined by "+". Two to four reads best.
+     */
+    bundleItems?:
+      | {
+          /**
+           * Pick the product — its model, price and image are pulled in
+           */
+          product: string | Product;
+          /**
+           * Optional name override — defaults to the product's display label or model
+           */
+          label?: string | null;
+          /**
+           * US price override (USD) — defaults to the product's synced MSRP. Set 0 to hide this piece's price.
+           */
+          priceOverride?: number | null;
+          /**
+           * CA price override (CAD) — defaults to the product's synced CA price. Only used on ca.kawaius.com.
+           */
+          priceOverrideCAD?: number | null;
+          /**
+           * Optional thumbnail override — defaults to the product's Shopify image
+           */
+          image?: (string | null) | Media;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Bundle imagery carousel shown beside the offer. Leave empty to fall back to the pieces' own product shots.
+     */
+    bundleMedia?:
+      | {
+          image: string | Media;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Bundle price in USD — shown in red in place of the crossed-out separate total. Leave blank to showcase the bundle without pricing.
+     */
+    bundlePrice?: number | null;
+    /**
+     * Bundle price in CAD — used on ca.kawaius.com. Leave blank and the CA popup shows no pricing (US figures are never shown there).
+     */
+    bundlePriceCAD?: number | null;
+    /**
+     * Fine print under the bundle price
+     */
+    priceNote?: string | null;
+    /**
+     * Where the CTA button sends visitors
+     */
+    ctaType?: ('product' | 'collection' | 'custom') | null;
+    /**
+     * Product page the CTA links to
+     */
+    ctaProduct?: (string | null) | Product;
+    /**
+     * Collection page the CTA links to
+     */
+    ctaCollection?: (string | null) | Collection;
+    /**
+     * Any path or URL — e.g. /find-a-dealer
+     */
+    ctaUrl?: string | null;
+    /**
+     * Which storefront shows this popup. US-market offers (e.g. a US dealer promotion) must be set to US only, or the Canadian site advertises an offer its visitors cannot redeem.
+     */
+    sites?: ('both' | 'us' | 'cad') | null;
     /**
      * How often a visitor sees the popup after dismissing it
      */
@@ -13094,6 +13224,7 @@ export interface ProductsSelect<T extends boolean = true> {
     | T
     | {
         enabled?: T;
+        style?: T;
         linkType?: T;
         linkedProduct?: T;
         linkedCollection?: T;
@@ -13103,6 +13234,26 @@ export interface ProductsSelect<T extends boolean = true> {
         message?: T;
         ctaLabel?: T;
         image?: T;
+        bundleItems?:
+          | T
+          | {
+              product?: T;
+              label?: T;
+              priceOverride?: T;
+              priceOverrideCAD?: T;
+              image?: T;
+              id?: T;
+            };
+        bundleMedia?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
+        bundlePrice?: T;
+        bundlePriceCAD?: T;
+        priceNote?: T;
+        sites?: T;
         displayFrequency?: T;
         delaySeconds?: T;
       };
@@ -13179,12 +13330,37 @@ export interface CollectionsSelect<T extends boolean = true> {
     | T
     | {
         enabled?: T;
+        style?: T;
         successorCollection?: T;
         eyebrow?: T;
         title?: T;
         message?: T;
         ctaLabel?: T;
         image?: T;
+        bundleItems?:
+          | T
+          | {
+              product?: T;
+              label?: T;
+              priceOverride?: T;
+              priceOverrideCAD?: T;
+              image?: T;
+              id?: T;
+            };
+        bundleMedia?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
+        bundlePrice?: T;
+        bundlePriceCAD?: T;
+        priceNote?: T;
+        ctaType?: T;
+        ctaProduct?: T;
+        ctaCollection?: T;
+        ctaUrl?: T;
+        sites?: T;
         displayFrequency?: T;
         delaySeconds?: T;
       };

@@ -36,6 +36,8 @@
     "signup:violin:dry-run": "tsx scripts/add-violin-to-signup-campaign.ts --dry-run",
     "migrate:all": "tsx scripts/run-all-migrations.ts",
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
+    "promo:sh9-bundle": "tsx scripts/add-sh9-bundle-promo.ts",
+    "promo:sh9-bundle:dry-run": "tsx scripts/add-sh9-bundle-promo.ts --dry-run",
     "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",
     "migrate:product-featured:dry-run": "tsx scripts/migrate-product-featured.ts --dry-run",
     "migrate:dealers:rsm": "tsx scripts/migrate-dealers-rsm-list.ts",

@@ -19,7 +19,7 @@ import { useLeadCampaign } from './LeadCampaignContext'
  * this component must not own anything the lead depends on.
  */
 export function LeadForm() {
-  const { config, testMode, captureLead, confirmLead } = useLeadCampaign()
+  const { config, testMode, captureLead, confirmLead, close } = useLeadCampaign()
   const { copy } = config
 
   return (
@@ -70,6 +70,21 @@ export function LeadForm() {
           captureLead(data)
         }}
         onSubmitted={confirmLead}
+        {...(copy.successCta
+          ? {
+              successActions: (
+                // Outlined, not filled: the visitor has finished converting and
+                // this is a way out, not a second ask.
+                <button
+                  type="button"
+                  onClick={close}
+                  className="inline-flex items-center justify-center border border-kawai-black/25 px-6 py-3 font-[family-name:var(--font-brand-sans)] text-sm font-semibold uppercase tracking-[0.12em] text-kawai-charcoal transition-colors duration-200 hover:border-kawai-black/40 hover:text-kawai-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kawai-red focus-visible:ring-offset-2"
+                >
+                  {copy.successCta}
+                </button>
+              ),
+            }
+          : {})}
       />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">

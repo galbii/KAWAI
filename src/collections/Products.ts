@@ -5,16 +5,27 @@ import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-produ
 import { fetchActiveAutomaticDiscounts, computeProductDiscount, type NormalizedDiscount } from '@/lib/shopify/fetch-discounts'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
-import { imageField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
+import { imageField, mediaArrayField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
 
 // Shared conditions for the Promo tab — fields only appear once the promo is
-// enabled. siblingData is the promo tab's own data.
+// enabled, and style-specific fields only for their own style. siblingData is
+// the promo tab's own data.
 const promoEnabled: Condition = (_, siblingData) => Boolean(siblingData?.enabled)
 const promoLinkType =
   (linkType: 'product' | 'collection' | 'custom'): Condition =>
   (_, siblingData) =>
     Boolean(siblingData?.enabled) && siblingData?.linkType === linkType
+
+// Promos saved before the style field existed are single-subject promos
+const promoStyleIs = (siblingData: any, style: 'single' | 'bundle'): boolean =>
+  Boolean(siblingData?.enabled) && (siblingData?.style ?? 'single') === style
+
+const singleStyle: Condition = (_, siblingData) => promoStyleIs(siblingData, 'single')
+const bundleStyle: Condition = (_, siblingData) => promoStyleIs(siblingData, 'bundle')
+// mediaArrayField's admin.condition takes the two-argument form
+const bundleStyleCondition = (_data: any, siblingData: any): boolean =>
+  promoStyleIs(siblingData, 'bundle')
 
 /**
  * Transform Shopify product data to Payload CMS product format
@@ -1144,12 +1155,12 @@ export const Products: CollectionConfig = {
           ]
         },
 
-        // Promo Tab — popup promoting another product, a collection, or any URL
+        // Promo Tab — popup promoting another product, a collection, a bundle, or any URL
         {
           name: 'promo',
           label: 'Promo',
           description:
-            'Show a small popup on this product page promoting another product, a collection, or a custom link (e.g. a successor model, a sale, or a campaign page)',
+            'Show a popup on this product page — a single-subject promo (a successor model, a sale, a campaign page) or a bundle showcasing products sold together',
           fields: [
             {
               name: 'enabled',
@@ -1157,6 +1168,20 @@ export const Products: CollectionConfig = {
               defaultValue: false,
               admin: {
                 description: 'Enable the promo popup on this product page',
+              },
+            },
+            {
+              name: 'style',
+              type: 'select',
+              defaultValue: 'single',
+              options: [
+                { label: 'Single — one image, headline and link', value: 'single' },
+                { label: 'Bundle — showcase products sold together', value: 'bundle' },
+              ],
+              admin: {
+                description:
+                  'Single: one image over centred copy. Bundle: an image carousel plus the products in the bundle, their separate total crossed out, and the bundle price. Both use the link below for the CTA.',
+                condition: promoEnabled,
               },
             },
             {
@@ -1216,7 +1241,7 @@ export const Products: CollectionConfig = {
               type: 'text',
               admin: {
                 description:
-                  'Popup headline. Leave blank to use "Meet the {linked product/collection name}" — required for Custom URL promos',
+                  'Popup headline. Single style leaves blank to use "Meet the {linked product/collection name}" — required for Custom URL promos. Bundle style leaves blank to use "{this product} Bundle".',
                 placeholder: 'Meet the CA901',
                 condition: promoEnabled,
               },
@@ -1243,10 +1268,121 @@ export const Products: CollectionConfig = {
             imageField('image', {
               admin: {
                 description:
-                  "Optional image override — defaults to the linked product's or collection's image",
-                condition: promoEnabled,
+                  "Single style only — optional image override, defaults to the linked product's or collection's image",
+                condition: singleStyle,
               },
             }),
+
+            // ── Bundle style ──────────────────────────────────────────────────
+            {
+              name: 'bundleItems',
+              type: 'array',
+              minRows: 2,
+              maxRows: 4,
+              admin: {
+                description:
+                  'The products in the bundle, in showcase order. Each piece shows its thumbnail, model and price, joined by "+". Two to four reads best.',
+                condition: bundleStyle,
+                initCollapsed: false,
+              },
+              fields: [
+                {
+                  name: 'product',
+                  type: 'relationship',
+                  relationTo: 'products',
+                  required: true,
+                  admin: {
+                    description: 'Pick the product — its model, price and image are pulled in',
+                  },
+                },
+                {
+                  name: 'label',
+                  type: 'text',
+                  admin: {
+                    description:
+                      "Optional name override — defaults to the product's display label or model",
+                    placeholder: 'HML-3 Designer Stand',
+                  },
+                },
+                {
+                  name: 'priceOverride',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description:
+                      "US price override (USD) — defaults to the product's synced MSRP. Set 0 to hide this piece's price.",
+                  },
+                },
+                {
+                  name: 'priceOverrideCAD',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    description:
+                      "CA price override (CAD) — defaults to the product's synced CA price. Only used on ca.kawaius.com.",
+                  },
+                },
+                imageField('image', {
+                  admin: {
+                    description:
+                      "Optional thumbnail override — defaults to the product's Shopify image",
+                  },
+                }),
+              ],
+            },
+            mediaArrayField('bundleMedia', {
+              maxRows: 6,
+              filterOptions: { mimeType: { contains: 'image' } },
+              admin: {
+                description:
+                  "Bundle imagery carousel shown beside the offer. Leave empty to fall back to the pieces' own product shots.",
+                condition: bundleStyleCondition,
+              },
+            }),
+            {
+              name: 'bundlePrice',
+              type: 'number',
+              min: 0,
+              admin: {
+                description:
+                  'Bundle price in USD — shown in red in place of the crossed-out separate total. Leave blank to showcase the bundle without pricing.',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'bundlePriceCAD',
+              type: 'number',
+              min: 0,
+              admin: {
+                description:
+                  'Bundle price in CAD — used on ca.kawaius.com. Leave blank and the CA popup shows no pricing (US figures are never shown there).',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'priceNote',
+              type: 'text',
+              admin: {
+                description: 'Fine print under the bundle price',
+                placeholder: 'Until December 1st, at participating dealers',
+                condition: bundleStyle,
+              },
+            },
+            {
+              name: 'sites',
+              type: 'select',
+              defaultValue: 'both',
+              options: [
+                { label: 'Both sites', value: 'both' },
+                { label: 'US only (kawaius.com)', value: 'us' },
+                { label: 'Canada only (ca.kawaius.com)', value: 'cad' },
+              ],
+              admin: {
+                description:
+                  'Which storefront shows this popup. US-market offers (e.g. a US dealer promotion) must be set to US only, or the Canadian site advertises an offer its visitors cannot redeem.',
+                condition: promoEnabled,
+              },
+            },
             {
               name: 'displayFrequency',
               type: 'select',
