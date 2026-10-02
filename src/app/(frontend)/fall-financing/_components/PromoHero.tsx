@@ -4,13 +4,13 @@ import { PromoButton } from './PromoUI'
 import { valuePropsFor } from './campaign'
 import { heroSlidesFor } from './slides'
 
-const CAMPAIGN_NAME = 'Harvest the Savings'
+const CAMPAIGN_NAME = 'Fall for a Kawai'
 
 /**
  * What the mobile lockup says under the mark.
  *
  * Not the campaign name. The slide headline immediately below it is already
- * "Harvest the Savings" on the opening slide, and the lockup repeating it set
+ * "Fall for a Kawai" on the opening slide, and the lockup repeating it set
  * the same three words twice in a column at two sizes. This describes what the
  * page is instead, which is the job a line under a logotype should be doing.
  */
@@ -78,7 +78,7 @@ function CampaignLockup() {
  *
  * The carousel is the homepage hero's staging — full stage, one slide at a
  * time, slow Ken Burns, side arrows, dots and a pause control — in the Fall
- * Promo palette. Three slides: the Harvest the Savings opener naming the
+ * Promo palette. Three slides: the Fall for a Kawai opener naming the
  * programme, then financing and the SH-9 bundle, each against an instrument
  * from the range that offer actually covers.
  *

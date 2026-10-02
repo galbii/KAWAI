@@ -56,7 +56,7 @@ const OPENER_BODY = {
 export const heroSlides: readonly PromoSlide[] = [
   {
     id: 'stack',
-    title: 'Harvest the Savings',
+    title: 'Fall for a Kawai',
     body: OPENER_BODY.us,
     image: 'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/MS%20Fall%202.webp',
     imageAlt: 'A pianist playing a Kawai upright piano in a sunlit autumn room',

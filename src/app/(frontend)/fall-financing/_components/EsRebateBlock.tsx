@@ -149,7 +149,7 @@ export function EsRebateBlock({
         ctaLabel={rebate.modalCta}
         // No locator link under the button. Every CTA on this page opens the
         // one enquiry form, and the card's default secondary put "Find a
-        // dealer" directly beneath "Contact a Dealer" — two labels a shopper
+        // dealer" directly beneath the page's own CTA — two labels a shopper
         // cannot tell apart, going to two different places, and only on desktop.
         secondaryCta={null}
         onSignUp={() => {

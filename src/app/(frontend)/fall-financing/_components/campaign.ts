@@ -147,33 +147,44 @@ export const SECTION = {
  * rather than repetitive: a visitor who has decided anywhere on the page should
  * not have to work out which of several controls is the one that acts.
  *
- * ── Why "Contact", not "Find" ────────────────────────────────────────────
+ * ── The wording, and the two it replaced ─────────────────────────────────
  *
  * It was "Find a Kawai Dealer", which described the outcome — the form takes a
  * ZIP and routes to the nearest dealer — but not the thing the button does. A
  * visitor who reads "Find a Dealer" expects a locator or a map and gets a
- * six-field form, and the corner dock made that worst of all: a bare pill with
- * no surrounding copy promising a search and opening a contact form.
+ * six-field form.
  *
- * "Contact a Dealer" names the mechanism, which here is also the honest promise
- * — contacting a dealer is what submitting it does. The lead-in copy above each
- * button carries what the form is *for* ("pricing and inventory"), so the label
- * does not have to.
+ * Then "Contact a Dealer", which named the mechanism and was the honest promise
+ * for it — contacting a dealer is what submitting the form does.
  *
- * It also fits where the old one did not, which is why there is now only one
+ * Now "Sign Up Now", which names neither: it is the act, stated as an act. What
+ * the form is *for* is carried entirely by the copy around the button —
+ * {@link CTA_LEAD_IN} above each one, and the dialog's own headline and body
+ * once it opens. That holds on the page, where a button never appears without
+ * its lead-in, and it is the thing to watch wherever a CTA is set on its own:
+ * see the `ariaLabel` the corner dock is handed in page.tsx, a bare pill with
+ * nothing around it but a day count.
+ *
+ * It is not a store CTA and must not drift into one. §5 of the requirements
+ * forbids "Shop Now", "Buy" and add-to-cart on this page — acoustic pianos are
+ * not sold through the online store — and "Sign Up Now" stays the right side of
+ * that line only because what it signs up for is a dealer follow-up, which the
+ * copy around it says.
+ *
+ * It also fits where the first one did not, which is why there is now only one
  * wording — see {@link CTA_LABEL_SHORT}.
  *
  * `openLabel` in lead-campaign.ts reads this, so every bare <PromoButton />
  * follows without being handed anything.
  */
-export const CTA_LABEL = 'Contact a Dealer'
+export const CTA_LABEL = 'Sign Up Now'
 
 /**
  * Retained as an alias, no longer a second wording.
  *
  * It existed because "Find a Kawai Dealer" would not fit a model row inside a
  * dialog or the corner dock, and dropping "Kawai" was the one spacing
- * concession. "Contact a Dealer" is shorter than that concession was and fits
+ * concession. "Sign Up Now" is shorter than that concession was and fits
  * everywhere, so the two names now resolve to one string and the page has a
  * single label on every button.
  *
@@ -187,9 +198,11 @@ export const CTA_LABEL_SHORT = CTA_LABEL
  *
  * One sentence, one definition, because it appears above four separate buttons
  * and the page should not say the same thing four slightly different ways. It
- * says what the form is for, which is the half of the promise the label stopped
- * carrying when it became "Contact a Dealer" — a shopper reads the two together
- * as "contact a dealer, and this is what you get back".
+ * says what the form is for, which with the label at "Sign Up Now" is the whole
+ * of the promise — a shopper reads the two together as "this is what signing up
+ * gets you, and here is the button". It was load-bearing beside "Contact a
+ * Dealer" and it is more so beside this label: do not drop it from a scene to
+ * save a line.
  *
  * "Pricing and inventory" is deliberate and must stay figure-free: the sentence
  * renders in the financing section among Synchrony-reviewed copy, so a rate, a
@@ -776,7 +789,8 @@ export const acousticRebate = {
  * ── Every line is a compression of copy already approved below ────────────
  * Not new claims. "On acoustic grands & uprights" is the financing slide's own
  * body; "Free with a CN or CA Series digital" is `bundle.standfirst`'s opening;
- * "Off ES Series portables, at the counter" is `rebate.standfirst`'s mechanism.
+ * "at the counter" is `rebate.standfirst`'s and `acousticRebate.standfirst`'s
+ * shared mechanism.
  * Writing them fresh would put three unreviewed sentences in the loudest
  * position on the page.
  *
@@ -793,12 +807,20 @@ export const acousticRebate = {
  * where that headline can be set compliantly. The compliance test reads these
  * lines with the rest of the page's copy.
  *
- * Order is `STACK_ORDER` — financing, bundle, rebates, the offers by what they
- * are worth to a shopper — not the order page.tsx renders the sections in. The
- * rail has to match document order because an IntersectionObserver drives it;
- * this is a promise rather than a position, so it does not.
+ * Order is document order — bundle, financing, rebates — matching the sections
+ * page.tsx renders and the rows `NAV_SECTIONS` lists, not `STACK_ORDER`'s
+ * worth-to-a-shopper ranking. Three cards that jump into the page are
+ * wayfinding, and wayfinding that disagrees with the page it points at makes a
+ * reader scroll backwards to find the second thing they were promised. If a
+ * section moves in page.tsx, it moves here in the same commit.
  */
 const VALUE_PROPS = [
+  {
+    offer: 'bundle',
+    detail: 'Free with a CN or CA Series digital',
+    highlight: 'Free',
+    sectionId: SECTION.bundle,
+  },
   {
     offer: 'financing',
     detail: 'On acoustic grands & uprights',
@@ -809,16 +831,29 @@ const VALUE_PROPS = [
     sectionId: SECTION.financing,
   },
   {
-    offer: 'bundle',
-    detail: 'Free with a CN or CA Series digital',
-    highlight: 'Free',
-    sectionId: SECTION.bundle,
-  },
-  {
     offer: 'rebates',
-    detail: 'Off ES Series portables, at the counter',
-    // The mechanism is the offer: it comes off the price in the showroom, with
-    // nothing to claim and nothing to post.
+    /**
+     * Scope stays generic because it is not the same scope on both sites.
+     *
+     * It read "Off ES Series portables, at the counter", which is the US
+     * page's rebate offering exactly and the Canadian page's only partly: CA
+     * runs `AcousticRebateBlock` as well, six grand and upright models in
+     * Ebony Polish, and that section gets no card of its own — the band is
+     * bundle + rebates there, so this one cell is the hero's only entry for
+     * both rebate offers. Naming the portables made it the index to one of
+     * them.
+     *
+     * Which models carry a rebate is also data, not copy: `EsRebateBlock`
+     * drops any row the catalogue fetch did not return, and `esRebatesFor`
+     * swaps the whole amount column per site. "Select products" is the one
+     * scope that cannot go stale against either.
+     *
+     * The mechanism is kept, because it is the offer: it comes off the price
+     * in the showroom, with nothing to claim and nothing to post. That is true
+     * of the acoustic rebate and the ES rebate alike — `acousticRebate`'s and
+     * `rebate`'s standfirsts say it in the same words.
+     */
+    detail: 'On select products, at the counter',
     highlight: 'at the counter',
     sectionId: SECTION.rebate,
   },

@@ -22,6 +22,7 @@ import {
   financingRanges,
   SECTION,
   CTA_LABEL_SHORT,
+  CTA_LEAD_IN,
   INTRO_APR,
   PROGRAM_END,
   PROGRAM_END_ISO,
@@ -194,11 +195,17 @@ export default async function FallFinancingPage() {
             same provider, same config — and runs from the first offer to the
             disclosure, which is the one part of the page an urgency pill has no
             business sitting over. On ca.kawaius.com there is no disclosure, so
-            the dock's own fallback carries it to the end of the page. */}
+            the dock's own fallback carries it to the end of the page.
+
+            `ariaLabel` because this is the one CTA on the page with no lead-in
+            sentence beside it: "Sign Up Now" in a bare pill is a verb with no
+            object. The visible label stays short and the accessible name says
+            what the page's other buttons get from the copy above them. */}
         <PromoOfferDock
           endsOn={PROGRAM_END_ISO}
           endsLabel={PROGRAM_END_SHORT}
           label={CTA_LABEL_SHORT}
+          ariaLabel={`${CTA_LABEL_SHORT} — ${CTA_LEAD_IN}`}
           afterId={SECTION.bundle}
           beforeId={SECTION.disclosures}
         />

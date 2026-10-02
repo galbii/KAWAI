@@ -14,6 +14,15 @@ interface PromoOfferDockProps {
   endsLabel: string
   /** The button. Short: this is a corner pill, not a section CTA. */
   label: string
+  /**
+   * The button's accessible name, when `label` alone does not say what it does.
+   *
+   * Every other CTA on the page has its lead-in sentence beside it; this one has
+   * a day count and nothing else, so a label like "Sign Up Now" leaves a screen
+   * reader with the verb and no object (WCAG 2.4.4). Pass the full purpose here
+   * and the visible pill stays short. Omitted, the label is the name.
+   */
+  ariaLabel?: string
   /** Appears once this section has been reached. */
   afterId: string
   /** Disappears once this section is close. */
@@ -57,6 +66,12 @@ interface PromoOfferDockProps {
  * No figure appears here but the deadline. A rate or a term in a floating pill
  * is a credit advertisement that has left its disclosure behind, which is the
  * same rule that keeps them out of the side rail's labels.
+ *
+ * ── The label says less than the page's buttons do ───────────────────────
+ *
+ * A section CTA is read with the lead-in sentence above it; this one is read
+ * with a day count. So the pill takes `ariaLabel` for the purpose its short
+ * label leaves out, and the caller is the one that knows it.
  */
 
 const DAY_MS = 86_400_000
@@ -70,6 +85,7 @@ export function PromoOfferDock({
   endsOn,
   endsLabel,
   label,
+  ariaLabel,
   afterId,
   beforeId,
 }: PromoOfferDockProps) {
@@ -145,6 +161,9 @@ export function PromoOfferDock({
         <button
           type="button"
           onClick={open}
+          // The pill carries no copy but a day count, so the visible label is
+          // the whole accessible name unless the caller supplies a fuller one.
+          {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
           tabIndex={visible ? 0 : -1}
           className="promo-body bg-[color:var(--ember)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--btn-label)] transition-colors duration-200 hover:bg-[color:var(--ember)]/90 focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{ outlineColor: 'var(--ivory)' }}

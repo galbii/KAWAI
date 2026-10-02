@@ -141,7 +141,7 @@ describe("the hero's value props", () => {
     // easily forgotten, because it is the only one that renders inside another
     // component's slot.
     expect(valuePropsFor('cad').map((v) => v.offer)).toEqual(['bundle', 'rebates'])
-    expect(valuePropsFor('us').map((v) => v.offer)).toEqual(['financing', 'bundle', 'rebates'])
+    expect(valuePropsFor('us').map((v) => v.offer)).toEqual(['bundle', 'financing', 'rebates'])
   })
 
   it('names each offer exactly as every other surface names it', () => {
