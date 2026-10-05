@@ -58,6 +58,41 @@ export const ProductReference: Block = {
       ],
     },
     {
+      name: 'dealerCta',
+      type: 'group',
+      admin: {
+        description:
+          '📍 Override the "Find a Dealer" button. This button renders whenever the card can’t transact — on the Canada site, when the product has no Shopify link, or when the selected finish is out of stock.',
+      },
+      fields: [
+        {
+          name: 'text',
+          type: 'text',
+          admin: {
+            placeholder: 'Find a Dealer',
+            description: 'Optional button label override',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          admin: {
+            placeholder: '/find-a-dealer',
+            description:
+              'Send the button somewhere other than /find-a-dealer (e.g. "/store/st-louis", "/contact", or a full https:// URL). Leave blank for the default.',
+          },
+        },
+        {
+          name: 'openInNewTab',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Open the link in a new tab',
+          },
+        },
+      ],
+    },
+    {
       name: 'layout',
       type: 'group',
       admin: {

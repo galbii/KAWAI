@@ -8490,6 +8490,23 @@ export interface ProductReferenceBlock {
     showVariantSelector?: boolean | null;
   };
   /**
+   * 📍 Override the "Find a Dealer" button. This button renders whenever the card can’t transact — on the Canada site, when the product has no Shopify link, or when the selected finish is out of stock.
+   */
+  dealerCta?: {
+    /**
+     * Optional button label override
+     */
+    text?: string | null;
+    /**
+     * Send the button somewhere other than /find-a-dealer (e.g. "/store/st-louis", "/contact", or a full https:// URL). Leave blank for the default.
+     */
+    url?: string | null;
+    /**
+     * Open the link in a new tab
+     */
+    openInNewTab?: boolean | null;
+  };
+  /**
    * Visual layout of the product card
    */
   layout?: {

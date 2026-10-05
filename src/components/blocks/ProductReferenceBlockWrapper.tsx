@@ -21,6 +21,11 @@ interface ProductReferenceBlockWrapperProps {
     imageSize?: ('small' | 'medium' | 'large') | null
     backgroundColor?: ('white' | 'pearl' | 'black') | null
   } | null
+  dealerCta?: {
+    text?: string | null
+    url?: string | null
+    openInNewTab?: boolean | null
+  } | null
   [key: string]: unknown
 }
 
@@ -28,6 +33,7 @@ export async function ProductReferenceBlockWrapper({
   product: productProp,
   display,
   layout,
+  dealerCta,
 }: ProductReferenceBlockWrapperProps) {
   // Relationship field may arrive as a full object (depth >= 1) or bare string ID
   const product = typeof productProp === 'object' && productProp !== null ? productProp : null
@@ -46,6 +52,7 @@ export async function ProductReferenceBlockWrapper({
       isCanada={site === 'cad'}
       display={display ?? null}
       layout={layout ?? null}
+      dealerCta={dealerCta ?? null}
     />
   )
 }

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Post, Category, Product } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { ShareButtons } from './ShareButtons'
-import { ProductReferenceBlock } from '@/components/blocks/ProductReferenceBlock'
+import { ProductReferenceBlock, type ProductReferenceBlockProps } from '@/components/blocks/ProductReferenceBlock'
 
 // ─── Social icons ────────────────────────────────────────────────────────────
 
@@ -62,15 +62,25 @@ function isCategoryObject(cat: string | Category): cat is Category {
   return typeof cat === 'object' && cat !== null && 'title' in cat
 }
 
-function findSidebarProduct(post: Post): Product | null {
+interface SidebarProduct {
+  product: Product
+  /** Find a Dealer overrides carried over from the post's product-reference block */
+  dealerCta: NonNullable<ProductReferenceBlockProps['dealerCta']> | null
+}
+
+function findSidebarProduct(post: Post): SidebarProduct | null {
   if (!Array.isArray(post.layout)) return null
-  for (const block of post.layout as Array<{ blockType?: string; product?: unknown }>) {
+  for (const block of post.layout as Array<{
+    blockType?: string
+    product?: unknown
+    dealerCta?: ProductReferenceBlockProps['dealerCta']
+  }>) {
     if (
       block.blockType === 'product-reference' &&
       typeof block.product === 'object' &&
       block.product !== null
     ) {
-      return block.product as Product
+      return { product: block.product as Product, dealerCta: block.dealerCta ?? null }
     }
   }
   return null
@@ -235,9 +245,10 @@ function SidebarContent({ post }: { post: Post }) {
           </h3>
           <div className="-my-1">
             <ProductReferenceBlock
-              product={sidebarProduct}
+              product={sidebarProduct.product}
               layout={{ orientation: 'vertical', imageSize: 'medium', backgroundColor: 'white' }}
               display={{ showDescription: false }}
+              dealerCta={sidebarProduct.dealerCta}
             />
           </div>
         </div>

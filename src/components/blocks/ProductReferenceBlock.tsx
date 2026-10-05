@@ -20,6 +20,12 @@ interface DisplayOptions {
   showVariantSelector?: boolean | null
 }
 
+interface DealerCtaOptions {
+  text?: string | null
+  url?: string | null
+  openInNewTab?: boolean | null
+}
+
 interface LayoutOptions {
   orientation?: ('horizontal' | 'vertical') | null
   imageSize?: ('small' | 'medium' | 'large') | null
@@ -35,6 +41,8 @@ export interface ProductReferenceBlockProps {
   isCanada?: boolean
   display?: DisplayOptions | null
   layout?: LayoutOptions | null
+  /** Overrides for the "Find a Dealer" fallback button (label, destination, new tab) */
+  dealerCta?: DealerCtaOptions | null
 }
 
 // ─── Normalised variant shape (works with either data source) ─────────────────
@@ -104,6 +112,10 @@ const TEXT:   Record<string, string> = { white: 'text-kawai-black', pearl: 'text
 const MUTED:  Record<string, string> = { white: 'text-kawai-muted', pearl: 'text-kawai-muted', black: 'text-white/70' }
 const BORDER: Record<string, string> = { white: 'border-kawai-neutral', pearl: 'border-kawai-neutral', black: 'border-white/10' }
 
+// Shared by the internal <Link> and external <a> variants of the Find a Dealer CTA
+const DEALER_CTA_CLASSES =
+  'flex items-center justify-center gap-2 w-full py-3 text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] bg-kawai-red text-white hover:bg-red-700 transition-colors duration-200 rounded'
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function VariantSelector({
@@ -171,6 +183,7 @@ export function ProductReferenceBlock({
   isCanada: isCanadaProp,
   display,
   layout,
+  dealerCta,
 }: ProductReferenceBlockProps) {
   // Resolve relationship — may arrive as populated object or bare string ID
   const product = typeof productProp === 'object' && productProp !== null ? productProp : null
@@ -212,6 +225,17 @@ export function ProductReferenceBlock({
   const hasVariants = variants.length > 0
   // Can transact when: not Canada, has variant IDs (either from Shopify or CMS sync)
   const canTransact = !isCanada && hasVariants
+
+  // "Find a Dealer" fallback CTA — the block can retitle it and point it elsewhere
+  // (a specific storefront, a contact page). Mirrors ProductHeroBlock's dealerCta.
+  const dealerHref = dealerCta?.url?.trim() || '/find-a-dealer'
+  const dealerLabel = dealerCta?.text?.trim() || 'Find a Dealer'
+  // An absolute URL leaves the app, so it needs a plain <a> — next/link would try to
+  // client-navigate it. Protocol-relative and mailto/tel count as external too.
+  const dealerIsExternal = /^(https?:|mailto:|tel:|\/\/)/i.test(dealerHref)
+  const dealerNewTabProps = dealerCta?.openInNewTab === true
+    ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+    : {}
 
   if (!product) return null
 
@@ -320,13 +344,17 @@ export function ProductReferenceBlock({
               </>
             ) : (
               <div className="space-y-2">
-                <Link
-                  href="/find-a-dealer"
-                  className="flex items-center justify-center gap-2 w-full py-3 text-[10px] uppercase tracking-[0.22em] font-bold font-[family-name:var(--font-brand-sans)] bg-kawai-red text-white hover:bg-red-700 transition-colors duration-200 rounded"
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  Find a Dealer
-                </Link>
+                {dealerIsExternal ? (
+                  <a href={dealerHref} {...dealerNewTabProps} className={DEALER_CTA_CLASSES}>
+                    <MapPin className="w-3.5 h-3.5" />
+                    {dealerLabel}
+                  </a>
+                ) : (
+                  <Link href={dealerHref} {...dealerNewTabProps} className={DEALER_CTA_CLASSES}>
+                    <MapPin className="w-3.5 h-3.5" />
+                    {dealerLabel}
+                  </Link>
+                )}
                 {product.slug && (
                   <Link
                     href={`/products/${product.slug}`}
