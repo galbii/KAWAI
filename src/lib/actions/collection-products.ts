@@ -5,6 +5,8 @@ import { getPayloadClient, getFeaturedCollections } from '@/lib/payload/queries'
 import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
 import { excludeHiddenFrom, type ProductSurface } from '@/lib/products/visibility'
 import type { NavProduct } from '@/lib/payload/products-navigation'
+import { getSite } from '@/lib/site-context'
+import { availableOnSite } from '@/lib/site-availability'
 
 /**
  * Fetch products for a collection tab in the mega menu.
@@ -23,11 +25,15 @@ import type { NavProduct } from '@/lib/payload/products-navigation'
  * feeds two different surfaces: the mega menu's collection tab ('navigation') and
  * the /collections browse grid ('browsers'). It is part of the cache key so the two
  * variants never share an entry.
+ *
+ * The site (US / CA) is read from the request on the server — never trusted from
+ * the client — and is likewise part of the cache key.
  */
 export async function getProductsByCollection(
   handle: string,
   surface: ProductSurface = 'navigation',
 ): Promise<NavProduct[]> {
+  const site = await getSite()
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
@@ -40,6 +46,7 @@ export async function getProductsByCollection(
             { type: { not_equals: 'accessory' } },
             { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             excludeHiddenFrom(surface),
+            availableOnSite(site),
           ],
         },
         select: {
@@ -100,7 +107,7 @@ export async function getProductsByCollection(
           : null,
       }))
     },
-    [`collection-products-${handle}-${surface}`],
+    [`collection-products-${handle}-${surface}-${site}`],
     { tags: [`collection-${handle}`, 'products', 'collections'], revalidate: 300 },
   )()
 }

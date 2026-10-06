@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-context'
+import { exclusiveSite, type SiteAvailability } from '@/lib/site-availability'
 import { SHIGERU_MODELS } from '@/app/(shigeru-website)/shigeru/_data/models'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
@@ -19,6 +20,12 @@ interface AddOptions {
    * is still listed, but without an `en-CA` alternate.
    */
   usOnly?: boolean
+  /**
+   * Generalised `usOnly`: list the URL only on this site's sitemap, with no
+   * hreflang alternates. Use for documents with a `siteAvailability`
+   * restriction (pass `exclusiveSite(doc)` — `null` means both sites).
+   */
+  onlyOn?: Site | null
 }
 
 /**
@@ -36,13 +43,14 @@ function pushUrl(
   path: string,
   options: AddOptions = {},
 ): void {
-  if (options.usOnly && site === 'cad') return
+  const onlyOn = options.onlyOn ?? (options.usOnly ? 'us' : null)
+  if (onlyOn && onlyOn !== site) return
 
   const entry: SitemapEntry = { url: `${getSiteUrl(site)}${path}` }
   if (options.changeFrequency !== undefined) entry.changeFrequency = options.changeFrequency
   if (options.priority !== undefined) entry.priority = options.priority
   if (options.lastModified !== undefined) entry.lastModified = options.lastModified
-  if (!options.usOnly) {
+  if (!onlyOn) {
     entry.alternates = { languages: getSiteAlternates(path) }
   }
 
@@ -247,7 +255,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'products',
         where: { status: { equals: 'active' } },
         limit: 1000,
-        select: { slug: true, updatedAt: true, featured: true, shopify: true },
+        select: { slug: true, updatedAt: true, featured: true, shopify: true, siteAvailability: true },
         depth: 0,
       })
 
@@ -256,6 +264,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         updatedAt: string
         featured?: boolean
         shopify?: { shopifyStatus?: string }
+        siteAvailability?: SiteAvailability | null
       }>) {
         if (!p.slug) continue
         if (p.shopify?.shopifyStatus === 'UNLISTED') continue
@@ -263,6 +272,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           changeFrequency: 'weekly',
           priority: p.featured ? 0.9 : 0.7,
           lastModified: new Date(p.updatedAt),
+          onlyOn: exclusiveSite(p),
         })
       }
       console.log(`✅ Sitemap: ${productsResult.docs.length} products`)

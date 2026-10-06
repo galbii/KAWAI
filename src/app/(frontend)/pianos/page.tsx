@@ -114,12 +114,12 @@ export default async function PianosPage() {
   }
 
   // Default static layout
-  const [products, spotlightItems, collectionsForBrowser, pianosPageData, site] = await Promise.all([
-    getCatalogProductsDirect(),
+  const site = await getSite()
+  const [products, spotlightItems, collectionsForBrowser, pianosPageData] = await Promise.all([
+    getCatalogProductsDirect(site),
     getProductSpotlightNewsItems(),
     getCollectionsForBrowser(),
     getPianosPageCMSData(),
-    getSite(),
   ])
 
   return (

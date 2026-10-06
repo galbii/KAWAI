@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { ResolvedRedirect } from '@/app/(frontend)/api/redirects-list/route'
 import { DEFAULT_UI_LOCALE, parseLocalePath } from '@/lib/i18n/locale-path'
+import { siteFromHost } from '@/lib/site-availability'
 
 // ---------------------------------------------------------------------------
 // Module-level redirect cache
@@ -60,8 +61,7 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
 
   // Detect domain — used by layouts, metadata, sitemap, and robots for site-specific rendering
-  const host = request.headers.get('host') ?? ''
-  const site = host.startsWith('ca.') ? 'cad' : 'us'
+  const site = siteFromHost(request.headers.get('host'))
   requestHeaders.set('x-site', site)
 
   // French is applied client-side by the browser's on-device translator, so no

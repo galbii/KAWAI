@@ -7,14 +7,19 @@ interface DealerInfoProps {
 export function DealerInfo({ dealer }: DealerInfoProps) {
   const location = [dealer.address?.city, dealer.address?.state].filter(Boolean).join(', ')
 
-  const description =
-    dealer.description?.trim() ||
-    `${dealer.dealerName} is an authorized Kawai piano dealer located in ${location || 'your area'}. We offer expert consultation, a wide selection of acoustic and digital pianos, and dedicated professional service.`
-
   const hasShigeru = dealer.shigeruKawaiDealer === true
   const hasAcoustic = dealer.acousticPianoDealer === true
+  const hasDigital = dealer.digitalPianoDealer === true
   const hasProfessional = dealer.professionalProductDealer === true
-  const hasDealerTypes = hasShigeru || hasAcoustic || hasProfessional
+  const hasDealerTypes = hasShigeru || hasAcoustic || hasDigital || hasProfessional
+
+  // Fallback copy only claims the product lines this dealer is flagged for
+  const pianoLines = [hasAcoustic && 'acoustic', hasDigital && 'digital'].filter(Boolean).join(' and ')
+  const selection = pianoLines ? `${pianoLines} pianos` : 'Kawai pianos'
+
+  const description =
+    dealer.description?.trim() ||
+    `${dealer.dealerName} is an authorized Kawai piano dealer located in ${location || 'your area'}. We offer expert consultation, a wide selection of ${selection}, and dedicated professional service.`
 
   const yearsInBusiness =
     dealer.yearEstablished && dealer.yearEstablished > 0
@@ -48,6 +53,11 @@ export function DealerInfo({ dealer }: DealerInfoProps) {
             {hasAcoustic && (
               <span className="px-3 py-1 bg-kawai-red/10 text-kawai-red text-xs font-medium rounded-full">
                 Acoustic Piano Dealer
+              </span>
+            )}
+            {hasDigital && (
+              <span className="px-3 py-1 bg-kawai-red/10 text-kawai-red text-xs font-medium rounded-full">
+                Digital Piano Dealer
               </span>
             )}
             {hasProfessional && (

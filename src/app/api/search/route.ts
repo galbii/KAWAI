@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { matchesSoftwareIntent, SOFTWARE_DESTINATION, stripSoftwareTerms } from '@/lib/software/intent'
+import { availableOnSite, siteFromHost } from '@/lib/site-availability'
 
 /**
  * `/software` is a hardcoded route, so the Payload search plugin never indexed it
@@ -22,6 +23,11 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q')
     const limit = parseInt(searchParams.get('limit') || '10')
+    // /api/* is outside the middleware matcher, so x-site is never set here —
+    // resolve the site from the Host header with the same rule middleware uses.
+    // `?site=all` disables the filter (admin pickers need the full catalog).
+    const site = siteFromHost(request.headers.get('host'))
+    const filterBySite = searchParams.get('site') !== 'all'
 
     // Validate query
     if (!query || query.length < 2) {
@@ -139,7 +145,8 @@ export async function GET(request: NextRequest) {
 
     const results = await payload.find({
       collection: 'search',
-      where: whereClause,
+      // Hide US-only results on ca.kawaius.com and Canada-only results on kawaius.com
+      where: filterBySite ? { and: [whereClause, availableOnSite(site)] } : whereClause,
       limit,
       depth: 2,
       sort: '-priority', // Higher priority first (products = 20, pages = 10)

@@ -2,9 +2,11 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import type { Where } from 'payload'
 import type { Product } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { formatPrice } from '@/lib/utils'
+import { availableOnSite } from '@/lib/site-availability'
 import {
   dedupeWithLimit,
   extractRelationshipIds,
@@ -345,6 +347,13 @@ export async function RelatedProductsRenderer({
 
   const limit = Math.min(Math.max(maxProducts ?? 4, 2), 8)
   const selection = selectionMode ?? 'auto'
+  // Every lookup below (curated, compatible, same-collection, accessories) only
+  // surfaces active products sold on the current site — a Canada-only model never
+  // appears as "related" on kawaius.com and vice versa.
+  const activeOnSite: Where[] = [
+    { status: { equals: 'active' } },
+    availableOnSite(isCanada ? 'cad' : 'us'),
+  ]
   const payload = await getPayloadClient()
 
   const sectionArgs = {
@@ -367,7 +376,7 @@ export async function RelatedProductsRenderer({
     try {
       const { docs } = await payload.find({
         collection: 'products',
-        where: { and: [{ id: { in: curatedIds } }, { status: { equals: 'active' } }] },
+        where: { and: [{ id: { in: curatedIds } }, ...activeOnSite] },
         select: SELECT_FIELDS,
         depth: 0,
         limit: curatedIds.length,
@@ -392,7 +401,7 @@ export async function RelatedProductsRenderer({
       try {
         const { docs } = await payload.find({
           collection: 'products',
-          where: { and: [{ id: { in: compatibleIds } }, { status: { equals: 'active' } }] },
+          where: { and: [{ id: { in: compatibleIds } }, ...activeOnSite] },
           select: SELECT_FIELDS,
           depth: 0,
           limit: limit + curated.length,
@@ -423,7 +432,7 @@ export async function RelatedProductsRenderer({
             and: [
               { 'shopifyCollections.shopifyCollectionId': { in: shopifyCollectionIds } } as any,
               { id: { not_equals: String(product.id) } },
-              { status: { equals: 'active' } },
+              ...activeOnSite,
             ],
           },
           select: SELECT_FIELDS,
@@ -440,7 +449,7 @@ export async function RelatedProductsRenderer({
                 and: [
                   { type: { equals: product.type } },
                   { id: { not_equals: String(product.id) } },
-                  { status: { equals: 'active' } },
+                  ...activeOnSite,
                 ],
               },
               select: SELECT_FIELDS,
@@ -459,7 +468,7 @@ export async function RelatedProductsRenderer({
             and: [
               { type: { equals: product.type } },
               { id: { not_equals: String(product.id) } },
-              { status: { equals: 'active' } },
+              ...activeOnSite,
             ],
           },
           select: SELECT_FIELDS,
@@ -481,7 +490,7 @@ export async function RelatedProductsRenderer({
         where: {
           and: [
             { compatibleProducts: { in: [String(product.id)] } } as any,
-            { status: { equals: 'active' } },
+            ...activeOnSite,
           ],
         },
         select: SELECT_FIELDS,

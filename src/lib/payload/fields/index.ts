@@ -10,3 +10,4 @@ export {
 } from './media'
 export { shopifyMediaField } from './shopify-media-field'
 export { slugBeforeDuplicate } from './slug'
+export { siteAvailabilityField } from './site-availability'

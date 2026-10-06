@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload/queries'
 import type { Product } from '@/payload-types'
+import { availableOnSite } from '@/lib/site-availability'
 
 export const revalidate = 3600
 
@@ -196,7 +197,8 @@ export async function GET() {
 
     const { docs: products } = await payload.find({
       collection: 'products',
-      where: { status: { equals: 'active' } },
+      // US feed (USD, kawaius.com links) — Canada-only products are excluded
+      where: { and: [{ status: { equals: 'active' } }, availableOnSite('us')] },
       depth: 0,
       limit: 500,
     })

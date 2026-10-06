@@ -28,6 +28,7 @@ import { buildFeaturedMap, featuredRank, sortByFeatured } from '@/lib/piano/feat
 import { getCMSPageMetadata } from '@/lib/seo/cms-page-metadata'
 import type { Product } from '@/payload-types'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite, type Locale } from '@/lib/site-context'
+import { availableOnSite } from '@/lib/site-availability'
 
 export const revalidate = 3600
 
@@ -221,6 +222,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
                   { status: { equals: 'active' } },
                   { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
                   { type: { equals: cat } },
+                  availableOnSite(site),
                 ],
               },
               select: {
@@ -238,7 +240,7 @@ export default async function CategoryPage({ params }: CategoryPageParams) {
             })
             return docs
           },
-          [`category-products-${cat}`],
+          [`category-products-${cat}-${site}`],
           { tags: ['products'], revalidate: 3600 },
         )()
 

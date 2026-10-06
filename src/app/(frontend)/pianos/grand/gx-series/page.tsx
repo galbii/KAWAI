@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getProductsByModelPrefix } from '@/lib/payload/queries'
+import { getSite } from '@/lib/site-context'
 import { cn, formatPrice } from '@/lib/utils'
 
 export const revalidate = 3600
@@ -98,7 +99,7 @@ const lineup = [
 ]
 
 export default async function GxSeriesGuidePage() {
-  const allProducts = await getProductsByModelPrefix('GX')
+  const allProducts = await getProductsByModelPrefix('GX', await getSite())
   const featured = allProducts.slice(0, 4)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? ''
 

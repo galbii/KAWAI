@@ -5,7 +5,7 @@ import { fetchAllShopifyProductsWithModels } from '@/lib/shopify/fetch-all-produ
 import { fetchActiveAutomaticDiscounts, computeProductDiscount, type NormalizedDiscount } from '@/lib/shopify/fetch-discounts'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
 import type { ShopifyProductData } from '@/lib/shopify/fetch-product'
-import { imageField, mediaArrayField, shopifyMediaField, slugBeforeDuplicate } from '@/lib/payload/fields'
+import { imageField, mediaArrayField, shopifyMediaField, siteAvailabilityField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { getProductMedia, transformMediaToPayload, getPrimaryImageUrl } from '@/lib/shopify'
 
 // Shared conditions for the Promo tab — fields only appear once the promo is
@@ -237,7 +237,7 @@ export const Products: CollectionConfig = {
   },
   admin: {
     group: 'Commerce',
-    defaultColumns: ['model', 'name', 'type', 'status', 'updatedAt'],
+    defaultColumns: ['model', 'name', 'type', 'status', 'siteAvailability', 'updatedAt'],
     useAsTitle: 'name',
     description: 'Unified product management - pianos, accessories, and other products with dynamic page building',
     components: {
@@ -267,6 +267,15 @@ export const Products: CollectionConfig = {
     read: () => true, // Public read access for frontend
   },
   fields: [
+    // US-only / Canada-only restriction. Sidebar so it's visible from every tab.
+    // Filters live in src/lib/site-availability.ts — apply availableOnSite(site)
+    // at any new product query site.
+    siteAvailabilityField({
+      admin: {
+        description:
+          '"US only" hides this product everywhere on ca.kawaius.com (browse, search, menus, sitemap); "Canada only" does the same on kawaius.com. Visitors who land on the product page from the other site are redirected to the site that carries it.',
+      },
+    }),
     // Basic Product Information
     {
       type: 'tabs',

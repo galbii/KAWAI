@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import type { Product } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { formatPrice } from '@/lib/utils'
+import { availableOnSite } from '@/lib/site-availability'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -201,6 +202,7 @@ export async function ProductAccessoriesRenderer({
           { compatibleProducts: { in: [String(product.id)] } } as any,
           { status: { equals: 'active' } },
           { type: { equals: 'accessory' } },
+          availableOnSite(isCanada ? 'cad' : 'us'),
         ],
       },
       select: SELECT_FIELDS,

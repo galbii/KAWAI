@@ -7,11 +7,11 @@ import { NewsCarousel } from '@/components/homepage/news-carousel'
 export async function PianosBrowserRenderer(props: MarketingPianosBrowserBlock) {
   const showNewsCarousel = props.showNewsCarousel !== false
 
-  const [products, spotlightItems, collectionsForBrowser, site] = await Promise.all([
-    getCatalogProductsDirect(),
+  const site = await getSite()
+  const [products, spotlightItems, collectionsForBrowser] = await Promise.all([
+    getCatalogProductsDirect(site),
     showNewsCarousel ? getProductSpotlightNewsItems() : Promise.resolve([]),
     getCollectionsForBrowser(),
-    getSite(),
   ])
 
   return (

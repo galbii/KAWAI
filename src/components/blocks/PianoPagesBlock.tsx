@@ -23,10 +23,10 @@ export default async function PianoPagesBlock({
 }: Props) {
   if (!category) return null
 
-  const [products, collections, site] = await Promise.all([
-    getCatalogProductsByCategory(category),
+  const site = await getSite()
+  const [products, collections] = await Promise.all([
+    getCatalogProductsByCategory(category, site),
     getCollectionsForCategory(category),
-    getSite(),
   ])
 
   const carouselCollections = collections.filter(

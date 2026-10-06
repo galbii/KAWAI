@@ -2081,6 +2081,10 @@ export interface MarketingHeroBlock {
 export interface Product {
   id: string;
   /**
+   * "US only" hides this product everywhere on ca.kawaius.com (browse, search, menus, sitemap); "Canada only" does the same on kawaius.com. Visitors who land on the product page from the other site are redirected to the site that carries it.
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
+  /**
    * Model identifier - matches Shopify custom.model metafield (PRIMARY KEY)
    */
   model: string;
@@ -11706,6 +11710,10 @@ export interface Search {
    */
   productSlug?: string | null;
   /**
+   * Site availability (denormalized from the source document)
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
+  /**
    * Page slug (denormalized from Pages collection)
    */
   pageSlug?: string | null;
@@ -13082,6 +13090,7 @@ export interface SoftwareReleasesSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  siteAvailability?: T;
   model?: T;
   modelLabel?: T;
   name?: T;
@@ -13979,6 +13988,7 @@ export interface SearchSelect<T extends boolean = true> {
   productType?: T;
   productCategory?: T;
   productSlug?: T;
+  siteAvailability?: T;
   pageSlug?: T;
   collectionHandle?: T;
   collectionTitle?: T;

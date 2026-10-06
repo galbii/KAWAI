@@ -11,6 +11,8 @@ import {
   HIDE_FROM_BROWSERS,
   HIDE_FROM_COLLECTION_PAGES,
 } from '@/lib/products/visibility'
+import { availableOnSite } from '@/lib/site-availability'
+import type { Site } from '@/lib/site-context'
 import { sortStandardFirst } from '@/lib/piano/non-standard-model'
 import { extractYouTubeId } from '@/lib/utils/youtube'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
@@ -1358,15 +1360,15 @@ type CatalogProduct = {
   }> | null
 }
 
-export function getCatalogProductsDirect(): Promise<CatalogProduct[]> {
+export function getCatalogProductsDirect(site: Site): Promise<CatalogProduct[]> {
   return unstable_cache(
-    async (): Promise<CatalogProduct[]> => _getCatalogProductsDirect(),
-    ['catalog-products-v2'],
+    async (): Promise<CatalogProduct[]> => _getCatalogProductsDirect(site),
+    ['catalog-products-v3', site],
     { tags: ['products'], revalidate: 3600 },
   )()
 }
 
-async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
+async function _getCatalogProductsDirect(site: Site): Promise<CatalogProduct[]> {
   try {
     const payload = await getPayloadClient()
 
@@ -1378,6 +1380,7 @@ async function _getCatalogProductsDirect(): Promise<CatalogProduct[]> {
           // them as "Legacy" (hidden by default, revealed via the Show Legacy toggle).
           { status: { not_equals: 'draft' } },
           HIDE_FROM_BROWSERS,
+          availableOnSite(site),
         ],
       },
       select: {
@@ -1646,6 +1649,7 @@ export async function getNearbyDealersDirect(
         shigeruKawaiDealer: true,
         acousticPianoDealer: true,
         professionalProductDealer: true,
+        digitalPianoDealer: true,
         isFeatured: true,
       },
       depth: 0,
@@ -1926,6 +1930,7 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
           { status: { equals: 'active' } },
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
           HIDE_FROM_COLLECTION_PAGES,
+          availableOnSite(site),
         ],
       },
       select: {
@@ -2717,6 +2722,7 @@ export function getCollectionsForCategory(
  */
 export function getCatalogProductsByCategory(
   category: 'digital' | 'grand' | 'upright' | 'hybrid' | 'shigeru',
+  site: Site,
 ): Promise<
   Array<{
     id: string
@@ -2774,6 +2780,7 @@ export function getCatalogProductsByCategory(
             { status: { not_equals: 'draft' } },
             { or: orConditions as Where[] },
             HIDE_FROM_BROWSERS,
+            availableOnSite(site),
           ],
         },
         select: {
@@ -2853,7 +2860,7 @@ export function getCatalogProductsByCategory(
           : null,
       }))
     },
-    ['catalog-products-by-category-v2', category],
+    ['catalog-products-by-category-v3', category, site],
     { tags: ['products', `products-category-${category}`], revalidate: 3600 },
   )()
 }
@@ -2967,58 +2974,60 @@ export interface AccessoryForPage {
  * Get all active, catalog-visible non-accessory products for the accessories browser piano selector.
  * Cached for 1 hour; invalidated by the 'products' tag.
  */
-export const getCatalogPianoProducts = unstable_cache(
-  async (): Promise<PianoForSelector[]> => {
-    try {
-      const payload = await getPayloadClient()
-      const result = await payload.find({
-        collection: 'products',
-        where: {
-          and: [
-            { status: { equals: 'active' } },
-            { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
-            { type: { not_equals: 'accessory' } },
-            HIDE_FROM_BROWSERS,
-          ],
-        },
-        select: {
-          model: true,
-          name: true,
-          slug: true,
-          type: true,
-          category: true,
-          imageUrl: true,
-          price: true,
-          visibility: true,
-          variations: true,
-        },
-        sort: 'visibility.sortOrder,name',
-        depth: 0,
-        limit: 500,
-      })
-      return result.docs.map((doc) => {
-        const variations = (doc.variations as any[] | null | undefined) ?? []
-        return {
-          id: String(doc.id),
-          model: doc.model,
-          name: doc.name ?? null,
-          slug: doc.slug ?? '',
-          type: (doc.type as string | null | undefined) ?? null,
-          category: (doc.category as string | null | undefined) ?? null,
-          imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
-          price: doc.price
-            ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
-            : null,
-          shopifyVariantId: (variations[0] as any)?.shopifyVariantId ?? null,
-        }
-      })
-    } catch {
-      return []
-    }
-  },
-  ['catalog-piano-products'],
-  { tags: ['products'], revalidate: 3600 },
-)
+export const getCatalogPianoProducts = (site: Site): Promise<PianoForSelector[]> =>
+  unstable_cache(
+    async (): Promise<PianoForSelector[]> => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'products',
+          where: {
+            and: [
+              { status: { equals: 'active' } },
+              { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
+              { type: { not_equals: 'accessory' } },
+              HIDE_FROM_BROWSERS,
+              availableOnSite(site),
+            ],
+          },
+          select: {
+            model: true,
+            name: true,
+            slug: true,
+            type: true,
+            category: true,
+            imageUrl: true,
+            price: true,
+            visibility: true,
+            variations: true,
+          },
+          sort: 'visibility.sortOrder,name',
+          depth: 0,
+          limit: 500,
+        })
+        return result.docs.map((doc) => {
+          const variations = (doc.variations as any[] | null | undefined) ?? []
+          return {
+            id: String(doc.id),
+            model: doc.model,
+            name: doc.name ?? null,
+            slug: doc.slug ?? '',
+            type: (doc.type as string | null | undefined) ?? null,
+            category: (doc.category as string | null | undefined) ?? null,
+            imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+            price: doc.price
+              ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
+              : null,
+            shopifyVariantId: (variations[0] as any)?.shopifyVariantId ?? null,
+          }
+        })
+      } catch {
+        return []
+      }
+    },
+    ['catalog-piano-products', site],
+    { tags: ['products'], revalidate: 3600 },
+  )()
 
 /**
  * Get all active accessory products with their compatible piano product IDs pre-flattened.
@@ -3026,65 +3035,67 @@ export const getCatalogPianoProducts = unstable_cache(
  * since we only need the IDs for client-side filtering on the accessories browse page.
  * Cached for 1 hour; invalidated by the 'products' tag.
  */
-export const getAccessoriesForPage = unstable_cache(
-  async (): Promise<AccessoryForPage[]> => {
-    try {
-      const payload = await getPayloadClient()
-      const result = await payload.find({
-        collection: 'products',
-        where: {
-          and: [
-            { status: { equals: 'active' } },
-            { type: { equals: 'accessory' } },
-            HIDE_FROM_BROWSERS,
-          ],
-        },
-        // No select restriction — accessories are few and we need compatibleProducts reliably.
-        // At depth: 0, compatibleProducts returns plain string IDs.
-        depth: 0,
-        limit: 200,
-      })
-      return result.docs.map((doc) => ({
-        id: String(doc.id),
-        model: doc.model,
-        name: (doc.name as string | null | undefined) ?? null,
-        slug: (doc.slug as string | null | undefined) ?? null,
-        imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
-        description: (doc.description as string | null | undefined) ?? null,
-        price: doc.price
-          ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
-          : null,
-        // At depth: 0, compatibleProducts is string[] (plain IDs)
-        compatibleProductIds: ((doc.compatibleProducts as any[] | null | undefined) ?? []).map(
-          (p: any) => String(p),
-        ),
-        accessoryType: (doc.accessoryType as string | null | undefined) ?? null,
-        // variations is an array of value objects (not a relationship), returned at any depth
-        variations: ((doc.variations as any[] | null | undefined) ?? []).map((v: any) => ({
-          id: v.id ?? null,
-          shopifyVariantId: v.shopifyVariantId ?? null,
-          name: String(v.name ?? ''),
-          price: v.price ?? null,
-          compareAtPrice: v.compareAtPrice ?? null,
-          available: v.available ?? null,
-          imageUrl: v.imageUrl ?? null,
-          sku: v.sku ?? null,
-        })),
-      }))
-    } catch {
-      return []
-    }
-  },
-  ['accessories-for-page'],
-  { tags: ['products'], revalidate: 3600 },
-)
+export const getAccessoriesForPage = (site: Site): Promise<AccessoryForPage[]> =>
+  unstable_cache(
+    async (): Promise<AccessoryForPage[]> => {
+      try {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+          collection: 'products',
+          where: {
+            and: [
+              { status: { equals: 'active' } },
+              { type: { equals: 'accessory' } },
+              HIDE_FROM_BROWSERS,
+              availableOnSite(site),
+            ],
+          },
+          // No select restriction — accessories are few and we need compatibleProducts reliably.
+          // At depth: 0, compatibleProducts returns plain string IDs.
+          depth: 0,
+          limit: 200,
+        })
+        return result.docs.map((doc) => ({
+          id: String(doc.id),
+          model: doc.model,
+          name: (doc.name as string | null | undefined) ?? null,
+          slug: (doc.slug as string | null | undefined) ?? null,
+          imageUrl: (doc.imageUrl as string | null | undefined) ?? null,
+          description: (doc.description as string | null | undefined) ?? null,
+          price: doc.price
+            ? { msrp: (doc.price as any).msrp ?? null, currency: (doc.price as any).currency ?? null }
+            : null,
+          // At depth: 0, compatibleProducts is string[] (plain IDs)
+          compatibleProductIds: ((doc.compatibleProducts as any[] | null | undefined) ?? []).map(
+            (p: any) => String(p),
+          ),
+          accessoryType: (doc.accessoryType as string | null | undefined) ?? null,
+          // variations is an array of value objects (not a relationship), returned at any depth
+          variations: ((doc.variations as any[] | null | undefined) ?? []).map((v: any) => ({
+            id: v.id ?? null,
+            shopifyVariantId: v.shopifyVariantId ?? null,
+            name: String(v.name ?? ''),
+            price: v.price ?? null,
+            compareAtPrice: v.compareAtPrice ?? null,
+            available: v.available ?? null,
+            imageUrl: v.imageUrl ?? null,
+            sku: v.sku ?? null,
+          })),
+        }))
+      } catch {
+        return []
+      }
+    },
+    ['accessories-for-page', site],
+    { tags: ['products'], revalidate: 3600 },
+  )()
 
 /**
  * Get products by model prefix string — used by series showcase pages.
  * Filters on the `model` field using a contains match (e.g. "CA", "ES", "GX", "GL", "SK-").
  * Results are cached per prefix with 1-hour ISR + product-level invalidation tags.
  */
-export const getProductsByModelPrefix = (prefix: string) =>
+export const getProductsByModelPrefix = (prefix: string, site: Site) =>
   unstable_cache(
     async () => {
       const payload = await getPayloadClient()
@@ -3096,6 +3107,7 @@ export const getProductsByModelPrefix = (prefix: string) =>
             { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
             { model: { contains: prefix } },
             HIDE_FROM_BROWSERS,
+            availableOnSite(site),
           ],
         },
         select: {
@@ -3118,7 +3130,7 @@ export const getProductsByModelPrefix = (prefix: string) =>
       })
       return docs
     },
-    [`series-products-${prefix}`],
+    [`series-products-${prefix}-${site}`],
     { tags: [`series-${prefix}`, 'products'], revalidate: 3600 },
   )()
 

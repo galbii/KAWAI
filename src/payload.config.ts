@@ -12,6 +12,8 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import pino from 'pino'
 import { extractTextFromRichText } from './lib/utils'
+import { siteAvailabilityField } from './lib/payload/fields'
+import { SITE_AVAILABILITY_FIELD } from './lib/site-availability'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -545,6 +547,14 @@ export default buildConfig({
       // Note: storefronts and collections are excluded from beforeSync via skipSync above.
       // Their search index is maintained by manual afterChange hooks in Storefronts.ts and Collections.ts.
       beforeSync: ({ originalDoc, searchDoc, req }) => {
+        // Carried onto every search doc so /api/search can hide US-only / Canada-only
+        // results on the other domain. Source collections without the field fall back
+        // to 'all' (see src/lib/site-availability.ts).
+        const baseDoc = {
+          ...searchDoc,
+          [SITE_AVAILABILITY_FIELD]: originalDoc?.[SITE_AVAILABILITY_FIELD] ?? 'all',
+        }
+
         const isProduct = originalDoc.name && originalDoc.model
 
         if (isProduct) {
@@ -558,7 +568,7 @@ export default buildConfig({
           // Extract product-specific fields
           // IMPORTANT: Store denormalized product data for search results
           return {
-            ...searchDoc,
+            ...baseDoc,
             title: originalDoc.name || originalDoc.model || originalDoc.title,
             excerpt: originalDoc.description?.substring(0, 200) || `${originalDoc.brand || 'Kawai'} ${originalDoc.model || ''}`.trim(),
             category: originalDoc.category || originalDoc.type || 'product',
@@ -596,7 +606,7 @@ export default buildConfig({
             .join(' | ')
 
           return {
-            ...searchDoc,
+            ...baseDoc,
             title: originalDoc.name,
             excerpt: originalDoc.shortBio?.substring(0, 200) || achievementText.substring(0, 200) || '',
             category: 'artist',
@@ -632,7 +642,7 @@ export default buildConfig({
           }
 
           return {
-            ...searchDoc,
+            ...baseDoc,
             title: originalDoc.title,
             excerpt: originalDoc?.hero?.richText
               ? extractTextFromRichText(originalDoc.hero.richText)?.substring(0, 200)
@@ -646,7 +656,7 @@ export default buildConfig({
 
         // Fallback for any other collection
         return {
-          ...searchDoc,
+          ...baseDoc,
           excerpt: originalDoc?.title || '',
           category: 'other',
           tags: [],
@@ -738,6 +748,13 @@ export default buildConfig({
               readOnly: true,
             },
           },
+          // Denormalized site restriction — filtered on by /api/search
+          siteAvailabilityField({
+            admin: {
+              readOnly: true,
+              description: 'Site availability (denormalized from the source document)',
+            },
+          }),
           // Denormalized page fields for fast search results
           {
             name: 'pageSlug',

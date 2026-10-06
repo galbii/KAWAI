@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import config from '@/payload.config'
 import type { Product } from '@/payload-types'
 import { HIDE_FROM_NAVIGATION } from '@/lib/products/visibility'
+import { availableOnSite } from '@/lib/site-availability'
+import type { Site } from '@/lib/site-context'
 
 // ============================================================================
 // Types (compatible with existing ProductsMegaMenu)
@@ -250,8 +252,9 @@ function getProductPrice(product: Product): {
 export async function getProductTypesWithProducts(options?: {
   limit?: number
   samplesPerType?: number
+  site?: Site
 }): Promise<ProductsNavigation> {
-  const { limit = 250, samplesPerType = 6 } = options || {}
+  const { limit = 250, samplesPerType = 6, site = 'us' } = options || {}
 
   try {
     const payload = await getPayload({ config })
@@ -265,6 +268,7 @@ export async function getProductTypesWithProducts(options?: {
           { status: { equals: 'active' } },
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
           HIDE_FROM_NAVIGATION,
+          availableOnSite(site),
         ],
       },
       select: {
@@ -428,7 +432,8 @@ export async function getProductTypesWithProducts(options?: {
  */
 export async function getProductsByTypeForNav(
   category: string,
-  limit: number = 24
+  limit: number = 24,
+  site: Site = 'us',
 ): Promise<NavProduct[]> {
   try {
     const payload = await getPayload({ config })
@@ -443,6 +448,7 @@ export async function getProductsByTypeForNav(
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
           { category: { equals: normalizedCategory } },
           HIDE_FROM_NAVIGATION,
+          availableOnSite(site),
         ],
       },
       select: {
@@ -627,7 +633,7 @@ async function _getNavCollections(
   }
 }
 
-export async function getAccessoriesForNav(limit = 8): Promise<NavAccessory[]> {
+export async function getAccessoriesForNav(limit = 8, site: Site = 'us'): Promise<NavAccessory[]> {
   try {
     const payload = await getPayload({ config })
     const result = await payload.find({
@@ -638,6 +644,7 @@ export async function getAccessoriesForNav(limit = 8): Promise<NavAccessory[]> {
           { type: { equals: 'accessory' } },
           { 'shopify.shopifyStatus': { not_equals: 'UNLISTED' } },
           HIDE_FROM_NAVIGATION,
+          availableOnSite(site),
         ],
       },
       select: { model: true, name: true, slug: true, imageUrl: true, accessoryType: true },

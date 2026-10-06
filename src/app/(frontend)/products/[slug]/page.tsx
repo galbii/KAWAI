@@ -11,10 +11,11 @@ import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schemas'
 import type { SchemaAvailability } from '@/lib/seo/schemas'
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect, unstable_rethrow } from 'next/navigation'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
+import { exclusiveSite, isAvailableOnSite } from '@/lib/site-availability'
 
 // Use ISR (Incremental Static Regeneration) for better SEO and performance
 // Pages are statically generated and revalidated every 1 hour
@@ -74,7 +75,9 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       : {}),
     alternates: {
       canonical: `${siteUrl}/products/${slug}`,
-      languages: getSiteAlternates(`/products/${slug}`),
+      // A US-only / Canada-only product has no counterpart on the other domain —
+      // advertising one would point crawlers at a redirect.
+      ...(exclusiveSite(product) ? {} : { languages: getSiteAlternates(`/products/${slug}`) }),
     },
     openGraph: {
       title,
@@ -103,6 +106,14 @@ export default async function ProductPage(props: PageProps) {
 
     if (!product) {
       notFound()
+    }
+
+    // Region-exclusive product requested on the other domain — send the visitor
+    // to the site that actually sells it (same approach as /shigeru in middleware).
+    if (!isAvailableOnSite(product, site)) {
+      const home = exclusiveSite(product)
+      if (!home) notFound()
+      redirect(`${getSiteUrl(home)}/products/${slug}`)
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kawaius.com'
@@ -172,6 +183,8 @@ export default async function ProductPage(props: PageProps) {
       </div>
     )
   } catch (error) {
+    // notFound() / redirect() signal via thrown errors — let Next handle them
+    unstable_rethrow(error)
     console.error('Error loading product page:', error)
     return <ProductErrorFallback />
   }

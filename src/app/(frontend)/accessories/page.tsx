@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { getCatalogPianoProducts, getAccessoriesForPage } from '@/lib/payload/queries'
+import { getSite } from '@/lib/site-context'
 import { AccessoriesHero } from '@/components/piano/accessories-hero'
 import { PianoBuilder } from '@/components/piano/piano-builder'
 import { AccessoriesPageContent } from '@/components/piano/accessories-page-content'
@@ -16,9 +17,10 @@ export const metadata: Metadata = {
 }
 
 export default async function AccessoriesPage() {
+  const site = await getSite()
   const [pianos, accessories] = await Promise.all([
-    getCatalogPianoProducts(),
-    getAccessoriesForPage(),
+    getCatalogPianoProducts(site),
+    getAccessoriesForPage(site),
   ])
 
   return (

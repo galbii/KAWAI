@@ -440,7 +440,7 @@ export function CollectionsModal({ open, onClose, recent = [] }: CollectionsModa
     const timer = setTimeout(async () => {
       setSearching(true)
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=15`)
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=15&site=all`)
         if (res.ok) {
           const data = await res.json() as { results: DocResult[]; totalDocs: number }
           setDocResults(data.results ?? [])

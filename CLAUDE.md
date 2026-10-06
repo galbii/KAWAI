@@ -695,6 +695,15 @@ if (site === 'cad') { /* Canada-specific */ }
 
 For client components, follow the `ProductHeroBlockWrapper` pattern — server wrapper passes `site` prop down. Use `site === 'cad'` rather than an `isCanada` boolean.
 
+### US-only / Canada-only documents (`siteAvailability`)
+
+`siteAvailabilityField()` (from `@/lib/payload/fields`) adds a sidebar select: `all` (default) / `us` / `cad`. Currently on **Products**. Helpers live in `src/lib/site-availability.ts`:
+- `availableOnSite(site)` — `Where` fragment; add to the `and: [...]` of every frontend query on that collection, and put `site` in the `unstable_cache` key
+- `isAvailableOnSite(doc, site)` / `exclusiveSite(doc)` — in-memory gate (detail page redirect, hreflang, sitemap `onlyOn`)
+- Uses `not_equals <other site>` so docs saved before the field existed (no key in Mongo) stay on both sites — no migration
+
+To add to another collection: add the field, filter its queries with `availableOnSite`, gate its detail page, and pass `onlyOn: exclusiveSite(doc)` in `sitemap.ts`. The search index already denormalizes the field for any source doc that has it; `/api/search` filters by Host (`?site=all` disables, used by admin pickers).
+
 ### Adding hreflang to a new page
 
 Every new page in `(frontend)/` needs `generateMetadata` with `getSiteAlternates('/your-path')`. Without this, the new page breaks `en-CA`/`en-US` alternates. See any existing page for the pattern.
