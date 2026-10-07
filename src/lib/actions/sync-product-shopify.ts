@@ -9,7 +9,8 @@ import { syncShopifyDataToProduct } from '@/lib/shopify/sync-to-payload'
  *
  * Individual sync (`syncProductWithShopify`):
  *   - Fetches US product data via Admin API (by shopify.productId GID or model metafield)
- *   - In parallel, fetches CA pricing via `fetchCAPricing` (CA Admin API, handle-based)
+ *   - In parallel, fetches CA pricing via `fetchCAPricing` (CA Admin API, by handle,
+ *     falling back to the custom.model metafield when CA handles differ)
  *   - Writes price, priceCAD, variations (with priceCAD/compareAtPriceCAD per variant),
  *     and all other Shopify-owned fields to Payload
  *   - Guards against hook loops with context.skipShopifySync

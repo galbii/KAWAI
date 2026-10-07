@@ -88,9 +88,7 @@ async function transformShopifyToPayload(
         console.error('[Sync] Failed to fetch product media:', error)
         return [] as any[]
       }),
-    shopifyProduct.handle
-      ? fetchCAPricing(shopifyProduct.handle)
-      : Promise.resolve(null),
+    fetchCAPricing(shopifyProduct.handle, model),
   ])
 
   const shopifyMedia = mediaResult

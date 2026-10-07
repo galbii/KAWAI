@@ -41,7 +41,7 @@ import type {
   ShopifyGID,
 } from './types'
 import { formatPrice } from '../utils'
-import { fetchShopifyProductByModel, fetchShopifyProduct, parseBrochureMetafield, type ShopifyProductData } from './fetch-product'
+import { fetchShopifyProductByModel, fetchShopifyProduct, fetchCAProduct, parseBrochureMetafield, type ShopifyProductData } from './fetch-product'
 import { shopifyAdminClient, shopifyAdminClientCA } from './admin-client'
 
 // ============================================================================
@@ -380,14 +380,13 @@ export function getProductByModel(
       // Single strategy: custom.model metafield lookup via Admin API.
       // CA store lacks "use as identifier" on its metafield definition, so for CA we resolve
       // the handle via the US Admin API (which has the flag), then fetch the CA product by
-      // that handle for CA-specific pricing.
+      // that handle — falling back to a CA model search when the CA handle differs.
       const adminProduct: ShopifyProductData | null = await (async () => {
         if (!isCA) {
           return fetchShopifyProductByModel(modelParam)
         }
         const usProduct = await fetchShopifyProductByModel(modelParam)
-        if (!usProduct?.handle) return null
-        return fetchShopifyProduct(usProduct.handle, shopifyAdminClientCA)
+        return fetchCAProduct(usProduct?.handle, modelParam, shopifyAdminClientCA)
       })()
 
       if (adminProduct) {

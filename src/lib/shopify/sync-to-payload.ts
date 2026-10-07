@@ -24,7 +24,7 @@
  * ```
  */
 
-import { fetchShopifyProduct, fetchShopifyProductByModel } from './fetch-product'
+import { fetchShopifyProduct, fetchShopifyProductByModel, fetchCAProduct } from './fetch-product'
 import type { ShopifyProductData } from './fetch-product'
 import { shopifyAdminClientCA } from './admin-client'
 import { fetchActiveAutomaticDiscounts, computeProductDiscount, type ProductDiscount } from './fetch-discounts'
@@ -100,22 +100,26 @@ export type CAPricingResult = {
 }
 
 /**
- * Fetch CA pricing for a product by its Shopify handle.
+ * Fetch CA pricing for a product by its Shopify handle, falling back to the
+ * `custom.model` metafield when the CA store uses a different handle.
  *
  * Uses the CA Admin API client. Returns null (non-fatal) if the CA store is
  * unreachable or the product doesn't exist there. Never throws.
  */
-export async function fetchCAPricing(handle: string): Promise<CAPricingResult | null> {
+export async function fetchCAPricing(
+  handle: string | null | undefined,
+  model?: string | null
+): Promise<CAPricingResult | null> {
   let caData: Awaited<ReturnType<typeof fetchShopifyProduct>>
   try {
-    caData = await fetchShopifyProduct(handle, shopifyAdminClientCA)
+    caData = await fetchCAProduct(handle, model, shopifyAdminClientCA)
   } catch (err) {
     console.warn(`[Shopify Sync] CA price fetch failed for "${handle}" — skipping CA pricing:`, err)
     return null
   }
 
   if (!caData) {
-    console.warn(`[Shopify Sync] CA product not found for handle "${handle}" — no CA pricing available`)
+    console.warn(`[Shopify Sync] CA product not found for handle "${handle}" or model "${model}" — no CA pricing available`)
     return null
   }
 
@@ -409,19 +413,17 @@ export async function syncShopifyDataToProduct(
     // Successfully fetched - map to Payload format
     console.log(`[Shopify Sync] Successfully fetched: ${shopifyData.title}`)
 
+    // Extract model from metafields
+    const extractedModel = extractModelFromMetafields(shopifyData)
+
     // Fetch CA pricing in parallel while preparing US mapping — non-fatal
-    const caPricingPromise = shopifyData.handle
-      ? fetchCAPricing(shopifyData.handle)
-      : Promise.resolve(null)
+    const caPricingPromise = fetchCAPricing(shopifyData.handle, extractedModel || product.model)
 
     // Fetch active automatic discounts in parallel (cached; never throws).
     // US and CA are separate stores with store-scoped GIDs, so match each product
     // against its own store's discount list.
     const discountsPromise = fetchActiveAutomaticDiscounts()
     const caDiscountsPromise = fetchActiveAutomaticDiscounts(shopifyAdminClientCA)
-
-    // Extract model from metafields
-    const extractedModel = extractModelFromMetafields(shopifyData)
 
     // Determine if we should create variations array
     // Shopify always returns at least 1 variant, even for products with no variations

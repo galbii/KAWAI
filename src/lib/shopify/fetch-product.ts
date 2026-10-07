@@ -877,6 +877,61 @@ export async function fetchShopifyProductByModel(
 }
 
 /**
+ * Fetch the CA-store counterpart of a US product.
+ *
+ * Tries the US handle first (the common case). Handles are NOT guaranteed to
+ * match across stores (e.g. US `kawai-nd-21-upright-piano` vs CA `nd-21`), so it
+ * falls back to the CA product whose `custom.model` metafield equals `model`.
+ * The CA metafield lacks "use as identifier", so productByIdentifier can't be
+ * used — instead search by the model text and exact-match the metafield.
+ */
+export async function fetchCAProduct(
+  handle: string | null | undefined,
+  model: string | null | undefined,
+  adminClient: ShopifyAdminClient
+): Promise<ShopifyProductData | null> {
+  if (handle) {
+    const byHandle = await fetchShopifyProduct(handle, adminClient)
+    if (byHandle) return byHandle
+  }
+
+  const normalizedModel = model?.toUpperCase().trim()
+  if (!normalizedModel) return null
+
+  console.log(`[Shopify Fetch] CA handle "${handle}" not found — searching CA by model "${normalizedModel}"`)
+
+  const data = await adminClient.query<{
+    products: { nodes: { id: string; metafield: { value: string } | null }[] }
+  }>(CA_PRODUCTS_BY_MODEL_SEARCH_QUERY, {
+    query: `"${normalizedModel.replace(/"/g, '')}"`,
+  })
+
+  const match = data.products.nodes.find(
+    (p) => p.metafield?.value?.toUpperCase().trim() === normalizedModel
+  )
+
+  if (!match) {
+    console.warn(`[Shopify Fetch] No CA product with custom.model "${normalizedModel}"`)
+    return null
+  }
+
+  return fetchShopifyProduct(match.id, adminClient)
+}
+
+const CA_PRODUCTS_BY_MODEL_SEARCH_QUERY = `
+  query SearchProductsByModel($query: String!) {
+    products(first: 10, query: $query) {
+      nodes {
+        id
+        metafield(namespace: "custom", key: "model") {
+          value
+        }
+      }
+    }
+  }
+`
+
+/**
  * Transform Shopify GraphQL response to simplified format
  *
  * Handles:
