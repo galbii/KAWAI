@@ -2,6 +2,7 @@
 
 import { useState, useLayoutEffect, useRef, useCallback, useEffect } from 'react'
 import { useAdminBar } from '@/contexts/AdminBarContext'
+import { AdminBarShopifySync } from './AdminBarShopifySync'
 
 type PayloadMeUser = { id: string; email: string } | null | undefined
 
@@ -124,6 +125,9 @@ export function AdminBar() {
 
         {/* Controls — right-aligned */}
         <div style={{ alignItems: 'center', display: 'flex', flexGrow: 1, justifyContent: 'flex-end', marginRight: '10px', gap: '10px' }}>
+          {doc?.collection === 'products' && doc.id && (
+            <AdminBarShopifySync productId={doc.id} />
+          )}
           {editHref && (
             <a
               href={editHref}

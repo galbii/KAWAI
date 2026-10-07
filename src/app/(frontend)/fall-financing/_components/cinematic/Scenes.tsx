@@ -1,5 +1,6 @@
 'use client'
 
+import { Fragment } from 'react'
 import Image from 'next/image'
 import { motion, type MotionValue, type Variants } from 'framer-motion'
 import { PROMO_CONTAINER } from '@/components/fall-promo'
@@ -219,12 +220,18 @@ export function SceneCoda({ progress, reduce }: SceneProps) {
           animate={reduce || active ? 'show' : 'hide'}
           className="promo-h2 promo-photo-text mx-auto mb-6 max-w-[16ch] text-[color:var(--ivory)]"
         >
+          {/* Real spaces between the masks, not padding: with `pr-[0.25em]`
+              the heading's text was the words run together, which is what a
+              screen reader and a crawler were given. */}
           {words.map((word, i) => (
-            <span key={`${word}-${i}`} className="inline-block overflow-hidden pb-[0.06em]">
-              <motion.span variants={wordRise} className="inline-block pr-[0.25em]">
-                {word}
-              </motion.span>
-            </span>
+            <Fragment key={`${word}-${i}`}>
+              {i > 0 && ' '}
+              <span className="inline-block overflow-hidden pb-[0.06em]">
+                <motion.span variants={wordRise} className="inline-block">
+                  {word}
+                </motion.span>
+              </span>
+            </Fragment>
           ))}
         </motion.h2>
 

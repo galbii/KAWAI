@@ -1,4 +1,5 @@
 import { FALL_2026, termMonths } from '@/lib/financing/terms'
+import { formatOfferPrice } from './money'
 import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
 import type { PromoValueProp } from '@/components/fall-promo'
 
@@ -499,7 +500,8 @@ export function esRebatesFor(site: 'us' | 'cad'): ReadonlyArray<{
 }
 
 export const rebate = {
-  heading: 'Up to $150 off an ES Series portable',
+  // The heading is per site, with its figure derived from the rebate table —
+  // see `rebateCopyFor`.
   standfirst:
     `Three ES Series models carry an instant rebate through ${PROGRAM_END}. It comes off the ` +
     'price at the counter — there is nothing to claim and nothing to post.',
@@ -535,6 +537,36 @@ export const rebate = {
     `suggested retail; your Authorized Kawai dealer sets the final price. Dealer participation ` +
     `may vary. Cannot be combined with other offers on the same instrument.`,
 } as const
+
+/**
+ * The ES block's heading and terms for the active site.
+ *
+ * The heading's figure is the largest rebate in the site's own column, in its
+ * own currency: "$150" on kawaius.com, "$200 CAD" on ca.kawaius.com. It was
+ * one string, "Up to $150", on both — the US maximum, in what a Canadian reads
+ * as Canadian dollars, above a ledger whose largest row was 200.
+ *
+ * The terms differ in one clause. The US ledger prices from the catalogue
+ * list price, which the US clause calls manufacturer's suggested retail. The
+ * Canadian ledger prices from the CA store's selling price, which sits below
+ * the CA MSRP, so calling it suggested retail would be untrue there; the CA
+ * clause names the figures for what they are instead.
+ */
+export function rebateCopyFor(site: 'us' | 'cad'): { heading: string; disclaimer: string } {
+  const rows = esRebatesFor(site)
+  const top = rows.reduce((max, r) => Math.max(max, r.rebate), 0)
+  const currency = rows[0]?.currency ?? 'USD'
+  const heading = `Up to ${formatOfferPrice(top, currency)} off an ES Series portable`
+  if (site === 'us') return { heading, disclaimer: rebate.disclaimer }
+  return {
+    heading,
+    disclaimer:
+      `Instant rebate on new ES60, ES120 and ES920 digital pianos bought ${REBATE_RANGE}. The ` +
+      `rebate is taken off the price at the point of sale. Prices shown are Kawai's advertised ` +
+      `Canadian prices in Canadian dollars; your Authorized Kawai dealer sets the final price. ` +
+      `Dealer participation may vary. Cannot be combined with other offers on the same instrument.`,
+  }
+}
 
 /* ── Close ─────────────────────────────────────────────────────────────── */
 
@@ -708,9 +740,8 @@ const CA_ACOUSTIC_REBATES: ReadonlyArray<AcousticRebate> = [
   { model: 'K-300', label: 'K-300', cad: 1300 },
   { model: 'K-400', label: 'K-400', cad: 1300 },
   { model: 'K-200', label: 'K-200', cad: 900 },
-  // No product record in Payload — verified, in both spellings. This row runs
-  // on the placeholder until the ND-21 is added, and starts resolving on its
-  // own the moment it is.
+  // Canada-only product record (`kawai-nd-21-upright-piano`); its art and its
+  // link resolve through `getRebateModelArt` like the other five.
   { model: 'ND-21', label: 'ND-21', cad: 900 },
 ]
 
@@ -740,15 +771,16 @@ export const acousticRebate = {
   stageImageAlt: 'A Kawai acoustic piano in a sunlit room',
   dealerNote: `The rebate is applied in the showroom. ${CTA_LEAD_IN}`,
   /**
-   * The interim picture for a model with no catalogue entry.
+   * The picture for a model whose catalogue entry cannot be found.
    *
-   * ND-21 has no product page yet. The generic upright category photograph
-   * stands in rather than another model's portrait: a K-200 beside the words
-   * "ND-21" is a wrong piano, which is worse than an unspecific one. Delete this
-   * the day the ND-21 gets a product record — `getRebateModelArt` will find it
-   * and the fallback stops being reached on its own.
+   * Every model has a record today, the ND-21 included, so this is not reached.
+   * It stays as the safety net: the generic upright category photograph rather
+   * than another model's portrait, since a K-200 beside the words "ND-21" is a
+   * wrong piano, which is worse than an unspecific one.
    */
-  fallbackImage: '/images/piano-categories/upright-pianos.jpg',
+  // upright.png, not upright-pianos.jpg: the .jpg in the repo is a 0-byte file
+  // and never rendered.
+  fallbackImage: '/images/piano-categories/upright.png',
   disclaimer:
     'Rebate applies to new Kawai acoustic grand and upright pianos in Ebony Polish only, ' +
     'at participating Authorized Kawai dealers in Canada. All amounts in CAD. Prices shown ' +

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ArrowRight } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
+import { formatOfferPrice } from './money'
 import { planFor } from '@/lib/financing/plan'
 import { FALL_2026 } from '@/lib/financing/terms'
 import { financing } from './campaign'
@@ -43,16 +43,41 @@ const CONTROL_FILL = { backgroundColor: 'rgba(29, 27, 24, 0.62)' }
 export function RangeCarousel({
   ranges,
   onOpen,
+  active,
+  onActiveChange,
+  showHeader = true,
 }: {
   ranges: FinancingRange[]
   onOpen: (handle: string) => void
+  /**
+   * The range the index beside the carousel is pointing at. When it changes
+   * the carousel turns to it — instantly, since the reader is moving down a
+   * list and a sliding track would trail behind the pointer.
+   */
+  active?: string
+  /** Called when the reader turns the carousel, so the index can follow it. */
+  onActiveChange?: (handle: string) => void
+  /** The "Featured pianos / N models" rule. Off when the index carries it. */
+  showHeader?: boolean
 }) {
   const [emblaRef, embla] = useEmblaCarousel({ align: 'start', loop: true })
   const [selected, setSelected] = useState(0)
 
   const sync = useCallback(() => {
-    if (embla) setSelected(embla.selectedScrollSnap())
-  }, [embla])
+    if (!embla) return
+    const i = embla.selectedScrollSnap()
+    setSelected(i)
+    const handle = ranges[i]?.handle
+    if (handle) onActiveChange?.(handle)
+  }, [embla, ranges, onActiveChange])
+
+  // Index → carousel. Guarded on the current snap so the carousel's own turn,
+  // reported up through `onActiveChange`, does not echo back down as a jump.
+  useEffect(() => {
+    if (!embla || !active) return
+    const i = ranges.findIndex((r) => r.handle === active)
+    if (i >= 0 && i !== embla.selectedScrollSnap()) embla.scrollTo(i, true)
+  }, [embla, active, ranges])
 
   useEffect(() => {
     if (!embla) return
@@ -71,15 +96,17 @@ export function RangeCarousel({
     <div>
       {/* Light ground, so a rule rather than a card: `.promo-card` is a lift
           off Ink and goes muddy on Ivory. */}
-      <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--rule)] pb-3">
-        {/* h3 — the section's h2 is the headline beside this. */}
-        <h3 className="promo-label text-[color:var(--body-dim)]">{financing.browseHeading}</h3>
-        <p className="promo-num shrink-0 text-[0.8rem] text-[color:var(--body-dim)]">
-          {total} models
-        </p>
-      </div>
+      {showHeader && (
+        <div className="flex items-baseline justify-between gap-4 border-b border-[color:var(--rule)] pb-3">
+          {/* h3 — the section's h2 is the headline beside this. */}
+          <h3 className="promo-label text-[color:var(--body-dim)]">{financing.browseHeading}</h3>
+          <p className="promo-num shrink-0 text-[0.8rem] text-[color:var(--body-dim)]">
+            {total} models
+          </p>
+        </div>
+      )}
 
-      <div className="relative mt-5">
+      <div data-reveal="wipe" className={`relative ${showHeader ? 'mt-5' : ''}`}>
         <div className="overflow-hidden rounded-lg" ref={emblaRef}>
           <div className="flex">
             {ranges.map((range) => (
@@ -94,11 +121,13 @@ export function RangeCarousel({
 
         {many && (
           <>
+            {/* Top corners on a phone, mid-height from `sm`. At a phone's
+                tile height the mid-line runs straight through the caption. */}
             <button
               type="button"
               onClick={() => embla?.scrollPrev()}
               aria-label="Previous range"
-              className={`${CONTROL} absolute left-4 top-1/2 z-10 -translate-y-1/2`}
+              className={`${CONTROL} absolute left-4 top-4 z-10 sm:top-1/2 sm:-translate-y-1/2`}
               style={CONTROL_FILL}
             >
               <svg
@@ -117,7 +146,7 @@ export function RangeCarousel({
               type="button"
               onClick={() => embla?.scrollNext()}
               aria-label="Next range"
-              className={`${CONTROL} absolute right-4 top-1/2 z-10 -translate-y-1/2`}
+              className={`${CONTROL} absolute right-4 top-4 z-10 sm:top-1/2 sm:-translate-y-1/2`}
               style={CONTROL_FILL}
             >
               <svg
@@ -242,7 +271,7 @@ function RangeTile({ range, onOpen }: { range: FinancingRange; onOpen: () => voi
               {/* Whole dollars: a range-level figure is an estimate, and cents
                   imply a quote. The qualifier under the tile's own CTA and the
                   Supporting Disclosure carry the rest of the terms. */}
-              {financing.startingAt} {formatPrice(Math.round(from))}/month
+              {financing.startingAt} {formatOfferPrice(Math.round(from))}/month
             </>
           )}
         </p>

@@ -1,41 +1,40 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { PROMO_CONTAINER_WIDE, PromoCtaSecondaryButton } from '@/components/fall-promo'
+import { PROMO_CONTAINER_WIDE, PromoCtaSecondaryButton, PromoReveal } from '@/components/fall-promo'
 import { useModal } from '@/hooks'
 import { FinancingDisclosure } from './FinancingDisclosure'
 import { FinancingLearnMore } from './FinancingLearnMore'
 import { FinancingRangeModal, type FinancingRange } from './FinancingRangeModal'
-import { RangeCarousel } from './RangeCarousel'
+import { RangeIndex } from './RangeIndex'
 import { PromoButton } from './PromoUI'
-import { financing, financingRanges, PROGRAM_END, SECTION } from './campaign'
+import { financing, financingRanges, SECTION } from './campaign'
 import type { FinancedCategory, FinancedProduct } from '@/lib/payload/financing-types'
 
 /**
  * The Q4 2026 Synchrony financing offer.
  *
- * One photograph left, one column of words right, all of it on the page's own
- * Ivory ground. The tiles carry the pictures; the section around them does
- * not, so the copy needs no card and no `.promo-photo-text` shadow — it is Ink
- * on Ivory at 15.01:1 and brings its own contrast.
+ * On the page's own Ivory ground — the one light section between the dark
+ * photographic stages — because this is where a shopper reads terms, and Ink
+ * on Ivory (15.01:1) carries small print better than anything laid on a
+ * picture.
  *
- * ── The composition, and why it is one grid ──────────────────────────────
+ * ── The composition ───────────────────────────────────────────────────────
  *
- * Everything the section says runs down a single 30rem column: headline,
- * terms, dealer note, the two buttons, then the Supporting Disclosure. The
- * carousel holds the other column for the full height of all of it, sticky, so
- * what leads the section is the instrument rather than its small print.
+ * Two bands. The offer first: the §4.1/§4.2 lockup at full width and large,
+ * with the dealer note and the button opposite it on its baseline. Then what
+ * the offer covers (`RangeIndex`): the range carousel, sticky, beside an
+ * index of every range, the two kept in step — the carousel to browse, the
+ * index to see the whole offer at once. Under the index, in the same column,
+ * the payment note and the Supporting Disclosure, so the carousel stays in
+ * view while the fine print scrolls past it.
  *
- * It was two stacked blocks — a copy/carousel grid, then a full-width band of
- * fine print in two columns of its own. That band set 13px type across 104rem
- * and read as a separate, unrelated section; folding it into the text column
- * is what "one column" means here. See the placement comment below for how the
- * three items are ordered for a phone versus painted on a desktop.
+ * Before, the carousel stood alone beside a narrow text column: eight of nine
+ * ranges were always behind its arrows, and the headline — the offer — was set
+ * at a third of the width at 2.5rem.
  *
- * It runs in a wider container than the rest of the page. The carousel is the
- * one thing here that rewards width: a 4:3 tile at the campaign's usual 78rem
- * measure is a postcard, and the text column beside it is a fixed width either
- * way, so every rem the container gains goes to the photograph.
+ * Copy is untouched. Every string comes from `financing`, `disclosures` and
+ * the range data, exactly as before; only the arrangement changed.
  *
  * ── The parts that are Synchrony legal review, not house style ───────────
  *
@@ -62,6 +61,16 @@ import type { FinancedCategory, FinancedProduct } from '@/lib/payload/financing-
  *   §5    No store links: acoustic pianos are not sold online. The dealer
  *         button goes to the locator, and a model name links to a product page
  *         which for an acoustic carries a dealer CTA and no add-to-cart.
+ *
+ * ── Motion, and the two things that must not move ────────────────────────
+ *
+ *   · The §4.1/§4.2 lockup is ONE reveal part. "0%", "(APR 8.01%)*" and the
+ *     subhead share a single element's opacity and transform at every frame,
+ *     so no frame of the entrance shows the rate without its APR or at a
+ *     different weight from it. Never split it into staggered parts.
+ *   · The Supporting Disclosure is not revealed at all. §4.4 wants it visible
+ *     on page load; an opacity-0 start that waits for scroll is the opposite
+ *     of that, however briefly. It sits outside every PromoReveal.
  *
  * The headline and the terms sentence appear ONCE on the page. They used to
  * render here and again inside the disclosure; the approved banner states them
@@ -95,7 +104,7 @@ const CONNECTOR_RATIO = 0.72
  * is a plain-language explanation, not a required one.
  */
 const SHOW_LEARN_MORE = false
-const HEADLINE_SIZE = 'clamp(1.6rem, 2.6vw, 2.5rem)'
+const HEADLINE_SIZE = 'clamp(2rem, 4vw, 3.75rem)'
 
 export function FinancingBlock({
   data,
@@ -151,53 +160,46 @@ export function FinancingBlock({
       id={SECTION.financing}
       className="scroll-mt-20 border-b border-[color:var(--rule)] bg-[color:var(--ground)]"
     >
-      <div className={`${PROMO_CONTAINER_WIDE} py-16 md:py-24`}>
-        {/* One grid, three items, explicitly placed — not two stacked blocks.
-            The photograph holds the left column across both rows; every word
-            in the section runs down the right one, headline through fine
-            print, as a single column of text beside a single image.
+      <div className={`${PROMO_CONTAINER_WIDE} py-20 md:py-28`}>
+        {/* ── The offer ─────────────────────────────────────────────────
+            The regulated lockup leads the section at full width, with the
+            dealer note and the button opposite it on the same baseline. */}
+        <PromoReveal className="grid gap-10 border-b border-[color:var(--rule)] pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-end lg:gap-20 lg:pb-16">
+          {/* §4.1 + §4.2 — one scale. The two prominent parts are bare text
+              in the h2 at 1em; only the connector is wrapped, at 0.72em. The
+              subhead follows at 0.42em with nothing inserted between.
 
-            Placement is by `col-start`/`row-start` rather than `order` because
-            the three do not read in the same sequence they are painted. Source
-            order is text → imagery → disclosure, which is what a screen reader
-            and a phone get: the headline before the browser, the browser
-            before the fine print. On `lg` the first item moves to the top of
-            the right column, the second spans the left, and the third
-            continues the right column underneath the first. */}
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16">
-          <div className="lg:col-start-2 lg:row-start-1">
-            {/* §4.1 + §4.2 — one scale. The two prominent parts are bare text
-                in the h2 at 1em; only the connector is wrapped, at 0.72em. The
-                subhead follows at 0.42em with nothing inserted between. */}
-            <div style={{ fontSize: HEADLINE_SIZE }}>
-              <h2 className="promo-h2 text-[color:var(--on-ground)]" style={{ fontSize: '1em' }}>
-                {financing.heading.lead}{' '}
-                <span style={{ fontSize: `${CONNECTOR_RATIO}em` }}>
-                  {financing.heading.connector}
-                </span>{' '}
-                {financing.heading.apr}
-              </h2>
-              <p
-                className="promo-body mt-4 leading-snug text-[color:var(--body)]"
-                style={{ fontSize: `${SUBHEAD_RATIO}em` }}
-              >
-                {financing.subhead}
-              </p>
-            </div>
+              One `data-reveal` for the whole lockup — see the motion note
+              at the top of this file. */}
+          <div data-reveal="rise" className="max-w-[17em]" style={{ fontSize: HEADLINE_SIZE }}>
+            <h2 className="promo-h2 text-[color:var(--on-ground)]" style={{ fontSize: '1em' }}>
+              {financing.heading.lead}{' '}
+              <span style={{ fontSize: `${CONNECTOR_RATIO}em` }}>
+                {financing.heading.connector}
+              </span>{' '}
+              {financing.heading.apr}
+            </h2>
+            <p
+              className="promo-body mt-5 max-w-[34em] leading-snug text-[color:var(--body)]"
+              style={{ fontSize: `${SUBHEAD_RATIO}em` }}
+            >
+              {financing.subhead}
+            </p>
+          </div>
 
-            {/* OUTSIDE the lockup div above, deliberately. §4.2 requires the
-                subhead to follow the headline with nothing between them, so
-                this sits after the pair closes rather than inside it — and it
-                carries no figure, so it is not a regulated line that has left
-                its disclosure behind. */}
-            <p className="promo-body mt-7 text-[1rem] font-medium leading-snug text-[color:var(--on-ground)]">
+          {/* OUTSIDE the lockup div above, deliberately. §4.2 requires the
+              subhead to follow the headline with nothing between them, so
+              this comes after the pair closes rather than inside it — and it
+              carries no figure, so it is not a regulated line that has left
+              its disclosure behind. */}
+          <div>
+            <p
+              data-reveal="rise"
+              className="promo-body text-[1.05rem] font-medium leading-snug text-[color:var(--on-ground)]"
+            >
               {financing.dealerNote}
             </p>
-
-            {/* The dealer CTA, opening the enquiry form without leaving the
-                page mid-offer. It was a pair — act, or read first — and the
-                "read first" half is behind SHOW_LEARN_MORE for now. */}
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div data-reveal="rise" className="mt-6 flex flex-wrap gap-3">
               <PromoButton />
               {SHOW_LEARN_MORE && (
                 <PromoCtaSecondaryButton onClick={learn.open} hasPopup="dialog">
@@ -206,51 +208,34 @@ export function FinancingBlock({
               )}
             </div>
           </div>
+        </PromoReveal>
 
-          {/* The imagery, holding the left column for the section's whole
-              height. `self-start` keeps the item its own height inside a grid
-              area that spans both rows, which is what gives `sticky` somewhere
-              to travel: the photograph stays in view while the fine print
-              scrolls past it, so the section stays led by the picture rather
-              than by its own small print. */}
-          <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 lg:self-start">
-            {ranges.length === 0 ? (
-              <p className="promo-body border border-[color:var(--rule-soft)] bg-[color:var(--surface)] px-6 py-12 text-center text-[0.95rem] text-[color:var(--body)]">
-                {financing.emptyState}
-              </p>
-            ) : (
-              <RangeCarousel ranges={ranges} onOpen={setOpenHandle} />
-            )}
+        {/* ── What it covers ─────────────────────────────────────────── */}
+        <PromoReveal delay={0.1} className="mt-12 lg:mt-16">
+          {ranges.length === 0 ? (
+            <p className="promo-body border border-[color:var(--rule-soft)] bg-[color:var(--surface)] px-6 py-12 text-center text-[0.95rem] text-[color:var(--body)]">
+              {financing.emptyState}
+            </p>
+          ) : (
+            <RangeIndex ranges={ranges} onOpen={setOpenHandle}>
+              {/* The Supporting Disclosure, continuing the index column under
+                  the payment note, beside the sticky photograph. It carries no
+                  `data-reveal` — PromoReveal only ever animates marked
+                  elements — so it is visible text on load, as §4.4 requires. */}
+              <div className="mt-12 border-t border-[color:var(--rule)] pt-10">
+                <FinancingDisclosure />
+              </div>
+            </RangeIndex>
+          )}
+        </PromoReveal>
 
-            {/* The qualifier belongs with the figures it qualifies. The tiles
-                quote a monthly payment; this sits directly under them rather
-                than across the grid in the copy column, where it was stranded
-                from everything it refers to. */}
-            {ranges.length > 0 && (
-              <p className="promo-body mt-5 max-w-[60ch] text-[0.72rem] leading-relaxed text-[color:var(--body-dim)]">
-                {financing.paymentNote}
-              </p>
-            )}
-          </div>
-
-          {/* The fine print, continuing the same column the headline started.
-              It used to be a full-width band below the grid, which set 13px
-              type across 104rem in two columns with a gutter wide enough to
-              lose the reader between them. In the text column it is one
-              column at a readable measure, under the headline whose footnote
-              marks it resolves.
-
-              §4.4 is unaffected: still visible text on page load, still not a
-              dialog, accordion or toggle. It moved column, not tier.
-
-              No dealer button above it. The banner has none, the copy above
-              already carries one and the floating PromoOfferDock a third — a
-              CTA immediately over the fine print was the one place on the page
-              it had no business being. */}
-          <div className="border-t border-[color:var(--rule)] pt-10 lg:col-start-2 lg:row-start-2 lg:mt-4">
+        {/* No ranges, no index to sit in: the disclosure still renders, as
+            page text, under the empty state. */}
+        {ranges.length === 0 && (
+          <div className="mt-12 max-w-[72ch] border-t border-[color:var(--rule)] pt-10">
             <FinancingDisclosure />
           </div>
-        </div>
+        )}
       </div>
 
       {SHOW_LEARN_MORE && <FinancingLearnMore isOpen={learn.isOpen} onClose={learn.close} />}

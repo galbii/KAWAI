@@ -11,13 +11,18 @@
  */
 export { PromoStyles, PROMO_CONTAINER, PROMO_CONTAINER_WIDE } from './PromoStyles'
 export { SeasonMark } from './SeasonMark'
-export { PromoHeroCarousel, type PromoSlide } from './PromoHeroCarousel'
+export {
+  PromoHeroCarousel,
+  type PromoSlide,
+  type PromoValueProp,
+  type PromoHeroOffer,
+} from './PromoHeroCarousel'
 export { PromoStage } from './PromoStage'
+export { PromoReveal, StageParallax } from './PromoReveal'
 export { PromoSideNav, type PromoNavSection } from './PromoSideNav'
 export { PromoOfferDock } from './PromoOfferDock'
 export { OfferStack, OfferStackAlt } from './OfferStack'
 export { OfferChip, OfferChipRow } from './OfferChip'
-export { PromoValueProps, type PromoValueProp } from './PromoValueProps'
 export {
   PromoCta,
   PromoCtaLink,

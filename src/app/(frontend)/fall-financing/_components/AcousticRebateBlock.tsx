@@ -1,8 +1,9 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { PromoStage } from '@/components/fall-promo'
 import { PromoButton } from './PromoUI'
 import { acousticRebate, acousticRebates, PROGRAM_END_SHORT, SECTION } from './campaign'
-import { formatPrice } from '@/lib/utils'
+import { formatOfferPrice } from './money'
 import type { RebateModelArt } from '@/lib/payload/queries'
 
 /**
@@ -12,23 +13,17 @@ import type { RebateModelArt } from '@/lib/payload/queries'
  * place on the page for that reason: both are the acoustic offer, and a
  * Canadian visitor should meet one where an American meets the other.
  *
- * ── Not clickable, by decision ────────────────────────────────────────────
- * The ES ledger's rows are buttons that open `RebateModelModal`. These are
- * plain rows, and that is not a shortcut:
+ * ── Rows link to the model's page ─────────────────────────────────────────
+ * Each row is a link to its product page, where a Canadian shopper sees the
+ * instrument at full size with CA pricing and a dealer CTA. Not the ES
+ * ledger's `RebateModelModal`: that card states an MSRP and a "your price",
+ * and the rebate here comes off a dealer's price this page does not quote.
  *
- *   · ND-21 has no product record yet, so one row in six has nothing to open.
- *     A ledger where five rows respond and the sixth does not is worse than one
- *     where none do.
- *   · The card shows MSRP and a "your price". Payload's catalogue prices are
- *     USD, and this is the Canadian page — the card would render a US figure
- *     under a CAD label, which is the bug the ES ledger avoids by hiding prices
- *     and which the card itself does not avoid. Nothing here opens it, so
- *     nothing here can hit it.
- *
- * So the rows carry no chevron, no hover translate and no focus ring: nothing
- * that offers an interaction the row does not have. The section's one action is
- * the dealer button, which is the only action the offer actually has — the
- * rebate is applied in a showroom.
+ * The rows used to be inert, because the ND-21 had no product record and a
+ * ledger where five rows respond and the sixth does not reads as broken. It
+ * has one now (`kawai-nd-21-upright-piano`, Canada only), so all six link.
+ * A model whose record goes missing again falls back to a plain row rather
+ * than a link to nowhere.
  *
  * ── Prices ────────────────────────────────────────────────────────────────
  * The ledger shows the rebate and nothing else. No MSRP, no "your price", for
@@ -53,18 +48,17 @@ export function AcousticRebateBlock({ art }: { art: Record<string, RebateModelAr
         <ul className="promo-on-light border border-[color:var(--rule)] bg-[color:var(--ground)]">
           {acousticRebates.map((row) => {
             const entry = art[row.model]
-            return (
-              <li
-                key={row.model}
-                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 border-b border-[color:var(--rule-soft)] px-5 py-5 last:border-b-0 sm:gap-x-6 sm:px-7 sm:py-6"
-              >
+            const href = entry?.slug ? `/products/${entry.slug}` : null
+
+            const cells = (
+              <>
                 <span className="relative h-14 w-18 shrink-0 overflow-hidden bg-white sm:h-16 sm:w-20">
                   <Image
                     src={entry?.imageUrl ?? acousticRebate.fallbackImage}
                     alt=""
                     fill
                     sizes="80px"
-                    className="object-contain p-1"
+                    className="object-contain p-1 transition-transform duration-500 group-hover:scale-105"
                   />
                 </span>
 
@@ -77,12 +71,46 @@ export function AcousticRebateBlock({ art }: { art: Record<string, RebateModelAr
                   </span>
                 </span>
 
-                <span className="whitespace-nowrap text-right">
+                <span data-reveal="pop" data-reveal-delay="0.35" className="whitespace-nowrap text-right">
                   <span className="promo-label block text-[color:var(--money-accent)]">Save</span>
                   <span className="promo-num mt-0.5 block text-[1.3rem] font-semibold text-[color:var(--on-ground)] sm:text-[1.45rem]">
-                    {formatPrice(row.cad, 'CAD')}
+                    {formatOfferPrice(row.cad, 'CAD')}
                   </span>
                 </span>
+              </>
+            )
+
+            const grid =
+              'grid items-center gap-x-4 px-5 py-5 sm:gap-x-6 sm:px-7 sm:py-6'
+
+            return (
+              <li
+                key={row.model}
+                data-reveal="slide"
+                className="border-b border-[color:var(--rule-soft)] last:border-b-0"
+              >
+                {href ? (
+                  <Link
+                    href={href}
+                    className={`promo-focus group ${grid} grid-cols-[auto_minmax(0,1fr)_auto_auto] transition-colors duration-200 hover:bg-[color:var(--surface)]`}
+                  >
+                    {cells}
+                    {/* The ES ledger's affordance, so the two ledgers on the
+                        page say "this goes somewhere" the same way. */}
+                    <svg
+                      className="h-5 w-5 text-[color:var(--body-dim)] transition-all duration-300 group-hover:translate-x-1 group-hover:text-[color:var(--money)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </Link>
+                ) : (
+                  <div className={`${grid} grid-cols-[auto_minmax(0,1fr)_auto]`}>{cells}</div>
+                )}
               </li>
             )
           })}

@@ -1029,27 +1029,45 @@ function cachedCollectionArt(handles: readonly string[]): Promise<Record<string,
   )()
 }
 
-export async function getPromoCollections(handles: readonly string[]): Promise<PromoGroup[]> {
+/**
+ * Products for the Q4 promotion blocks, grouped by Shopify collection, priced
+ * for the active site.
+ *
+ * On ca.kawaius.com the price is the CA-Shopify-synced `priceCAD` — the
+ * selling price, falling back to its MSRP — the same rule `getRebateShowcase`
+ * applies for the CA signup tables. It used to read `price.msrp` on both sites,
+ * which put US dollar figures on the Canadian page and had the ES ledger
+ * subtracting a CAD rebate from a USD price. Every product carries its
+ * `currency` so a formatter never has to guess.
+ */
+export async function getPromoCollections(
+  handles: readonly string[],
+  site: Site = 'us',
+): Promise<PromoGroup[]> {
   // Failures are caught OUTSIDE unstable_cache so an empty result is never
   // memoised — see getFinancingEligibleProducts for the full reasoning.
   try {
-    return await cachedPromoCollections(handles)
+    return await cachedPromoCollections(handles, site)
   } catch (error) {
     console.error('Error fetching promo collection products:', error)
     return []
   }
 }
 
-function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[]> {
+function cachedPromoCollections(handles: readonly string[], site: Site): Promise<PromoGroup[]> {
   const key = handles.join('+')
+  const isCanada = site === 'cad'
   return unstable_cache(
     async () => {
       const payload = await getPayloadClient()
       const result = await payload.find({
         collection: 'products',
         where: {
-          status: { equals: 'active' },
-          'shopifyCollections.handle': { in: [...handles] },
+          and: [
+            { status: { equals: 'active' } },
+            { 'shopifyCollections.handle': { in: [...handles] } },
+            availableOnSite(site),
+          ],
         },
         select: {
           model: true,
@@ -1058,6 +1076,7 @@ function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[
           slug: true,
           imageUrl: true,
           price: true,
+          priceCAD: true,
           shopifyCollections: true,
         },
         depth: 0,
@@ -1069,7 +1088,9 @@ function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[
 
       for (const doc of result.docs) {
         if (!doc.model) continue
-        const raw = doc.price?.msrp ?? null
+        const raw = isCanada
+          ? (doc.priceCAD?.price ?? doc.priceCAD?.msrp ?? null)
+          : (doc.price?.msrp ?? null)
         const price = raw != null && raw > 0 ? raw : null
         if (price == null) continue
 
@@ -1092,6 +1113,7 @@ function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[
           slug: doc.slug,
           imageUrl: doc.imageUrl ?? null,
           price,
+          currency: isCanada ? 'CAD' : 'USD',
           collectionHandle: match.handle,
           collectionTitle: match.title ?? null,
         })
@@ -1111,7 +1133,8 @@ function cachedPromoCollections(handles: readonly string[]): Promise<PromoGroup[
           ),
         }))
     },
-    [`promo-collections-v1-${key}`],
+    // v2: priced per site. The site is in the key so the two never share an entry.
+    [`promo-collections-v2-${site}-${key}`],
     { tags: ['products', 'promotions'], revalidate: 3600 },
   )()
 }
@@ -1292,7 +1315,9 @@ function cachedRebateModelArt(
       }
       return art
     },
-    [`rebate-model-art-${[...models].sort().join('+')}`],
+    // v2: v1 entries were cached before the ND-21 had a product record, so
+    // they carry no art and no slug for it until they expire.
+    [`rebate-model-art-v2-${[...models].sort().join('+')}`],
     { tags: ['products'], revalidate: 3600 },
   )()
 }

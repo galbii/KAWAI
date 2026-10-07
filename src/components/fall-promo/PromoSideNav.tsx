@@ -76,23 +76,23 @@ export function PromoSideNav({ sections }: PromoSideNavProps) {
   const reduce = prefersReduced === true
 
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [isDesktopExpanded, setIsDesktopExpanded] = useState(true)
-  const [isMobileExpanded, setIsMobileExpanded] = useState(true)
+  // Starts folded. It used to arrive expanded for discoverability and fold
+  // after a few seconds, but the hero's offer index now lists the same offers
+  // on the same screen — the open panel was that list a second time, over the
+  // photograph. The rail is discoverable as a rail.
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(false)
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false)
 
   const desktopTimer = useRef<NodeJS.Timeout | null>(null)
   const mobileTimer = useRef<NodeJS.Timeout | null>(null)
 
-  // Arrives expanded so it is discoverable, then folds back to the rail so it
-  // stops competing with the page it is indexing.
-  useEffect(() => {
-    const collapseAt = APPEAR_DELAY_MS + AUTO_COLLAPSE_MS
-    desktopTimer.current = setTimeout(() => setIsDesktopExpanded(false), collapseAt)
-    mobileTimer.current = setTimeout(() => setIsMobileExpanded(false), collapseAt)
-    return () => {
+  useEffect(
+    () => () => {
       if (desktopTimer.current) clearTimeout(desktopTimer.current)
       if (mobileTimer.current) clearTimeout(mobileTimer.current)
-    }
-  }, [])
+    },
+    [],
+  )
 
   // Active row. The band runs from just under the header to the middle of the
   // viewport, which is what keeps the 340vh pinned cinematic reading as one

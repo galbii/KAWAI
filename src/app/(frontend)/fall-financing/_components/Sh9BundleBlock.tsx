@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useLeadCampaign } from '@/components/campaign-lead'
 import { PromoCta, PromoStage } from '@/components/fall-promo'
 import { PromoButton } from './PromoUI'
-import { formatPrice } from '@/lib/utils'
+import { formatOfferPrice } from './money'
 import { bundle, PROGRAM_END, SECTION } from './campaign'
 import type { PromoGroup } from '@/lib/payload/promo-types'
 
@@ -170,7 +170,7 @@ function SeriesTiles({
 
   return (
     <div>
-      <div className="promo-card px-5 py-4">
+      <div data-reveal="rise" className="promo-card px-5 py-4">
         {/* h3 — the stage owns this section's h2. */}
         <h3 className="promo-label text-[color:var(--ivory)]">{bundle.browseHeading}</h3>
       </div>
@@ -182,8 +182,13 @@ function SeriesTiles({
           each tile is still landscape enough to keep the instrument in its
           room, and the pair stops the section scrolling past a screen. */}
       <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        {/* Each tile is uncovered from the foot up as the stage arrives — see
+            `wipe` in PromoReveal. On a wrapper, not the button, so the
+            button's own hover transforms never share a property with it. */}
         {groups.map((group) => (
-          <SeriesTile key={group.handle} group={group} onOpen={() => onOpen(group.handle)} />
+          <div key={group.handle} data-reveal="wipe">
+            <SeriesTile group={group} onOpen={() => onOpen(group.handle)} />
+          </div>
         ))}
       </div>
     </div>
@@ -296,7 +301,7 @@ function ModelRow({
         </span>
         {product.price != null && (
           <span className="promo-num mt-1 block text-[0.85rem] text-[color:var(--body-dim)]">
-            {formatPrice(product.price)}
+            {formatOfferPrice(product.price, product.currency)}
           </span>
         )}
       </span>

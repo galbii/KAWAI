@@ -23,6 +23,8 @@ export interface PromoProduct {
    * one, so the promotion queries drop them rather than show a blank.
    */
   price: number | null
+  /** The currency `price` is in: USD on kawaius.com, CAD on ca.kawaius.com. */
+  currency: 'USD' | 'CAD'
   /** Which Shopify collection this model belongs to — drives the tab filters. */
   collectionHandle: string | null
   collectionTitle: string | null

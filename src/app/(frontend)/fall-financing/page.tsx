@@ -147,8 +147,9 @@ export default async function FallFinancingPage() {
     // Skipped entirely on CA — no point querying for a section that will not
     // render, and an empty result is the correct shape if it somehow does.
     showFinancing ? getFinancingEligibleProducts() : Promise.resolve([]),
-    getPromoCollections(bundle.collections),
-    getPromoCollections([rebate.collectionHandle]),
+    // Priced for the site: CAD from the CA store on ca.kawaius.com.
+    getPromoCollections(bundle.collections, site),
+    getPromoCollections([rebate.collectionHandle], site),
     // Showcase art for the financing carousel. A range with no art is dropped
     // by FinancingBlock rather than rendered as an empty tile.
     showFinancing

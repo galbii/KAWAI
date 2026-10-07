@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import type { ReactNode } from 'react'
 import { PROMO_CONTAINER, PROMO_CONTAINER_WIDE } from './PromoStyles'
+import { PromoReveal, StageParallax } from './PromoReveal'
 
 /**
  * A full-bleed photographic stage that opens a section.
@@ -41,6 +42,17 @@ import { PROMO_CONTAINER, PROMO_CONTAINER_WIDE } from './PromoStyles'
  *
  * Kept as a CSS variable rather than a prop so this stays a server component:
  * the client half is whichever scroller wants to drive it.
+ *
+ * `StageParallax` is that driver for the page scroll: it rides along inside
+ * every stage and moves the picture against the page as the section passes.
+ *
+ * ── Arrival ───────────────────────────────────────────────────────────────
+ * The lockup comes in as an object and then settles: the card lifts, and the
+ * eyebrow, heading, line and CTA follow it in a short stagger. The aside starts
+ * a beat later, so on a desktop — where both columns enter together — the eye
+ * is handed from the offer to its contents rather than to both at once. What
+ * moves inside the aside is the caller's to mark (`data-reveal`), since only
+ * the caller knows whether it holds tiles or a ledger. See `PromoReveal`.
  *
  * Nothing here is interactive, and `priority` is off because a stage is always
  * below the hero.
@@ -114,6 +126,7 @@ export function PromoStage({
           : 'flex min-h-[68vh] items-end py-16 sm:min-h-[72vh] sm:py-20 lg:py-24'
       }`}
     >
+      {image && <StageParallax />}
       {image && (
         <div
           className="absolute inset-0"
@@ -155,7 +168,8 @@ export function PromoStage({
               : ''
           }
         >
-          <div
+          <PromoReveal
+            {...(lockupCard ? { self: 'lift' as const } : {})}
             className={[
               split ? '' : 'max-w-[46ch]',
               // .promo-card is the shared material — see PromoStyles.
@@ -167,18 +181,30 @@ export function PromoStage({
             {/* Ivory, not Harvest Gold. Gold is 4.41:1 even under a 0.88 scrim —
                 it never clears AA over a photograph. The guidelines sanction it
                 as text on Ink, and a scrimmed photograph is not Ink. */}
-            {eyebrow && <p className="promo-label mb-5 text-[color:var(--ivory)]/85">{eyebrow}</p>}
-
-            <h2 className="promo-h2 text-[color:var(--ivory)]">{heading}</h2>
-
-            {subheading && (
-              <p className="promo-lede mt-5 text-[color:var(--ivory)]/92">{subheading}</p>
+            {eyebrow && (
+              <p data-reveal="fade" className="promo-label mb-5 text-[color:var(--ivory)]/85">
+                {eyebrow}
+              </p>
             )}
 
-            {children && <div className="mt-8">{children}</div>}
-          </div>
+            <h2 data-reveal="rise" className="promo-h2 text-[color:var(--ivory)]">
+              {heading}
+            </h2>
 
-          {aside}
+            {subheading && (
+              <p data-reveal="rise" className="promo-lede mt-5 text-[color:var(--ivory)]/92">
+                {subheading}
+              </p>
+            )}
+
+            {children && (
+              <div data-reveal="rise" className="mt-8">
+                {children}
+              </div>
+            )}
+          </PromoReveal>
+
+          {aside && <PromoReveal delay={0.25}>{aside}</PromoReveal>}
         </div>
       </div>
     </section>

@@ -6,8 +6,8 @@ import RebateModelModal from '@/components/rebates/RebateModelModal'
 import { useLeadCampaign } from '@/components/campaign-lead'
 import { PromoStage } from '@/components/fall-promo'
 import { PromoButton } from './PromoUI'
-import { rebate, esRebatesFor, PROGRAM_END_SHORT, SECTION } from './campaign'
-import { formatPrice } from '@/lib/utils'
+import { rebate, rebateCopyFor, esRebatesFor, PROGRAM_END_SHORT, SECTION } from './campaign'
+import { formatOfferPrice } from './money'
 import type { PromoProduct } from '@/lib/payload/promo-types'
 import type { RebateProduct } from '@/lib/payload/rebate-types'
 
@@ -31,12 +31,15 @@ import type { RebateProduct } from '@/lib/payload/rebate-types'
  * scaffolding with nothing to hold up.
  *
  * ── Currency ──────────────────────────────────────────────────────────────
- * Amounts come from `esRebatesFor(site)` — USD on kawaius.com, CAD on
- * ca.kawaius.com. The two never merge, so a Canadian figure cannot surface on
- * the US site, which is the guarantee `getRebateShowcase(site)` gives the
- * signup pages. Catalogue prices are USD, so on CAD the ledger shows the
- * rebate alone rather than subtracting a Canadian rebate from an American
- * price.
+ * Rebates come from `esRebatesFor(site)` and prices from
+ * `getPromoCollections(…, site)`: USD on kawaius.com, CAD on ca.kawaius.com,
+ * where the price is the CA store's selling price. Both sides of the
+ * subtraction are in the same currency by construction, and a row checks it
+ * anyway — a price in the wrong currency drops the row back to the rebate
+ * alone rather than subtracting a CAD rebate from a USD price.
+ *
+ * Every figure, here and in the card, is written by `formatOfferPrice`:
+ * "$1,549" and "$2,049 CAD".
  */
 export function EsRebateBlock({
   products,
@@ -48,7 +51,7 @@ export function EsRebateBlock({
   const [selected, setSelected] = useState<RebateProduct | null>(null)
   const { open: openLead } = useLeadCampaign()
 
-  const showPrices = site === 'us'
+  const copy = rebateCopyFor(site)
 
   // One shape for the row and the card: RebateProduct is what the shared modal
   // takes, so the ledger builds it once rather than mapping at the boundary.
@@ -56,7 +59,8 @@ export function EsRebateBlock({
     .map((entry): RebateProduct | null => {
       const product = products.find((p) => p.model === entry.model)
       if (!product) return null
-      const price = product.price ?? 0
+      // Unpriced, or priced in the other currency: show the rebate alone.
+      const price = product.price != null && product.currency === entry.currency ? product.price : 0
       return {
         model: product.model,
         label: product.label,
@@ -85,7 +89,7 @@ export function EsRebateBlock({
         image={rebate.stageImage}
         imageAlt={rebate.stageImageAlt}
         eyebrow={`Through ${PROGRAM_END_SHORT}`}
-        heading={rebate.heading}
+        heading={copy.heading}
         subheading={rebate.standfirst}
         scrim={0}
         lockupCard
@@ -103,7 +107,7 @@ export function EsRebateBlock({
                 <RebateRow
                   key={product.slug}
                   product={product}
-                  showPrices={showPrices}
+                  showPrices={product.msrp > 0}
                   onOpen={() => setSelected(product)}
                 />
               ))}
@@ -132,7 +136,7 @@ export function EsRebateBlock({
             ca.kawaius.com, where FinancingDisclosure does not render either and
             this was the only fine print the page was missing. */}
         <p className="promo-body mt-9 max-w-[46ch] text-[0.72rem] leading-relaxed text-[color:var(--ivory)]/80">
-          {rebate.disclaimer}
+          {copy.disclaimer}
         </p>
       </PromoStage>
 
@@ -152,6 +156,10 @@ export function EsRebateBlock({
         // dealer" directly beneath the page's own CTA — two labels a shopper
         // cannot tell apart, going to two different places, and only on desktop.
         secondaryCta={null}
+        // "$2,049 CAD", matching the ledger row the card opened from.
+        formatAmount={formatOfferPrice}
+        // CA strikes the store's selling price, not the CA MSRP above it.
+        {...(site === 'cad' ? { listPriceLabel: 'Price' } : {})}
         onSignUp={() => {
           // Close the card before the lead form: two stacked dialogs fight over
           // the focus trap, and the visitor is done with the model.
@@ -183,7 +191,13 @@ function RebateRow({
   const saving = Math.max(product.msrp - product.yourPrice, 0)
 
   return (
-    <li className="border-b border-[color:var(--rule-soft)] last:border-b-0">
+    // Each row plays a three-beat price reveal as the ledger arrives: the row
+    // slides in, a strike is drawn through the list price, then the saving
+    // lands. The same unveiling ProductHeroBlock gives a discounted price, so a
+    // rebate reads the same way here as on the model's own page. All three are
+    // `data-reveal` marks for the stage's PromoReveal; with reduced motion, or
+    // before JavaScript, the row simply renders finished.
+    <li data-reveal="slide" className="border-b border-[color:var(--rule-soft)] last:border-b-0">
       <button
         type="button"
         onClick={onOpen}
@@ -220,23 +234,46 @@ function RebateRow({
 
         {/* The Save figure gets its own column from `sm`; on a phone it is
             restated under the price instead, where there is room for it. */}
-        <span className="promo-label hidden whitespace-nowrap text-[color:var(--money-accent)] sm:block">
-          Save {formatPrice(product.rebate, product.currency)}
+        <span
+          data-reveal="pop"
+          data-reveal-delay="0.55"
+          className="promo-label hidden whitespace-nowrap text-[color:var(--money-accent)] sm:block"
+        >
+          {/* One string, not "Save" and a figure as two text nodes: the CA
+              site's in-page French translation reads each node on its own,
+              and "Save" alone came back as "Enregistrer" (save a file) run
+              into the amount. */}
+          {`Save ${formatOfferPrice(product.rebate, product.currency)}`}
         </span>
 
         <span className="whitespace-nowrap text-right">
           {showPrices && saving > 0 && (
-            <span className="promo-num block text-[0.82rem] text-[color:var(--body-dim)] line-through sm:mr-3 sm:inline sm:text-[0.92rem]">
-              {formatPrice(product.msrp, product.currency)}
+            <span className="promo-num block text-[0.82rem] text-[color:var(--body-dim)] sm:mr-3 sm:inline sm:text-[0.92rem]">
+              {/* A drawn rule rather than `line-through`, so it can be drawn.
+                  The inline-block keeps it the width of the figure on a phone,
+                  where the outer span is a right-aligned block. */}
+              <span className="relative inline-block">
+                {formatOfferPrice(product.msrp, product.currency)}
+                <span
+                  aria-hidden
+                  data-reveal="strike"
+                  data-reveal-delay="0.3"
+                  className="absolute -inset-x-0.5 top-[46%] h-[1.5px] origin-left bg-current"
+                />
+              </span>
             </span>
           )}
           <span className="promo-num text-[1.35rem] font-semibold text-[color:var(--on-ground)] sm:text-[1.5rem]">
             {showPrices
-              ? formatPrice(product.yourPrice, product.currency)
-              : formatPrice(product.rebate, product.currency)}
+              ? formatOfferPrice(product.yourPrice, product.currency)
+              : formatOfferPrice(product.rebate, product.currency)}
           </span>
-          <span className="promo-body block text-[0.72rem] font-semibold text-[color:var(--money-accent)] sm:hidden">
-            Save {formatPrice(product.rebate, product.currency)}
+          <span
+            data-reveal="pop"
+            data-reveal-delay="0.55"
+            className="promo-body block text-[0.72rem] font-semibold text-[color:var(--money-accent)] sm:hidden"
+          >
+            {`Save ${formatOfferPrice(product.rebate, product.currency)}`}
           </span>
         </span>
 

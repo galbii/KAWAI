@@ -1,7 +1,7 @@
 'use server'
 
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { headers } from 'next/headers'
+import { getPayloadClient } from '@/lib/payload/queries'
 import { syncShopifyDataToProduct } from '@/lib/shopify/sync-to-payload'
 
 /**
@@ -13,6 +13,8 @@ import { syncShopifyDataToProduct } from '@/lib/shopify/sync-to-payload'
  *   - Writes price, priceCAD, variations (with priceCAD/compareAtPriceCAD per variant),
  *     and all other Shopify-owned fields to Payload
  *   - Guards against hook loops with context.skipShopifySync
+ *   - Requires a logged-in Payload user — server actions are public POST
+ *     endpoints, and this one is also called from the frontend AdminBar
  *
  * Bulk sync (`bulkSyncProductsWithShopify`):
  *   - Iterates a list of Payload product IDs and calls syncProductWithShopify for each
@@ -32,15 +34,31 @@ export interface SyncProductResult {
   }
 }
 
+const UNAUTHORIZED: SyncProductResult = {
+  success: false,
+  message: 'Unauthorized',
+  error: 'You must be logged in to sync products',
+}
+
+async function isAuthenticated(): Promise<boolean> {
+  const payload = await getPayloadClient()
+  const { user } = await payload.auth({ headers: await headers() })
+  return Boolean(user)
+}
+
 /** Sync one product by its Payload document ID. */
 export async function syncProductWithShopify(
   productId: string
 ): Promise<SyncProductResult> {
+  if (!(await isAuthenticated())) return UNAUTHORIZED
+  return syncProduct(productId)
+}
+
+async function syncProduct(productId: string): Promise<SyncProductResult> {
   console.log(`[Sync Product] Starting sync for product ID: ${productId}`)
 
   try {
-    // Get Payload instance
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
 
     // Find the product by ID
     const product = await payload.findByID({
@@ -102,14 +120,14 @@ export async function syncProductWithShopify(
     console.log('[Sync Product] Successfully fetched and mapped Shopify data')
 
     // Update the product in Payload CMS
-    // CRITICAL: Pass context flag to prevent infinite hook loops
+    // CRITICAL: Pass context flag to prevent infinite hook loops.
+    // Page/tag revalidation hooks still run so the frontend shows synced data.
     const updatedProduct = await payload.update({
       collection: 'products',
       id: productId,
       data: syncedData as any,
       context: {
         skipShopifySync: true, // Prevent triggering Shopify sync hooks
-        skipRevalidation: true, // Prevent revalidation during sync
       },
     })
 
@@ -144,6 +162,13 @@ export async function syncProductWithShopify(
 export async function bulkSyncProductsWithShopify(
   productIds: string[]
 ): Promise<{ results: SyncProductResult[]; summary: { success: number; failed: number } }> {
+  if (!(await isAuthenticated())) {
+    return {
+      results: productIds.map(() => UNAUTHORIZED),
+      summary: { success: 0, failed: productIds.length },
+    }
+  }
+
   console.log(`[Bulk Sync] Starting bulk sync for ${productIds.length} products`)
 
   const results: SyncProductResult[] = []
@@ -151,7 +176,7 @@ export async function bulkSyncProductsWithShopify(
   let failedCount = 0
 
   for (const productId of productIds) {
-    const result = await syncProductWithShopify(productId)
+    const result = await syncProduct(productId)
     results.push(result)
 
     if (result.success) {

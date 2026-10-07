@@ -67,6 +67,21 @@ type Props = {
    * page passes `null`; everyone else gets the locator link as before.
    */
   secondaryCta?: { label: string; href: string } | null
+  /**
+   * How an amount is written. Defaults to the site-wide `formatPrice`.
+   *
+   * /fall-financing writes Canadian figures as "$200 CAD" where the rest of the
+   * CA site writes "CAD200", and a card opening out of that page's ledger has
+   * to match the ledger it came from.
+   */
+  formatAmount?: (amount: number, currency: 'USD' | 'CAD') => string
+  /**
+   * What the struck figure is called. Defaults to "MSRP".
+   *
+   * On ca.kawaius.com /fall-financing strikes the CA store's selling price,
+   * which sits below the CA MSRP — so "MSRP" would be the wrong name for it.
+   */
+  listPriceLabel?: string
   /** Opens the dealer sign-up offer popup (closes this modal first). */
   onSignUp: () => void
   onClose: () => void
@@ -243,10 +258,14 @@ function RebateReveal({
   product,
   campaign,
   t,
+  fmt,
+  listLabel,
 }: {
   product: RebateProduct
   campaign: boolean
   t: ThemeTokens
+  fmt: (amount: number, currency: 'USD' | 'CAD') => string
+  listLabel: string
 }) {
   const accent = campaign ? t.displayText : 'text-kawai-gold'
   const accentSoft = campaign ? t.accentTextSoft : 'text-kawai-gold/80'
@@ -254,9 +273,9 @@ function RebateReveal({
   return (
     <div>
       <div className="flex items-baseline gap-2">
-        <span className={label}>MSRP</span>
+        <span className={label}>{listLabel}</span>
         <span className="text-base text-white/55 line-through">
-          {formatPrice(product.msrp, product.currency)}
+          {fmt(product.msrp, product.currency)}
         </span>
       </div>
       <div className="mt-3">
@@ -279,7 +298,7 @@ function RebateReveal({
                 }
           }
         >
-          {formatPrice(Math.max(product.msrp - product.yourPrice, 0), product.currency)}
+          {fmt(Math.max(product.msrp - product.yourPrice, 0), product.currency)}
         </div>
       </div>
       <div className="mt-3 flex items-baseline gap-2">
@@ -292,7 +311,7 @@ function RebateReveal({
               : { fontFamily: 'var(--font-brand-serif)', fontWeight: 500 }
           }
         >
-          {formatPrice(product.yourPrice, product.currency)}
+          {fmt(product.yourPrice, product.currency)}
         </span>
       </div>
       {product.rebate > 0 && product.msrp - product.yourPrice > product.rebate ? (
@@ -303,7 +322,7 @@ function RebateReveal({
           )}
           style={campaign ? { fontFamily: t.figureFont } : undefined}
         >
-          Includes {formatPrice(product.rebate, product.currency)} instant rebate
+          Includes {fmt(product.rebate, product.currency)} instant rebate
         </p>
       ) : null}
       {product.note ? (
@@ -324,9 +343,12 @@ export default function RebateModelModal({
   theme = 'brand',
   ctaLabel: ctaLabelProp,
   secondaryCta,
+  formatAmount = formatPrice,
+  listPriceLabel = 'MSRP',
   onSignUp,
   onClose,
 }: Props) {
+  const fmt = formatAmount
   const reduce = useReducedMotion() ?? false
   const campaign = variant === 'campaign'
   const t = THEMES[theme]
@@ -454,7 +476,7 @@ export default function RebateModelModal({
     >
       <DialogTitle className="sr-only">{`${p.name} — current rebate and specifications`}</DialogTitle>
       <DialogDescription className="sr-only">
-        {`${p.name}: ${formatPrice(p.yourPrice, p.currency)} — save ${formatPrice(Math.max(p.msrp - p.yourPrice, 0), p.currency)} off ${formatPrice(p.msrp, p.currency)} MSRP, including a ${formatPrice(p.rebate, p.currency)} instant rebate. Touch and action, sound and tone, and connectivity features, with a sign-up to claim the rebate through your local dealer.`}
+        {`${p.name}: ${fmt(p.yourPrice, p.currency)} — save ${fmt(Math.max(p.msrp - p.yourPrice, 0), p.currency)} off ${fmt(p.msrp, p.currency)} ${listPriceLabel === 'MSRP' ? 'MSRP' : listPriceLabel.toLowerCase()}, including a ${fmt(p.rebate, p.currency)} instant rebate. Touch and action, sound and tone, and connectivity features, with a sign-up to claim the rebate through your local dealer.`}
       </DialogDescription>
 
       <div
@@ -518,7 +540,7 @@ export default function RebateModelModal({
             )}
           >
             <div className="overflow-hidden">
-              <RebateReveal product={p} campaign={campaign} t={t} />
+              <RebateReveal product={p} campaign={campaign} t={t} fmt={fmt} listLabel={listPriceLabel} />
             </div>
           </div>
 
@@ -532,8 +554,8 @@ export default function RebateModelModal({
               className="flex items-center justify-between gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-left transition-colors hover:bg-white/10 lg:hidden"
             >
               <span className="font-[family-name:var(--font-brand-sans)] text-sm font-semibold text-white">
-                Save {formatPrice(Math.max(p.msrp - p.yourPrice, 0), p.currency)}
-                <span className="text-white/50"> · {formatPrice(p.yourPrice, p.currency)}</span>
+                Save {fmt(Math.max(p.msrp - p.yourPrice, 0), p.currency)}
+                <span className="text-white/50"> · {fmt(p.yourPrice, p.currency)}</span>
               </span>
               <span className="flex-shrink-0 text-white/60">{CHEVRON_DOWN}</span>
             </button>

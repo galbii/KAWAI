@@ -5,7 +5,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { useLeadCampaign } from '@/components/campaign-lead'
 import { PromoCta } from '@/components/fall-promo'
-import { formatPrice } from '@/lib/utils'
+import { formatOfferPrice } from './money'
 import type { PromoProduct } from '@/lib/payload/promo-types'
 
 /**
@@ -136,7 +136,7 @@ export function ProductCard({
 
         {saving != null && (
           <span className="promo-num mt-1.5 text-[1.05rem] text-[color:var(--money)]">
-            {formatPrice(saving)} off
+            {formatOfferPrice(saving, product.currency)} off
           </span>
         )}
 
@@ -145,11 +145,11 @@ export function ProductCard({
             'Price on request'
           ) : finalPrice != null ? (
             <>
-              <span className="promo-num text-[color:var(--on-ground)]">{formatPrice(finalPrice)}</span>
-              <span className="promo-num ml-2 line-through">{formatPrice(product.price)}</span>
+              <span className="promo-num text-[color:var(--on-ground)]">{formatOfferPrice(finalPrice, product.currency)}</span>
+              <span className="promo-num ml-2 line-through">{formatOfferPrice(product.price, product.currency)}</span>
             </>
           ) : (
-            <span className="promo-num">{formatPrice(product.price)}</span>
+            <span className="promo-num">{formatOfferPrice(product.price, product.currency)}</span>
           )}
         </span>
       </span>

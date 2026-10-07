@@ -1,6 +1,7 @@
-import type { PromoSlide } from '@/components/fall-promo'
+import type { PromoHeroOffer, PromoSlide } from '@/components/fall-promo'
+import type { OfferKey } from '@/lib/fall-promo/tokens'
 import { FALL_2026 } from '@/lib/financing/terms'
-import { PROGRAM_END, PROGRAM_START } from './campaign'
+import { PROGRAM_END, PROGRAM_START, rebate, valuePropsFor } from './campaign'
 
 /**
  * The hero slides.
@@ -104,4 +105,38 @@ export function heroSlidesFor(site: 'us' | 'cad'): readonly PromoSlide[] {
   return heroSlides
     .filter((slide) => slide.id !== 'financing')
     .map((slide) => (slide.id === 'stack' ? { ...slide, body: OPENER_BODY.cad } : slide))
+}
+
+/**
+ * The photograph that stands for each offer in the hero's index.
+ *
+ * The bundle and financing frames are those slides' own art, so the image a
+ * shopper saw against an offer's name is unchanged. The rebates had no slide;
+ * their frame is the ES section's own stage photograph, which is what the
+ * cell jumps to.
+ */
+const OFFER_ART: Record<OfferKey, { image: string; imageAlt: string; imagePosition?: string }> = {
+  // The headphones hang under the keybed, low in the photograph; centred, the
+  // hero's wide crop showed only the piano's lid.
+  bundle: { ...pick('bundle'), imagePosition: 'center 78%' },
+  financing: pick('financing'),
+  rebates: { image: rebate.stageImage, imageAlt: rebate.stageImageAlt },
+}
+
+function pick(id: string) {
+  const slide = heroSlides.find((s) => s.id === id)
+  if (!slide) throw new Error(`slides.ts: no hero slide "${id}"`)
+  return { image: slide.image, imageAlt: slide.imageAlt }
+}
+
+/** The hero's opening frame and copy: the campaign, before any one offer. */
+export function heroOpenerFor(site: 'us' | 'cad'): PromoSlide {
+  const opener = heroSlidesFor(site).find((s) => s.id === 'stack')
+  if (!opener) throw new Error('slides.ts: no opener slide')
+  return opener
+}
+
+/** The index cells for the active site, each with its frame. */
+export function heroOffersFor(site: 'us' | 'cad'): readonly PromoHeroOffer[] {
+  return valuePropsFor(site).map((v) => ({ ...v, ...OFFER_ART[v.offer] }))
 }
