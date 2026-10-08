@@ -1,5 +1,6 @@
 import type { LeadCampaignConfig } from '@/components/campaign-lead'
 import { EnvelopeIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline'
+import { PIANO_TYPE_FIELD, PURCHASE_TIMELINE_FIELD } from '@/components/forms/TwoStepHubSpotForm'
 import { CTA_LABEL } from './campaign'
 
 /**
@@ -64,6 +65,11 @@ export const leadCampaign: LeadCampaignConfig = {
         },
       },
     },
+    // The same qualifying fields /signup2 collects. `piano_type` is required by
+    // the shared HubSpot form — without it HubSpot rejects the whole submission
+    // ("Required field 'piano_type' is missing").
+    PIANO_TYPE_FIELD,
+    PURCHASE_TIMELINE_FIELD,
     {
       // §6 of the developer requirements: required, textarea, 500 character
       // maximum, with a counter. The cap is enforced by the native attribute,

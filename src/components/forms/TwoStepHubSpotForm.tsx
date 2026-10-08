@@ -145,6 +145,45 @@ type Props = {
   successBody?: string
 }
 
+/**
+ * The two qualifying fields the shared HubSpot form expects. Exported so a
+ * campaign that declares its own `fields` can include them — `piano_type` in
+ * particular is required by HubSpot, and leaving it out rejects the submission.
+ */
+export const PIANO_TYPE_FIELD: PreFormField = {
+  // Required on the HubSpot form — omitting it makes the API reject the whole
+  // submission ("Required field 'piano_type' is missing"), so it must be
+  // required here too. Values must match HubSpot's option values exactly.
+  name: 'piano_type',
+  label: 'What are you shopping for?',
+  type: 'checkbox-group',
+  required: true,
+  step: 1,
+  helpText: 'Select all that interest you.',
+  options: [
+    { label: 'Grand Piano', value: 'Grand Piano' },
+    { label: 'Upright Piano', value: 'Upright Piano' },
+    { label: 'Hybrid Piano', value: 'Hybrid Piano' },
+    { label: 'Digital Piano', value: 'Digital Piano' },
+    { label: 'Accessories', value: 'Accessories' },
+  ],
+}
+
+export const PURCHASE_TIMELINE_FIELD: PreFormField = {
+  // Optional on the HubSpot form — blank values are stripped before the POST.
+  name: 'when_are_you_looking_to_purchase_',
+  label: 'When are you looking to purchase?',
+  type: 'select',
+  placeholder: 'Please select',
+  step: 1,
+  options: [
+    { label: 'Within 30 days', value: 'within_30_days' },
+    { label: '1-3 months', value: '1_3_months' },
+    { label: '3-6 months', value: '3_6_months' },
+    { label: 'Just researching', value: 'just_researching' },
+  ],
+}
+
 const DEFAULT_FIELDS: PreFormField[] = [
   {
     name: 'firstname',
@@ -199,38 +238,8 @@ const DEFAULT_FIELDS: PreFormField[] = [
       },
     },
   },
-  {
-    // Required on the HubSpot form — omitting it makes the API reject the whole
-    // submission ("Required field 'piano_type' is missing"), so it must be
-    // required here too. Values must match HubSpot's option values exactly.
-    name: 'piano_type',
-    label: 'What are you shopping for?',
-    type: 'checkbox-group',
-    required: true,
-    step: 1,
-    helpText: 'Select all that interest you.',
-    options: [
-      { label: 'Grand Piano', value: 'Grand Piano' },
-      { label: 'Upright Piano', value: 'Upright Piano' },
-      { label: 'Hybrid Piano', value: 'Hybrid Piano' },
-      { label: 'Digital Piano', value: 'Digital Piano' },
-      { label: 'Accessories', value: 'Accessories' },
-    ],
-  },
-  {
-    // Optional on the HubSpot form — blank values are stripped before the POST.
-    name: 'when_are_you_looking_to_purchase_',
-    label: 'When are you looking to purchase?',
-    type: 'select',
-    placeholder: 'Please select',
-    step: 1,
-    options: [
-      { label: 'Within 30 days', value: 'within_30_days' },
-      { label: '1-3 months', value: '1_3_months' },
-      { label: '3-6 months', value: '3_6_months' },
-      { label: 'Just researching', value: 'just_researching' },
-    ],
-  },
+  PIANO_TYPE_FIELD,
+  PURCHASE_TIMELINE_FIELD,
 ]
 
 function buildSchema(fields: PreFormField[]) {

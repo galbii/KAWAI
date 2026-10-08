@@ -135,6 +135,7 @@ export const SECTION = {
   acoustic: 'acoustic-rebates',
   dealers: 'dealers',
   rebate: 'rebates',
+  lessons: 'lessons',
   disclosures: 'disclosures',
 } as const
 
@@ -788,6 +789,55 @@ export const acousticRebate = {
     'participation may vary.',
 } as const
 
+/* ── Learning partners ─────────────────────────────────────────────────── */
+
+/**
+ * Three months of free lessons on Skoove and Piano Marvel, with any new Kawai.
+ *
+ * Not one of the three offers — it rides along with all of them, which is why
+ * it sits after the last offer and before the dealer close, and why it has no
+ * `OFFER_CHIPS` key: that map is the offers in brand order, and this is a
+ * benefit of buying the piano rather than a promotion on it.
+ *
+ * Runs on both sites. Registration is open to US and Canadian owners alike.
+ */
+export const lessons = {
+  eyebrow: 'Learning partners',
+  heading: 'Three months of lessons, on us',
+  standfirst:
+    'Every new Kawai comes with three months of free lessons from two of the best piano ' +
+    'learning apps — so the first thing you do with your new instrument is play it.',
+  /** The background photograph. Swap for the campaign art when it lands. */
+  stageImage: '/images/banners/CA701-bench-styling.webp',
+  stageImageAlt: '',
+  partners: [
+    {
+      name: 'Skoove',
+      kind: 'Interactive lessons',
+      body:
+        'Lessons that listen as you play and give feedback in real time — from your first ' +
+        'chord to the songs you came to learn.',
+      href: 'https://www.skoove.com',
+    },
+    {
+      name: 'Piano Marvel',
+      kind: 'Structured method',
+      body:
+        'A step-by-step method with sight-reading practice and thousands of pieces, trusted ' +
+        'by teachers and students alike.',
+      href: 'https://pianomarvel.com',
+    },
+  ],
+  term: '3',
+  termLabel: 'months free',
+  redeemNote: 'Register your new Kawai and we will send your access for both.',
+  redeemHref: '/warranty-registration',
+  redeemLabel: 'Register your piano',
+  disclaimer:
+    'Free lesson subscriptions are provided by Skoove and Piano Marvel and are subject to ' +
+    "each partner's terms. Available with the registration of a new Kawai piano.",
+} as const
+
 /* ── The hero's value props ────────────────────────────────────────────── */
 
 /**
@@ -933,6 +983,7 @@ const NAV_SECTIONS = [
   { id: SECTION.financing, label: OFFER_CHIPS.financing },
   { id: SECTION.acoustic, label: 'Acoustic Rebates' },
   { id: SECTION.rebate, label: OFFER_CHIPS.rebates },
+  { id: SECTION.lessons, label: 'Free Lessons' },
   { id: SECTION.dealers, label: dealer.eyebrow },
 ] as const
 

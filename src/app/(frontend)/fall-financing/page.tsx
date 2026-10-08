@@ -14,6 +14,7 @@ import { FinancingBlock } from './_components/FinancingBlock'
 import { AcousticRebateBlock } from './_components/AcousticRebateBlock'
 import { EsRebateBlock } from './_components/EsRebateBlock'
 import { DealerCinematic } from './_components/DealerCinematic'
+import { LearningPartnersBlock } from './_components/LearningPartnersBlock'
 import {
   acousticRebateModels,
   bundle,
@@ -185,6 +186,9 @@ export default async function FallFinancingPage() {
             offer — the cinematic close follows it. `site` picks the currency:
             USD on kawaius.com, CAD on ca.kawaius.com. */}
         <EsRebateBlock products={rebateGroups[0]?.products ?? []} site={site} />
+        {/* Not an offer — a benefit that comes with all three — so it follows
+            the last of them and hands off to the dealer close. */}
+        <LearningPartnersBlock />
         <DealerCinematic />
 
         {/* Inside `.promo`, and it has to be: the rail paints itself from the
