@@ -68,7 +68,15 @@ export const leadCampaign: LeadCampaignConfig = {
     // The same qualifying fields /signup2 collects. `piano_type` is required by
     // the shared HubSpot form — without it HubSpot rejects the whole submission
     // ("Required field 'piano_type' is missing").
-    PIANO_TYPE_FIELD,
+    //
+    // Minus "Accessories": nothing on this page is sold as a standalone
+    // accessory, but the SH-9 headphone bundle led visitors to tick it, which
+    // mis-tagged piano leads. Dropping an option is safe — HubSpot only checks
+    // that submitted values exist on the property.
+    {
+      ...PIANO_TYPE_FIELD,
+      options: (PIANO_TYPE_FIELD.options ?? []).filter((o) => o.value !== 'Accessories'),
+    },
     PURCHASE_TIMELINE_FIELD,
     {
       // §6 of the developer requirements: required, textarea, 500 character
