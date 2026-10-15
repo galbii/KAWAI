@@ -2771,6 +2771,10 @@ export interface Product {
      * Hide from Shopify collection landing pages at /pianos/[collection-handle]. Use when a product must belong to a collection for pricing or sync reasons but should not be displayed on that collection’s page.
      */
     hideFromCollectionPages?: boolean | null;
+    /**
+     * Leave this product out of sitemap.xml. The page stays live and can still be indexed by Google if it is linked from somewhere. Shopify UNLISTED products are listed in the sitemap unless this box is checked.
+     */
+    hideFromSitemap?: boolean | null;
   };
   /**
    * Inventory management settings
@@ -13299,6 +13303,7 @@ export interface ProductsSelect<T extends boolean = true> {
         hideFromNavigation?: T;
         hideFromBrowsers?: T;
         hideFromCollectionPages?: T;
+        hideFromSitemap?: T;
       };
   inventory?:
     | T

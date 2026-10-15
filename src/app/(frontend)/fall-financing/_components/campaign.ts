@@ -805,31 +805,18 @@ export const lessons = {
   eyebrow: 'Learning partners',
   heading: 'Three months of lessons, on us',
   standfirst:
-    'Every new Kawai comes with three months of free lessons from two of the best piano ' +
-    'learning apps — so the first thing you do with your new instrument is play it.',
-  /** The background photograph. Swap for the campaign art when it lands. */
-  stageImage: '/images/banners/CA701-bench-styling.webp',
-  stageImageAlt: '',
-  partners: [
-    {
-      name: 'Skoove',
-      kind: 'Interactive lessons',
-      body:
-        'Lessons that listen as you play and give feedback in real time — from your first ' +
-        'chord to the songs you came to learn.',
-      href: 'https://www.skoove.com',
-    },
-    {
-      name: 'Piano Marvel',
-      kind: 'Structured method',
-      body:
-        'A step-by-step method with sight-reading practice and thousands of pieces, trusted ' +
-        'by teachers and students alike.',
-      href: 'https://pianomarvel.com',
-    },
-  ],
-  term: '3',
-  termLabel: 'months free',
+    'Every new Kawai comes with three months of free lessons on Skoove and Piano Marvel, ' +
+    'two of the best piano learning apps — so the first thing you do with your new ' +
+    'instrument is play it.',
+  /**
+   * The background banner. It carries both partner logos on its right half, so
+   * the section shows the picture at its own proportions rather than letting a
+   * cover crop cut a logo in half — see `LearningPartnersBlock`.
+   */
+  stageImage:
+    'https://pub-0cc9ed269d544fd29fe51221f6744a6b.r2.dev/media/Learning%20Partners%20updated.webp',
+  /** The logos are the only place the partners appear as marks, so name them. */
+  stageImageAlt: 'Skoove and Piano Marvel logos',
   redeemNote: 'Register your new Kawai and we will send your access for both.',
   redeemHref: '/warranty-registration',
   redeemLabel: 'Register your piano',

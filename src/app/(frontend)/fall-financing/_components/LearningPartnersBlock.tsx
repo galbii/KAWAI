@@ -1,5 +1,5 @@
-import Link from 'next/link'
-import { PromoStage } from '@/components/fall-promo'
+import Image from 'next/image'
+import { PROMO_CONTAINER, PromoCtaSecondary } from '@/components/fall-promo'
 import { PromoButton } from './PromoUI'
 import { lessons, SECTION } from './campaign'
 
@@ -11,91 +11,55 @@ import { lessons, SECTION } from './campaign'
  * offer and the dealer close for that reason — the offers are done, and this is
  * the last thing worth knowing before the ask.
  *
- * A lockup card on the left and one card per partner on the right, all in the
- * shared `.promo-card` material. Every surface carries its own contrast, so the
- * stage runs `scrim={0}` and the photograph stays clean around them.
+ * ── Why this is not a `PromoStage` ────────────────────────────────────────
+ * The art is a wide banner (about 3.9:1) with both partner logos set into its
+ * right half. A stage covers its section with the picture, and the section is
+ * as tall as its copy — several times taller than the banner — so a cover crop
+ * cuts at least one logo in half at almost every width. Here the banner runs
+ * full-bleed at its own proportions and the copy sits under it on Ink, so the
+ * logos are always whole and nothing is laid over them.
  *
- * Partner names are `h3` under the stage's `h2`. The partner links leave the
- * site, so each says so in its accessible name.
+ * Deliberately still: no reveal, no parallax.
  */
 export function LearningPartnersBlock() {
   return (
-    <PromoStage
-      id={SECTION.lessons}
-      image={lessons.stageImage}
-      imageAlt={lessons.stageImageAlt}
-      eyebrow={lessons.eyebrow}
-      heading={lessons.heading}
-      subheading={lessons.standfirst}
-      scrim={0}
-      lockupCard
-      aside={
-        <ul className="grid gap-4 sm:grid-cols-2 lg:gap-5">
-          {lessons.partners.map((partner) => (
-            <li key={partner.name} data-reveal="slide" className="promo-card flex flex-col p-7 sm:p-8">
-              <p className="promo-label text-[color:var(--ivory)]/80">{partner.kind}</p>
-
-              <h3 className="promo-h2 mt-3 text-[1.85rem] leading-tight text-[color:var(--ivory)] sm:text-[2.1rem]">
-                {partner.name}
-              </h3>
-
-              <p className="promo-body mb-8 mt-4 text-[0.95rem] leading-relaxed text-[color:var(--ivory)]/85">
-                {partner.body}
-              </p>
-
-              <div className="mt-auto flex items-end justify-between gap-4 border-t border-[color:var(--rule)] pt-6">
-                <p data-reveal="pop" data-reveal-delay="0.35" className="flex items-baseline gap-2">
-                  <span
-                    className="promo-num leading-none text-[color:var(--money)]"
-                    style={{ fontSize: 'clamp(2.6rem, 5vw, 3.25rem)' }}
-                  >
-                    {lessons.term}
-                  </span>
-                  <span className="promo-label text-[color:var(--ivory)]/85">{lessons.termLabel}</span>
-                </p>
-
-                <a
-                  href={partner.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Visit ${partner.name} (opens in a new tab)`}
-                  className="promo-focus promo-body group inline-flex items-center gap-1.5 whitespace-nowrap text-[0.85rem] font-medium text-[color:var(--ivory)]/85 transition-colors hover:text-[color:var(--ivory)]"
-                >
-                  Visit
-                  <svg
-                    className="h-3.5 w-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 17 17 7M8 7h9v9" />
-                  </svg>
-                </a>
-              </div>
-            </li>
-          ))}
-        </ul>
-      }
-    >
-      <p className="promo-body text-[1rem] font-medium leading-snug text-[color:var(--ivory)]">
-        {lessons.redeemNote}{' '}
-        <Link
-          href={lessons.redeemHref}
-          className="promo-focus underline decoration-[color:var(--ivory)]/40 underline-offset-4 transition-colors hover:decoration-[color:var(--ivory)]"
-        >
-          {lessons.redeemLabel}
-        </Link>
-      </p>
-
-      <div className="mt-7">
-        <PromoButton />
+    <section id={SECTION.lessons} className="promo-on-dark bg-[color:var(--ink)]">
+      <div className="relative aspect-[2506/649] w-full">
+        <Image
+          src={lessons.stageImage}
+          alt={lessons.stageImageAlt}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
 
-      <p className="promo-body mt-9 max-w-[46ch] text-[0.72rem] leading-relaxed text-[color:var(--ivory)]/80">
-        {lessons.disclaimer}
-      </p>
-    </PromoStage>
+      <div className={`${PROMO_CONTAINER} py-14 sm:py-16 lg:py-20`}>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
+          <div>
+            <p className="promo-label mb-5 text-[color:var(--ivory)]/85">{lessons.eyebrow}</p>
+            <h2 className="promo-h2 text-[color:var(--ivory)]">{lessons.heading}</h2>
+            <p className="promo-lede mt-5 text-[color:var(--ivory)]/92">{lessons.standfirst}</p>
+          </div>
+
+          <div className="lg:border-l lg:border-[color:var(--rule)] lg:pl-16 lg:pt-2">
+            <p className="promo-body text-[1rem] font-medium leading-snug text-[color:var(--ivory)]">
+              {lessons.redeemNote}
+            </p>
+
+            {/* Registering the piano is how the lessons are claimed, so it gets
+                a button of its own beside the page's lead CTA. */}
+            <div className="mt-7 flex flex-wrap gap-3">
+              <PromoButton />
+              <PromoCtaSecondary href={lessons.redeemHref}>{lessons.redeemLabel}</PromoCtaSecondary>
+            </div>
+
+            <p className="promo-body mt-9 max-w-[46ch] text-[0.72rem] leading-relaxed text-[color:var(--ivory)]/80">
+              {lessons.disclaimer}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }

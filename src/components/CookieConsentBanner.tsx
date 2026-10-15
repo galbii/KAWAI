@@ -65,6 +65,11 @@ function initHubSpot() {
   if (!portalId || typeof document === 'undefined') return
   if (document.getElementById('hs-script-loader')) return
 
+  // The loader also injects the HubSpot chat widget whenever a chatflow is live
+  // in the portal. Chat is disabled for now — must be set before the loader runs.
+  // To re-enable, delete this line (or call window.HubSpotConversations.widget.load()).
+  window.hsConversationsSettings = { loadImmediately: false }
+
   const script = document.createElement('script')
   script.id = 'hs-script-loader'
   script.async = true

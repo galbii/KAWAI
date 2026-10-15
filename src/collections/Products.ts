@@ -1492,8 +1492,8 @@ export const Products: CollectionConfig = {
                   }
                 },
                 // Per-surface hiding. These are display-only — none of them unpublish
-                // the product: /products/[slug] still renders, the sitemap still lists
-                // it, and site search still finds it. To take a product down entirely
+                // the product: /products/[slug] still renders and stays indexable, and
+                // site search still finds it (hideFromSitemap only drops the sitemap entry). To take a product down entirely
                 // use status: 'draft'; for the greyed-out "Legacy" treatment in the
                 // catalog browsers use Shopify UNLISTED.
                 // Filters live in src/lib/products/visibility.ts — add new query sites there.
@@ -1519,6 +1519,14 @@ export const Products: CollectionConfig = {
                   defaultValue: false,
                   admin: {
                     description: 'Hide from Shopify collection landing pages at /pianos/[collection-handle]. Use when a product must belong to a collection for pricing or sync reasons but should not be displayed on that collection’s page.',
+                  },
+                },
+                {
+                  name: 'hideFromSitemap',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Leave this product out of sitemap.xml. The page stays live and can still be indexed by Google if it is linked from somewhere. Shopify UNLISTED products are listed in the sitemap unless this box is checked.',
                   },
                 },
               ],

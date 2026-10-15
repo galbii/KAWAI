@@ -255,7 +255,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'products',
         where: { status: { equals: 'active' } },
         limit: 1000,
-        select: { slug: true, updatedAt: true, featured: true, shopify: true, siteAvailability: true },
+        select: { slug: true, updatedAt: true, featured: true, visibility: true, siteAvailability: true },
         depth: 0,
       })
 
@@ -263,11 +263,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         slug?: string
         updatedAt: string
         featured?: boolean
-        shopify?: { shopifyStatus?: string }
+        visibility?: { hideFromSitemap?: boolean | null } | null
         siteAvailability?: SiteAvailability | null
       }>) {
         if (!p.slug) continue
-        if (p.shopify?.shopifyStatus === 'UNLISTED') continue
+        // Shopify UNLISTED products stay in the sitemap — only the explicit CMS flag drops one.
+        if (p.visibility?.hideFromSitemap === true) continue
         add(`/products/${p.slug}`, {
           changeFrequency: 'weekly',
           priority: p.featured ? 0.9 : 0.7,

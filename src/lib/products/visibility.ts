@@ -4,8 +4,9 @@ import type { Where } from 'payload'
  * Per-surface product visibility flags.
  *
  * These are display-only filters — none of them unpublish a product. A product
- * hidden from every surface below still renders at /products/[slug], still
- * appears in the sitemap, and is still indexed by site search. To take a
+ * hidden from every surface below still renders at /products/[slug] and is still
+ * indexed by site search. `visibility.hideFromSitemap` (checked directly in
+ * src/app/sitemap.ts) only drops the sitemap entry — the page stays indexable. To take a
  * product down entirely, set `status: 'draft'`; for the greyed-out "Legacy"
  * treatment in the catalog browsers, use Shopify UNLISTED.
  *

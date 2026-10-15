@@ -61,16 +61,16 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
       ? (ogImageRaw as { url: string }).url
       : product.imageUrl || null
 
-  // Noindex discontinued, draft, and unlisted (Shopify-hidden) products
+  // Noindex discontinued and draft products. Shopify UNLISTED products stay
+  // indexable — UNLISTED only hides them from store browsing, not from Google.
   const isDiscontinued = product.status === 'discontinued'
   const isDraft = product.status === 'draft'
-  const isHidden = product.shopify?.shopifyStatus === 'UNLISTED'
 
   return {
     title,
     description,
     ...(product.seo?.keywords ? { keywords: product.seo.keywords } : {}),
-    ...(isDiscontinued || isDraft || isHidden
+    ...(isDiscontinued || isDraft
       ? { robots: { index: false, follow: false } }
       : {}),
     alternates: {
@@ -206,16 +206,10 @@ export async function generateStaticParams() {
       limit: 500, // Adjust based on product catalog size
       select: {
         slug: true,
-        shopify: true,
       },
     })
 
-    // Filter out products unlisted in Shopify
-    const visibleProducts = products.docs.filter((product: any) => {
-      return product.shopify?.shopifyStatus !== 'UNLISTED'
-    })
-
-    return visibleProducts.map((product: any) => ({
+    return products.docs.map((product: any) => ({
       slug: product.slug,
     }))
   } catch (error) {
