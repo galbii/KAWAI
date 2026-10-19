@@ -23,6 +23,7 @@ import { z } from 'zod'
 import type { RsmMatch } from '@/lib/rsm/routing'
 import type { LeadDealerChoice, NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
 import type { LeadEnvelope } from '@/lib/rsm/lead-envelopes'
+import type { NearbyStorefrontOption } from '@/lib/rsm/nearby-storefront'
 
 /** Lead payload shape — matches the HubSpot field names the signup form emits. */
 export const leadEmailSchema = z.object({
@@ -66,6 +67,10 @@ export interface LeadEmailOptions {
    * switched off would leave a lead sitting with nobody acting on it.
    */
   dealerNotified?: boolean
+  /** Nearest official Kawai showroom to the lead, if one is in range. */
+  storefront?: NearbyStorefrontOption | null
+  /** Whether that showroom is being sent its own copy of the lead. */
+  storefrontNotified?: boolean
   /** Test mode banner. Omit in production. */
   test?: LeadEmailTestOptions
 }
@@ -172,6 +177,34 @@ function chosenDealerSection(dealer: NearbyDealerOption, dealerNotified: boolean
     </div>`
 }
 
+/**
+ * The Kawai-owned showroom near this lead. Shown alongside — never instead of —
+ * the dealer routing, so the RSM can see when a lead is in a showroom's area.
+ */
+function storefrontSection(storefront: NearbyStorefrontOption, notified: boolean): string {
+  const how = storefront.coveredZip
+    ? 'ZIP is in this showroom\'s service area'
+    : `${storefront.distance.toFixed(1)} mi from the lead`
+  const contact = [storefront.phone, storefront.email].filter(Boolean).join(' · ')
+
+  return `
+    <div style="margin:22px 0 0;border-left:3px solid #1E1B16;background:#FAF8F5;padding:14px 18px">
+      <p style="margin:0;color:#1E1B16;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Nearest Kawai showroom</p>
+      <p style="margin:6px 0 0;font-size:16px;font-weight:700;color:#1E1B16">Kawai ${escapeHtml(storefront.name)}</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#6b7280">
+        ${escapeHtml(storefront.location)}${storefront.location ? ' · ' : ''}${escapeHtml(how)}
+      </p>
+      ${contact ? `<p style="margin:6px 0 0;font-size:13px;color:#1E1B16">${escapeHtml(contact)}</p>` : ''}
+      <p style="margin:10px 0 0;font-size:12px;color:#6b7280;line-height:1.5">
+        ${
+          notified
+            ? 'The showroom has been sent its own copy of this lead.'
+            : 'The showroom has <strong style="color:#1E1B16">not</strong> been sent this lead.'
+        }
+      </p>
+    </div>`
+}
+
 /** The visitor explicitly asked for help choosing. */
 function unsureSection(): string {
   return `
@@ -191,6 +224,8 @@ export function buildLeadEmailHtml({
   source,
   choice,
   dealerNotified = false,
+  storefront,
+  storefrontNotified = false,
   test,
 }: LeadEmailOptions): string {
   const name = [lead.firstname, lead.lastname].filter(Boolean).join(' ')
@@ -248,7 +283,7 @@ export function buildLeadEmailHtml({
               ${detailRow('Shopping for', lead.piano_type?.replaceAll(';', ', '))}
               ${detailRow('Timeframe', lead.when_are_you_looking_to_purchase_?.replaceAll('_', ' '))}
             </table>
-            ${routingSection}${unmatchedWarning}
+            ${routingSection}${storefront ? storefrontSection(storefront, storefrontNotified) : ''}${unmatchedWarning}
             <p style="margin:24px 0 0;color:#6b7280;font-size:12px">
               Source: ${escapeHtml(source)} · Reply to this email to reach the lead directly.
             </p>
@@ -270,10 +305,16 @@ export function buildLeadEmailHtml({
 
 export interface DealerEmailOptions {
   lead: LeadEmailValues
-  /** The dealer the visitor chose — also the recipient. */
-  dealer: NearbyDealerOption
+  /** The location receiving the lead — the dealer the visitor chose, or a showroom. */
+  dealer: Pick<NearbyDealerOption, 'name'>
   /** Page identifier used as the Resend tag. */
   source: string
+  /**
+   * Why this location has the lead. 'chosen' (default) — the visitor picked
+   * it. 'nearby' — a Kawai showroom whose area the lead is in; the visitor
+   * never named it, so the email must not claim they did.
+   */
+  reason?: 'chosen' | 'nearby'
   /** Test mode banner. Omit in production. */
   test?: LeadEmailTestOptions
 }
@@ -295,10 +336,19 @@ export function buildDealerEmailHtml({
   lead,
   dealer,
   source,
+  reason = 'chosen',
   test,
 }: DealerEmailOptions): string {
   const fullName = [lead.firstname, lead.lastname].filter(Boolean).join(' ')
   const firstName = lead.firstname || 'They'
+  const nearby = reason === 'nearby'
+  const heading = nearby ? 'A new lead in your area' : 'Someone chose your showroom'
+  const intro = nearby
+    ? 'A customer near your showroom just asked Kawai about a piano.'
+    : 'Good news — a customer looking for a Kawai piano asked to be connected with you.'
+  const why = nearby
+    ? 'because this customer, who is near your showroom, contacted Kawai on kawaius.com'
+    : 'because this customer selected your location on kawaius.com'
 
   return `
     <!DOCTYPE html>
@@ -307,12 +357,12 @@ export function buildDealerEmailHtml({
         <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #DBDBDB;border-radius:8px;overflow:hidden">${test ? testBanner(test) : ''}
           <div style="background:#1E1B16;padding:24px 32px">
             <p style="margin:0;color:#E11922;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase">New Customer Lead</p>
-            <h1 style="margin:6px 0 0;color:#fff;font-size:20px;font-weight:700">Someone chose your showroom</h1>
+            <h1 style="margin:6px 0 0;color:#fff;font-size:20px;font-weight:700">${heading}</h1>
           </div>
           <div style="padding:28px 32px;font-size:14px;line-height:1.6">
             <p style="margin:0 0 8px">Hello ${escapeHtml(dealer.name)},</p>
             <p style="margin:0 0 20px">
-              Good news — a customer looking for a Kawai piano asked to be connected with you.
+              ${intro}
               Here's how to reach ${escapeHtml(fullName || 'them')}.
             </p>
 
@@ -333,7 +383,7 @@ export function buildDealerEmailHtml({
             </div>
 
             <p style="margin:24px 0 0;color:#6b7280;font-size:12px">
-              Sent by Kawai America because this customer selected your location on kawaius.com
+              Sent by Kawai America ${why}
               (source: ${escapeHtml(source)}).
             </p>
           </div>

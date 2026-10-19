@@ -11,7 +11,8 @@ import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { generateProductSchema, generateBreadcrumbSchema } from '@/lib/seo/schemas'
 import type { SchemaAvailability } from '@/lib/seo/schemas'
 import { Metadata } from 'next'
-import { notFound, redirect, unstable_rethrow } from 'next/navigation'
+import { notFound, permanentRedirect, redirect, unstable_rethrow } from 'next/navigation'
+import { isShigeruProduct, shigeruModelPath } from '@/lib/shigeru/microsite'
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, localeFromSite } from '@/lib/site-context'
@@ -106,6 +107,11 @@ export default async function ProductPage(props: PageProps) {
 
     if (!product) {
       notFound()
+    }
+
+    // Shigeru Kawai models are presented only on the /shigeru microsite.
+    if (isShigeruProduct(product.type)) {
+      permanentRedirect(shigeruModelPath(product.model))
     }
 
     // Region-exclusive product requested on the other domain — send the visitor

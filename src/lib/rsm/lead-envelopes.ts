@@ -34,6 +34,13 @@ const isOn = (raw: string | undefined): boolean =>
 
 export const isRsmEmailEnabled = () => isOn(process.env.LEAD_NOTIFY_RSM_EMAIL)
 export const isDealerEmailEnabled = () => isOn(process.env.LEAD_NOTIFY_DEALER_EMAIL)
+/**
+ * Storefront routing. When ON, a lead in an official Kawai storefront's area is
+ * sent to that storefront's contact email INSTEAD of the RSM. When OFF (the
+ * default) those leads keep going to the RSM exactly as before, so turning the
+ * feature off never drops a lead — it only changes who receives it.
+ */
+export const isStorefrontEmailEnabled = () => isOn(process.env.LEAD_NOTIFY_STOREFRONT_EMAIL)
 
 /** Corporate inbox copied on every lead email. Override with LEAD_NOTIFY_CC_EMAIL. */
 export const DEFAULT_LEAD_CC_EMAIL = 'contact@kawaius.com'
@@ -152,4 +159,39 @@ export function resolveRsmRecipient(
     return { to: canadaLeadInbox(), canadaOverride: true }
   }
   return { to: matchedEmail ?? fallback, canadaOverride: false }
+}
+
+/** Who owns a lead: a Kawai storefront, or the RSM path (RSM / Canada / fallback). */
+export interface LeadRecipient extends RsmRecipient {
+  kind: 'storefront' | 'rsm'
+}
+
+/**
+ * The single owner of a lead notification.
+ *
+ * A lead in a storefront's area goes to that storefront's contact email, in
+ * place of the RSM — but only while storefront routing is on and the storefront
+ * actually has an email; otherwise it falls through to {@link resolveRsmRecipient}
+ * untouched. The storefront outranks the Canada override: storefront matching is
+ * already country-aware, so a Canadian lead only lands on a storefront that
+ * explicitly serves its postal code or sits in Canada within the radius.
+ */
+export function resolveLeadRecipient({
+  zip,
+  storefrontEmail,
+  storefrontRouting,
+  matchedRsmEmail,
+  fallback,
+}: {
+  zip: string
+  storefrontEmail: string | null | undefined
+  storefrontRouting: boolean
+  matchedRsmEmail: string | null | undefined
+  fallback: string
+}): LeadRecipient {
+  const sf = storefrontEmail?.trim()
+  if (storefrontRouting && sf) {
+    return { kind: 'storefront', to: sf, canadaOverride: false }
+  }
+  return { kind: 'rsm', ...resolveRsmRecipient(zip, matchedRsmEmail, fallback) }
 }

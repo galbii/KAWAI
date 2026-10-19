@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { BrandEyebrow } from './brand-ui'
 import { offerCopy, hubspotSignupForm } from './scenes'
 import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
 import { notifyRsmOfLead } from '@/lib/actions/notify-rsm-of-lead'
+import { NearestShowroomCard } from '@/components/campaign-lead'
 
 /** Source/campaign tags applied to the Shopify customer for this page. */
 const SHOPIFY_LEAD_TAGS = ['signup', 'summer-savings']
@@ -24,6 +26,9 @@ const LEAD_SOURCE = 'signup'
  * block or fail the HubSpot submission the visitor is waiting on.
  */
 export function OfferSignupForm() {
+  // The ZIP just submitted, for the nearest-showroom card on the confirmation.
+  const [submittedZip, setSubmittedZip] = useState<string | null>(null)
+
   return (
     <div>
       <BrandEyebrow className="text-kawai-red/80">{offerCopy.eyebrow}</BrandEyebrow>
@@ -40,6 +45,9 @@ export function OfferSignupForm() {
           // Route the lead to the nearest dealer's Regional Sales Manager.
           void notifyRsmOfLead(data, LEAD_SOURCE).catch(() => {})
         }}
+        onSubmitted={(data) => setSubmittedZip(data.zip ?? null)}
+        // Renders nothing unless an official Kawai showroom covers the ZIP.
+        successActions={<NearestShowroomCard zip={submittedZip} source={LEAD_SOURCE} />}
       />
 
       <p className="pt-4 text-center text-[11px] leading-relaxed text-kawai-charcoal/60">

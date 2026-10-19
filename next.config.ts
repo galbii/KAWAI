@@ -119,6 +119,13 @@ const nextConfig: NextConfig = {
         destination: '/pianos/hybrid',
         permanent: true,
       },
+      // Shigeru Kawai models are presented on the /shigeru microsite; the
+      // products are hidden from the main catalog so this grid would be empty.
+      {
+        source: '/pianos/shigeru',
+        destination: '/shigeru/models',
+        permanent: true,
+      },
       // Redirect old nested category URLs to flat collection URLs for SEO
       // e.g. /pianos/grand-pianos/gx-blak → /pianos/gx-blak
       {

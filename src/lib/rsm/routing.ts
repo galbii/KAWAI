@@ -18,6 +18,13 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { calculateDistance } from '@/lib/utils/dealer-search'
 import { classifyDealerCountry, type DealerRegion } from '@/lib/utils/dealer-country'
 import type { Dealer } from '@/payload-types'
+import {
+  findNearestStorefront,
+  nearestIndependentDealerMiles,
+  storefrontLeadRadiusMiles,
+  type NearbyStorefrontOption,
+  type StorefrontForLeadRouting,
+} from '@/lib/rsm/nearby-storefront'
 
 /** US ZIP (12345 / 12345-6789) vs Canadian postal (A1A 1A1) → lead's country. */
 export function classifyLeadCountry(zip: string): DealerRegion {
@@ -64,6 +71,68 @@ export const getDealersForRsmRouting = unstable_cache(
   ['rsm-routing-active-dealers'],
   { tags: ['dealers'], revalidate: 3600 },
 )
+
+/**
+ * Cached loader for the official Kawai storefronts, for marketing a lead's
+ * nearest showroom alongside the RSM routing above. Storefront contact fields
+ * are public, but it lives here so both lead consumers load it the same way.
+ * Tagged 'storefronts' so a storefront edit (new ZIP list, moved pin) busts it.
+ */
+export const getStorefrontsForLeadRouting = unstable_cache(
+  async (): Promise<StorefrontForLeadRouting[]> => {
+    try {
+      const payload = await getPayloadClient()
+      const result = await payload.find({
+        collection: 'storefronts',
+        where: { isActive: { equals: true } },
+        select: {
+          slug: true,
+          locationName: true,
+          isActive: true,
+          address: true,
+          showroomInfo: true,
+          schemaData: { geoCoordinates: true },
+          serviceAreaCoverage: { zipCodes: true },
+        },
+        depth: 0,
+        limit: 200,
+      })
+      return result.docs as unknown as StorefrontForLeadRouting[]
+    } catch (err) {
+      console.error('[rsm-routing] Failed to load storefronts:', err)
+      return []
+    }
+  },
+  ['rsm-routing-active-storefronts'],
+  { tags: ['storefronts'], revalidate: 3600 },
+)
+
+/**
+ * The storefront that owns a lead at `coords`, or null. A storefront only wins
+ * when it is the closest location — nearer than every independent RSM-routable
+ * dealer — or the ZIP is on its served list. Every consumer (notification,
+ * Shopify tags, the visitor's showroom card, the test tool) calls this, so they
+ * can never disagree about who owns a lead.
+ */
+export async function matchStorefrontForLead(
+  coords: { lat: number; lng: number },
+  zip: string,
+): Promise<NearbyStorefrontOption | null> {
+  const [storefronts, dealers] = await Promise.all([
+    getStorefrontsForLeadRouting(),
+    getDealersForRsmRouting(),
+  ])
+  const country = classifyLeadCountry(zip)
+  const ranked = rankRsmCandidates(dealers, coords, country)
+  return findNearestStorefront(
+    storefronts,
+    coords,
+    zip,
+    country,
+    storefrontLeadRadiusMiles(),
+    nearestIndependentDealerMiles(ranked, storefronts),
+  )
+}
 
 export interface RankedDealer {
   dealer: Dealer

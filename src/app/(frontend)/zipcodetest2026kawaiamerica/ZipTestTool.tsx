@@ -4,6 +4,7 @@ import { useState } from 'react'
 import {
   testRsmRouting,
   sendTestRsmEmail,
+  type EmailKind,
   type TestSendResult,
 } from '@/lib/actions/test-rsm-routing'
 import { DealerChoiceModal } from '@/components/dealers/DealerChoiceModal'
@@ -11,6 +12,12 @@ import { DealerMapLibre } from '../find-a-dealer/components/DealerMapLibre'
 import type { DealerWithDistance } from '../find-a-dealer/types'
 import type { NearbyDealerOption } from '@/lib/rsm/nearby-dealers'
 import { cn } from '@/lib/utils'
+
+const EMAIL_KIND_LABEL: Record<EmailKind, string> = {
+  rsm: 'RSM email',
+  dealer: 'Dealer email',
+  storefront: 'Showroom email',
+}
 
 /**
  * Internal ZIP → RSM routing test tool.
@@ -335,12 +342,12 @@ export function ZipTestTool() {
                     <span
                       className={cn(
                         'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                        s.kind === 'dealer'
+                        s.kind !== 'rsm'
                           ? 'bg-kawai-red/10 text-kawai-red-700'
                           : 'bg-kawai-charcoal/10 text-kawai-charcoal',
                       )}
                     >
-                      {s.kind === 'dealer' ? 'Dealer email' : 'RSM email'}
+                      {EMAIL_KIND_LABEL[s.kind]}
                     </span>
                     <span className="font-mono text-xs text-kawai-black">{s.email}</span>
                     {s.id && (
@@ -379,7 +386,7 @@ export function ZipTestTool() {
                     {result.plan.map((d) => (
                       <li key={d.kind} className="text-sm">
                         <span className="font-semibold text-kawai-black">
-                          {d.kind === 'dealer' ? 'Dealer email' : 'RSM email'}
+                          {EMAIL_KIND_LABEL[d.kind]}
                         </span>{' '}
                         {d.skipped ? (
                           <span className="text-kawai-charcoal/60">
@@ -428,7 +435,13 @@ export function ZipTestTool() {
               {result.wouldSendTo}
             </p>
             <p className="mt-2 text-sm text-kawai-charcoal">
-              {result.canadaOverride
+              {result.recipientKind === 'storefront' && result.storefront
+                ? `In the area of the Kawai ${result.storefront.name} storefront (${
+                    result.storefront.coveredZip
+                      ? 'ZIP is on its served list'
+                      : `${result.storefront.distance.toFixed(1)} mi away`
+                  }) — its contact email gets this lead instead of the RSM.`
+                : result.canadaOverride
                 ? 'Canadian postal code — every CA lead is routed to the national Canadian inbox, whatever the nearest-dealer match below says.'
                 : result.usedFallback
                   ? result.message ||
@@ -444,6 +457,14 @@ export function ZipTestTool() {
                 </>
               )}
             </p>
+            {result.recipientKind === 'rsm' && result.storefront && (
+              <p className="mt-2 text-sm text-amber-800">
+                Kawai {result.storefront.name} covers this ZIP, but the lead stays with the RSM —{' '}
+                {result.storefront.email
+                  ? 'storefront routing is off (LEAD_NOTIFY_STOREFRONT_EMAIL).'
+                  : 'the storefront has no contact email on file.'}
+              </p>
+            )}
             <p className="mt-2 text-xs text-kawai-charcoal/60">
               Shown here only — the email body no longer names the RSM, because the RSM is the
               recipient.

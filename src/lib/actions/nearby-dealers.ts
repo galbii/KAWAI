@@ -18,8 +18,10 @@ import { geocodeZipCode } from '@/lib/utils/dealer-search'
 import {
   classifyLeadCountry,
   getDealersForRsmRouting,
+  matchStorefrontForLead,
   rankRsmCandidates,
 } from '@/lib/rsm/routing'
+import type { NearbyStorefrontOption } from '@/lib/rsm/nearby-storefront'
 import {
   NEARBY_DEALER_COUNT,
   toNearbyDealerOptions,
@@ -56,5 +58,29 @@ export async function getNearbyDealersForLead(zip: string): Promise<NearbyDealer
   } catch (err) {
     console.error('[nearby-dealers] Lookup failed:', err)
     return { dealers: [], center: null }
+  }
+}
+
+/**
+ * The official Kawai showroom to promote to a lead after they submit, or null.
+ *
+ * Same geocode and the same matcher (`matchStorefrontForLead`) the server-side
+ * notification uses, so the showroom a visitor is shown is the one that was
+ * sent their lead. Public by design — storefront contact details are already
+ * on /store/[slug]. Never throws: no showroom is a normal answer.
+ */
+export async function getNearestStorefrontForLead(
+  zip: string,
+): Promise<NearbyStorefrontOption | null> {
+  const parsed = zipSchema.safeParse(zip)
+  if (!parsed.success) return null
+
+  try {
+    const coords = await geocodeZipCode(parsed.data)
+    if (!coords) return null
+    return await matchStorefrontForLead(coords, parsed.data)
+  } catch (err) {
+    console.error('[nearby-dealers] Storefront lookup failed:', err)
+    return null
   }
 }

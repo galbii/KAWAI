@@ -13,5 +13,6 @@
 export { LeadCampaignProvider, useLeadCampaign } from './LeadCampaignContext'
 export { LeadForm } from './LeadForm'
 export { LeadModal } from './LeadModal'
+export { NearestShowroomCard } from './NearestShowroomCard'
 export { LeadButton, CampaignLink, CampaignAnchor, type Tone } from './CampaignButton'
 export type { LeadCampaignConfig, LeadCampaignCopy } from './types'

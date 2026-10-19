@@ -33,8 +33,10 @@ import {
   getDealersForRsmRouting,
   rankRsmCandidates,
   findNearestRsm,
+  matchStorefrontForLead,
   type RsmMatch,
 } from '@/lib/rsm/routing'
+import type { NearbyStorefrontOption } from '@/lib/rsm/nearby-storefront'
 import {
   leadEmailSchema,
   buildLeadEmailHtml,
@@ -53,6 +55,8 @@ import {
 import {
   buildLeadEnvelope,
   isDealerEmailEnabled,
+  isStorefrontEmailEnabled,
+  resolveLeadRecipient,
   resolveRsmRecipient,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
@@ -84,6 +88,8 @@ export interface ZipTestResult {
   coords?: { lat: number; lng: number }
   /** The address the notification email would be sent to. */
   wouldSendTo?: string
+  /** Who owns the lead: a Kawai storefront (instead of the RSM) or the RSM path. */
+  recipientKind?: 'storefront' | 'rsm'
   /** True when no candidate had an rsmEmail (or geocoding failed). */
   usedFallback?: boolean
   /** True when the Canada override picked the recipient over the match. */
@@ -94,10 +100,12 @@ export interface ZipTestResult {
   totalCandidates?: number
   /** The 5 nearest dealers, exactly as the visitor's picker would show them. */
   nearby?: NearbyDealerOption[]
+  /** Official Kawai showroom the lead would be marketed to, if any is in range. */
+  storefront?: NearbyStorefrontOption | null
 }
 
-/** Which of the two emails a row refers to. */
-export type EmailKind = 'rsm' | 'dealer'
+/** Which of the lead emails a row refers to. */
+export type EmailKind = 'rsm' | 'dealer' | 'storefront'
 
 /** Per-recipient outcome of a test send. */
 export interface TestSendRecipient {
@@ -171,7 +179,12 @@ function fallbackInbox(): string {
  */
 async function resolveRouting(
   zip: string,
-): Promise<{ result: ZipTestResult; match: RsmMatch | null; nearby: NearbyDealerOption[] }> {
+): Promise<{
+  result: ZipTestResult
+  match: RsmMatch | null
+  nearby: NearbyDealerOption[]
+  storefront: NearbyStorefrontOption | null
+}> {
   const fallback = fallbackInbox()
   const country = classifyLeadCountry(zip)
   const coords = await geocodeZipCode(zip)
@@ -183,6 +196,7 @@ async function resolveRouting(
     return {
       match: null,
       nearby: [],
+      storefront: null,
       result: {
         success: true,
         message: unmatched.canadaOverride
@@ -191,17 +205,22 @@ async function resolveRouting(
         zip,
         country,
         wouldSendTo: unmatched.to,
+        recipientKind: 'rsm',
         usedFallback: true,
         canadaOverride: unmatched.canadaOverride,
         matchedDealerId: null,
         candidates: [],
         totalCandidates: 0,
         nearby: [],
+        storefront: null,
       },
     }
   }
 
-  const dealers = await getDealersForRsmRouting()
+  const [dealers, storefront] = await Promise.all([
+    getDealersForRsmRouting(),
+    matchStorefrontForLead(coords, zip),
+  ])
   const ranked = rankRsmCandidates(dealers, coords, country)
   const match = findNearestRsm(ranked)
 
@@ -214,11 +233,20 @@ async function resolveRouting(
     }))
 
   const nearby = toNearbyDealerOptions(ranked, NEARBY_DEALER_COUNT)
-  const recipient = resolveRsmRecipient(zip, match?.rsmEmail, fallback)
+  // The same owner decision production makes — storefront first when routing
+  // to storefronts is on, else matched RSM → Canada inbox → fallback.
+  const recipient = resolveLeadRecipient({
+    zip,
+    storefrontEmail: storefront?.email,
+    storefrontRouting: isStorefrontEmailEnabled(),
+    matchedRsmEmail: match?.rsmEmail,
+    fallback,
+  })
 
   return {
     match,
     nearby,
+    storefront,
     result: {
       success: true,
       message: '',
@@ -226,14 +254,16 @@ async function resolveRouting(
       country,
       coords,
       wouldSendTo: recipient.to,
+      recipientKind: recipient.kind,
       // A Canada-routed lead isn't "unmatched" — it's deliberately addressed
       // elsewhere — so it must not be flagged as having fallen back.
-      usedFallback: !match && !recipient.canadaOverride,
+      usedFallback: recipient.kind === 'rsm' && !match && !recipient.canadaOverride,
       canadaOverride: recipient.canadaOverride,
       matchedDealerId: match?.dealer.id ?? null,
       candidates,
       totalCandidates: ranked.length,
       nearby,
+      storefront,
     },
   }
 }
@@ -361,7 +391,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
     }
   }
 
-  const { result, match, nearby } = await resolveRouting(lead.zip)
+  const { result, match, nearby, storefront } = await resolveRouting(lead.zip)
 
   // Resolved against the offered list, mirroring production — an id the picker
   // never showed degrades to "unsure" rather than pulling in a stray dealer.
@@ -369,20 +399,26 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
     ? resolveDealerChoice(nearby, selectedDealerId)
     : undefined
 
-  const rsmTo = result.wouldSendTo ?? fallbackInbox()
+  const leadTo = result.wouldSendTo ?? fallbackInbox()
+  const toStorefront = result.recipientKind === 'storefront' && storefront !== null
   const dealerTo = dealerNotifyAddress(choice)
 
-  // Built by the same helper production uses, so the plan this page reports can
+  // Built by the same helpers production uses, so the plan this page reports can
   // never drift from the envelopes `notifyRsmOfLead` actually addresses.
-  const rsmEnvelope = buildLeadEnvelope(rsmTo)
+  const leadEnvelope = buildLeadEnvelope(leadTo)
+  // Same dedupe as production: the dealer email never repeats the lead email
+  // into the inbox that already owns it.
+  const dealerDuplicatesOwner =
+    Boolean(dealerTo) && dealerTo!.trim().toLowerCase() === leadTo.trim().toLowerCase()
   // A dealer address is not the same as a dealer being contacted — the switch
   // decides that, and the RSM's copy has to match or it will tell them the
   // dealer already has a lead nobody has actually sent.
   const dealerEnabled = isDealerEmailEnabled()
-  const dealerEnvelope = dealerTo && dealerEnabled ? buildLeadEnvelope(dealerTo) : null
+  const dealerEnvelope =
+    dealerTo && dealerEnabled && !dealerDuplicatesOwner ? buildLeadEnvelope(dealerTo) : null
 
   const plan: PlannedDelivery[] = [
-    { kind: 'rsm', ...rsmEnvelope },
+    { kind: toStorefront ? 'storefront' : 'rsm', ...leadEnvelope },
     dealerEnvelope
       ? { kind: 'dealer', ...dealerEnvelope }
       : {
@@ -395,25 +431,42 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
               ? 'visitor was not sure, so no dealer is contacted'
               : !dealerTo
                 ? `${choice.dealer.name} has no contact email on file`
-                : 'dealer notifications are switched off (LEAD_NOTIFY_DEALER_EMAIL)',
+                : dealerDuplicatesOwner
+                  ? 'that inbox already receives the lead email'
+                  : 'dealer notifications are switched off (LEAD_NOTIFY_DEALER_EMAIL)',
         },
   ]
 
-  // Both emails carry a [TEST] subject and a warning banner that spells out the
-  // exact To/Cc/Bcc a live send would have used, so a tester can confirm routing
-  // from the message itself. Only test sends carry those addresses.
-  const rsmSubject = buildLeadEmailSubject({ lead, match, ...(choice ? { choice } : {}), test: {} })
-  const rsmHtml = buildLeadEmailHtml({
-    lead,
-    match,
-    source: 'ziptest',
-    dealerNotified: Boolean(dealerEnvelope),
-    ...(choice ? { choice } : {}),
-    test: {
-      label: 'RSM notification',
-      envelope: rsmEnvelope,
-    },
-  })
+  // Every email carries a [TEST] subject and a warning banner that spells out
+  // the exact To/Cc/Bcc a live send would have used, so a tester can confirm
+  // routing from the message itself. Only test sends carry those addresses.
+  const leadEmail =
+    toStorefront && storefront
+      ? {
+          kind: 'storefront' as const,
+          subject: buildDealerEmailSubject({ lead, test: {} }),
+          html: buildDealerEmailHtml({
+            lead,
+            dealer: { name: `Kawai ${storefront.name}` },
+            source: 'ziptest',
+            reason: 'nearby',
+            test: { label: 'Storefront notification', envelope: leadEnvelope },
+          }),
+        }
+      : {
+          kind: 'rsm' as const,
+          subject: buildLeadEmailSubject({ lead, match, ...(choice ? { choice } : {}), test: {} }),
+          html: buildLeadEmailHtml({
+            lead,
+            match,
+            source: 'ziptest',
+            dealerNotified: Boolean(dealerEnvelope),
+            storefront,
+            storefrontNotified: false,
+            ...(choice ? { choice } : {}),
+            test: { label: 'RSM notification', envelope: leadEnvelope },
+          }),
+        }
 
   const dealerEmail =
     choice?.kind === 'selected' && dealerEnvelope
@@ -468,7 +521,7 @@ export async function sendTestRsmEmail(input: TestSendInput): Promise<TestSendRe
   }
 
   for (const to of emails) {
-    await sendOne(to, 'rsm', rsmSubject, rsmHtml)
+    await sendOne(to, leadEmail.kind, leadEmail.subject, leadEmail.html)
     if (dealerEmail) await sendOne(to, 'dealer', dealerEmail.subject, dealerEmail.html)
   }
 

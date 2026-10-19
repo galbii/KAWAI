@@ -28,31 +28,34 @@
  *      dashboard filtering. Falls back to LEAD_NOTIFY_FALLBACK_EMAIL when no
  *      RSM (or no geocode) is found, so a lead is never silently dropped.
  *
- * A submission can produce two independent emails:
+ * A submission produces one lead email, plus at most one dealer email:
  *
- *   RSM   — the standard notification: lead details and which dealer the
- *           visitor chose. Always sent. No dealer is copied, and the nearest-
- *           dealer list is deliberately omitted — the RSM knows their own
- *           territory, and the choice is the actionable part.
- *   Dealer— only when the visitor picked a dealer that has a public email. A
- *           warmer, narrower note carrying just the lead's details. It never
- *           lists other dealers, and no RSM address appears on it.
+ *   Lead  — addressed to whoever owns the lead (`resolveLeadRecipient`):
+ *           · Storefront — an official Kawai storefront is the closest location
+ *             to the lead (nearer than every independent dealer, within
+ *             LEAD_STOREFRONT_RADIUS_MILES) or lists the ZIP in "Zip Codes
+ *             Served", and storefront routing is on: the storefront's contact email
+ *             (showroomInfo.email) receives it INSTEAD of the RSM, in the
+ *             narrow "a new lead in your area" template.
+ *           · Otherwise the RSM path: matched RSM → Canada inbox → fallback,
+ *             with the full RSM template (which names a nearby storefront).
+ *   Dealer— only when the visitor picked a dealer that has a public email
+ *           (post-submit picker, currently disabled on every page). Skipped
+ *           when that inbox already owns the lead.
  *
  * Both are CC'd to the Kawai corporate inbox (LEAD_NOTIFY_CC_EMAIL, default
  * contact@kawaius.com) so head office has a visible copy of every lead handed
  * out. Nothing is BCC'd — a recipient can always see who else is on the thread.
- * The RSM is not copied on the dealer's email; their own notification already
- * names the dealer the visitor chose.
  *
- * ⚠️ BOTH sends are held back by default. LEAD_NOTIFY_RSM_EMAIL and
- * LEAD_NOTIFY_DEALER_EMAIL each default to OFF, so no RSM and no dealer
- * receives anything until someone explicitly turns them on. While held, the
- * pipeline still runs end to end and logs the exact recipients — To, Cc and
- * Bcc — a live send would have used, so routing can be verified from the server
- * log without a single real email leaving. Flip them independently: the RSM
- * side is normally enabled first, the dealer side once dealers are briefed.
- *
- * The two sends are independent — one failing never suppresses the other.
+ * Switches, all OFF unless set:
+ *   LEAD_NOTIFY_RSM_EMAIL        — deliver RSM-path lead emails (else HELD + logged).
+ *   LEAD_NOTIFY_STOREFRONT_EMAIL — route storefront-area leads to the storefront.
+ *                                  Off means they go to the RSM path as before,
+ *                                  so this switch never drops a lead.
+ *   LEAD_NOTIFY_DEALER_EMAIL     — deliver the visitor-chosen dealer email.
+ * While a send is held, the pipeline still runs end to end and logs the exact
+ * To, Cc and Bcc a live send would have used. LEAD_NOTIFY_TEST_INBOX redirects
+ * every real send to one inbox.
  *
  * Called fire-and-forget from the form's `onComplete` hook (alongside the
  * Shopify upsert): it never throws — HubSpot is the primary CRM and this
@@ -74,8 +77,10 @@ import {
   getDealersForRsmRouting,
   rankRsmCandidates,
   findNearestRsm,
+  matchStorefrontForLead,
   type RsmMatch,
 } from '@/lib/rsm/routing'
+import type { NearbyStorefrontOption } from '@/lib/rsm/nearby-storefront'
 import {
   leadEmailSchema,
   buildLeadEmailHtml,
@@ -98,7 +103,8 @@ import {
   describeEnvelope,
   isDealerEmailEnabled,
   isRsmEmailEnabled,
-  resolveRsmRecipient,
+  isStorefrontEmailEnabled,
+  resolveLeadRecipient,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
 
@@ -177,12 +183,19 @@ export async function notifyRsmOfLead(
     // exactly what the visitor was offered in the picker.
     let match: RsmMatch | null = null
     let nearby: NearbyDealerOption[] = []
+    // The official Kawai showroom in the lead's area, if any — marketed to in
+    // addition to the dealer/RSM routing, never instead of it.
+    let storefront: NearbyStorefrontOption | null = null
     const coords = await geocodeZipCode(lead.zip)
     if (coords) {
-      const dealers = await getDealersForRsmRouting()
+      const [dealers, sf] = await Promise.all([
+        getDealersForRsmRouting(),
+        matchStorefrontForLead(coords, lead.zip),
+      ])
       const ranked = rankRsmCandidates(dealers, coords, classifyLeadCountry(lead.zip))
       match = findNearestRsm(ranked)
       nearby = toNearbyDealerOptions(ranked)
+      storefront = sf
     } else {
       console.warn(`[notify-rsm] Could not geocode "${lead.zip}" — using fallback inbox`)
     }
@@ -208,14 +221,18 @@ export async function notifyRsmOfLead(
      * failure on one must not take the other down with it.
      */
     const deliver = async (
-      kind: 'rsm' | 'dealer',
+      kind: 'rsm' | 'dealer' | 'storefront',
       enabled: boolean,
       envelope: LeadEnvelope,
       subject: string,
       html: string,
     ): Promise<boolean> => {
       if (!enabled) {
-        const flag = kind === 'rsm' ? 'LEAD_NOTIFY_RSM_EMAIL' : 'LEAD_NOTIFY_DEALER_EMAIL'
+        const flag = {
+          rsm: 'LEAD_NOTIFY_RSM_EMAIL',
+          dealer: 'LEAD_NOTIFY_DEALER_EMAIL',
+          storefront: 'LEAD_NOTIFY_STOREFRONT_EMAIL',
+        }[kind]
         console.log(
           `[notify-rsm] HELD — ${kind} email not sent. Would have gone ${describeEnvelope(envelope)} ` +
             `(subject: "${subject}"). Set ${flag}=true to deliver.`,
@@ -264,50 +281,97 @@ export async function notifyRsmOfLead(
       }
     }
 
-    // Resolved before the RSM email is composed: its wording depends on whether
-    // the dealer is actually being contacted, and getting that backwards would
-    // tell the RSM to stand down on a lead nobody has picked up.
+    // Resolved before the lead email is composed: the RSM's wording depends on
+    // whether the dealer is actually being contacted, and getting that backwards
+    // would tell the RSM to stand down on a lead nobody has picked up.
     const dealerTo = dealerNotifyAddress(dealerChoice)
-    const dealerNotified = Boolean(dealerTo) && isDealerEmailEnabled()
 
-    // — RSM notification: the standard email. Corporate CC'd, no dealer copied. —
-    // Canadian postal codes bypass the match and go to the national inbox; see
-    // `resolveRsmRecipient`.
-    const recipient = resolveRsmRecipient(lead.zip, match?.rsmEmail, fallback)
+    // — Who owns the lead. A storefront-area lead goes to the storefront's
+    //   contact email instead of the RSM (while storefront routing is on);
+    //   everything else takes the RSM path: matched RSM, Canada inbox, fallback.
+    const storefrontRouting = isStorefrontEmailEnabled()
+    const recipient = resolveLeadRecipient({
+      zip: lead.zip,
+      storefrontEmail: storefront?.email,
+      storefrontRouting,
+      matchedRsmEmail: match?.rsmEmail,
+      fallback,
+    })
+
+    if (storefront && recipient.kind === 'rsm') {
+      console.log(
+        `[notify-rsm] Lead is in Kawai ${storefront.name}'s area but goes to the RSM path — ` +
+          (storefront.email
+            ? 'storefront routing is off (LEAD_NOTIFY_STOREFRONT_EMAIL).'
+            : 'the storefront has no contact email on file.'),
+      )
+    }
     if (recipient.canadaOverride) {
       console.log(
         `[notify-rsm] Canadian lead "${lead.zip}" — routing to ${recipient.to} instead of ` +
           `${match?.rsmEmail ?? 'the fallback inbox'}.`,
       )
     }
-    const rsmEnvelope = buildLeadEnvelope(recipient.to)
 
-    const rsmSent = await deliver(
-      'rsm',
-      isRsmEmailEnabled(),
-      rsmEnvelope,
-      buildLeadEmailSubject({
-        lead,
-        match,
-        ...(dealerChoice ? { choice: dealerChoice } : {}),
-        ...(redirect ? { test: {} } : {}),
-      }),
-      buildLeadEmailHtml({
-        lead,
-        match,
-        source,
-        dealerNotified,
-        ...(dealerChoice ? { choice: dealerChoice } : {}),
-        ...(redirect ? { test: { label: 'RSM notification', envelope: rsmEnvelope } } : {}),
-      }),
-    )
+    // The dealer email never duplicates the lead email into the same inbox
+    // (a storefront that is also listed in `dealers`).
+    const dealerDuplicatesOwner =
+      Boolean(dealerTo) && dealerTo!.trim().toLowerCase() === recipient.to.toLowerCase()
+    const dealerNotified = Boolean(dealerTo) && !dealerDuplicatesOwner && isDealerEmailEnabled()
+
+    const leadEnvelope = buildLeadEnvelope(recipient.to)
+    let leadSent: boolean
+
+    if (recipient.kind === 'storefront' && storefront) {
+      // — Storefront notification: the storefront owns this lead. The narrow
+      //   template — no nearest-dealer list, no routing internals — worded so it
+      //   never claims the visitor picked the storefront. Corporate CC'd. —
+      leadSent = await deliver(
+        'storefront',
+        true, // routing to the storefront at all is what the switch gates
+        leadEnvelope,
+        buildDealerEmailSubject({ lead, ...(redirect ? { test: {} } : {}) }),
+        buildDealerEmailHtml({
+          lead,
+          dealer: { name: `Kawai ${storefront.name}` },
+          source,
+          reason: 'nearby',
+          ...(redirect
+            ? { test: { label: 'Storefront notification', envelope: leadEnvelope } }
+            : {}),
+        }),
+      )
+    } else {
+      // — RSM notification: the standard email. Corporate CC'd, no dealer
+      //   copied. Names the storefront when one is nearby but not routed to. —
+      leadSent = await deliver(
+        'rsm',
+        isRsmEmailEnabled(),
+        leadEnvelope,
+        buildLeadEmailSubject({
+          lead,
+          match,
+          ...(dealerChoice ? { choice: dealerChoice } : {}),
+          ...(redirect ? { test: {} } : {}),
+        }),
+        buildLeadEmailHtml({
+          lead,
+          match,
+          source,
+          dealerNotified,
+          storefront,
+          storefrontNotified: false,
+          ...(dealerChoice ? { choice: dealerChoice } : {}),
+          ...(redirect ? { test: { label: 'RSM notification', envelope: leadEnvelope } } : {}),
+        }),
+      )
+    }
 
     // — Dealer notification: only when the visitor named a dealer that has a
-    //   public inbox. Warmer, no competitor list, corporate CC'd. The RSM is
-    //   not copied here — their own email already names the chosen dealer. —
+    //   public inbox. Warmer, no competitor list, corporate CC'd. —
     let dealerSent = false
 
-    if (dealerTo && dealerChoice?.kind === 'selected') {
+    if (dealerTo && dealerChoice?.kind === 'selected' && !dealerDuplicatesOwner) {
       const dealerEnvelope = buildLeadEnvelope(dealerTo)
       dealerSent = await deliver(
         'dealer',
@@ -323,7 +387,7 @@ export async function notifyRsmOfLead(
             : {}),
         }),
       )
-    } else if (dealerChoice?.kind === 'selected') {
+    } else if (dealerChoice?.kind === 'selected' && !dealerTo) {
       console.log(
         `[notify-rsm] No dealer email — ${dealerChoice.dealer.name} has no contact email on file.`,
       )
@@ -335,7 +399,7 @@ export async function notifyRsmOfLead(
       void incrementDealerLeadCount(dealerChoice.dealer.id)
     }
 
-    return { success: rsmSent || dealerSent }
+    return { success: leadSent || dealerSent }
   } catch (err) {
     // Fire-and-forget contract: log, never throw — the visitor-facing HubSpot
     // submission must not be affected by a notification failure.
