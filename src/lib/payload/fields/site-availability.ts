@@ -41,3 +41,31 @@ export const siteAvailabilityField = (options?: Partial<Omit<SelectField, 'type'
     },
   } as SelectField
 }
+
+/**
+ * The same select for a block or an array row (promo popups, rebate tables,
+ * carousel items). Blocks have no sidebar, and an index on a nested path would
+ * never be queried — renderers filter these in memory with `isAvailableOnSite`.
+ *
+ * @example
+ * ```typescript
+ * fields: [nestedSiteAvailabilityField(), ...]
+ * ```
+ */
+export const nestedSiteAvailabilityField = (options?: Partial<Omit<SelectField, 'type' | 'options'>>): SelectField => {
+  const { admin, ...restOptions } = options || {}
+
+  return {
+    name: SITE_AVAILABILITY_FIELD,
+    label: 'Site Availability',
+    type: 'select',
+    options: SITE_AVAILABILITY_OPTIONS.map((o) => ({ ...o })),
+    defaultValue: 'all',
+    ...restOptions,
+    admin: {
+      description:
+        'Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.',
+      ...admin,
+    },
+  } as SelectField
+}

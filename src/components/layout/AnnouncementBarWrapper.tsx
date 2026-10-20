@@ -47,6 +47,7 @@ export async function AnnouncementBarWrapper() {
       speed: announcementBar.speed || 40,
       divider: announcementBar.divider || ('bullet' as const),
       ...(announcementBar.link ? { link: announcementBar.link } : {}),
+      siteAvailability: announcementBar.siteAvailability ?? null,
     }
 
     return <AnnouncementBar {...barProps} />

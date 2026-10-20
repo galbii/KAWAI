@@ -12,6 +12,7 @@ export { useAudioPlayer } from './useAudioPlayer'
 export { default as useCalendlyTracking } from './useCalendlyTracking'
 export type { CalendlyPrefillData, CalendlyTrackingConfig } from './useCalendlyTracking'
 export { usePageTracking } from './usePageTracking'
+export { useAvailableOnSite } from './useAvailableOnSite'
 
 // Constant Contact Integration
 export { useConstantContact, useConstantContactForm } from './useConstantContact'

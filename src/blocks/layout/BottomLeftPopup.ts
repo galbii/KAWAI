@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import { imageField, mediaField } from '@/lib/payload/fields/media'
 import { trackingField, ctaTrackingField } from '@/lib/payload/fields/tracking'
+import { nestedSiteAvailabilityField } from '@/lib/payload/fields/site-availability'
 
 export const BottomLeftPopup: Block = {
   slug: 'layout-bottom-left-popup',
@@ -29,6 +30,7 @@ export const BottomLeftPopup: Block = {
         condition: (data: any) => data.enabled !== false,
       },
       fields: [
+        nestedSiteAvailabilityField(),
         {
           name: 'showOnAllPages',
           type: 'checkbox',

@@ -801,6 +801,10 @@ export interface LayoutDividerBlock {
  */
 export interface LayoutHeroCarouselBlock {
   /**
+   * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
+  /**
    * Add up to 10 carousel slides with images, titles, and call-to-actions
    */
   slides: {
@@ -1290,6 +1294,10 @@ export interface LayoutBottomLeftPopupBlock {
    * Enable/disable the popup
    */
   enabled?: boolean | null;
+  /**
+   * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
   /**
    * Show this popup site-wide on every page (not just where the block is placed). Configure the popup once here on the homepage.
    */
@@ -6343,6 +6351,10 @@ export interface MarketingPianoGalleryBlock {
  */
 export interface MarketingNewsCarouselBlock {
   /**
+   * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
+  /**
    * Auto-play duration in milliseconds (leave empty to use Homepage tab setting, default: 7000ms)
    */
   autoPlayDuration?: number | null;
@@ -6353,6 +6365,10 @@ export interface MarketingNewsCarouselBlock {
     | {
         title: string;
         description: string;
+        /**
+         * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+         */
+        siteAvailability?: ('all' | 'us' | 'cad') | null;
         image?: (string | null) | Media;
         /**
          * Self-hosted video file (webm/mp4) as slide background. Overrides image. Use instead of YouTube URL for uploaded video.
@@ -6571,6 +6587,14 @@ export interface MarketingFeaturedCollectionsBlock {
  * via the `definition` "MarketingRebateTableBlock".
  */
 export interface MarketingRebateTableBlock {
+  /**
+   * Uncheck to hide the table once the offer ends, without deleting its schedule
+   */
+  enabled?: boolean | null;
+  /**
+   * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+   */
+  siteAvailability?: ('all' | 'us' | 'cad') | null;
   /**
    * Small label above the heading
    */
@@ -9177,6 +9201,10 @@ export interface HomePage {
      */
     enabled?: boolean | null;
     /**
+     * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+     */
+    siteAvailability?: ('all' | 'us' | 'cad') | null;
+    /**
      * Messages that will scroll continuously. They will be concatenated with the selected divider.
      */
     messages?:
@@ -9441,6 +9469,10 @@ export interface HomePage {
      * News item title
      */
     title: string;
+    /**
+     * Which site shows this. Set US-market offers to "US only" and Canadian offers to "Canada only", or the other site advertises an offer its visitors cannot redeem.
+     */
+    siteAvailability?: ('all' | 'us' | 'cad') | null;
     /**
      * News item description
      */
@@ -12263,6 +12295,7 @@ export interface HomePageSelect<T extends boolean = true> {
     | T
     | {
         enabled?: T;
+        siteAvailability?: T;
         messages?:
           | T
           | {
@@ -12362,6 +12395,7 @@ export interface HomePageSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        siteAvailability?: T;
         description?: T;
         image?: T;
         backgroundVideo?: T;

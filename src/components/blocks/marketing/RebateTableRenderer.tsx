@@ -6,6 +6,7 @@ import type { RebateSeries } from '@/app/(frontend)/digital-piano-rebate/compone
 import { getProductByModel } from '@/lib/shopify'
 import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite } from '@/lib/site-context'
+import { isAvailableOnSite } from '@/lib/site-availability'
 import { getConsumerRebate } from '@/lib/rebates/canada-rebates'
 
 const getProductByModelCached = cache(getProductByModel)
@@ -54,7 +55,9 @@ type PopulatedProductPage = {
 
 export async function RebateTableRenderer(props: MarketingRebateTableBlock) {
   const { eyebrow, heading, deadline, schedule: rawSchedule } = props
+  if (props.enabled === false) return null
   const site = await getSite()
+  if (!isAvailableOnSite(props, site)) return null
   const isCanada = site === 'cad'
 
   const schedule: RebateSeries[] = await Promise.all(

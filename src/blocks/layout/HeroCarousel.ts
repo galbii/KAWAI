@@ -1,6 +1,7 @@
 import type { Block } from 'payload'
 import { imageField } from '@/lib/payload/fields/media'
 import { ctaTrackingField, trackImpressionField } from '@/lib/payload/fields/tracking'
+import { nestedSiteAvailabilityField } from '@/lib/payload/fields/site-availability'
 
 export const HeroCarousel: Block = {
   slug: 'layout-hero-carousel',
@@ -12,6 +13,7 @@ export const HeroCarousel: Block = {
   imageAltText: 'Full-screen hero carousel with auto-play, touch navigation, and rich content slides. Perfect for hero sections, featured content, and announcements.',
   interfaceName: 'LayoutHeroCarouselBlock',
   fields: [
+    nestedSiteAvailabilityField(),
     {
       name: 'slides',
       type: 'array',

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import type { Media } from '@/payload-types'
 import { X } from 'lucide-react'
 import { trackCTAClick, trackWithConfig } from '@/lib/analytics/unified-tracking'
+import { useAvailableOnSite } from '@/hooks/useAvailableOnSite'
 
 interface ExcludePath {
   path?: string | null
@@ -65,6 +66,7 @@ interface BottomLeftPopupBlockProps {
   zIndex?: number | null  // Default 9010 — must be above mobile search bar (z-9003)
   showOnAllPages?: boolean | null
   excludePaths?: ExcludePath[] | null
+  siteAvailability?: string | null
   /**
    * True when rendered by the site-wide GlobalBottomPopup mount. The homepage
    * inline instance (rendered via RenderBlocks) sets this false and bails when
@@ -167,6 +169,7 @@ export function BottomLeftPopupBlock({
   zIndex = 9010,
   showOnAllPages = false,
   excludePaths,
+  siteAvailability,
   isGlobalMount = false,
   tracking,
   ctaTracking,
@@ -175,14 +178,18 @@ export function BottomLeftPopupBlock({
   const [shouldRender, setShouldRender] = useState(true)
   const isMobile = useIsMobile()
   const pathname = usePathname()
+  // Resolved from the hostname — the global mount lives in the frontend layout,
+  // which must not call headers()
+  const onThisSite = useAvailableOnSite(siteAvailability)
 
   // A single popup instance should render across the site:
   // - When showOnAllPages is on, only the global mount renders (the homepage
   //   inline instance defers to it).
   // - When it's off, only the inline instance renders (the global mount is null).
-  // - Never on an excluded path.
+  // - Never on an excluded path, or on the site the offer doesn't apply to.
   const active =
     enabled !== false &&
+    onThisSite &&
     (showOnAllPages ? isGlobalMount : !isGlobalMount) &&
     !isPathExcluded(pathname, excludePaths)
 

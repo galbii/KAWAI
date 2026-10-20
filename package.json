@@ -38,6 +38,8 @@
     "migrate:all:dry-run": "tsx scripts/run-all-migrations.ts --dry-run",
     "promo:sh9-bundle": "tsx scripts/add-sh9-bundle-promo.ts",
     "promo:sh9-bundle:dry-run": "tsx scripts/add-sh9-bundle-promo.ts --dry-run",
+    "promo:es-canada": "tsx scripts/add-es-canada-stand-promo.ts",
+    "promo:es-canada:dry-run": "tsx scripts/add-es-canada-stand-promo.ts --dry-run",
     "migrate:product-featured": "tsx scripts/migrate-product-featured.ts",
     "migrate:product-featured:dry-run": "tsx scripts/migrate-product-featured.ts --dry-run",
     "migrate:dealers:rsm": "tsx scripts/migrate-dealers-rsm-list.ts",

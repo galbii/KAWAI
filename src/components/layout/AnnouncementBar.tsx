@@ -1,6 +1,7 @@
 'use client'
 
 import { useLayoutEffect } from 'react'
+import { useAvailableOnSite } from '@/hooks/useAvailableOnSite'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -12,6 +13,7 @@ interface AnnouncementBarProps {
   size: 'small' | 'medium' | 'large'
   speed?: number
   divider?: 'bullet' | 'pipe' | 'slash' | 'dash' | 'star' | 'diamond' | 'spaces'
+  siteAvailability?: string | null
 }
 
 const styleClasses = {
@@ -52,17 +54,24 @@ export function AnnouncementBar({
   style,
   size,
   speed = 40,
-  divider = 'bullet'
+  divider = 'bullet',
+  siteAvailability,
 }: AnnouncementBarProps) {
+  // Hostname-resolved: this mounts from the frontend layout, which can't call headers()
+  const onThisSite = useAvailableOnSite(siteAvailability)
+
   // Set CSS variable on document root so it's accessible by header and layout
   useLayoutEffect(() => {
+    if (!onThisSite) return
     document.documentElement.style.setProperty('--announcement-bar-height', sizeHeights[size])
 
     // Cleanup: remove the variable when component unmounts
     return () => {
       document.documentElement.style.setProperty('--announcement-bar-height', '0px')
     }
-  }, [size])
+  }, [size, onThisSite])
+
+  if (!onThisSite) return null
 
   // Concatenate all messages with selected divider (trim each message first)
   const dividerChar = dividerChars[divider]

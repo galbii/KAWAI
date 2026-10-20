@@ -34,6 +34,8 @@ import React, { Fragment, Suspense } from 'react'
 import type { Page } from '@/payload-types'
 import { cn } from '@/lib/utils'
 import { PageLayoutProvider } from '@/lib/contexts/PageLayoutContext'
+import { exclusiveSite } from '@/lib/site-availability'
+import { SiteGate } from './SiteGate'
 
 // Legacy Blocks (backward compatibility)
 import { ArchiveBlock } from './blocks/ArchiveBlock'
@@ -277,11 +279,25 @@ export function RenderBlocks({ blocks }: { blocks: Page['layout'] }) {
           </div>
         )
 
-        return isAsyncBlock ? (
+        const rendered = isAsyncBlock ? (
           <Suspense key={index} fallback={<div className="bg-kawai-pearl py-16 lg:py-24" aria-hidden="true" />}>
             {blockEl}
           </Suspense>
         ) : blockEl
+
+        // US-only / Canada-only blocks. Gated per block so pages without one never
+        // read headers(). The bottom popup resolves its site client-side instead —
+        // its site-wide mount lives in the frontend layout.
+        const siteAvailability = (block as { siteAvailability?: string | null }).siteAvailability
+        if (exclusiveSite({ siteAvailability }) && blockType !== 'layout-bottom-left-popup') {
+          return (
+            <SiteGate key={index} siteAvailability={siteAvailability}>
+              {rendered}
+            </SiteGate>
+          )
+        }
+
+        return rendered
       })}
     </Fragment>
     </PageLayoutProvider>

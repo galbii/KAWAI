@@ -1,5 +1,6 @@
 import type { Block } from 'payload'
 import { imageField, videoField } from '@/lib/payload/fields/media'
+import { nestedSiteAvailabilityField } from '@/lib/payload/fields/site-availability'
 
 export const NewsCarousel: Block = {
   slug: 'marketing-news-carousel',
@@ -11,6 +12,7 @@ export const NewsCarousel: Block = {
   imageAltText: 'Rotating news and updates carousel',
   interfaceName: 'MarketingNewsCarouselBlock',
   fields: [
+    nestedSiteAvailabilityField(),
     {
       name: 'autoPlayDuration',
       type: 'number',
@@ -27,6 +29,7 @@ export const NewsCarousel: Block = {
       fields: [
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', required: true },
+        nestedSiteAvailabilityField(),
         imageField('image', { required: false }),
         videoField('backgroundVideo', {
           required: false,

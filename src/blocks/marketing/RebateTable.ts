@@ -1,4 +1,5 @@
 import type { Block } from 'payload'
+import { nestedSiteAvailabilityField } from '@/lib/payload/fields/site-availability'
 
 export const RebateTable: Block = {
   slug: 'marketing-rebate-table',
@@ -8,6 +9,13 @@ export const RebateTable: Block = {
   },
   interfaceName: 'MarketingRebateTableBlock',
   fields: [
+    {
+      name: 'enabled',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: { description: 'Uncheck to hide the table once the offer ends, without deleting its schedule' },
+    },
+    nestedSiteAvailabilityField(),
     // ── Header ────────────────────────────────────────────────────────────────
     {
       name: 'eyebrow',

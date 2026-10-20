@@ -19,7 +19,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
-import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
+import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-context'
+import { exclusiveSite, isAvailableOnSite } from '@/lib/site-availability'
 
 /**
  * Transform raw Payload storefront data into structured HomePageData format
@@ -83,13 +84,16 @@ function transformStorefrontData(rawData: any, homePageData: any): HomePageData 
 
 // Helper function to merge news carousel data with fallback values
 // ALWAYS ADDITIVE: Combines homepage news + storefront news (never replaces)
-function mergeNewsCarouselWithFallback(dealerData: any, homePageData: any): any {
+// `site` is null when no homepage item is region-exclusive (nothing to filter).
+function mergeNewsCarouselWithFallback(dealerData: any, homePageData: any, site: Site | null): any {
   if (!dealerData || !homePageData?.newsCarouselSection) return dealerData;
 
   const merged = { ...dealerData };
 
-  // Always start with homepage news items
-  let newsItems = homePageData.newsCarouselSection?.newsItems ?? [];
+  // Always start with homepage news items, less any meant for the other site
+  let newsItems = (homePageData.newsCarouselSection?.newsItems ?? []).filter(
+    (item: any) => site === null || isAvailableOnSite(item, site)
+  );
 
   // Append storefront news items if they exist (always additive)
   if (
@@ -222,7 +226,9 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
       const originalStorefrontItemCount = storefrontData.newsCarouselSection?.newsItems?.length ?? 0;
       const originalDurationMissing = !storefrontData.newsCarouselSection?.autoPlayDuration;
 
-      storefrontData = mergeNewsCarouselWithFallback(storefrontData, homePageData);
+      const homeNews: any[] = homePageData.newsCarouselSection?.newsItems ?? [];
+      const site = homeNews.some((item) => exclusiveSite(item)) ? await getSite() : null;
+      storefrontData = mergeNewsCarouselWithFallback(storefrontData, homePageData, site);
 
       // Null check after merge (merge can return null)
       if (!storefrontData) return;

@@ -20,9 +20,9 @@
  * in EXCLUDED_MODELS. Unpriced models are discontinued in this catalogue and are
  * skipped, exactly as the campaign page skips them.
  *
- * US only: `sites: 'us'`. These are US-market dealer offers and the campaign
- * page declares no en-CA alternate, so the popup must not appear on
- * ca.kawaius.com.
+ * Both sites: `sites: 'both'`. The offer runs in Canada too (the campaign page
+ * prices the bundle in CAD on ca.kawaius.com), so a re-run must not narrow the
+ * popups back to US only.
  *
  * Goes through the Local API so field shapes, array row ids and relationship
  * ObjectIds are written by Payload rather than hand-rolled, and so the
@@ -279,7 +279,7 @@ async function run(dryRun: boolean, force: boolean): Promise<void> {
             bundlePrice: price,
             priceNote: PRICE_NOTE,
             ctaLabel: CTA_LABEL,
-            sites: 'us',
+            sites: 'both',
             displayFrequency: 'session',
             delaySeconds: 4,
           },
@@ -341,7 +341,7 @@ async function run(dryRun: boolean, force: boolean): Promise<void> {
               `Available at your local Authorized Kawai dealer.`,
             image: offerImage.id,
             ctaLabel: CTA_LABEL,
-            sites: 'us',
+            sites: 'both',
             displayFrequency: 'session',
             delaySeconds: 4,
           },

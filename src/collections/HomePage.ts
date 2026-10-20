@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { revalidateTag } from 'next/cache'
 import { imageField, videoField } from '@/lib/payload/fields/media'
+import { nestedSiteAvailabilityField } from '@/lib/payload/fields/site-availability'
 
 export const HomePage: CollectionConfig = {
   slug: 'home-page',
@@ -144,6 +145,7 @@ export const HomePage: CollectionConfig = {
                     description: 'Toggle to show/hide the announcement bar site-wide'
                   }
                 },
+                nestedSiteAvailabilityField(),
                 {
                   name: 'messages',
                   type: 'array',
@@ -830,6 +832,7 @@ export const HomePage: CollectionConfig = {
                     description: 'News item title'
                   }
                 },
+                nestedSiteAvailabilityField(),
                 {
                   name: 'description',
                   type: 'textarea',
