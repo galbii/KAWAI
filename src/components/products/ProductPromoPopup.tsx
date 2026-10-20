@@ -3,7 +3,7 @@ import { PromoPopup } from '@/components/ui/promo-popup'
 import { BundlePromoPopup } from '@/components/ui/bundle-promo-popup'
 import {
   promoShowsOnSite,
-  resolveBundleItems,
+  resolveBundle,
   resolveBundleMedia,
   type PromoSite,
 } from '@/lib/promo/bundle'
@@ -56,7 +56,11 @@ export function ProductPromoPopup({ product, site = 'us' }: { product: Product; 
   // Promos saved before the style field existed are single-subject promos
   if (promo.style === 'bundle') {
     const isCad = site === 'cad'
-    const items = resolveBundleItems(promo.bundleItems, site)
+    const { items, bundlePrice } = resolveBundle(
+      promo.bundleItems,
+      isCad ? promo.bundlePriceCAD : promo.bundlePrice,
+      site,
+    )
     if (items.length === 0) return null
 
     const subject = product.modelLabel || product.name || product.model
@@ -68,7 +72,7 @@ export function ProductPromoPopup({ product, site = 'us' }: { product: Product; 
         eyebrow={promo.eyebrow}
         message={promo.message}
         items={items}
-        bundlePrice={isCad ? promo.bundlePriceCAD : promo.bundlePrice}
+        bundlePrice={bundlePrice}
         priceNote={promo.priceNote}
         currency={isCad ? 'CAD' : 'USD'}
         media={resolveBundleMedia(promo.bundleMedia)}

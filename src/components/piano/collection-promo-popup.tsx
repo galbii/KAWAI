@@ -6,7 +6,7 @@ import { PromoPopup } from '@/components/ui/promo-popup'
 import {
   asDoc,
   promoShowsOnSite,
-  resolveBundleItems,
+  resolveBundle,
   resolveBundleMedia,
   uploadUrl,
   type PromoProduct,
@@ -71,7 +71,11 @@ export function CollectionPromoPopup({ collection, site = 'us' }: CollectionProm
 
   if (style === 'bundle') {
     const isCad = site === 'cad'
-    const items = resolveBundleItems(promo.bundleItems, site)
+    const { items, bundlePrice } = resolveBundle(
+      promo.bundleItems,
+      isCad ? promo.bundlePriceCAD : promo.bundlePrice,
+      site,
+    )
     if (items.length === 0) return null
 
     const href = ctaHref(promo)
@@ -85,7 +89,7 @@ export function CollectionPromoPopup({ collection, site = 'us' }: CollectionProm
         eyebrow={promo.eyebrow || 'Bundle Offer'}
         message={promo.message}
         items={items}
-        bundlePrice={isCad ? promo.bundlePriceCAD : promo.bundlePrice}
+        bundlePrice={bundlePrice}
         priceNote={promo.priceNote}
         currency={isCad ? 'CAD' : 'USD'}
         media={resolveBundleMedia(promo.bundleMedia)}

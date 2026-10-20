@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { promoShowsOnSite, resolveBundleItems, resolveBundleMedia } from './bundle'
+import { promoShowsOnSite, resolveBundle, resolveBundleItems, resolveBundleMedia } from './bundle'
 
 describe('promoShowsOnSite', () => {
   it('keeps a US-only promo off the Canadian storefront', () => {
@@ -61,6 +61,64 @@ describe('resolveBundleItems', () => {
     expect(resolveBundleItems([{ product: '69dd406ec6306789e6c7b1c6' }], 'us')).toEqual([])
     expect(resolveBundleItems(undefined, 'us')).toEqual([])
     expect(resolveBundleItems([], 'us')).toEqual([])
+  })
+})
+
+describe('resolveBundle', () => {
+  const es60 = {
+    model: 'ES60',
+    price: { msrp: 599 },
+    priceCAD: { price: 749, msrp: null },
+    variations: [{ name: 'Black', price: 599, priceCAD: 749 }],
+  }
+  const hml3 = { model: 'HML-3', price: { msrp: 129 }, priceCAD: { price: 149, msrp: null } }
+  const tenPctOff = { valueType: 'percentage' as const, value: 0.1, discountedPrice: 674.1 }
+
+  it('keeps the stored bundle price when nothing is discounted', () => {
+    const { items, bundlePrice } = resolveBundle([{ product: es60 }, { product: hml3 }], 749, 'cad')
+    expect(items.map((i) => i.price)).toEqual([749, 149])
+    expect(bundlePrice).toBe(749)
+  })
+
+  it('passes a CA Shopify discount on the paid piece through to the bundle price', () => {
+    const discounted = { ...es60, shopifyDiscountCAD: tenPctOff }
+    const { items, bundlePrice } = resolveBundle([{ product: discounted }, { product: hml3 }], 749, 'cad')
+    expect(items[0]?.price).toBe(674.1)
+    expect(bundlePrice).toBe(674.1)
+  })
+
+  it('follows a compare-at markdown on the paid piece', () => {
+    const markedDown = { ...es60, variations: [{ name: 'Black', priceCAD: 699, compareAtPriceCAD: 749 }] }
+    const { bundlePrice } = resolveBundle([{ product: markedDown }, { product: hml3 }], 749, 'cad')
+    expect(bundlePrice).toBe(699)
+  })
+
+  it('does not lower the bundle price for a discount on a free piece', () => {
+    const standOnSale = { ...hml3, shopifyDiscountCAD: { ...tenPctOff, discountedPrice: 134.1 } }
+    const { items, bundlePrice } = resolveBundle([{ product: es60 }, { product: standOnSale }], 749, 'cad')
+    expect(items[1]?.price).toBe(134.1)
+    expect(bundlePrice).toBe(749)
+  })
+
+  it('ignores the US store discount on the Canadian storefront, and vice versa', () => {
+    const usDiscount = { ...es60, shopifyDiscount: tenPctOff }
+    expect(resolveBundle([{ product: usDiscount }], 749, 'cad').bundlePrice).toBe(749)
+    const caDiscount = { ...es60, shopifyDiscountCAD: tenPctOff }
+    expect(resolveBundle([{ product: caDiscount }], 599, 'us').bundlePrice).toBe(599)
+  })
+
+  it('never shows a US variation price on the Canadian storefront', () => {
+    const usOnly = { model: 'SH-9', price: { msrp: 139 }, priceCAD: null, variations: [{ name: 'Black', price: 139 }] }
+    expect(resolveBundle([{ product: usOnly }], null, 'cad').items[0]?.price).toBeNull()
+  })
+
+  it('leaves a hand-set price alone, capped at the live separate total', () => {
+    expect(resolveBundle([{ product: es60 }, { product: hml3 }], 800, 'cad').bundlePrice).toBe(800)
+    expect(resolveBundle([{ product: es60 }, { product: hml3 }], 1000, 'cad').bundlePrice).toBe(898)
+  })
+
+  it('returns no bundle price when none is stored', () => {
+    expect(resolveBundle([{ product: es60 }], null, 'cad').bundlePrice).toBeNull()
   })
 })
 
