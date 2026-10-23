@@ -13,8 +13,8 @@ import { NextRequest, NextResponse } from 'next/server'
  *   const absoluteBaseUrl = location.origin + basePath + 'models/' + modelDir
  *   gltf.images[i].uri = absoluteBaseUrl + uri
  *
- * On kawai-global the document is /modelviewer/index.php, so textures resolve to
- * /modelviewer/models/<...>. Behind our proxy the document is
+ * On kawai-global the document is /sites/common/modelviewer/index.php, so textures
+ * resolve to /sites/common/modelviewer/models/<...>. Behind our proxy the document is
  * /api/3d-viewer-proxy, so they resolve to /api/models/<...> — this route.
  * The path is therefore dictated by the upstream viewer; do not move it without
  * also changing how the viewer HTML is served.
@@ -28,11 +28,11 @@ import { NextRequest, NextResponse } from 'next/server'
  *
  * @example
  * GET /api/models/k_series/texture/backposts_2K.jpg
- *   → https://www.kawai-global.com/modelviewer/models/k_series/texture/backposts_2K.jpg
+ *   → https://www.kawai-global.com/sites/common/modelviewer/models/k_series/texture/backposts_2K.jpg
  */
 
 const VIEWER_ORIGIN = 'https://www.kawai-global.com'
-const MODELS_BASE = `${VIEWER_ORIGIN}/modelviewer/models`
+const MODELS_BASE = `${VIEWER_ORIGIN}/sites/common/modelviewer/models`
 
 /** Texture/geometry formats the viewer actually references. */
 const ALLOWED_EXTENSIONS = new Set([

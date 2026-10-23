@@ -230,8 +230,6 @@ declare global {
     // loader replaces them with a real queue, so pushing before load is safe.
     _hsq?: unknown[][]
     _hsp?: unknown[][]
-    // Read by the loader at boot — loadImmediately: false suppresses the chat widget.
-    hsConversationsSettings?: { loadImmediately?: boolean }
   }
 }
 

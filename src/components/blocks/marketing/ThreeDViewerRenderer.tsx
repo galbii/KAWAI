@@ -68,7 +68,7 @@ export function ThreeDViewerRenderer({
 
   const viewerConfig: Viewer3DConfig = {
     enabled: true,
-    viewerUrl: 'https://www.kawai-global.com/modelviewer/index.php',
+    viewerUrl: 'https://www.kawai-global.com/sites/common/modelviewer/index.php',
     modelParams: `?${viewerParams.toString()}`,
     autoOpen: autoOpen ?? false,
     buttonText: buttonText || 'View in 3D',

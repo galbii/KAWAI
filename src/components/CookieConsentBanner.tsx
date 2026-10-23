@@ -63,14 +63,6 @@ function applyMarketingConsent(accepted: boolean) {
 function initHubSpot() {
   const portalId = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID
   if (!portalId || typeof document === 'undefined') return
-
-  // The loader also injects the HubSpot chat widget whenever a chatflow is live
-  // in the portal. Chat is disabled for now — must be set before the loader runs.
-  // GTM usually injects the loader first, so the primary copy of this line is in
-  // the gtag-consent-defaults script in src/app/layout.tsx; this one covers the
-  // case where we inject it. To re-enable chat, delete both lines (or call
-  // window.HubSpotConversations.widget.load()).
-  window.hsConversationsSettings = { loadImmediately: false }
   if (document.getElementById('hs-script-loader')) return
 
   const script = document.createElement('script')

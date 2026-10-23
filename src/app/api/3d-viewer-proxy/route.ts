@@ -18,7 +18,11 @@ import { NextRequest, NextResponse } from 'next/server'
  */
 
 const VIEWER_ORIGIN = 'https://www.kawai-global.com'
-const VIEWER_BASE = `${VIEWER_ORIGIN}/modelviewer/index.php`
+// Moved from /modelviewer/ to /sites/common/modelviewer/ in Oct 2026 — the old
+// path now 302s away and the proxy surfaced it as a 404. Upstream requires the
+// explicit index.php; /sites/common/modelviewer/?model= does not work.
+const VIEWER_ROOT = `${VIEWER_ORIGIN}/sites/common/modelviewer`
+const VIEWER_BASE = `${VIEWER_ROOT}/index.php`
 
 /**
  * Query params the upstream viewer understands, beyond `model`. Anything not
@@ -60,12 +64,12 @@ const ALLOWED_ASSET_EXTENSIONS = new Set([
 ])
 
 /**
- * Reject anything that isn't a plain relative asset path under /modelviewer/.
+ * Reject anything that isn't a plain relative asset path under the viewer root.
  * Mirrors `isSafeAssetPath` in /api/models/[...path]/route.ts.
  *
  * `asset` is caller-controlled, and the upstream origin is a hardcoded prefix
  * rather than a parsed URL — so without this, `?asset=../../<anything>` escapes
- * /modelviewer/ and turns this route into a read-through proxy for any path on
+ * the viewer root and turns this route into a read-through proxy for any path on
  * kawai-global.com.
  */
 function isSafeViewerAssetPath(relativePath: string): boolean {
@@ -131,15 +135,18 @@ export async function GET(request: NextRequest) {
     // Handle asset requests: the viewer's own js/css (see the HTML rewrite below),
     // plus GLTF files and textures.
     if (asset) {
-      // Accept both 'js/viewer-app.min.js' and '/modelviewer/js/viewer-app.min.js'
-      const relativeAsset = asset.replace(/^\/+/, '').replace(/^modelviewer\//, '')
+      // Accept 'js/viewer-app.min.js' as well as root-prefixed forms
+      // ('/modelviewer/js/...', '/sites/common/modelviewer/js/...')
+      const relativeAsset = asset
+        .replace(/^\/+/, '')
+        .replace(/^(?:sites\/common\/)?modelviewer\//, '')
 
       if (!isSafeViewerAssetPath(relativeAsset)) {
         console.error('[3D Viewer Proxy] Rejected asset path:', asset)
         return NextResponse.json({ error: 'Invalid asset path' }, { status: 400 })
       }
 
-      const targetUrl = `${VIEWER_ORIGIN}/modelviewer/${relativeAsset}`
+      const targetUrl = `${VIEWER_ROOT}/${relativeAsset}`
       console.log('[3D Viewer Proxy] Fetching asset:', targetUrl)
 
       const response = await fetch(targetUrl, {
@@ -226,7 +233,7 @@ export async function GET(request: NextRequest) {
     //   <link rel="stylesheet"    href="css/viewer-styles.css">
     //   <link rel="modulepreload" href="js/viewer-app.min.js">
     //   <script type="module"      src="js/viewer-app.min.js" defer>
-    // Upstream they resolve against /modelviewer/index.php. Here the document is
+    // Upstream they resolve against /sites/common/modelviewer/index.php. Here the document is
     // /api/3d-viewer-proxy, so they resolve to /api/js/... and /api/css/..., which
     // hit Payload's API catch-all and 404. viewer-app.min.js is what decrypts and
     // loads the model, so without this rewrite every model renders an empty viewer

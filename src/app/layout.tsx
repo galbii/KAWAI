@@ -178,12 +178,6 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
 
-              // HubSpot chat widget disabled for now. GTM (GTM-MGQR7XXS) injects the
-              // HubSpot loader, which auto-loads chat unless this is set first — so it
-              // lives here, ahead of GTM. To re-enable chat, delete this line (and the
-              // matching one in CookieConsentBanner.tsx initHubSpot).
-              window.hsConversationsSettings = { loadImmediately: false };
-
               // Read vanilla-cookieconsent's saved cookie (cc_cookie) synchronously so
               // returning visitors get their exact prior choice before GTM loads.
               var _ccCookie = (document.cookie.match(/(?:^|;\\s*)cc_cookie=([^;]*)/) || [])[1];

@@ -22,7 +22,7 @@ import type { ThreeDViewerModalProps } from './types'
  * <ThreeDViewerModal
  *   isOpen={isOpen}
  *   onClose={() => setIsOpen(false)}
- *   viewerUrl="https://kawai-global.com/modelviewer/?model=gl-10"
+ *   viewerUrl="https://www.kawai-global.com/sites/common/modelviewer/index.php?model=gl-10"
  *   productName="GL-10 Grand Piano"
  * />
  * ```
