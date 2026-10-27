@@ -5,6 +5,7 @@ import * as CookieConsent from 'vanilla-cookieconsent'
 import 'vanilla-cookieconsent/dist/cookieconsent.css'
 import posthog from 'posthog-js'
 import { isConsentRestricted } from '@/lib/consent-region'
+import { applyShopifyConsent } from '@/lib/shopify/analytics'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -103,6 +104,18 @@ function initMetaPixel() {
   window.fbq('track', 'PageView')
 }
 
+/**
+ * Shopify takes both categories in one call (it also derives `preferences` and
+ * `sale_of_data` from them), so it's synced from the banner's overall state
+ * rather than inside the per-category helpers above.
+ */
+function syncShopifyConsent() {
+  applyShopifyConsent(
+    CookieConsent.acceptedCategory('analytics'),
+    CookieConsent.acceptedCategory('marketing')
+  ).catch(() => {})
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -164,6 +177,7 @@ export function CookieConsentBanner() {
       onConsent: () => {
         applyAnalyticsConsent(CookieConsent.acceptedCategory('analytics'))
         applyMarketingConsent(CookieConsent.acceptedCategory('marketing'))
+        syncShopifyConsent()
       },
       onChange: ({ changedCategories }) => {
         if (changedCategories.includes('analytics')) {
@@ -172,6 +186,7 @@ export function CookieConsentBanner() {
         if (changedCategories.includes('marketing')) {
           applyMarketingConsent(CookieConsent.acceptedCategory('marketing'))
         }
+        syncShopifyConsent()
       },
       language: {
         default: 'en',
@@ -214,6 +229,13 @@ export function CookieConsentBanner() {
           },
         },
       },
+    }).then(() => {
+      // onConsent only fires once a choice exists. Under the opt-out model a
+      // visitor who never touches the banner is still opted in, so Shopify
+      // needs telling here — restricted regions stay untracked until they opt in.
+      if (!restricted && !CookieConsent.validConsent()) {
+        applyShopifyConsent(true, true).catch(() => {})
+      }
     })
   }, [])
 

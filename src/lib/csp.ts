@@ -205,9 +205,11 @@ export function buildCspHeader(_isDev: boolean): string {
       'https://api.hubapi.com',
       'https://perf-ct.hubspot.com',      // tracking-code performance beacon
 
-      // Shopify storefront/cart API + analytics beacon
+      // Shopify storefront/cart API + analytics beacon. shop.kawaius.com is the
+      // US store's first-party monorail host (see src/lib/shopify/analytics.ts).
       'https://*.myshopify.com',
       'https://monorail-edge.shopifysvc.com',
+      'https://shop.kawaius.com',
 
       // OpenFreeMap — map tile styles and vector tiles for the dealer locator
       'https://tiles.openfreemap.org',

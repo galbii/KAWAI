@@ -16,6 +16,7 @@ import { ImageGalleryLightbox } from '@/components/ui/image-gallery-lightbox'
 import type { Product as ShopifyProduct } from '@/lib/shopify/types'
 import { FloatingAddToCartIntegrated } from '@/components/blocks/FloatingAddToCartIntegrated'
 import { addVariantToCart } from '@/lib/shopify'
+import { trackShopifyProductView } from '@/lib/shopify/analytics'
 import { useCart } from '@/contexts/CartContext'
 import { trackAddToCart, trackBlockImpression, trackCTAClick } from '@/lib/analytics/unified-tracking'
 import type { CTATrackingConfig, BlockTrackingConfig } from '@/lib/analytics/unified-tracking'
@@ -215,6 +216,24 @@ export function ProductHeroBlock({
     setMobileCarouselIndex(currentImageIndex)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVariation])
+
+  // Shopify Analytics product view — once per Shopify product (the default
+  // variant stands in until the visitor picks one, as on Shopify themes)
+  useEffect(() => {
+    const variant = shopifyProduct?.variants[0]
+    if (!shopifyProduct || !variant) return
+    void trackShopifyProductView({
+      productId: shopifyProduct.id,
+      variantId: variant.id,
+      name: shopifyProduct.title,
+      variantName: variant.title,
+      brand: shopifyProduct.vendor || 'Kawai',
+      category: shopifyProduct.type,
+      sku: variant.sku,
+      price: variant.price,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shopifyProduct?.id])
 
   // Fire impression event once on mount
   useEffect(() => {

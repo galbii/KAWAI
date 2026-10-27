@@ -23,12 +23,29 @@
  */
 
 import { shopifyClient, shopifyClientCA } from './client'
+import { getShopifyTrackingHeaders } from './analytics'
 
+/**
+ * Site-aware cart client. Every request carries Shopify's visitor/session
+ * tokens (when analytics consent allows) so the checkout built from the cart
+ * attributes back to the storefront session in Shopify Analytics.
+ */
 function getCartClient() {
-  if (typeof window !== 'undefined' && window.location.hostname.startsWith('ca.')) {
-    return shopifyClientCA
+  const client =
+    typeof window !== 'undefined' && window.location.hostname.startsWith('ca.')
+      ? shopifyClientCA
+      : shopifyClient
+  return {
+    query: <T, V = Record<string, unknown>>(
+      query: string,
+      variables?: V,
+      options?: ShopifyRequestOptions
+    ) =>
+      client.query<T, V>(query, variables, {
+        ...options,
+        headers: { ...getShopifyTrackingHeaders(), ...options?.headers },
+      }),
   }
-  return shopifyClient
 }
 import {
   CART_CREATE_MUTATION,

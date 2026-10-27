@@ -20,6 +20,7 @@
 import { createCart, addToCart, updateCartAttributes } from './cart'
 import { getCartId, saveCartId } from './cart-storage'
 import { getUTMCartAttributes } from './checkout'
+import { trackShopifyAddToCart } from './analytics'
 import type { SimpleCart, ShopifyGID } from './types'
 
 /**
@@ -39,6 +40,7 @@ export async function addVariantToCart(variantId: string, quantity = 1): Promise
   if (!cartId) {
     const cart = await createCart([{ merchandiseId, quantity }], getUTMCartAttributes())
     saveCartId(cart.id)
+    void trackShopifyAddToCart(cart, merchandiseId, quantity)
     return cart
   }
 
@@ -49,5 +51,6 @@ export async function addVariantToCart(variantId: string, quantity = 1): Promise
     updateCartAttributes(cartId, utmAttrs).catch(() => {})
   }
 
+  void trackShopifyAddToCart(cart, merchandiseId, quantity)
   return cart
 }
