@@ -4,26 +4,45 @@ import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
 import { siteTags } from '@/lib/shopify/site-tags'
 import { geocodeZipCode } from '@/lib/utils/dealer-search'
-import { matchStorefrontForLead } from '@/lib/rsm/routing'
+import {
+  classifyLeadCountry,
+  getDealersForRsmRouting,
+  matchStorefrontForLead,
+  rankRsmCandidates,
+} from '@/lib/rsm/routing'
 
 /** Applied to every lead that lands in an official showroom's area. */
 const STOREFRONT_LEAD_TAG = 'storefront-lead'
 
 /**
- * Tags that put a lead in its nearest Kawai showroom's Shopify segment: the
- * storefront slug (the same tag the storefront contact form writes, e.g.
- * "st-louis") plus a generic `storefront-lead`. Empty when no showroom is in
- * range. Never throws — a failed lookup just means no showroom tag.
+ * Tags that attribute a lead to a location, from one geocode of its ZIP:
+ *
+ *   - Showroom: the storefront slug (the same tag the storefront contact form
+ *     writes, e.g. "st-louis") plus a generic `storefront-lead`, when an
+ *     official Kawai showroom is in range.
+ *   - Dealer: `dealer-{slug}` for the nearest brick-and-mortar dealer — the
+ *     same dealer pool the RSM notification routes on, and the same tag format
+ *     the lead funnel's dealer picker writes, so per-dealer lead counts can be
+ *     read straight off Shopify customer tags.
+ *
+ * Never throws — a failed lookup just means fewer tags.
  */
-async function storefrontTags(zip: string | undefined): Promise<string[]> {
+async function locationTags(zip: string | undefined): Promise<string[]> {
   if (!zip) return []
   try {
     const coords = await geocodeZipCode(zip)
     if (!coords) return []
-    const storefront = await matchStorefrontForLead(coords, zip)
-    return storefront ? [storefront.slug, STOREFRONT_LEAD_TAG] : []
+    const [storefront, dealers] = await Promise.all([
+      matchStorefrontForLead(coords, zip),
+      getDealersForRsmRouting(),
+    ])
+    const nearestDealer = rankRsmCandidates(dealers, coords, classifyLeadCountry(zip))[0]?.dealer
+    return [
+      ...(storefront ? [storefront.slug, STOREFRONT_LEAD_TAG] : []),
+      ...(nearestDealer?.slug ? [`dealer-${nearestDealer.slug}`] : []),
+    ]
   } catch (err) {
-    console.error('[signup-lead-shopify] Storefront lookup failed:', err)
+    console.error('[signup-lead-shopify] Location lookup failed:', err)
     return []
   }
 }
@@ -82,9 +101,9 @@ export async function upsertSignupLeadToShopify(
 
     const { firstname, lastname, email, phone, zip } = parsed.data
     // siteTags() adds 'canada' when submitted on ca.kawaius.com (same US-store CRM)
-    const [site, storefront] = await Promise.all([siteTags(), storefrontTags(zip)])
+    const [site, location] = await Promise.all([siteTags(), locationTags(zip)])
     const mergedTags = [
-      ...new Set([...tags.map((t) => t.trim()).filter(Boolean), ...site, ...storefront]),
+      ...new Set([...tags.map((t) => t.trim()).filter(Boolean), ...site, ...location]),
     ]
 
     await upsertCustomer({

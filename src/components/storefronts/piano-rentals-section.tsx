@@ -1,11 +1,25 @@
-import { cn } from '@/lib/utils'
+import Image from 'next/image'
+import {
+  DEFAULT_RENTAL_CTA_TEXT,
+  RENTAL_INQUIRY_ANCHOR,
+  rentalInquiryHref,
+  rentalPianoTypeOf,
+  resolveRentalHighlights,
+} from '@/lib/rentals'
+import {
+  getRentalImageFallbacks,
+  mediaUrl,
+  rentalCategoryOf,
+  type RentalImageFallbacks,
+} from '@/lib/rentals-images'
+import { RentalTiles, type RentalTile } from './rentals/RentalTiles'
 
 interface MonthlyRental {
   pianoType: string
   startingPrice: number
-  unit: string
-  description?: string
-  image?: any
+  unit?: string | null
+  description?: string | null
+  image?: unknown
 }
 
 interface EventRentalRate {
@@ -18,6 +32,7 @@ interface PianoRentalsData {
   pianoRentalsEnabled?: boolean
   pianoRentalsTitle?: string
   pianoRentalsDescription?: string
+  rentalHighlights?: { text?: string | null }[] | null
   monthlyRentals?: MonthlyRental[]
   rentToOwn?: {
     enabled?: boolean
@@ -38,230 +53,187 @@ interface PianoRentalsData {
 
 interface PianoRentalsSectionProps {
   data: PianoRentalsData
+  storeslug: string
+  /**
+   * Rentals-page mode: tiles link to the form on the same page, and the
+   * closing CTA is dropped because the form sits directly below.
+   */
+  onRentalsPage?: boolean
+  /** Pass when the caller already fetched them (rentals page). */
+  fallbacks?: RentalImageFallbacks
 }
 
-export function PianoRentalsSection({ data }: PianoRentalsSectionProps) {
+const SERIF = 'var(--font-crimson), Georgia, serif'
+
+/** Stored units look like '/month' — strip the slash so we can add our own. */
+const unitLabel = (unit?: string | null) => (unit ?? 'month').replace(/^\s*\/\s*/, '').trim() || 'month'
+
+/** Red-rule label + light Crimson heading — the homepage section header. */
+function SectionHeading({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-8 md:mb-12">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="block h-px w-6 bg-kawai-red" />
+        <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-kawai-charcoal/60">{label}</p>
+      </div>
+      <h2
+        className="font-light leading-tight text-kawai-black"
+        style={{ fontFamily: SERIF, fontSize: 'clamp(1.9rem, 3.4vw, 3rem)', letterSpacing: '-0.02em' }}
+      >
+        {children}
+      </h2>
+    </div>
+  )
+}
+
+export async function PianoRentalsSection({
+  data,
+  storeslug,
+  onRentalsPage = false,
+  fallbacks,
+}: PianoRentalsSectionProps) {
   if (!data.pianoRentalsEnabled) return null
   if (!data.monthlyRentals || data.monthlyRentals.length === 0) return null
 
-  const title = data.pianoRentalsTitle || 'Piano Rentals'
+  const images = fallbacks ?? (await getRentalImageFallbacks())
+  const highlights = resolveRentalHighlights(data.rentalHighlights)
+  // An empty link used to fall back to '#', which just jumped to the top of
+  // the page — default to this store's rental inquiry page instead.
+  const ctaHref = data.rentalCtaLink?.trim() || rentalInquiryHref(storeslug)
+  const ctaText = data.rentalCtaText?.trim() || DEFAULT_RENTAL_CTA_TEXT
+  const creditMonths = data.rentToOwn?.enabled ? (data.rentToOwn.applicationMonths ?? 6) : 0
+  const events = data.eventRentals?.enabled ? data.eventRentals : null
+
+  const tiles: RentalTile[] = data.monthlyRentals.map((rate) => {
+    const category = rentalCategoryOf(rate.pianoType)
+    const piano = rentalPianoTypeOf(category)
+    return {
+      label: rate.pianoType,
+      tag: category ?? 'Rental',
+      price: rate.startingPrice,
+      unit: unitLabel(rate.unit),
+      description: rate.description ?? null,
+      imageUrl: mediaUrl(rate.image) ?? (category ? images.byCategory[category] : undefined) ?? null,
+      href: onRentalsPage
+        ? `${piano ? `?piano=${piano}` : ''}#${RENTAL_INQUIRY_ANCHOR}`
+        : rentalInquiryHref(storeslug, undefined, piano),
+    }
+  })
+
+  // Rent-to-own photo: the first collection shot not already on the page.
+  const used = new Set([images.hero, ...tiles.map((t) => t.imageUrl)])
+  const ownImage = images.all.find((url) => !used.has(url)) ?? images.byCategory.grand ?? null
 
   return (
-    <section className="bg-kawai-pearl py-20 md:py-28">
-      <div className="container mx-auto px-6">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <div className="text-xs text-kawai-red font-medium tracking-[0.2em] uppercase mb-4">
-            Rental Programs
-          </div>
-          <h2 className="text-4xl md:text-5xl font-light font-serif text-kawai-black mb-6 leading-tight">
-            {title}
-          </h2>
-          {data.pianoRentalsDescription && (
-            <p className="text-lg text-kawai-black/70 max-w-2xl mx-auto leading-relaxed">
-              {data.pianoRentalsDescription}
-            </p>
-          )}
-          <div className="w-16 h-px bg-kawai-red mx-auto mt-8" />
-        </div>
-
-        {/* Monthly Rental Cards */}
-        <div
-          className={cn(
-            'grid gap-6 mb-12',
-            data.monthlyRentals.length === 1
-              ? 'md:grid-cols-1 max-w-sm mx-auto'
-              : data.monthlyRentals.length === 2
-                ? 'md:grid-cols-2 max-w-2xl mx-auto'
-                : 'md:grid-cols-3',
-          )}
-        >
-          {data.monthlyRentals.map((rental, index) => (
-            <div
-              key={index}
-              className="bg-white border border-kawai-neutral rounded-xl p-8 flex flex-col hover:shadow-lg transition-shadow duration-300 group"
-            >
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-kawai-black mb-1 uppercase tracking-wide">
-                  {rental.pianoType}
-                </h3>
-                <div className="w-8 h-px bg-kawai-red mt-3 group-hover:w-16 transition-all duration-300" />
-              </div>
-
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xs text-kawai-black/50 font-medium uppercase tracking-wide">
-                    Starting at
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-4xl font-bold text-kawai-red">
-                    ${rental.startingPrice.toLocaleString()}
-                  </span>
-                  <span className="text-sm text-kawai-black/60 ml-1">
-                    /{rental.unit}
-                  </span>
-                </div>
-              </div>
-
-              {rental.description && (
-                <p className="text-sm text-kawai-black/65 leading-relaxed flex-1">
-                  {rental.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Rent-to-Own Callout */}
-        {data.rentToOwn?.enabled && (
-          <div className="bg-kawai-black rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row md:items-center gap-6">
-            <div className="flex-shrink-0">
-              <div className="w-14 h-14 bg-kawai-red/20 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-7 h-7 text-kawai-red"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Rent-to-Own Program
-              </h3>
-              {data.rentToOwn.description ? (
-                <p className="text-white/70 text-sm leading-relaxed">
-                  {data.rentToOwn.description}
-                </p>
-              ) : (
-                <p className="text-white/70 text-sm leading-relaxed">
-                  {data.rentToOwn.minimumRentalMonths
-                    ? `Minimum ${data.rentToOwn.minimumRentalMonths} months required. `
-                    : ''}
-                  {data.rentToOwn.applicationMonths
-                    ? `Rental payments can be applied toward purchase within ${data.rentToOwn.applicationMonths} months.`
-                    : 'Apply your rental payments toward ownership.'}
-                </p>
-              )}
-            </div>
-            <div className="flex-shrink-0">
-              <span className="inline-block bg-kawai-red/20 border border-kawai-red/40 text-kawai-red text-xs font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full">
-                Apply Equity
-              </span>
-            </div>
-          </div>
+    <section className="bg-kawai-pearl">
+      {/* Monthly rentals */}
+      <div className="container mx-auto max-w-screen-2xl px-6 md:px-10 py-16 md:py-24">
+        <SectionHeading label={onRentalsPage ? 'Monthly rentals' : 'Rental program'}>
+          {onRentalsPage ? 'Choose your piano' : data.pianoRentalsTitle || 'Rent a brand-new Kawai'}
+        </SectionHeading>
+        {!onRentalsPage && data.pianoRentalsDescription && (
+          <p className="-mt-4 mb-10 max-w-2xl text-lg leading-relaxed text-kawai-black/70">
+            {data.pianoRentalsDescription}
+          </p>
         )}
+        <RentalTiles tiles={tiles} />
+      </div>
 
-        {/* Event Rentals */}
-        {data.eventRentals?.enabled && (
-          <div className="bg-white border border-kawai-neutral rounded-xl p-8 md:p-10 mb-10">
-            <div className="mb-6">
-              <h3 className="text-2xl font-light font-serif text-kawai-black mb-2">
-                Event Rentals
-              </h3>
-              <div className="w-10 h-px bg-kawai-red" />
+      {/* Rent to own — one bold statement beside one photo */}
+      {creditMonths > 0 && (
+        <div className="bg-kawai-black text-white">
+          <div className="grid lg:grid-cols-2">
+            <div className="relative aspect-[4/3] lg:aspect-auto lg:min-h-[560px]">
+              {ownImage && (
+                <Image src={ownImage} alt="" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+              )}
             </div>
+            <div className="flex flex-col justify-center px-6 py-16 md:px-16 lg:py-20 lg:px-20">
+              <p
+                className="font-light leading-none"
+                style={{ fontFamily: SERIF, fontSize: 'clamp(3.5rem, 7vw, 7rem)', letterSpacing: '-0.03em' }}
+              >
+                Rent to Own
+              </p>
+              <p className="mt-6 max-w-md text-xl leading-relaxed text-white/80">
+                If you decide to buy, your{' '}
+                <strong className="font-semibold text-white underline decoration-kawai-red-400 decoration-2 underline-offset-[6px]">
+                  first {creditMonths} months of rental fees
+                </strong>{' '}
+                can be applied toward the down payment.
+              </p>
+              {data.rentToOwn?.description && (
+                <p className="mt-8 max-w-md text-sm leading-relaxed text-white/55">{data.rentToOwn.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Event Types */}
-            {data.eventRentals.eventTypes && data.eventRentals.eventTypes.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-8">
-                {data.eventRentals.eventTypes.map((et, i) => (
-                  <span
-                    key={i}
-                    className="inline-block bg-kawai-pearl border border-kawai-neutral text-kawai-charcoal text-xs font-medium tracking-wide uppercase px-3 py-1.5 rounded-full"
-                  >
-                    {et.eventType}
-                  </span>
+      {/* Why rent from Kawai */}
+      <div className="container mx-auto max-w-screen-2xl px-6 md:px-10 py-16 md:py-24">
+        <SectionHeading label="Why rent from Kawai">A great way to start</SectionHeading>
+        <ul className="grid gap-x-12 border-t border-kawai-black/15 md:grid-cols-2 lg:grid-cols-3">
+          {highlights.map((text, index) => (
+            <li key={index} className="border-b border-kawai-black/15 py-6 text-[1.05rem] leading-relaxed text-kawai-black/80">
+              {text}
+            </li>
+          ))}
+        </ul>
+
+        {/* Event rentals */}
+        {events && events.rates && events.rates.length > 0 && (
+          <div className="mt-16 md:mt-24">
+            <SectionHeading label="Event rentals">
+              {events.eventTypes && events.eventTypes.length > 0
+                ? `For ${events.eventTypes.map((e) => e.eventType.toLowerCase()).join(', ')}`
+                : 'A Kawai for your event'}
+            </SectionHeading>
+            <table className="w-full max-w-3xl text-left">
+              <caption className="sr-only">Event rental rates</caption>
+              <thead>
+                <tr className="text-sm text-kawai-black/55">
+                  <th scope="col" className="pb-3 font-normal">Piano</th>
+                  <th scope="col" className="hidden pb-3 font-normal sm:table-cell">Duration</th>
+                  <th scope="col" className="pb-3 text-right font-normal">Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.rates.map((rate, i) => (
+                  <tr key={i} className="border-t border-kawai-black/15">
+                    <td className="py-5 font-semibold text-kawai-black">
+                      {rate.pianoType}
+                      <span className="block text-sm font-normal text-kawai-black/55 sm:hidden">{rate.durationLabel}</span>
+                    </td>
+                    <td className="hidden py-5 text-kawai-black/60 sm:table-cell">{rate.durationLabel}</td>
+                    <td className="py-5 text-right font-semibold tabular-nums">${rate.price.toLocaleString()}</td>
+                  </tr>
                 ))}
-              </div>
-            )}
-
-            {/* Rates Table */}
-            {data.eventRentals.rates && data.eventRentals.rates.length > 0 && (
-              <div className="overflow-x-auto mb-6">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-kawai-neutral">
-                      <th className="text-left text-kawai-black font-semibold pb-3 pr-6">
-                        Piano Type
-                      </th>
-                      <th className="text-left text-kawai-black font-semibold pb-3 pr-6">
-                        Duration
-                      </th>
-                      <th className="text-right text-kawai-black font-semibold pb-3">
-                        Rate
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.eventRentals.rates.map((rate, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-kawai-neutral/50 last:border-0 hover:bg-kawai-pearl/50 transition-colors"
-                      >
-                        <td className="py-3.5 pr-6 text-kawai-charcoal font-medium">
-                          {rate.pianoType}
-                        </td>
-                        <td className="py-3.5 pr-6 text-kawai-black/60">
-                          {rate.durationLabel}
-                        </td>
-                        <td className="py-3.5 text-right font-bold text-kawai-red">
-                          ${rate.price.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Event Rentals Contact */}
-            {(data.eventRentals.contactPhone || data.eventRentals.contactNote) && (
-              <div className="flex items-start gap-3 text-sm text-kawai-black/65 mt-4">
-                {data.eventRentals.contactPhone && (
+              </tbody>
+            </table>
+            {(events.contactPhone || events.contactNote) && (
+              <p className="mt-6 text-sm text-kawai-black/65">
+                {events.contactNote}{' '}
+                {events.contactPhone && (
                   <a
-                    href={`tel:${data.eventRentals.contactPhone}`}
-                    className="inline-flex items-center gap-2 text-kawai-red hover:text-kawai-black font-medium transition-colors"
+                    href={`tel:${events.contactPhone}`}
+                    className="font-medium text-kawai-black underline decoration-kawai-red underline-offset-4 hover:text-kawai-red"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                    </svg>
-                    {data.eventRentals.contactPhone}
+                    {events.contactPhone}
                   </a>
                 )}
-                {data.eventRentals.contactNote && (
-                  <span>{data.eventRentals.contactNote}</span>
-                )}
-              </div>
+              </p>
             )}
           </div>
         )}
 
-        {/* CTA Button */}
-        {data.rentalCtaText && (
-          <div className="text-center">
+        {!onRentalsPage && (
+          <div className="mt-12 flex justify-center">
             <a
-              href={data.rentalCtaLink || '#'}
-              className="inline-flex items-center gap-3 bg-kawai-red hover:bg-kawai-black text-white px-8 py-4 rounded-lg font-medium text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
+              href={ctaHref}
+              className="inline-flex items-center rounded-full bg-kawai-red px-8 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-kawai-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
             >
-              <span>{data.rentalCtaText}</span>
-              <svg
-                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+              {ctaText}
             </a>
           </div>
         )}

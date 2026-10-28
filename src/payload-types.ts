@@ -10395,6 +10395,19 @@ export interface Storefront {
   pianoRentalsEnabled?: boolean | null;
   pianoRentalsTitle?: string | null;
   pianoRentalsDescription?: string | null;
+  /**
+   * Full-width photo at the top of /store/{slug}/rentals (landscape, 2400px+ wide). Leave empty to use a Kawai lifestyle photo.
+   */
+  rentalHeroImage?: (string | null) | Media;
+  /**
+   * Key benefits of the rental program, shown on the storefront and the /rentals inquiry page. Leave empty to use Kawai's standard highlights.
+   */
+  rentalHighlights?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
   monthlyRentals?:
     | {
         pianoType: string;
@@ -10431,6 +10444,9 @@ export interface Storefront {
     contactNote?: string | null;
   };
   rentalCtaText?: string | null;
+  /**
+   * Leave empty to link to this store's rental inquiry page (/store/{slug}/rentals).
+   */
   rentalCtaLink?: string | null;
   facilityRentalsEnabled?: boolean | null;
   facilityRentalsTitle?: string | null;
@@ -10462,6 +10478,9 @@ export interface Storefront {
   pricingContactPhone?: string | null;
   pricingContactEmail?: string | null;
   facilityCtaText?: string | null;
+  /**
+   * Leave empty to link to this store's rental inquiry form (facility rental preselected).
+   */
   facilityCtaLink?: string | null;
   tuningRepairEnabled?: boolean | null;
   tuningRepairTitle?: string | null;
@@ -12797,6 +12816,13 @@ export interface StorefrontsSelect<T extends boolean = true> {
   pianoRentalsEnabled?: T;
   pianoRentalsTitle?: T;
   pianoRentalsDescription?: T;
+  rentalHeroImage?: T;
+  rentalHighlights?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
   monthlyRentals?:
     | T
     | {

@@ -368,11 +368,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'storefronts',
         where: { isActive: { equals: true } },
         limit: 500,
-        select: { slug: true, updatedAt: true },
+        select: { slug: true, updatedAt: true, pianoRentalsEnabled: true, facilityRentalsEnabled: true },
         depth: 0,
       })
 
-      for (const s of storefrontsResult.docs as Array<{ slug?: string; updatedAt: string }>) {
+      for (const s of storefrontsResult.docs as Array<{
+        slug?: string
+        updatedAt: string
+        pianoRentalsEnabled?: boolean | null
+        facilityRentalsEnabled?: boolean | null
+      }>) {
         if (!s.slug) continue
         add(`/store/${s.slug}`, {
           changeFrequency: 'monthly',
@@ -380,6 +385,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: new Date(s.updatedAt),
           usOnly: true,
         })
+        // Rental inquiry page — only exists when a rental program is enabled
+        if (s.pianoRentalsEnabled || s.facilityRentalsEnabled) {
+          add(`/store/${s.slug}/rentals`, {
+            changeFrequency: 'monthly',
+            priority: 0.6,
+            lastModified: new Date(s.updatedAt),
+            usOnly: true,
+          })
+        }
       }
       console.log(`✅ Sitemap: ${storefrontsResult.docs.length} storefronts`)
     } catch (err) {

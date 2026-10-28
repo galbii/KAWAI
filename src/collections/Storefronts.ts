@@ -2,6 +2,7 @@ import type { CollectionConfig, CollectionBeforeValidateHook } from 'payload'
 import { revalidateTag, revalidatePath } from 'next/cache'
 import { imageField, videoField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { nominatimGeocode } from '@/lib/payload/geocode'
+import { DEFAULT_RENTAL_HIGHLIGHTS, DEFAULT_RENTAL_CTA_TEXT } from '@/lib/rentals'
 
 /**
  * Auto-geocodes the storefront address using Nominatim before validation.
@@ -1190,6 +1191,25 @@ export const Storefronts: CollectionConfig = {
               type: 'textarea',
               label: 'Section Description',
             },
+            imageField('rentalHeroImage', {
+              label: 'Rental Page Hero Image',
+              admin: {
+                description:
+                  'Full-width photo at the top of /store/{slug}/rentals (landscape, 2400px+ wide). Leave empty to use a Kawai lifestyle photo.',
+              },
+            }),
+            {
+              name: 'rentalHighlights',
+              type: 'array',
+              label: 'Rental Highlights',
+              labels: { singular: 'Highlight', plural: 'Highlights' },
+              admin: {
+                description:
+                  'Key benefits of the rental program, shown on the storefront and the /rentals inquiry page. Leave empty to use Kawai\'s standard highlights.',
+              },
+              defaultValue: DEFAULT_RENTAL_HIGHLIGHTS.map((text) => ({ text })),
+              fields: [{ name: 'text', type: 'textarea', label: 'Highlight', required: true }],
+            },
             {
               name: 'monthlyRentals',
               type: 'array',
@@ -1278,8 +1298,13 @@ export const Storefronts: CollectionConfig = {
                 { name: 'contactNote', type: 'textarea', label: 'Contact Note' },
               ],
             },
-            { name: 'rentalCtaText', type: 'text', label: 'CTA Button Text', defaultValue: 'Schedule a Rental' },
-            { name: 'rentalCtaLink', type: 'text', label: 'CTA Button Link' },
+            { name: 'rentalCtaText', type: 'text', label: 'CTA Button Text', defaultValue: DEFAULT_RENTAL_CTA_TEXT },
+            {
+              name: 'rentalCtaLink',
+              type: 'text',
+              label: 'CTA Button Link',
+              admin: { description: "Leave empty to link to this store's rental inquiry page (/store/{slug}/rentals)." },
+            },
           ],
         },
 
@@ -1350,7 +1375,12 @@ export const Storefronts: CollectionConfig = {
             { name: 'pricingContactPhone', type: 'text', label: 'Contact Phone' },
             { name: 'pricingContactEmail', type: 'text', label: 'Contact Email' },
             { name: 'facilityCtaText', type: 'text', label: 'CTA Button Text', defaultValue: 'Inquire About Availability' },
-            { name: 'facilityCtaLink', type: 'text', label: 'CTA Button Link' },
+            {
+              name: 'facilityCtaLink',
+              type: 'text',
+              label: 'CTA Button Link',
+              admin: { description: "Leave empty to link to this store's rental inquiry form (facility rental preselected)." },
+            },
           ],
         },
 
@@ -1580,6 +1610,7 @@ export const Storefronts: CollectionConfig = {
             // Also revalidate paths (clears route cache)
             revalidatePath(path, 'page')
             revalidatePath(`${path}/contact`, 'page')
+            revalidatePath(`${path}/rentals`, 'page')
 
             payload.logger.info(`Successfully revalidated storefront: ${doc.slug}`)
           } catch (error) {
@@ -1597,6 +1628,7 @@ export const Storefronts: CollectionConfig = {
             revalidateTag(oldTag)
             revalidatePath(oldPath, 'page')
             revalidatePath(`${oldPath}/contact`, 'page')
+            revalidatePath(`${oldPath}/rentals`, 'page')
           } catch (error) {
             payload.logger.error(`Failed to revalidate old path ${oldPath}: ${error}`)
           }

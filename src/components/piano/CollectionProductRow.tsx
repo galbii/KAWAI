@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -111,6 +111,30 @@ export function CollectionProductRow({
   const [selectedVariationIndex, setSelectedVariationIndex] = useState<number>(-1)
   const [buyNowLoading, setBuyNowLoading] = useState(false)
   const [descExpanded, setDescExpanded] = useState(false)
+
+  // Finish strip — one scrollable row; arrows enable only when there's more to see
+  const finishStripRef = useRef<HTMLDivElement>(null)
+  const [canScrollPrev, setCanScrollPrev] = useState(false)
+  const [canScrollNext, setCanScrollNext] = useState(false)
+
+  const updateFinishArrows = useCallback(() => {
+    const el = finishStripRef.current
+    if (!el) return
+    setCanScrollPrev(el.scrollLeft > 1)
+    setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }, [])
+
+  useEffect(() => {
+    updateFinishArrows()
+    window.addEventListener('resize', updateFinishArrows)
+    return () => window.removeEventListener('resize', updateFinishArrows)
+  }, [updateFinishArrows])
+
+  const scrollFinishes = (direction: 1 | -1) => {
+    const el = finishStripRef.current
+    if (!el) return
+    el.scrollBy({ left: direction * el.clientWidth, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     if (product.variations.length === 1) setSelectedVariationIndex(0)
@@ -255,46 +279,6 @@ export function CollectionProductRow({
         </AnimatePresence>
         <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.02] transition-colors duration-700" />
       </Link>
-
-      {/* Variant selector */}
-      {product.variations.length > 1 && (
-        <div className="px-10 pt-6 lg:px-3 lg:pt-4">
-          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-muted mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-            Finish
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {/* Out-of-stock finishes stay selectable so the image still swaps — matches
-                ProductHeroBlock. The strikethrough is the availability cue; the
-                out-of-stock notice + Find a Dealer CTA renders in the info panel once selected.
-                Acoustic (dealer-only) pianos never show either. */}
-            {product.variations.map((v, i) => {
-              const inStock = v.available || !showStock
-              return (
-              <button
-                key={i}
-                type="button"
-                aria-pressed={i === selectedVariationIndex}
-                aria-label={inStock ? v.name : `${v.name} — out of stock`}
-                onClick={() => setSelectedVariationIndex(i === selectedVariationIndex ? -1 : i)}
-                className={cn(
-                  buttonBase,
-                  'border',
-                  !inStock && 'line-through',
-                  i === selectedVariationIndex
-                    ? 'border-kawai-black bg-kawai-black text-white'
-                    : inStock
-                      ? 'border-kawai-black/20 text-kawai-charcoal/70 hover:border-kawai-black hover:text-kawai-black'
-                      : 'border-kawai-black/10 text-kawai-charcoal/40 hover:border-kawai-black/40 hover:text-kawai-charcoal/70',
-                )}
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                {v.name}
-              </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </motion.div>
   )
 
@@ -411,6 +395,77 @@ export function CollectionProductRow({
         )}
       </motion.div>
 
+      {/* Variant selector */}
+      {product.variations.length > 1 && (
+        <motion.div variants={infoChildVariants} className="mb-8">
+          <div className="flex items-center justify-between max-w-md mb-3">
+            <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-muted" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+              Finish
+            </p>
+            {(canScrollPrev || canScrollNext) && (
+              <div className="flex items-center gap-2">
+                {([-1, 1] as const).map((dir) => {
+                  const enabled = dir < 0 ? canScrollPrev : canScrollNext
+                  return (
+                    <button
+                      key={dir}
+                      type="button"
+                      onClick={() => scrollFinishes(dir)}
+                      disabled={!enabled}
+                      aria-label={dir < 0 ? 'Previous finishes' : 'More finishes'}
+                      className={cn(
+                        'w-8 h-8 inline-flex items-center justify-center border transition-all duration-300',
+                        enabled
+                          ? 'border-kawai-black/25 text-kawai-black hover:border-kawai-black'
+                          : 'border-kawai-black/10 text-kawai-charcoal/25 cursor-not-allowed',
+                      )}
+                    >
+                      <svg viewBox="0 0 16 16" className={cn('w-3 h-3', dir < 0 && 'rotate-180')} fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+                        <path d="M2 8h12M8 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+          <div
+            ref={finishStripRef}
+            onScroll={updateFinishArrows}
+            className="flex gap-3 max-w-md overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {/* Out-of-stock finishes stay selectable so the image still swaps — matches
+                ProductHeroBlock. The strikethrough is the availability cue; the
+                out-of-stock notice + Find a Dealer CTA renders below once selected.
+                Acoustic (dealer-only) pianos never show either. */}
+            {product.variations.map((v, i) => {
+              const inStock = v.available || !showStock
+              return (
+              <button
+                key={i}
+                type="button"
+                aria-pressed={i === selectedVariationIndex}
+                aria-label={inStock ? v.name : `${v.name} — out of stock`}
+                onClick={() => setSelectedVariationIndex(i === selectedVariationIndex ? -1 : i)}
+                className={cn(
+                  buttonBase,
+                  'w-[calc(50%-0.375rem)] shrink-0 snap-start border',
+                  !inStock && 'line-through',
+                  i === selectedVariationIndex
+                    ? 'border-kawai-black bg-kawai-black text-white'
+                    : inStock
+                      ? 'border-kawai-black/20 text-kawai-charcoal/70 hover:border-kawai-black hover:text-kawai-black'
+                      : 'border-kawai-black/10 text-kawai-charcoal/40 hover:border-kawai-black/40 hover:text-kawai-charcoal/70',
+                )}
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                {v.name}
+              </button>
+              )
+            })}
+          </div>
+        </motion.div>
+      )}
       {/* Price block — plain div intentionally, not motion.div with parent variants.
           When a variation is selected the old price unmounts and a new one mounts.
           If we used infoChildVariants the new element would start at opacity:0 and
@@ -463,7 +518,7 @@ export function CollectionProductRow({
         </div>
       )}
 
-      {/* Commerce buttons — rendered below price; the finish selector lives under the image.
+      {/* Commerce buttons — rendered below price.
           Dealer-only pianos skip this; their Find a Dealer sits next to View Product. */}
       {hasVariations && showStock && (
         <AnimatePresence mode="wait">

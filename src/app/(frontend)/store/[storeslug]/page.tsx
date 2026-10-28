@@ -309,10 +309,10 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
         <ShowroomLocation {...(storefrontData?.showroomSection && { data: storefrontData.showroomSection })} />
 
         {/* Piano Rentals Section */}
-        <PianoRentalsSection data={rawStorefrontData ?? {}} />
+        <PianoRentalsSection data={rawStorefrontData ?? {}} storeslug={storeslug} />
 
         {/* Facility Rentals Section */}
-        <FacilityRentalsSection data={rawStorefrontData ?? {}} />
+        <FacilityRentalsSection data={rawStorefrontData ?? {}} storeslug={storeslug} />
 
         {/* Tuning & Repair Section */}
         <TuningRepairSection data={rawStorefrontData ?? {}} />

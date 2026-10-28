@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { rentalInquiryHref } from '@/lib/rentals'
 
 interface FacilityVenue {
   name: string
@@ -24,9 +25,10 @@ interface FacilityRentalsData {
 
 interface FacilityRentalsSectionProps {
   data: FacilityRentalsData
+  storeslug: string
 }
 
-export function FacilityRentalsSection({ data }: FacilityRentalsSectionProps) {
+export function FacilityRentalsSection({ data, storeslug }: FacilityRentalsSectionProps) {
   if (!data.facilityRentalsEnabled) return null
   if (!data.facilities || data.facilities.length === 0) return null
 
@@ -219,7 +221,7 @@ export function FacilityRentalsSection({ data }: FacilityRentalsSectionProps) {
         {data.facilityCtaText && (
           <div className="text-center">
             <a
-              href={data.facilityCtaLink || '#'}
+              href={data.facilityCtaLink?.trim() || rentalInquiryHref(storeslug, 'facility')}
               className="inline-flex items-center gap-3 bg-kawai-red hover:bg-white hover:text-kawai-black text-white px-8 py-4 rounded-lg font-medium text-sm tracking-wide uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
             >
               <span>{data.facilityCtaText}</span>
