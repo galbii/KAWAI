@@ -164,6 +164,14 @@ export default async function FallFinancingPage() {
       : Promise.resolve({} as Awaited<ReturnType<typeof getRebateModelArt>>),
   ])
 
+  // Drop models the bundle's per-collection filter excludes (previous-gen CN/CA).
+  const bundleTabs = bundleGroups
+    .map((g) => {
+      const allowed = bundle.modelFilter[g.handle]
+      return allowed ? { ...g, products: g.products.filter((p) => allowed.test(p.model)) } : g
+    })
+    .filter((g) => g.products.length > 0)
+
   // Server-side only — the browser cannot turn staging mode on or off.
   const testMode = process.env.FALL_FINANCING_TEST_MODE === 'true'
 
@@ -173,7 +181,7 @@ export default async function FallFinancingPage() {
 
       <FinancingLeadProvider testMode={testMode}>
         <PromoHero site={site} />
-        <Sh9BundleBlock groups={bundleGroups} />
+        <Sh9BundleBlock groups={bundleTabs} />
         {/* US only. It quotes a US lender's credit terms and now carries
             the Supporting Disclosure that qualifies them, so the whole section
             is gated rather than just the query behind it. */}

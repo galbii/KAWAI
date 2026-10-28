@@ -267,6 +267,17 @@ export const bundle = {
   tabsLabel: 'Choose a series',
   /** Tab order. Handles are Shopify collection handles. */
   collections: ['cn-series', 'ca-series'] as const,
+  /**
+   * Models a collection's tab may show. The Shopify collections still hold
+   * previous-generation models (CN29, CN39, CA49, and CA79/CA99 filed under
+   * CN by mistake); the current lines are three-digit (CN201, CN301,
+   * CA401–CA901), so each tab only lists those. Collections without an entry
+   * show everything.
+   */
+  modelFilter: {
+    'cn-series': /^CN\d{3}$/i,
+    'ca-series': /^CA\d{3}$/i,
+  } as Record<string, RegExp | undefined>,
   emptyState: 'Qualifying models are confirmed by your local Authorized Kawai dealer.',
   disclaimer:
     `One complimentary pair of SH-9 headphones per qualifying new CN or CA Series digital piano, ` +
