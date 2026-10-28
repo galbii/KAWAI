@@ -141,7 +141,10 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
           .map((r) => r.email)
           .filter((e): e is string => Boolean(e)),
         cc: (notify?.cc ?? []).map((r) => r.email).filter((e): e is string => Boolean(e)),
-        includeStorefrontEmail: Boolean(notify?.includeStorefrontEmail),
+        // Always on: a store's own leads must reach the store's inbox (the email
+        // on its storefront document), not just the corporate fallback. The
+        // campaign checkbox is hidden in the admin and no longer consulted.
+        includeStorefrontEmail: true,
         includeSchoolEmail: Boolean(notify?.includeSchoolEmail),
         storefrontEmail: storefront.showroomInfo?.email ?? null,
         schoolEmail: school?.contactInfo?.schoolEmail ?? school?.contactInfo?.email ?? null,

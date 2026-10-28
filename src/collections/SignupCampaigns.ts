@@ -335,7 +335,15 @@ export const SignupCampaigns: CollectionConfig = {
                   fields: [{ name: 'email', type: 'email', required: true }],
                   admin: { description: 'Who receives each lead' },
                 },
-                { name: 'includeStorefrontEmail', type: 'checkbox', defaultValue: false },
+                // Retired: the storefront's email now always receives its leads
+                // (see signup-campaign-submit.ts). Kept, hidden, so stored values
+                // and generated types stay valid.
+                {
+                  name: 'includeStorefrontEmail',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: { hidden: true },
+                },
                 { name: 'includeSchoolEmail', type: 'checkbox', defaultValue: false },
                 {
                   name: 'autoRouteToRSM',
