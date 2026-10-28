@@ -19,3 +19,12 @@
 export function isDigitalProduct(type: string | null | undefined): boolean {
   return (type ?? '').trim().toLowerCase() === 'digital'
 }
+
+/**
+ * Acoustic pianos (grands, uprights, Shigeru) are sold only through dealers, so
+ * online stock state is meaningless to shoppers — never surface "out of stock" or
+ * cross out their finishes.
+ */
+export function isAcousticProduct(type: string | null | undefined): boolean {
+  return ['grand', 'upright', 'shigeru'].includes((type ?? '').trim().toLowerCase())
+}

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { createCart, buildCheckoutUrl, getUTMCartAttributes } from '@/lib/shopify'
 import { trackAddToCart, trackBeginCheckout } from '@/lib/analytics/unified-tracking'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { isAcousticProduct } from '@/lib/product-type'
 import type { CollectionProduct } from '@/components/piano/collection-page-content'
 
 interface CollectionProductRowProps {
@@ -72,6 +73,11 @@ const commerceVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.25, ease } },
 }
 
+// Every button in a row shares one footprint: equal-width grid cells, equal height
+const buttonBase =
+  'inline-flex items-center justify-center gap-3 w-full min-h-[52px] px-4 py-3 text-center text-[11px] font-bold tracking-[0.16em] uppercase leading-snug transition-all duration-300'
+const buttonGrid = 'grid grid-cols-2 gap-3 max-w-md'
+
 function PianoSilhouette() {
   return (
     <svg viewBox="0 0 160 100" className="w-40 h-auto" fill="none" aria-hidden>
@@ -116,6 +122,9 @@ export function CollectionProductRow({
   const canAddToCart =
     !!selectedVariation?.shopifyVariantId && (selectedVariation?.available ?? false)
   const needsFinishSelection = product.variations.length > 1 && selectedVariationIndex < 0
+  // Acoustic pianos are dealer-only — hide stock state so finishes read as options,
+  // not "out of stock".
+  const showStock = !isAcousticProduct(product.type)
 
   const displayImageUrl = selectedVariation?.imageUrl ?? product.imageUrl ?? null
 
@@ -246,6 +255,46 @@ export function CollectionProductRow({
         </AnimatePresence>
         <div className="absolute inset-0 bg-kawai-black/0 group-hover:bg-kawai-black/[0.02] transition-colors duration-700" />
       </Link>
+
+      {/* Variant selector */}
+      {product.variations.length > 1 && (
+        <div className="px-10 pt-6 lg:px-3 lg:pt-4">
+          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-muted mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
+            Finish
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Out-of-stock finishes stay selectable so the image still swaps — matches
+                ProductHeroBlock. The strikethrough is the availability cue; the
+                out-of-stock notice + Find a Dealer CTA renders in the info panel once selected.
+                Acoustic (dealer-only) pianos never show either. */}
+            {product.variations.map((v, i) => {
+              const inStock = v.available || !showStock
+              return (
+              <button
+                key={i}
+                type="button"
+                aria-pressed={i === selectedVariationIndex}
+                aria-label={inStock ? v.name : `${v.name} — out of stock`}
+                onClick={() => setSelectedVariationIndex(i === selectedVariationIndex ? -1 : i)}
+                className={cn(
+                  buttonBase,
+                  'border',
+                  !inStock && 'line-through',
+                  i === selectedVariationIndex
+                    ? 'border-kawai-black bg-kawai-black text-white'
+                    : inStock
+                      ? 'border-kawai-black/20 text-kawai-charcoal/70 hover:border-kawai-black hover:text-kawai-black'
+                      : 'border-kawai-black/10 text-kawai-charcoal/40 hover:border-kawai-black/40 hover:text-kawai-charcoal/70',
+                )}
+                style={{ fontFamily: 'var(--font-brand-sans)' }}
+              >
+                {v.name}
+              </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 
@@ -336,18 +385,30 @@ export function CollectionProductRow({
         </motion.div>
       )}
 
-      {/* View Product */}
-      <motion.div variants={infoChildVariants} className="mb-10">
+      {/* View Product — dealer-only (acoustic) pianos get Find a Dealer alongside it */}
+      <motion.div
+        variants={infoChildVariants}
+        className={cn(buttonGrid, 'mb-10')}
+      >
         <Link
           href={`/products/${product.slug}`}
-          className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-kawai-black text-white hover:bg-kawai-black/80 transition-all duration-300 w-fit"
+          className={cn(buttonBase, 'bg-kawai-black text-white hover:bg-kawai-black/80')}
           style={{ fontFamily: 'var(--font-brand-sans)' }}
         >
-          <span className="text-[11px] font-bold tracking-[0.18em] uppercase">View Product</span>
+          <span>View Product</span>
           <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.75">
             <path d="M2 8h12M8 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Link>
+        {!showStock && (
+          <Link
+            href="/find-a-dealer"
+            className={cn(buttonBase, 'text-white bg-kawai-red hover:bg-kawai-red/85')}
+            style={{ fontFamily: 'var(--font-brand-sans)' }}
+          >
+            Find a Dealer
+          </Link>
+        )}
       </motion.div>
 
       {/* Price block — plain div intentionally, not motion.div with parent variants.
@@ -402,8 +463,9 @@ export function CollectionProductRow({
         </div>
       )}
 
-      {/* Commerce buttons — rendered below price, above variation selector */}
-      {hasVariations && (
+      {/* Commerce buttons — rendered below price; the finish selector lives under the image.
+          Dealer-only pianos skip this; their Find a Dealer sits next to View Product. */}
+      {hasVariations && showStock && (
         <AnimatePresence mode="wait">
           {needsFinishSelection ? (
             <motion.p
@@ -424,15 +486,15 @@ export function CollectionProductRow({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="flex flex-row items-center gap-4 mb-8"
+              className={cn(buttonGrid, 'mb-8')}
             >
               <button
                 type="button"
                 onClick={handleBuyNow}
                 disabled={buyNowLoading}
                 className={cn(
-                  'inline-flex items-center justify-center px-8 py-4',
-                  'text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red transition-all duration-300',
+                  buttonBase,
+                  'text-white bg-kawai-red',
                   !buyNowLoading ? 'hover:bg-kawai-red/85 cursor-pointer' : 'opacity-60 cursor-not-allowed',
                 )}
                 style={{ fontFamily: 'var(--font-brand-sans)' }}
@@ -445,7 +507,7 @@ export function CollectionProductRow({
                 variant="outline"
                 size="default"
                 onSuccess={handleAddToCartSuccess}
-                className="text-[11px] font-bold tracking-[0.18em] uppercase border-kawai-black/25 text-kawai-black hover:border-kawai-black px-8 py-4 transition-all duration-300"
+                className={cn(buttonBase, 'h-auto rounded-none border-kawai-black/25 text-kawai-black hover:border-kawai-black')}
               >
                 Add to Cart
               </AddToCartButton>
@@ -466,52 +528,20 @@ export function CollectionProductRow({
                   ? 'Available through authorized dealers'
                   : 'Out of stock — contact an authorized dealer'}
               </p>
-              <Link
-                href="/find-a-dealer"
-                className="inline-flex items-center justify-center px-10 py-4 text-[11px] font-bold tracking-[0.18em] uppercase text-white bg-kawai-red hover:bg-kawai-red/85 transition-all duration-300"
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                Find a Dealer
-              </Link>
+              <div className={buttonGrid}>
+                <Link
+                  href="/find-a-dealer"
+                  className={cn(buttonBase, 'text-white bg-kawai-red hover:bg-kawai-red/85')}
+                  style={{ fontFamily: 'var(--font-brand-sans)' }}
+                >
+                  Find a Dealer
+                </Link>
+              </div>
             </motion.div>
           ) : null}
         </AnimatePresence>
       )}
 
-      {/* Variant selector */}
-      {product.variations.length > 1 && (
-        <motion.div variants={infoChildVariants} className="mb-8">
-          <p className="text-[9px] tracking-[0.2em] uppercase text-kawai-muted mb-3" style={{ fontFamily: 'var(--font-brand-sans)' }}>
-            Finish
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {/* Out-of-stock finishes stay selectable so the image still swaps — matches
-                ProductHeroBlock. The strikethrough is the availability cue; the
-                out-of-stock notice + Find a Dealer CTA renders above once selected. */}
-            {product.variations.map((v, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-pressed={i === selectedVariationIndex}
-                aria-label={v.available ? v.name : `${v.name} — out of stock`}
-                onClick={() => setSelectedVariationIndex(i === selectedVariationIndex ? -1 : i)}
-                className={cn(
-                  'px-6 py-3 text-[11px] font-semibold tracking-[0.14em] uppercase border transition-all duration-300',
-                  !v.available && 'line-through',
-                  i === selectedVariationIndex
-                    ? 'border-kawai-black bg-kawai-black text-white'
-                    : v.available
-                      ? 'border-kawai-black/20 text-kawai-charcoal/70 hover:border-kawai-black hover:text-kawai-black'
-                      : 'border-kawai-black/10 text-kawai-charcoal/40 hover:border-kawai-black/40 hover:text-kawai-charcoal/70',
-                )}
-                style={{ fontFamily: 'var(--font-brand-sans)' }}
-              >
-                {v.name}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   )
 
