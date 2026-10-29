@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   DEFAULT_FEATURED_FINISHES,
   DEFAULT_RENTAL_CTA_TEXT,
@@ -10,6 +11,7 @@ import {
   rentalPianoTypeOfModel,
   resolveRentalHighlights,
   type RentalPianoType,
+  type RentalType,
 } from '@/lib/rentals'
 import { finishImageOf, getRentalCatalog } from '@/lib/rentals-catalog'
 import {
@@ -19,7 +21,7 @@ import {
   type RentalImageFallbacks,
 } from '@/lib/rentals-images'
 import { RentalTiles, type RentalTile } from './rentals/RentalTiles'
-import { SectionHeading, SERIF } from './rentals/SectionHeading'
+import { PILL, RENTAL_SECTION_SCROLL_MARGIN, SectionHeading, SERIF, TEXT_LINK } from './rentals/SectionHeading'
 import {
   FeaturedFinishes,
   RentalModels,
@@ -55,7 +57,7 @@ interface PianoRentalsData {
     contactForAvailability?: boolean | null
   }[] | null
   locationName?: string | null
-  showroomInfo?: { name?: string | null } | null
+  showroomInfo?: { name?: string | null; phone?: string | null } | null
   monthlyRentals?: MonthlyRental[]
   rentToOwn?: {
     enabled?: boolean
@@ -128,13 +130,22 @@ export async function PianoRentalsSection({
   ])
 
   /** Inquiry link: same-page anchor on the rentals page, else the rentals page. */
-  const inquiryHref = (piano: RentalPianoType | null, interest: string | null) => {
-    if (!onRentalsPage) return rentalInquiryHref(storeslug, undefined, piano, interest)
+  const inquiryHref = (piano: RentalPianoType | null, interest: string | null, type?: RentalType) => {
+    if (!onRentalsPage) return rentalInquiryHref(storeslug, type, piano, interest)
     const params = new URLSearchParams()
+    if (type && type !== 'monthly') params.set('type', type)
     if (piano) params.set('piano', piano)
     if (interest) params.set('interest', interest)
     return `${params.size > 0 ? `?${params}` : ''}#${RENTAL_INQUIRY_ANCHOR}`
   }
+  const rentalsPageHref = `/store/${storeslug}/rentals`
+  const phone = data.showroomInfo?.phone?.trim() || null
+  /** Sections register with the rentals page's sticky nav. */
+  const navSection = (id: string, label: string) => ({
+    id,
+    'data-rental-nav': label,
+    className: RENTAL_SECTION_SCROLL_MARGIN,
+  })
 
   const modelCards: RentalModelCard[] = models.flatMap((code) => {
     const entry = catalog.find((c) => c.model.toLowerCase() === code.toLowerCase())
@@ -180,9 +191,7 @@ export async function PianoRentalsSection({
       unit: unitLabel(rate.unit),
       description: rate.description ?? null,
       imageUrl: mediaUrl(rate.image) ?? (category ? images.byCategory[category] : undefined) ?? null,
-      href: onRentalsPage
-        ? `${piano ? `?piano=${piano}` : ''}#${RENTAL_INQUIRY_ANCHOR}`
-        : rentalInquiryHref(storeslug, undefined, piano),
+      href: inquiryHref(piano, null),
     }
   })
 
@@ -191,31 +200,50 @@ export async function PianoRentalsSection({
   const ownImage = images.all.find((url) => !used.has(url)) ?? images.byCategory.grand ?? null
 
   return (
-    <section className="bg-kawai-pearl">
+    <section id="piano-rentals" className="bg-kawai-pearl scroll-mt-[var(--header-bottom,70px)]">
       {/* Monthly rentals */}
-      <div className="container mx-auto max-w-screen-2xl px-6 md:px-10 py-16 md:py-24">
-        <SectionHeading label={onRentalsPage ? 'Monthly rentals' : 'Rental program'}>
-          {onRentalsPage ? 'Choose your piano' : data.pianoRentalsTitle || 'Rent a brand-new Kawai'}
-        </SectionHeading>
-        {!onRentalsPage && data.pianoRentalsDescription && (
-          <p className="-mt-4 mb-10 max-w-2xl text-lg leading-relaxed text-kawai-black/70">
-            {data.pianoRentalsDescription}
-          </p>
-        )}
-        <RentalTiles tiles={tiles} />
+      <div {...navSection('rental-pianos', 'Pianos & rates')}>
+        <div className="container mx-auto max-w-screen-2xl px-6 md:px-10 py-16 md:py-24">
+          <SectionHeading
+            label={onRentalsPage ? 'Monthly rentals' : 'Rental program'}
+            action={
+              !onRentalsPage && (
+                <Link href={rentalsPageHref} className={TEXT_LINK}>
+                  Full rental details <span aria-hidden>→</span>
+                </Link>
+              )
+            }
+          >
+            {onRentalsPage ? 'Choose your piano' : data.pianoRentalsTitle || 'Rent a brand-new Kawai'}
+          </SectionHeading>
+          {!onRentalsPage && data.pianoRentalsDescription && (
+            <p className="-mt-4 mb-10 max-w-2xl text-lg leading-relaxed text-kawai-black/70">
+              {data.pianoRentalsDescription}
+            </p>
+          )}
+          <RentalTiles tiles={tiles} />
+        </div>
       </div>
 
       {/* Models stores regularly have, then the special finishes */}
       {(modelCards.length > 0 || finishPanels.length > 0) && (
         <div className="container mx-auto max-w-screen-2xl space-y-16 px-6 pb-16 md:space-y-24 md:px-10 md:pb-24">
-          <RentalModels models={modelCards} storeName={storeName} />
-          <FeaturedFinishes finishes={finishPanels} storeName={storeName} />
+          {modelCards.length > 0 && (
+            <div {...navSection('rental-models', 'Models')}>
+              <RentalModels models={modelCards} storeName={storeName} />
+            </div>
+          )}
+          {finishPanels.length > 0 && (
+            <div {...navSection('rental-finishes', 'Finishes')}>
+              <FeaturedFinishes finishes={finishPanels} storeName={storeName} />
+            </div>
+          )}
         </div>
       )}
 
       {/* Rent to own — one bold statement beside one photo */}
       {creditMonths > 0 && (
-        <div className="bg-kawai-black text-white">
+        <div {...navSection('rent-to-own', 'Rent to own')} className={`${RENTAL_SECTION_SCROLL_MARGIN} bg-kawai-black text-white`}>
           <div className="grid lg:grid-cols-2">
             <div className="relative aspect-[4/3] lg:aspect-auto lg:min-h-[560px]">
               {ownImage && (
@@ -223,12 +251,12 @@ export async function PianoRentalsSection({
               )}
             </div>
             <div className="flex flex-col justify-center px-6 py-16 md:px-16 lg:py-20 lg:px-20">
-              <p
+              <h2
                 className="font-light leading-none"
                 style={{ fontFamily: SERIF, fontSize: 'clamp(3.5rem, 7vw, 7rem)', letterSpacing: '-0.03em' }}
               >
                 Rent to Own
-              </p>
+              </h2>
               <p className="mt-6 max-w-md text-xl leading-relaxed text-white/80">
                 If you decide to buy, your{' '}
                 <strong className="font-semibold text-white underline decoration-kawai-red-400 decoration-2 underline-offset-[6px]">
@@ -239,6 +267,14 @@ export async function PianoRentalsSection({
               {data.rentToOwn?.description && (
                 <p className="mt-8 max-w-md text-sm leading-relaxed text-white/55">{data.rentToOwn.description}</p>
               )}
+              <div className="mt-10">
+                <Link
+                  href={inquiryHref(null, 'a piano with the rent-to-own option')}
+                  className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-kawai-black transition-colors duration-300 hover:bg-kawai-red hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  Ask about rent-to-own
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -246,19 +282,28 @@ export async function PianoRentalsSection({
 
       {/* Why rent from Kawai */}
       <div className="container mx-auto max-w-screen-2xl px-6 md:px-10 py-16 md:py-24">
-        <SectionHeading label="Why rent from Kawai">A great way to start</SectionHeading>
-        <ul className="grid gap-x-12 border-t border-kawai-black/15 md:grid-cols-2 lg:grid-cols-3">
-          {highlights.map((text, index) => (
-            <li key={index} className="border-b border-kawai-black/15 py-6 text-[1.05rem] leading-relaxed text-kawai-black/80">
-              {text}
-            </li>
-          ))}
-        </ul>
+        <div {...navSection('why-rent', 'Why rent')}>
+          <SectionHeading label="Why rent from Kawai">A great way to start</SectionHeading>
+          <ul className="grid gap-x-12 border-t border-kawai-black/15 md:grid-cols-2 lg:grid-cols-3">
+            {highlights.map((text, index) => (
+              <li key={index} className="border-b border-kawai-black/15 py-6 text-[1.05rem] leading-relaxed text-kawai-black/80">
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Event rentals */}
         {events && events.rates && events.rates.length > 0 && (
-          <div className="mt-16 md:mt-24">
-            <SectionHeading label="Event rentals">
+          <div {...navSection('event-rentals', 'Events')} className={`${RENTAL_SECTION_SCROLL_MARGIN} mt-16 md:mt-24`}>
+            <SectionHeading
+              label="Event rentals"
+              action={
+                <Link href={inquiryHref(null, null, 'event')} className={TEXT_LINK}>
+                  Ask about an event rental <span aria-hidden>→</span>
+                </Link>
+              }
+            >
               {events.eventTypes && events.eventTypes.length > 0
                 ? `For ${events.eventTypes.map((e) => e.eventType.toLowerCase()).join(', ')}`
                 : 'A Kawai for your event'}
@@ -301,14 +346,24 @@ export async function PianoRentalsSection({
           </div>
         )}
 
+        {/* Closing CTAs — store homepage only; the rentals page has its form
+            directly below and the sticky nav's Inquire pill. */}
         {!onRentalsPage && (
-          <div className="mt-12 flex justify-center">
-            <a
-              href={ctaHref}
-              className="inline-flex items-center rounded-full bg-kawai-red px-8 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-kawai-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
-            >
+          <div className="mt-16 flex flex-col items-start gap-6 border-t border-kawai-black/15 pt-10 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10">
+            <a href={ctaHref} className={PILL}>
               {ctaText}
             </a>
+            <Link href={rentalsPageHref} className={TEXT_LINK}>
+              See the rentals page <span aria-hidden>→</span>
+            </Link>
+            {phone && (
+              <a href={`tel:${phone}`} className="text-kawai-black/65 hover:text-kawai-red sm:ml-auto">
+                Or call{' '}
+                <span className="font-medium text-kawai-black underline decoration-kawai-red underline-offset-4">
+                  {phone}
+                </span>
+              </a>
+            )}
           </div>
         )}
       </div>

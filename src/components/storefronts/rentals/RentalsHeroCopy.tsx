@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 
 /**
@@ -14,9 +15,11 @@ interface RentalsHeroCopyProps {
   ctaText: string
   ctaHref: string
   phone: string | null
+  /** Link back to the store's homepage. */
+  back?: { href: string; label: string }
 }
 
-export function RentalsHeroCopy({ eyebrow, title, subtitle, ctaText, ctaHref, phone }: RentalsHeroCopyProps) {
+export function RentalsHeroCopy({ eyebrow, title, subtitle, ctaText, ctaHref, phone, back }: RentalsHeroCopyProps) {
   const reduceMotion = useReducedMotion()
   const enter = (y: number, delay: number) =>
     reduceMotion
@@ -25,6 +28,16 @@ export function RentalsHeroCopy({ eyebrow, title, subtitle, ctaText, ctaHref, ph
 
   return (
     <div className="max-w-3xl space-y-5">
+      {back && (
+        <motion.div {...enter(0, 0.1)}>
+          <Link
+            href={back.href}
+            className="inline-flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+          >
+            <span aria-hidden>←</span> {back.label}
+          </Link>
+        </motion.div>
+      )}
       <motion.p
         {...enter(10, 0.2)}
         className="inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.28em] text-white/70"

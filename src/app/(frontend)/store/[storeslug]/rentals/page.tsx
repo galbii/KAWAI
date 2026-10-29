@@ -7,6 +7,8 @@ import { getSite, getSiteUrl, getSiteAlternates } from '@/lib/site-context'
 import { PianoRentalsSection } from '@/components/storefronts/piano-rentals-section'
 import { RentalInquiryForm } from '@/components/storefronts/rental-inquiry-form'
 import { RentalsHeroCopy } from '@/components/storefronts/rentals/RentalsHeroCopy'
+import { RentalsSectionNav } from '@/components/storefronts/rentals/RentalsSectionNav'
+import { RENTAL_SECTION_SCROLL_MARGIN } from '@/components/storefronts/rentals/SectionHeading'
 import { ShowroomLocation } from '@/components/homepage'
 import { RENTAL_INQUIRY_ANCHOR } from '@/lib/rentals'
 import { getRentalImageFallbacks, mediaUrl } from '@/lib/rentals-images'
@@ -33,11 +35,7 @@ export async function generateStaticParams(): Promise<Params[]> {
   return slugs.map((storeslug) => ({ storeslug }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { storeslug } = await params
   const storefront = await getStorefrontBySlugDirect(storeslug)
   if (!storefront || !offersRentals(storefront)) return {}
@@ -89,62 +87,83 @@ export default async function RentalsPage({ params }: { params: Promise<Params> 
               ctaText="Send a rental inquiry"
               ctaHref={`#${RENTAL_INQUIRY_ANCHOR}`}
               phone={phone}
+              back={{
+                href: `/store/${storeslug}`,
+                label: `${storeName} showroom`,
+              }}
             />
           </div>
         </div>
       </section>
 
-      <PianoRentalsSection data={storefront} storeslug={storeslug} onRentalsPage fallbacks={fallbacks} />
+      {/* Everything below the hero shares one wrapper so the section nav stays
+          pinned all the way down to the map. */}
+      <div>
+        <RentalsSectionNav inquiryHref={`#${RENTAL_INQUIRY_ANCHOR}`} inquiryText="Inquire" />
 
-      {/* Inquiry */}
-      <section id={RENTAL_INQUIRY_ANCHOR} className="scroll-mt-28 bg-white">
-        <div className="container mx-auto grid max-w-screen-2xl gap-12 px-6 py-16 md:px-10 md:py-24 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
-          <div>
-            <div className="mb-4 flex items-center gap-3">
-              <span className="block h-px w-6 bg-kawai-red" />
-              <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-kawai-charcoal/60">Rental inquiry</p>
-            </div>
-            <h2
-              className="font-light leading-tight text-kawai-black"
-              style={{ fontFamily: SERIF, fontSize: 'clamp(1.9rem, 3.4vw, 3rem)', letterSpacing: '-0.02em' }}
-            >
-              Ask {storeName} about renting
-            </h2>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-kawai-black/70">
-              Tell us who&apos;s playing and what you have in mind. The showroom replies within one business day
-              with availability and rates — or stop by to compare models in person.
-            </p>
-            {phone && (
-              <p className="mt-8 text-kawai-black/65">
-                Prefer to talk?{' '}
-                <a
-                  href={`tel:${phone}`}
-                  className="font-medium text-kawai-black underline decoration-kawai-red underline-offset-4 hover:text-kawai-red"
-                >
-                  {phone}
-                </a>
+        <PianoRentalsSection data={storefront} storeslug={storeslug} onRentalsPage fallbacks={fallbacks} />
+
+        {/* Inquiry */}
+        <section
+          id={RENTAL_INQUIRY_ANCHOR}
+          className={`${RENTAL_SECTION_SCROLL_MARGIN} bg-white`}
+        >
+          <div className="container mx-auto grid max-w-screen-2xl gap-12 px-6 py-16 md:px-10 md:py-24 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
+            <div>
+              <div className="mb-4 flex items-center gap-3">
+                <span className="block h-px w-6 bg-kawai-red" />
+                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-kawai-charcoal/60">
+                  Rental inquiry
+                </p>
+              </div>
+              <h2
+                className="font-light leading-tight text-kawai-black"
+                style={{
+                  fontFamily: SERIF,
+                  fontSize: 'clamp(1.9rem, 3.4vw, 3rem)',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Ask {storeName} about renting
+              </h2>
+              <p className="mt-6 max-w-md text-lg leading-relaxed text-kawai-black/70">
+                Tell us who&apos;s playing and what you have in mind. The showroom replies within one business day with
+                availability and rates — or stop by to compare models in person.
               </p>
-            )}
+              {phone && (
+                <p className="mt-8 text-kawai-black/65">
+                  Prefer to talk?{' '}
+                  <a
+                    href={`tel:${phone}`}
+                    className="font-medium text-kawai-black underline decoration-kawai-red underline-offset-4 hover:text-kawai-red"
+                  >
+                    {phone}
+                  </a>
+                </p>
+              )}
+            </div>
+            <Suspense fallback={null}>
+              <RentalInquiryForm storeslug={storeslug} storeName={storeName} />
+            </Suspense>
           </div>
-          <Suspense fallback={null}>
-            <RentalInquiryForm storeslug={storeslug} storeName={storeName} />
-          </Suspense>
-        </div>
-      </section>
+        </section>
 
-      <ShowroomLocation
-        data={{
-          sectionHeader: storefront.sectionHeader,
-          showroomTitle: storefront.showroomTitle,
-          showroomDescription: storefront.showroomDescription,
-          showroomInfo: storefront.showroomInfo,
-          hours: storefront.hours,
-          features: storefront.features,
-          mapApiKey: storefront.mapApiKey,
-          showroomCtas: storefront.showroomCtas,
-          trustBanner: storefront.trustBanner,
-        }}
-      />
+        <div id="visit" data-rental-nav="Visit" className={RENTAL_SECTION_SCROLL_MARGIN}>
+          <ShowroomLocation
+            data={{
+              sectionHeader: storefront.sectionHeader,
+              showroomTitle: storefront.showroomTitle,
+              showroomDescription: storefront.showroomDescription,
+              showroomInfo: storefront.showroomInfo,
+              hours: storefront.hours,
+              features: storefront.features,
+              mapApiKey: storefront.mapApiKey,
+              showroomCtas: storefront.showroomCtas,
+              trustBanner: storefront.trustBanner,
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 }
