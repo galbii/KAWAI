@@ -135,7 +135,10 @@ export async function submitSignupCampaign(input: SubmitInput): Promise<SubmitRe
       answers,
       sourceUrl: headerList.get('referer') ?? undefined,
       subjectTemplate: notify?.subjectTemplate ?? '',
-      liveSendEnabled,
+      // The store's own notification always sends — a lead held behind a
+      // per-campaign checkbox is a lead the store never sees. liveSendEnabled
+      // now gates only the confirmation email to the lead below.
+      liveSendEnabled: true,
       recipients: {
         recipients: (notify?.recipients ?? [])
           .map((r) => r.email)

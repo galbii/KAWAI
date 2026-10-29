@@ -372,7 +372,7 @@ export const SignupCampaigns: CollectionConfig = {
                   defaultValue: false,
                   admin: {
                     description:
-                      'OFF by default. While off, recipients are logged but no email is sent.',
+                      'Sends the confirmation email to the person who signed up. The store notification always sends.',
                   },
                 },
                 { name: 'sendConfirmationToLead', type: 'checkbox', defaultValue: true },

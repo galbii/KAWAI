@@ -11540,7 +11540,7 @@ export interface SignupCampaign {
      */
     subjectTemplate?: string | null;
     /**
-     * OFF by default. While off, recipients are logged but no email is sent.
+     * Sends the confirmation email to the person who signed up. The store notification always sends.
      */
     liveSendEnabled?: boolean | null;
     sendConfirmationToLead?: boolean | null;
