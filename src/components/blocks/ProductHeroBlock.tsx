@@ -41,6 +41,7 @@ interface ProductHeroBlockProps {
     url?: string | null
     text?: string | null
     openInNewTab?: boolean | null
+    outOfStockMessage?: string | null
   } | null
   // NEW: Floating cart configuration (integrated with variation selection)
   floatingCart?: {
@@ -553,6 +554,10 @@ export function ProductHeroBlock({
   // client-navigate it. Protocol-relative and mailto/tel count as external too.
   const dealerIsExternal = /^(https?:|mailto:|tel:|\/\/)/i.test(dealerHref)
   const dealerOpensNewTab = dealerCta?.openInNewTab === true
+  // Out-of-stock note above the dealer button. An editor override always shows;
+  // the default steps aside when the product has its own disclaimer below the CTAs.
+  const outOfStockMessage = dealerCta?.outOfStockMessage?.trim()
+    || (product?.disclaimer ? null : 'Find this product at a local authorized dealer near you.')
 
   const trackDealerCtaClick = () => trackCTAClick({
     blockType: 'product-hero',
@@ -1400,9 +1405,9 @@ export function ProductHeroBlock({
                   </>
                 ) : (
                   <>
-                    {isOutOfStock && (
+                    {isOutOfStock && outOfStockMessage && (
                       <p className="text-xs text-kawai-muted text-center tracking-wide">
-                        Find this product at a local authorized dealer near you.
+                        {outOfStockMessage}
                       </p>
                     )}
 

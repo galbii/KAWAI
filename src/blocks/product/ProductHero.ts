@@ -177,6 +177,14 @@ export const ProductHero: Block = {
           admin: {
             description: 'Open the link in a new tab'
           }
+        },
+        {
+          name: 'outOfStockMessage',
+          type: 'text',
+          admin: {
+            placeholder: 'Find this product at a local authorized dealer near you.',
+            description: 'Text shown above the button when the selected finish is out of stock. Leave blank for the default, which is hidden when the product has a disclaimer.'
+          }
         }
       ],
       admin: {
