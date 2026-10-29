@@ -2944,6 +2944,10 @@ export interface ProductHeroBlock {
      * Open the link in a new tab
      */
     openInNewTab?: boolean | null;
+    /**
+     * Text shown above the button when the selected finish is out of stock. Leave blank for the default, which is hidden when the product has a disclaimer.
+     */
+    outOfStockMessage?: string | null;
   };
   /**
    * 🛒 Configure floating Buy Now button - syncs with variation selection in hero section
@@ -10408,6 +10412,28 @@ export interface Storefront {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Catalogue model codes (e.g. GL-10, K-300, CN201) — name and photo come from the product catalogue. Leave empty to use the standard Kawai list.
+   */
+  rentalModels?:
+    | {
+        model: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Special finishes to feature, e.g. Snow White and Ferrari Red. Leave empty to use the standard pair. Without a photo, the catalogue photo of that finish is used, else a colour panel.
+   */
+  featuredFinishes?:
+    | {
+        name: string;
+        model?: string | null;
+        description?: string | null;
+        image?: (string | null) | Media;
+        contactForAvailability?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
   monthlyRentals?:
     | {
         pianoType: string;
@@ -12821,6 +12847,22 @@ export interface StorefrontsSelect<T extends boolean = true> {
     | T
     | {
         text?: T;
+        id?: T;
+      };
+  rentalModels?:
+    | T
+    | {
+        model?: T;
+        id?: T;
+      };
+  featuredFinishes?:
+    | T
+    | {
+        name?: T;
+        model?: T;
+        description?: T;
+        image?: T;
+        contactForAvailability?: T;
         id?: T;
       };
   monthlyRentals?:

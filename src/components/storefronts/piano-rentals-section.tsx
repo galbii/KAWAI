@@ -1,11 +1,17 @@
 import Image from 'next/image'
 import {
+  DEFAULT_FEATURED_FINISHES,
   DEFAULT_RENTAL_CTA_TEXT,
+  DEFAULT_RENTAL_MODELS,
   RENTAL_INQUIRY_ANCHOR,
+  finishSwatch,
   rentalInquiryHref,
   rentalPianoTypeOf,
+  rentalPianoTypeOfModel,
   resolveRentalHighlights,
+  type RentalPianoType,
 } from '@/lib/rentals'
+import { finishImageOf, getRentalCatalog } from '@/lib/rentals-catalog'
 import {
   getRentalImageFallbacks,
   mediaUrl,
@@ -13,6 +19,13 @@ import {
   type RentalImageFallbacks,
 } from '@/lib/rentals-images'
 import { RentalTiles, type RentalTile } from './rentals/RentalTiles'
+import { SectionHeading, SERIF } from './rentals/SectionHeading'
+import {
+  FeaturedFinishes,
+  RentalModels,
+  type FinishPanel,
+  type RentalModelCard,
+} from './rentals/RentalModelsShowcase'
 
 interface MonthlyRental {
   pianoType: string
@@ -33,6 +46,16 @@ interface PianoRentalsData {
   pianoRentalsTitle?: string
   pianoRentalsDescription?: string
   rentalHighlights?: { text?: string | null }[] | null
+  rentalModels?: { model?: string | null }[] | null
+  featuredFinishes?: {
+    name?: string | null
+    model?: string | null
+    description?: string | null
+    image?: unknown
+    contactForAvailability?: boolean | null
+  }[] | null
+  locationName?: string | null
+  showroomInfo?: { name?: string | null } | null
   monthlyRentals?: MonthlyRental[]
   rentToOwn?: {
     enabled?: boolean
@@ -63,28 +86,10 @@ interface PianoRentalsSectionProps {
   fallbacks?: RentalImageFallbacks
 }
 
-const SERIF = 'var(--font-crimson), Georgia, serif'
-
 /** Stored units look like '/month' — strip the slash so we can add our own. */
 const unitLabel = (unit?: string | null) => (unit ?? 'month').replace(/^\s*\/\s*/, '').trim() || 'month'
 
-/** Red-rule label + light Crimson heading — the homepage section header. */
-function SectionHeading({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-8 md:mb-12">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="block h-px w-6 bg-kawai-red" />
-        <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-kawai-charcoal/60">{label}</p>
-      </div>
-      <h2
-        className="font-light leading-tight text-kawai-black"
-        style={{ fontFamily: SERIF, fontSize: 'clamp(1.9rem, 3.4vw, 3rem)', letterSpacing: '-0.02em' }}
-      >
-        {children}
-      </h2>
-    </div>
-  )
-}
+const TYPE_LABELS: Record<string, string> = { grand: 'Grand piano', upright: 'Upright piano', digital: 'Digital piano' }
 
 export async function PianoRentalsSection({
   data,
@@ -95,7 +100,68 @@ export async function PianoRentalsSection({
   if (!data.pianoRentalsEnabled) return null
   if (!data.monthlyRentals || data.monthlyRentals.length === 0) return null
 
-  const images = fallbacks ?? (await getRentalImageFallbacks())
+  const storeName = data.showroomInfo?.name ?? data.locationName ?? 'the showroom'
+  // Stores saved before these fields existed have no key — use Kawai's defaults.
+  const modelCodes = (data.rentalModels ?? []).map((m) => m.model?.trim() ?? '').filter(Boolean)
+  const finishes = (data.featuredFinishes ?? []).filter((f) => f.name?.trim())
+  const finishSource =
+    finishes.length > 0
+      ? finishes.map((f) => ({
+          name: f.name!.trim(),
+          model: f.model?.trim() ?? '',
+          description: f.description?.trim() ?? '',
+          upload:
+            mediaUrl(f.image) ??
+            DEFAULT_FEATURED_FINISHES.find((d) => d.name.toLowerCase() === f.name!.trim().toLowerCase())
+              ?.defaultImage ??
+            null,
+          variantMatch: f.name!.trim(),
+          contactForAvailability: Boolean(f.contactForAvailability),
+          swatch: finishSwatch(f.name!),
+        }))
+      : DEFAULT_FEATURED_FINISHES.map((f) => ({ ...f, upload: f.defaultImage }))
+  const models = modelCodes.length > 0 ? modelCodes : [...DEFAULT_RENTAL_MODELS]
+
+  const [images, catalog] = await Promise.all([
+    fallbacks ? Promise.resolve(fallbacks) : getRentalImageFallbacks(),
+    getRentalCatalog([...models, ...finishSource.map((f) => f.model).filter(Boolean)]),
+  ])
+
+  /** Inquiry link: same-page anchor on the rentals page, else the rentals page. */
+  const inquiryHref = (piano: RentalPianoType | null, interest: string | null) => {
+    if (!onRentalsPage) return rentalInquiryHref(storeslug, undefined, piano, interest)
+    const params = new URLSearchParams()
+    if (piano) params.set('piano', piano)
+    if (interest) params.set('interest', interest)
+    return `${params.size > 0 ? `?${params}` : ''}#${RENTAL_INQUIRY_ANCHOR}`
+  }
+
+  const modelCards: RentalModelCard[] = models.flatMap((code) => {
+    const entry = catalog.find((c) => c.model.toLowerCase() === code.toLowerCase())
+    if (!entry) return []
+    const type = rentalPianoTypeOfModel(entry.model)
+    return [{
+      label: entry.label,
+      name: entry.name,
+      typeLabel: (type && TYPE_LABELS[type]) ?? 'Piano',
+      imageUrl: entry.imageUrl,
+      href: inquiryHref(type, `the ${entry.label}`),
+    }]
+  })
+
+  const finishPanels: FinishPanel[] = finishSource.map((f) => {
+    const type = f.model ? rentalPianoTypeOfModel(f.model) : 'grand'
+    const subject = `${f.model ? `the ${f.model} in ` : 'a '}${f.name}${f.model ? '' : ' piano'}`
+    return {
+      name: f.name,
+      model: f.model,
+      description: f.description,
+      imageUrl: f.upload ?? finishImageOf(catalog, f.model, f.variantMatch),
+      swatch: f.swatch,
+      contactForAvailability: f.contactForAvailability,
+      href: inquiryHref(type, subject),
+    }
+  })
   const highlights = resolveRentalHighlights(data.rentalHighlights)
   // An empty link used to fall back to '#', which just jumped to the top of
   // the page — default to this store's rental inquiry page instead.
@@ -138,6 +204,14 @@ export async function PianoRentalsSection({
         )}
         <RentalTiles tiles={tiles} />
       </div>
+
+      {/* Models stores regularly have, then the special finishes */}
+      {(modelCards.length > 0 || finishPanels.length > 0) && (
+        <div className="container mx-auto max-w-screen-2xl space-y-16 px-6 pb-16 md:space-y-24 md:px-10 md:pb-24">
+          <RentalModels models={modelCards} storeName={storeName} />
+          <FeaturedFinishes finishes={finishPanels} storeName={storeName} />
+        </div>
+      )}
 
       {/* Rent to own — one bold statement beside one photo */}
       {creditMonths > 0 && (

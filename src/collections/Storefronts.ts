@@ -2,7 +2,7 @@ import type { CollectionConfig, CollectionBeforeValidateHook } from 'payload'
 import { revalidateTag, revalidatePath } from 'next/cache'
 import { imageField, videoField, slugBeforeDuplicate } from '@/lib/payload/fields'
 import { nominatimGeocode } from '@/lib/payload/geocode'
-import { DEFAULT_RENTAL_HIGHLIGHTS, DEFAULT_RENTAL_CTA_TEXT } from '@/lib/rentals'
+import { DEFAULT_RENTAL_HIGHLIGHTS, DEFAULT_RENTAL_CTA_TEXT, DEFAULT_RENTAL_MODELS } from '@/lib/rentals'
 
 /**
  * Auto-geocodes the storefront address using Nominatim before validation.
@@ -1209,6 +1209,40 @@ export const Storefronts: CollectionConfig = {
               },
               defaultValue: DEFAULT_RENTAL_HIGHLIGHTS.map((text) => ({ text })),
               fields: [{ name: 'text', type: 'textarea', label: 'Highlight', required: true }],
+            },
+            {
+              name: 'rentalModels',
+              type: 'array',
+              label: 'Models Regularly Available to Rent',
+              labels: { singular: 'Model', plural: 'Models' },
+              admin: {
+                description:
+                  'Catalogue model codes (e.g. GL-10, K-300, CN201) — name and photo come from the product catalogue. Leave empty to use the standard Kawai list.',
+              },
+              defaultValue: DEFAULT_RENTAL_MODELS.map((model) => ({ model })),
+              fields: [{ name: 'model', type: 'text', label: 'Model', required: true }],
+            },
+            {
+              name: 'featuredFinishes',
+              type: 'array',
+              label: 'Featured Finishes',
+              labels: { singular: 'Finish', plural: 'Finishes' },
+              admin: {
+                description:
+                  'Special finishes to feature, e.g. Snow White and Ferrari Red. Leave empty to use the standard pair. Without a photo, the catalogue photo of that finish is used, else a colour panel.',
+              },
+              fields: [
+                { name: 'name', type: 'text', label: 'Finish Name', required: true },
+                { name: 'model', type: 'text', label: 'Model (e.g. GL-10)' },
+                { name: 'description', type: 'textarea', label: 'Description' },
+                imageField('image', { label: 'Photo (optional)' }),
+                {
+                  name: 'contactForAvailability',
+                  type: 'checkbox',
+                  label: 'Ask customers to contact the store for availability',
+                  defaultValue: false,
+                },
+              ],
             },
             {
               name: 'monthlyRentals',

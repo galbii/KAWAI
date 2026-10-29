@@ -61,6 +61,7 @@ export function RentalInquiryForm({
     register,
     handleSubmit,
     setValue,
+    getValues,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -69,7 +70,8 @@ export function RentalInquiryForm({
   });
 
   // Preselect from the link that brought the visitor here — the Facility
-  // Rentals CTA (?type=facility) or a piano tile (?piano=grand).
+  // Rentals CTA (?type=facility), a piano tile (?piano=grand), or a model /
+  // finish card (?interest=…).
   useEffect(() => {
     const type = searchParams.get('type')
     if (type && (RENTAL_TYPES as readonly string[]).includes(type)) {
@@ -79,7 +81,12 @@ export function RentalInquiryForm({
     if (piano && (RENTAL_PIANO_TYPES as readonly string[]).includes(piano)) {
       setValue('pianoType', piano as RentalPianoType)
     }
-  }, [searchParams, setValue]);
+    // A model card or finish panel (?interest=the GL-10) starts the message.
+    const interest = searchParams.get('interest')
+    if (interest && !getValues('message')) {
+      setValue('message', `I'm interested in renting ${interest.slice(0, 120)}.`)
+    }
+  }, [searchParams, setValue, getValues]);
 
   const onSubmit = async (values: FormValues) => {
     setServerError(null);
