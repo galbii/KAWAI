@@ -160,7 +160,9 @@ export async function PianoRentalsSection({
     }]
   })
 
-  const finishPanels: FinishPanel[] = finishSource.map((f) => {
+  // Featured finishes live on the rentals page only — the store homepage
+  // keeps its rental section shorter and links through for them.
+  const finishPanels: FinishPanel[] = !onRentalsPage ? [] : finishSource.map((f) => {
     const type = f.model ? rentalPianoTypeOfModel(f.model) : 'grand'
     const subject = `${f.model ? `the ${f.model} in ` : 'a '}${f.name}${f.model ? '' : ' piano'}`
     return {
