@@ -618,6 +618,39 @@ body.viewer-modal-open [data-hide-on-3d-viewer] {
   to { stroke-dashoffset: 0; }
 }
 
+/* ------------------------------------------------------------ */
+/* Store sale template (/store/[slug]/fall-financing).           */
+/* Transform/opacity only. Snow and shimmer are decorative and   */
+/* are removed outright under reduced motion by the components   */
+/* (motion-reduce:hidden), not just clamped by the rule at top.  */
+/* ------------------------------------------------------------ */
+@keyframes sale-snow-fall {
+  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+  10%  { opacity: var(--flake-opacity, 0.85); }
+  90%  { opacity: var(--flake-opacity, 0.85); }
+  100% { transform: translate3d(var(--flake-drift, 2rem), 105vh, 0) rotate(240deg); opacity: 0; }
+}
+
+@keyframes sale-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50%      { opacity: 1;    transform: scale(1); }
+}
+
+@keyframes sale-shimmer {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+
+@keyframes sale-hero-zoom {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
+}
+
+@keyframes sale-ring {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
 /* ============================================================ */
 /* UTILITY CLASSES */
 /* ============================================================ */
