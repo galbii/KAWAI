@@ -1,11 +1,17 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getActiveStorefrontSlugs, getStorefrontBySlugDirect } from '@/lib/payload/queries'
+import { getStorefrontBySlugDirect } from '@/lib/payload/queries'
 import { getSite, getSiteUrl } from '@/lib/site-context'
 import { SaleTemplate, toSaleStore } from '@/components/sale-template'
 import { fallFinancingSale } from './_content'
 
-export const revalidate = 3600
+// getSite() reads headers() so the route can 404 on the CA host (US Synchrony
+// terms must not render on ca.kawaius.com). That is incompatible with
+// generateStaticParams + revalidate ISR: on `next start` Next throws
+// DYNAMIC_SERVER_USAGE and the page 500s. Same pattern as
+// /store/[storeslug]/university (force-dynamic). The contact page got there
+// by dropping generateStaticParams instead.
+export const dynamic = 'force-dynamic'
 
 interface Params {
   storeslug: string
@@ -22,11 +28,6 @@ interface Params {
  * on ca.kawaius.com, so the route 404s there rather than filtering offers —
  * every active storefront today is a US gallery.
  */
-export async function generateStaticParams(): Promise<Params[]> {
-  const slugs = await getActiveStorefrontSlugs()
-  return slugs.map((storeslug) => ({ storeslug }))
-}
-
 export async function generateMetadata({
   params,
 }: {

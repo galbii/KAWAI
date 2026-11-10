@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'bun:test'
 import { toSaleStore } from '@/components/sale-template/store'
 import {
@@ -95,5 +96,17 @@ describe('toSaleStore', () => {
   it('falls back to the location name, like Grand Spring', () => {
     expect(toSaleStore({ locationName: 'Denver' }, 'denver').name).toBe('Denver')
     expect(toSaleStore({}, 'denver').phone).toBeNull()
+  })
+})
+
+describe('store fall-financing: route config', () => {
+  // getSite() uses headers(), so this page cannot be ISR. A source assertion
+  // is enough: importing page.tsx pulls in server-only modules.
+  const src = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
+
+  it('is force-dynamic so getSite()/headers() is legal on next start', () => {
+    expect(src).toMatch(/export const dynamic = 'force-dynamic'/)
+    expect(src).not.toMatch(/export const revalidate/)
+    expect(src).not.toMatch(/export async function generateStaticParams/)
   })
 })
