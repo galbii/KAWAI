@@ -91,21 +91,33 @@ export function describeEnvelope({ to, cc, bcc }: LeadEnvelope): string {
 }
 
 /* ------------------------------------------------------------------ *
- * Canada override
+ * Canada override (split by region)
  *
- * Canadian dealers are managed centrally rather than by the territorial RSMs
- * the `rsmEmail` field models, so nearest-dealer matching gives a poor (often
- * empty) answer north of the border. Every lead with a Canadian postal code is
- * therefore addressed to one national inbox instead, whatever the matcher
- * found. The corporate CC above still applies.
+ * Canadian dealers are managed by two regional sales managers rather than by
+ * the territorial RSMs the `rsmEmail` field models, so nearest-dealer matching
+ * gives a poor (often empty) answer north of the border. Every lead with a
+ * Canadian postal code is therefore addressed by the postal code's first letter
+ * instead, whatever the matcher found:
+ *   - west (BC, AB, SK, MB and the territories) → LEAD_NOTIFY_CANADA_EMAIL,
+ *     default Dave Mitchell;
+ *   - east (ON, QC, NS, PE, NB, NL) → LEAD_NOTIFY_CANADA_EAST_EMAIL, default
+ *     Robin Rooke.
+ * The corporate CC above still applies.
  *
  * The matcher still runs for Canadian leads — the nearest-dealer readout in the
  * email body and the visitor's dealer picker both stay useful — only the
  * recipient is overridden.
  * ------------------------------------------------------------------ */
 
-/** Where every Canadian lead goes. Override with LEAD_NOTIFY_CANADA_EMAIL. */
+/** Western Canada's inbox. Override with LEAD_NOTIFY_CANADA_EMAIL. */
 export const DEFAULT_CANADA_LEAD_EMAIL = 'dmitchell@kawaius.com'
+
+/** Eastern Canada's inbox. Override with LEAD_NOTIFY_CANADA_EAST_EMAIL. */
+export const DEFAULT_CANADA_EAST_LEAD_EMAIL = 'RRooke@kawaius.com'
+
+/** Env var names behind each region's inbox (names only; never read values for display). */
+export const CANADA_WEST_ENV_VAR = 'LEAD_NOTIFY_CANADA_EMAIL'
+export const CANADA_EAST_ENV_VAR = 'LEAD_NOTIFY_CANADA_EAST_EMAIL'
 
 /**
  * `||`, not `??`: a present-but-blank env var (LEAD_NOTIFY_CANADA_EMAIL=) is an
@@ -114,6 +126,59 @@ export const DEFAULT_CANADA_LEAD_EMAIL = 'dmitchell@kawaius.com'
  */
 export function canadaLeadInbox(): string {
   return process.env.LEAD_NOTIFY_CANADA_EMAIL?.trim() || DEFAULT_CANADA_LEAD_EMAIL
+}
+
+/** East-of-Manitoba inbox. Same `||` rule as {@link canadaLeadInbox}. */
+export function canadaEastLeadInbox(): string {
+  return process.env.LEAD_NOTIFY_CANADA_EAST_EMAIL?.trim() || DEFAULT_CANADA_EAST_LEAD_EMAIL
+}
+
+export type CanadaRegion = 'west' | 'east'
+
+/**
+ * Which env var addresses a region's inbox, and whether it is set (non-blank)
+ * or the built-in default is in use. Returns the var NAME only, never its
+ * value, so the internal test tool can show where the address came from.
+ */
+export function canadaInboxSource(region: CanadaRegion): { envVar: string; fromEnv: boolean } {
+  const envVar = region === 'east' ? CANADA_EAST_ENV_VAR : CANADA_WEST_ENV_VAR
+  return { envVar, fromEnv: Boolean(process.env[envVar]?.trim()) }
+}
+
+/**
+ * Postal-code first letter → region. Every letter Canada Post issues is listed,
+ * so a valid code always has a region.
+ */
+const CANADA_REGION_BY_LETTER: Record<string, CanadaRegion> = {
+  V: 'west', // BC
+  T: 'west', // AB
+  S: 'west', // SK
+  R: 'west', // MB
+  // Territories unassigned by Kawai (Cory Callies, Nov 2026); default to west pending confirmation.
+  X: 'west', // NT / NU
+  Y: 'west', // YT
+  K: 'east', // ON
+  L: 'east', // ON
+  M: 'east', // ON
+  N: 'east', // ON
+  P: 'east', // ON
+  G: 'east', // QC
+  H: 'east', // QC
+  J: 'east', // QC
+  B: 'east', // NS
+  C: 'east', // PE
+  E: 'east', // NB
+  A: 'east', // NL (confirmed east)
+}
+
+/**
+ * Region for a Canadian postal code, or null when the first letter isn't one
+ * Canada Post issues (D, F, I, O, Q, U, W, Z) — such input still matches the
+ * loose postal regex, so it falls back to the west inbox, as every Canadian
+ * lead did before the split.
+ */
+export function canadaRegionForZip(zip: string): CanadaRegion | null {
+  return CANADA_REGION_BY_LETTER[zip.trim().charAt(0).toUpperCase()] ?? null
 }
 
 /**
@@ -137,11 +202,13 @@ export interface RsmRecipient {
   to: string
   /** True when the Canada override chose this address over the match. */
   canadaOverride: boolean
+  /** Which Canadian inbox was used; set on Canada-override results only. */
+  canadaRegion?: CanadaRegion
 }
 
 /**
- * Resolve the RSM notification's To address: Canadian postal codes go to the
- * national inbox, everyone else to the matched RSM, falling back when unmatched.
+ * Resolve the RSM notification's To address: Canadian postal codes go to their
+ * region's inbox (west or east, by first letter), everyone else to the matched RSM, falling back when unmatched.
  *
  * Takes the matched address rather than the `RsmMatch` so this module stays
  * free of ./routing — which pulls in the Payload Local API and can't be
@@ -156,7 +223,9 @@ export function resolveRsmRecipient(
   fallback: string,
 ): RsmRecipient {
   if (isCanadianLeadZip(zip)) {
-    return { to: canadaLeadInbox(), canadaOverride: true }
+    const canadaRegion: CanadaRegion = canadaRegionForZip(zip) ?? 'west'
+    const to = canadaRegion === 'east' ? canadaEastLeadInbox() : canadaLeadInbox()
+    return { to, canadaOverride: true, canadaRegion }
   }
   return { to: matchedEmail ?? fallback, canadaOverride: false }
 }

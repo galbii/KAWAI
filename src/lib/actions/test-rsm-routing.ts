@@ -54,14 +54,23 @@ import {
 } from '@/lib/rsm/nearby-dealers'
 import {
   buildLeadEnvelope,
+  canadaInboxSource,
   isDealerEmailEnabled,
   isStorefrontEmailEnabled,
   resolveLeadRecipient,
   resolveRsmRecipient,
+  type CanadaRegion,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
 import type { DealerRegion } from '@/lib/utils/dealer-country'
 import type { Dealer } from '@/payload-types'
+
+/** Region + env-var-name readout for a Canada-override result (empty otherwise). */
+function canadaFields(
+  region: CanadaRegion | undefined,
+): Pick<ZipTestResult, 'canadaRegion' | 'canadaInboxEnv'> {
+  return region ? { canadaRegion: region, canadaInboxEnv: canadaInboxSource(region) } : {}
+}
 
 /** How many nearest candidates to return for the map + diagnostic table. */
 const CANDIDATE_LIMIT = 10
@@ -94,6 +103,13 @@ export interface ZipTestResult {
   usedFallback?: boolean
   /** True when the Canada override picked the recipient over the match. */
   canadaOverride?: boolean
+  /** Canada-override only: which regional inbox (by postal first letter). */
+  canadaRegion?: CanadaRegion
+  /**
+   * Canada-override only: the env var NAME behind that inbox and whether it is
+   * set (else the built-in default is used). Never carries the var's value.
+   */
+  canadaInboxEnv?: { envVar: string; fromEnv: boolean }
   /** id of the dealer whose RSM would be emailed. */
   matchedDealerId?: string | null
   candidates?: ZipTestCandidate[]
@@ -200,7 +216,7 @@ async function resolveRouting(
       result: {
         success: true,
         message: unmatched.canadaOverride
-          ? `Could not geocode "${zip}", but it is a Canadian postal code — the real pipeline would route this lead to the Canadian inbox.`
+          ? `Could not geocode "${zip}", but it is a Canadian postal code — the real pipeline would route this lead to the ${unmatched.canadaRegion ?? 'west'} Canadian inbox.`
           : `Could not geocode "${zip}" — the real pipeline would route this lead to the fallback inbox.`,
         zip,
         country,
@@ -208,6 +224,7 @@ async function resolveRouting(
         recipientKind: 'rsm',
         usedFallback: true,
         canadaOverride: unmatched.canadaOverride,
+        ...canadaFields(unmatched.canadaRegion),
         matchedDealerId: null,
         candidates: [],
         totalCandidates: 0,
@@ -259,6 +276,7 @@ async function resolveRouting(
       // elsewhere — so it must not be flagged as having fallen back.
       usedFallback: recipient.kind === 'rsm' && !match && !recipient.canadaOverride,
       canadaOverride: recipient.canadaOverride,
+      ...canadaFields(recipient.canadaRegion),
       matchedDealerId: match?.dealer.id ?? null,
       candidates,
       totalCandidates: ranked.length,

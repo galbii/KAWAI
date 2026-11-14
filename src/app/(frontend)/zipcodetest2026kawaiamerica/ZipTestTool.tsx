@@ -442,7 +442,17 @@ export function ZipTestTool() {
                       : `${result.storefront.distance.toFixed(1)} mi away`
                   }) — its contact email gets this lead instead of the RSM.`
                 : result.canadaOverride
-                ? 'Canadian postal code — every CA lead is routed to the national Canadian inbox, whatever the nearest-dealer match below says.'
+                ? `Canadian postal code — ${
+                    result.canadaRegion === 'east'
+                      ? 'eastern Canada (ON, QC, NS, PE, NB, NL)'
+                      : 'western Canada (BC, AB, SK, MB, territories)'
+                  } is routed to the ${result.canadaRegion ?? 'west'} Canadian inbox, whatever the nearest-dealer match below says.${
+                    result.canadaInboxEnv
+                      ? ` Inbox from ${result.canadaInboxEnv.envVar}${
+                          result.canadaInboxEnv.fromEnv ? '' : ' (unset — built-in default)'
+                        }.`
+                      : ''
+                  }`
                 : result.usedFallback
                   ? result.message ||
                     'No nearby dealer has an RSM email — this would go to the fallback inbox.'

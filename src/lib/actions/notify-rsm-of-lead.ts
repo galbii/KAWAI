@@ -19,10 +19,13 @@
  *      `rsmEmail` is found — RSMs are territorial, so the 2nd-nearest dealer's
  *      RSM is almost always the same person.
  *   4b. Canada override: a lead whose postal code is Canadian is addressed to
- *      the national Canadian inbox (LEAD_NOTIFY_CANADA_EMAIL, default
- *      dmitchell@kawaius.com) regardless of what step 4 matched — Canadian
- *      dealers aren't covered by the territorial `rsmEmail` scheme. The match
- *      itself still runs and still appears in the email body.
+ *      its region's inbox regardless of what step 4 matched — Canadian dealers
+ *      aren't covered by the territorial `rsmEmail` scheme. Split by the
+ *      postal code's first letter: west (BC/AB/SK/MB + territories) →
+ *      LEAD_NOTIFY_CANADA_EMAIL (default dmitchell@kawaius.com); east (ON, QC,
+ *      NS, PE, NB, NL) → LEAD_NOTIFY_CANADA_EAST_EMAIL (default
+ *      RRooke@kawaius.com). The match itself still runs and still appears in
+ *      the email body.
  *   5. Send via Resend with `replyTo` = the lead, an idempotency key so a
  *      double-fired submit can't email the RSM twice, and a `source` tag for
  *      dashboard filtering. Falls back to LEAD_NOTIFY_FALLBACK_EMAIL when no
@@ -37,7 +40,7 @@
  *             Served", and storefront routing is on: the storefront's contact email
  *             (showroomInfo.email) receives it INSTEAD of the RSM, in the
  *             narrow "a new lead in your area" template.
- *           · Otherwise the RSM path: matched RSM → Canada inbox → fallback,
+ *           · Otherwise the RSM path: matched RSM → Canada west/east inbox → fallback,
  *             with the full RSM template (which names a nearby storefront).
  *   Dealer— only when the visitor picked a dealer that has a public email
  *           (post-submit picker, currently disabled on every page). Skipped
@@ -288,7 +291,8 @@ export async function notifyRsmOfLead(
 
     // — Who owns the lead. A storefront-area lead goes to the storefront's
     //   contact email instead of the RSM (while storefront routing is on);
-    //   everything else takes the RSM path: matched RSM, Canada inbox, fallback.
+    //   everything else takes the RSM path: matched RSM, Canada west/east
+    //   inbox, fallback.
     const storefrontRouting = isStorefrontEmailEnabled()
     const recipient = resolveLeadRecipient({
       zip: lead.zip,
@@ -308,7 +312,8 @@ export async function notifyRsmOfLead(
     }
     if (recipient.canadaOverride) {
       console.log(
-        `[notify-rsm] Canadian lead "${lead.zip}" — routing to ${recipient.to} instead of ` +
+        `[notify-rsm] Canadian lead "${lead.zip}" (${recipient.canadaRegion ?? 'west'} region) — ` +
+          `routing to ${recipient.to} instead of ` +
           `${match?.rsmEmail ?? 'the fallback inbox'}.`,
       )
     }
