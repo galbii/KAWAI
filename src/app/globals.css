@@ -651,6 +651,27 @@ body.viewer-modal-open [data-hide-on-3d-viewer] {
   100% { transform: scale(1.35); opacity: 0; }
 }
 
+/* Store sale template: the satin ribbon drawn across the hero, the bow tied at its knot. */
+@keyframes sale-band-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes sale-band-y {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes sale-bow-tie {
+  from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes sale-bow-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-3deg); }
+}
+
 /* ============================================================ */
 /* UTILITY CLASSES */
 /* ============================================================ */

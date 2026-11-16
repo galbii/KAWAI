@@ -1,11 +1,13 @@
 import { PhoneIcon, CalendarDaysIcon } from '@heroicons/react/24/solid'
 import { PromoReveal } from '@/components/fall-promo'
+import { Bow, SatinBand } from './RibbonBow'
 import { Snowfall } from './Snowfall'
 import { SERIF } from './tokens'
 import type { SaleCloseContent, SaleStore } from './types'
 
 /**
- * The close: Call Now or Schedule Visit, on the flyer's deep-red field.
+ * The close: Call Now or Schedule Visit, on the flyer's deep-red field, with
+ * the hero's satin ribbon tying the page off along its top edge.
  *
  * The Call Now button carries a soft expanding ring to draw the eye; under
  * reduced motion the ring is removed and the button is simply solid white on
@@ -25,14 +27,19 @@ export function SaleClose({
   return (
     <section
       aria-labelledby="sale-close"
-      className="relative overflow-hidden bg-gradient-to-b from-kawai-red-800 via-kawai-red-900 to-kawai-black px-4 py-20 text-white sm:px-6 sm:py-28"
+      className="relative overflow-hidden bg-gradient-to-b from-kawai-red-800 via-kawai-red-900 to-kawai-black px-4 pb-20 pt-28 text-white sm:px-6 sm:pb-28 sm:pt-36"
     >
       <Snowfall />
       {/* Gold radial glow behind the headline */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-kawai-gold/10 blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-0 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-kawai-gold/15 blur-3xl"
       />
+      {/* Satin ribbon across the top, bow at its centre */}
+      <SatinBand className="inset-x-0 top-0 h-2.5 sm:h-3.5" />
+      <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[30%]">
+        <Bow idSuffix="close" className="h-16 w-auto motion-safe:animate-[sale-bow-sway_6s_ease-in-out_infinite] sm:h-24" />
+      </div>
 
       <PromoReveal className="relative mx-auto max-w-2xl text-center">
         <p data-reveal="rise" className="text-xs font-semibold uppercase tracking-[0.3em] text-kawai-gold">
@@ -41,7 +48,7 @@ export function SaleClose({
         <h2
           id="sale-close"
           data-reveal="rise"
-          className="mt-4 text-[clamp(2.1rem,5vw,3.5rem)] leading-[1.05]"
+          className="mt-4 text-[clamp(2.4rem,6vw,4.25rem)] leading-[1.02]"
           style={{ fontFamily: SERIF }}
         >
           {close.heading}
