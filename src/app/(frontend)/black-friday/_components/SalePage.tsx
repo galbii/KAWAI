@@ -23,9 +23,15 @@ import {
   CTA_LABEL_SHORT,
   CTA_LEAD_IN,
 } from '../../fall-financing/_components/campaign'
+import { FinancingBand } from './FinancingBand'
 import { SaleHero } from './SaleHero'
 import { SaleStyles } from './SaleStyles'
-import { BF_ACOUSTIC_STAGE, BF_BUNDLE_ART, BF_REBATE_STAGE, BF_SCENES } from './art'
+import {
+  BF_ACOUSTIC_STAGE,
+  BF_BUNDLE_ART,
+  BF_REBATE_STAGE,
+  BF_SCENES,
+} from './art'
 import { SaleLeadProvider } from './SaleLeadProvider'
 import { SALE_ENDING, SALE_META, SALE_PATH, type SaleVariant } from './sale'
 
@@ -37,9 +43,10 @@ import { SALE_ENDING, SALE_META, SALE_PATH, type SaleVariant } from './sale'
  * cannot drift between the three pages. /fall-financing itself is untouched.
  *
  * What differs: the hero's words (`SaleHero`), the metadata, the dock's
- * deadline, the lead attribution (`SaleLeadProvider`), and — redesign v2 — the
- * look: the `promo-bf` theme (`SaleStyles`) and the photographs (`art.ts`),
- * passed to the shared sections as optional props they default without. Everything else,
+ * deadline, the lead attribution (`SaleLeadProvider`), and the look: the
+ * `promo-bf` theme (`SaleStyles`), the BF hero (`BfHero`, v3), a photograph
+ * band over financing (v3), and the photographs (`art.ts`), passed to the
+ * shared sections as optional props they default without. Everything else,
  * including which offers render on which site, is the fall-financing logic
  * verbatim: Synchrony financing on kawaius.com only, the acoustic rebate on
  * ca.kawaius.com only, CAD prices from `getPromoCollections(…, 'cad')`.
@@ -121,7 +128,12 @@ export async function SalePage({ variant }: { variant: SaleVariant }) {
       <SaleLeadProvider testMode={testMode}>
         <SaleHero site={site} variant={variant} />
         <Sh9BundleBlock groups={bundleTabs} art={BF_BUNDLE_ART} />
-        {showFinancing && <FinancingBlock data={financingData} rangeArt={rangeArt} />}
+        {showFinancing && (
+          <>
+            <FinancingBand />
+            <FinancingBlock data={financingData} rangeArt={rangeArt} />
+          </>
+        )}
         {showAcoustic && <AcousticRebateBlock art={acousticArt} stage={BF_ACOUSTIC_STAGE} />}
         <EsRebateBlock
           products={rebateGroups[0]?.products ?? []}
@@ -145,3 +157,4 @@ export async function SalePage({ variant }: { variant: SaleVariant }) {
     </div>
   )
 }
+

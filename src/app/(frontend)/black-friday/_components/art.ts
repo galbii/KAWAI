@@ -5,7 +5,7 @@ import type { Sh9BundleArt } from '../../fall-financing/_components/Sh9BundleBlo
 import { heroOffersFor } from '../../fall-financing/_components/slides'
 
 /**
- * Black Friday photography (kawai-black-friday-redesign v2, Nov 15 2026).
+ * Black Friday photography (kawai-black-friday-redesign v2, reworked in v3, Nov 15 2026).
  *
  * Every frame here is a real Kawai photograph already in this repo and already
  * served on kawaius.com under /images, and none of them is a frame the fall
@@ -23,19 +23,19 @@ import { heroOffersFor } from '../../fall-financing/_components/slides'
 
 type Art = { image: string; imageAlt: string; imagePosition?: string }
 
-/** The hero's opening frame: a black GX grand on black. */
+/** The hero's opening frame: inside a black GX grand, strings and plate. */
 export const BF_KEY_ART: Art = {
-  image: '/images/signature/GX_cover.jpg',
-  imageAlt: 'The curve of a black Kawai GX grand piano in a dark room',
-  // The instrument sits in the right third; the copy column takes the left.
-  imagePosition: '78% center',
+  image: '/images/signature/pianos/gx-1/gx-1-secondary.webp',
+  imageAlt: 'Inside a black Kawai GX grand piano: the strings, dampers and golden plate',
+  imagePosition: '55% center',
 }
 
 /** One frame per offer cell in the hero index, and the matching section stages. */
 export const BF_OFFER_ART: Record<OfferKey, Art> = {
   financing: {
-    image: '/images/signature/pianos/gl-10/gl-10-hero.jpeg',
-    imageAlt: 'Hands playing a black Kawai grand piano',
+    image: '/images/signature/pianos/gx-3/gx-3-hero.webp',
+    imageAlt: 'A pianist at an open black Kawai GX-3 grand piano',
+    imagePosition: '50% 40%',
   },
   bundle: {
     image: '/images/gallery/KAWAI_CA401B-43 copy.webp',
@@ -65,15 +65,25 @@ export const BF_REBATE_STAGE = {
 
 /** Acoustic rebates stage (ca.kawaius.com only). */
 export const BF_ACOUSTIC_STAGE = {
-  image: '/images/signature/pianos/gl-50/gl-50-hero.jpg',
+  image: '/images/signature/pianos/gl-50/gl-50-hero.webp',
   imageAlt: 'Inside a Kawai GL-50 grand piano, the plate and strings',
 }
 
 /** The dealer close's three scenes. */
 export const BF_SCENES: SceneImages = {
-  warmPianist: '/images/signature/pianos/gx-1/gx-1-hero.webp',
-  soundboard: '/images/signature/pianos/gl-10/gl-10-secondary.webp',
-  luxeRoom: '/images/gallery/KAWAI-CA901B-24 copy.webp',
+  warmPianist: '/images/namm/general/_MG_7325.jpg',
+  soundboard: '/images/signature/pianos/gx-2/gx-2-hero.webp',
+  luxeRoom: '/images/signature/pianos/gx-3/gx-3-secondary.webp',
+}
+
+/**
+ * The photograph band over the financing section (US only). Decorative: the
+ * section's own heading names the offer, so the picture carries `alt=""`.
+ */
+export const BF_FINANCING_BAND: Art = {
+  image: '/images/signature/pianos/gx-1/gx-1-hero.webp',
+  imageAlt: '',
+  imagePosition: '50% 45%',
 }
 
 /**
@@ -95,5 +105,6 @@ export const BF_IMAGES: readonly string[] = [
   ...Object.values(BF_OFFER_ART).map((a) => a.image),
   ...Object.values(BF_BUNDLE_ART.seriesArt ?? {}).filter((s): s is string => Boolean(s)),
   BF_ACOUSTIC_STAGE.image,
+  BF_FINANCING_BAND.image,
   ...Object.values(BF_SCENES),
 ]
