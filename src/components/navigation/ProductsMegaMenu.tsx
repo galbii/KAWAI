@@ -10,16 +10,17 @@ import { ArrowLeft, ArrowRight, Bluetooth, BookOpen, ChevronDown, ChevronUp, Cpu
 import { cn } from '@/lib/utils'
 import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/lib/payload/products-navigation'
 import { getProductsByCollection } from '@/lib/actions/collection-products'
+import { CATEGORY_COLLECTION_TERMS, OTHER_PILL_HANDLE, getCollectionsForCategory } from '@/lib/navigation/collection-categories'
 import { extractYouTubeId } from '@/lib/utils/youtube'
 import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SIDEBAR_CATEGORIES = [
-  { label: 'Digital',       key: 'digital',       href: '/pianos/digital',       terms: ['digital'] },
-  { label: 'Hybrid',        key: 'hybrid',         href: '/pianos/hybrid',        terms: ['hybrid'] },
-  { label: 'Upright',       key: 'upright',        href: '/pianos/upright',       terms: ['upright'] },
-  { label: 'Grand',         key: 'grand',          href: '/pianos/grand',         terms: ['grand', 'baby grand', 'baby-grand', 'gl series'] },
+  { label: 'Digital',       key: 'digital',       href: '/pianos/digital',       terms: CATEGORY_COLLECTION_TERMS.digital },
+  { label: 'Hybrid',        key: 'hybrid',         href: '/pianos/hybrid',        terms: CATEGORY_COLLECTION_TERMS.hybrid },
+  { label: 'Upright',       key: 'upright',        href: '/pianos/upright',       terms: CATEGORY_COLLECTION_TERMS.upright },
+  { label: 'Grand',         key: 'grand',          href: '/pianos/grand',         terms: CATEGORY_COLLECTION_TERMS.grand },
   {
     label: 'Shigeru Kawai',
     key: 'shigeru-kawai',
@@ -66,6 +67,7 @@ interface ProductsMegaMenuProps {
   collections: NavCollection[]
   allCollections?: NavCollection[]
   accessories?: NavAccessory[]
+  otherProducts?: Partial<Record<string, NavProduct[]>>
   isOpen: boolean
   onClose: () => void
   className?: string
@@ -79,24 +81,6 @@ function getProductsForSidebarKey(productTypes: ProductTypeNav[], terms: readonl
   return productTypes
     .filter((t) => terms.some((term) => t.type.toLowerCase().includes(term.toLowerCase())))
     .flatMap((t) => t.products)
-}
-
-function getSidebarKeyForCollection(collection: NavCollection): SidebarKey | null {
-  const titleLower = collection.title.toLowerCase()
-  const handleLower = collection.handle.toLowerCase()
-  for (const cat of SIDEBAR_CATEGORIES) {
-    if (cat.terms.some((term) => titleLower.includes(term) || handleLower.includes(term))) {
-      return cat.key
-    }
-  }
-  return null
-}
-
-function getCollectionsForSidebarKey(collections: NavCollection[], key: SidebarKey): NavCollection[] {
-  return collections.filter((col) => {
-    if (col.pianoCategories && col.pianoCategories.length > 0) return col.pianoCategories.includes(key)
-    return getSidebarKeyForCollection(col) === key
-  })
 }
 
 // ─── Shared UI atoms ──────────────────────────────────────────────────────────
@@ -474,16 +458,21 @@ function CollectionVideoBanner({ collection, onClose, heightClass = 'h-44', exte
 // Fixed strip of collection pills directly under the tab bar. Lives outside the
 // scroll area so it stays put while the stage and model rail scroll beneath it.
 
-function CollectionPillRail({ collections, activeHandle, onSelect, onClose, categoryHref, categoryLabel }: {
+function CollectionPillRail({ collections, showOther, activeHandle, onSelect, onClose, categoryHref, categoryLabel }: {
   collections: NavCollection[]
+  showOther: boolean
   activeHandle: string
   onSelect: (handle: string) => void
   onClose: () => void
   categoryHref: string
   categoryLabel: string | null
 }) {
-  if (collections.length === 0) return null
+  if (collections.length === 0 && !showOther) return null
 
+  const pills = [
+    ...collections.map((col) => ({ key: col.id, handle: col.handle, label: col.heading || col.title })),
+    ...(showOther ? [{ key: OTHER_PILL_HANDLE, handle: OTHER_PILL_HANDLE, label: 'Other' }] : []),
+  ]
   const ctaHref = categoryHref
   const ctaLabel = categoryLabel ? `Browse All ${categoryLabel}` : 'Browse All Products'
 
@@ -494,15 +483,14 @@ function CollectionPillRail({ collections, activeHandle, onSelect, onClose, cate
           Collections
         </span>
         <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-0.5 flex-1">
-          {collections.map((col) => {
-            const label = col.heading || col.title
-            const isActive = activeHandle === col.handle
+          {pills.map(({ key, handle, label }) => {
+            const isActive = activeHandle === handle
             return (
               <button
-                key={col.id}
+                key={key}
                 type="button"
                 aria-pressed={isActive}
-                onClick={() => onSelect(isActive ? 'all' : col.handle)}
+                onClick={() => onSelect(isActive ? 'all' : handle)}
                 className={cn(
                   'px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A01829] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]',
                   isActive ? 'bg-[#A01829] text-white' : 'bg-[#F2EFE9] text-[#8A8078] hover:bg-[#EDE9E3] hover:text-[#2C2C2C]'
@@ -532,9 +520,10 @@ function CollectionPillRail({ collections, activeHandle, onSelect, onClose, cate
 // With a collection pill active, the stage fills the panel and the model rail sits
 // one scroll below it. On "All", the rail is the whole view.
 
-function CategoryView({ collections, allTabProducts, categoryHref, label, onClose, onBack, activeCollectionHandle, stageCollection }: {
+function CategoryView({ collections, allTabProducts, otherProducts = [], categoryHref, label, onClose, onBack, activeCollectionHandle, stageCollection }: {
   collections: NavCollection[]
   allTabProducts: NavProduct[]
+  otherProducts?: NavProduct[]
   categoryHref: string
   label: string
   onClose: () => void
@@ -552,7 +541,7 @@ function CategoryView({ collections, allTabProducts, categoryHref, label, onClos
   const productsInView = useInView(productsRef, { amount: 0.2 })
 
   useEffect(() => {
-    if (activeCollectionHandle === 'all') { setFetchedProducts([]); return }
+    if (activeCollectionHandle === 'all' || activeCollectionHandle === OTHER_PILL_HANDLE) { setFetchedProducts([]); return }
     let cancelled = false
     setIsLoadingProducts(true)
     // 'navigation' surface — respects the product's "Hide from navigation menu" flag,
@@ -564,7 +553,10 @@ function CategoryView({ collections, allTabProducts, categoryHref, label, onClos
     return () => { cancelled = true }
   }, [activeCollectionHandle])
 
-  const displayProducts = activeCollectionHandle === 'all' ? allTabProducts : fetchedProducts
+  const displayProducts =
+    activeCollectionHandle === 'all' ? allTabProducts
+    : activeCollectionHandle === OTHER_PILL_HANDLE ? otherProducts
+    : fetchedProducts
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current
@@ -1071,6 +1063,7 @@ export function ProductsMegaMenu({
   collections,
   allCollections,
   accessories = [],
+  otherProducts = {},
   isOpen,
   onClose,
   className,
@@ -1090,7 +1083,10 @@ export function ProductsMegaMenu({
     SIDEBAR_CATEGORIES.some((c) => c.key === menuState.nav_cat) ? menuState.nav_cat : null
   ) as SidebarKey | null
 
-  const activeCollectionHandle = menuState.nav_col
+  const selectedOtherProducts = (selectedKey && otherProducts[selectedKey]) || []
+  // A restored "Other" selection on a tab that no longer has one falls back to All.
+  const activeCollectionHandle =
+    menuState.nav_col === OTHER_PILL_HANDLE && selectedOtherProducts.length === 0 ? 'all' : menuState.nav_col
 
   function setSelectedKey(key: SidebarKey | null) {
     if (key === null) {
@@ -1146,7 +1142,7 @@ export function ProductsMegaMenu({
     // so we can float products that belong to them to the top.
     const pool = allCollections ?? collections
     const featuredHandles = new Set(
-      getCollectionsForSidebarKey(pool, selectedKey)
+      getCollectionsForCategory(pool, selectedKey)
         .filter((c) => c.featured)
         .map((c) => c.handle)
     )
@@ -1164,7 +1160,7 @@ export function ProductsMegaMenu({
   const selectedCollections = useMemo(() => {
     if (!selectedKey) return []
     const pool = allCollections ?? collections
-    return getCollectionsForSidebarKey(pool, selectedKey)
+    return getCollectionsForCategory(pool, selectedKey)
   }, [selectedKey, collections, allCollections])
 
   // Footer: all collections on "All" tab, category-filtered on a category tab.
@@ -1172,7 +1168,7 @@ export function ProductsMegaMenu({
   const footerCollections = useMemo(() => {
     const pool = allCollections ?? collections
     const featuredIds = new Set(collections.map((c) => c.id))
-    const base = !selectedKey ? [...pool] : getCollectionsForSidebarKey(pool, selectedKey)
+    const base = !selectedKey ? [...pool] : getCollectionsForCategory(pool, selectedKey)
     return base.sort((a, b) => {
       const aFeatured = featuredIds.has(a.id) || a.featured
       const bFeatured = featuredIds.has(b.id) || b.featured
@@ -1243,6 +1239,7 @@ export function ProductsMegaMenu({
 
                 <CollectionPillRail
                   collections={footerCollections}
+                  showOther={selectedOtherProducts.length > 0}
                   activeHandle={activeCollectionHandle}
                   onSelect={setActiveCollectionHandle}
                   onClose={onClose}
@@ -1330,6 +1327,7 @@ export function ProductsMegaMenu({
                           <CategoryView
                             collections={selectedCollections}
                             allTabProducts={selectedProducts}
+                            otherProducts={selectedOtherProducts}
                             categoryHref={selectedCat.href}
                             label={selectedCat.label}
                             onClose={onClose}

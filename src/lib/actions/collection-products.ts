@@ -2,7 +2,8 @@
 
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient, getFeaturedCollections } from '@/lib/payload/queries'
-import { buildFeaturedMap, compareByFeatured } from '@/lib/piano/featured-sort'
+import { buildFeaturedMap } from '@/lib/piano/featured-sort'
+import { sortCollectionProducts } from '@/lib/piano/collection-sort'
 import { excludeHiddenFrom, type ProductSurface } from '@/lib/products/visibility'
 import type { NavProduct } from '@/lib/payload/products-navigation'
 import { getSite } from '@/lib/site-context'
@@ -11,12 +12,8 @@ import { availableOnSite } from '@/lib/site-availability'
 /**
  * Fetch products for a collection tab in the mega menu.
  *
- * Ordered with the same featured boost used everywhere else (see featured-sort.ts):
- *   1. product `featured` flag (flagged models lead)
- *   2. highest `collectionPriority` among the product's FEATURED collections —
- *      since collectionPriority is per-collection, this only differentiates
- *      products that also belong to another featured collection
- *   3. model name (ES60 before ES120) as the within-collection tiebreak
+ * Ordered by the shared collection sort (see collection-sort.ts) — the same
+ * order the /pianos/<collection-handle> page uses.
  *
  * Cached 5 min; tagged for on-demand revalidation (incl. `collections` so a
  * collection priority/featured change busts this cache too).
@@ -68,25 +65,7 @@ export async function getProductsByCollection(
 
       const featuredMap = buildFeaturedMap(await getFeaturedCollections())
 
-      const sorted = [...result.docs].sort((a, b) => {
-        // 1. product-flagged featured leads
-        const af = a.featured === true
-        const bf = b.featured === true
-        if (af !== bf) return af ? -1 : 1
-        // 2. featured-collection priority (boosted first, then higher priority)
-        const cmp = compareByFeatured(
-          { shopifyCollections: a.shopifyCollections ?? null },
-          { shopifyCollections: b.shopifyCollections ?? null },
-          featuredMap,
-        )
-        if (cmp !== 0) return cmp
-        // 3. model name (numeric) tiebreak
-        return String(a.model ?? a.name ?? '').localeCompare(
-          String(b.model ?? b.name ?? ''),
-          undefined,
-          { numeric: true, sensitivity: 'base' },
-        )
-      })
+      const sorted = sortCollectionProducts(result.docs, featuredMap)
 
       return sorted.map((doc) => ({
         id: String(doc.id),

@@ -6,14 +6,14 @@ import config from '@/payload.config'
 import { unstable_cache } from 'next/cache'
 import { fetchShopifyProduct } from '@/lib/shopify/fetch-product'
 import { shopifyAdminClientCA } from '@/lib/shopify/admin-client'
-import { buildFeaturedMap, sortByFeatured } from '@/lib/piano/featured-sort'
+import { buildFeaturedMap } from '@/lib/piano/featured-sort'
 import {
   HIDE_FROM_BROWSERS,
   HIDE_FROM_COLLECTION_PAGES,
 } from '@/lib/products/visibility'
 import { availableOnSite } from '@/lib/site-availability'
 import type { Site } from '@/lib/site-context'
-import { sortStandardFirst } from '@/lib/piano/non-standard-model'
+import { sortCollectionProducts } from '@/lib/piano/collection-sort'
 import { extractYouTubeId } from '@/lib/utils/youtube'
 import { PIANO_CATEGORIES, type PianoCategorySlug } from '@/lib/data/categories'
 import type { RebateCategory, RebateProduct } from '@/lib/payload/rebate-types'
@@ -1963,6 +1963,7 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
         name: true,
         slug: true,
         type: true,
+        featured: true,
         imageUrl: true,
         price: true,
         priceCAD: true,
@@ -1973,23 +1974,12 @@ async function _getProductsByCollectionHandle(handle: string, site: 'us' | 'cad'
         shopifyCollections: true,
         customMedia: true,
       },
-      sort: '-price.msrp',
       depth: 1,
       limit: 100,
     })
 
-    // Float products that also belong to a featured collection (then by priority).
-    // Stable over the -price.msrp order above. On a single-collection page this only
-    // reorders products with cross-membership in another, higher-priority featured collection.
-    const featuredMap = buildFeaturedMap(await getFeaturedCollections())
-    if (featuredMap.size > 0) {
-      result.docs = sortByFeatured(result.docs as Array<{ shopifyCollections?: { handle?: string | null }[] | null }>, featuredMap) as typeof result.docs
-    }
-
-    // Derivatives (limited editions, AURES/ATX hybrid variants) sink below the
-    // core lineup. Applied last and stable, so price + featured order still holds
-    // within each group. See non-standard-model.ts for why this isn't a length test.
-    result.docs = sortStandardFirst(result.docs)
+    // Same order as the mega menu's collection pill — see collection-sort.ts.
+    result.docs = sortCollectionProducts(result.docs, buildFeaturedMap(await getFeaturedCollections()))
 
     // Enrich each product with live Shopify variant prices in parallel
     const shopifyPriceMap = new Map<string, Map<string, { price: number; compareAtPrice: number | null }>>()

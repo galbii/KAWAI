@@ -90,6 +90,8 @@ export interface ProductsNavigation {
   allCollections?: NavCollection[]
   /** Accessories for the nav panel */
   accessories?: NavAccessory[]
+  /** Per piano tab (digital/hybrid/…): products in none of that tab's collection pills */
+  otherProducts?: Partial<Record<string, NavProduct[]>>
   /** Total number of active products */
   totalProducts: number
   /** Last updated timestamp */

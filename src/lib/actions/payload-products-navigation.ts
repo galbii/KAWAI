@@ -4,6 +4,9 @@ import { unstable_cache } from 'next/cache'
 import { getProductTypesWithProducts, getNavCollections, getAccessoriesForNav } from '@/lib/payload/products-navigation'
 import type { ProductsNavigation, NavProduct } from '@/lib/payload/products-navigation'
 import { getSite, type Site } from '@/lib/site-context'
+import { buildFeaturedMap } from '@/lib/piano/featured-sort'
+import { sortCollectionProducts } from '@/lib/piano/collection-sort'
+import { getCollectionsForCategory, PIANO_CATEGORY_KEYS } from '@/lib/navigation/collection-categories'
 
 /**
  * Cached version of products navigation query
@@ -67,7 +70,27 @@ const getCachedProductsNavigation = (site: Site): Promise<ProductsNavigation> =>
         return { ...typeNav, products: sorted.slice(0, DISPLAY_SAMPLES) }
       })
 
-      return { ...navData, types: sortedTypes, collections, allCollections, accessories }
+      // "Other" pill per piano tab: products in none of the tab's collection pills,
+      // in the same order as a collection pill. Taken before the DISPLAY_SAMPLES slice.
+      const featuredMap = buildFeaturedMap(collections)
+      const allProducts = navData.types.flatMap((t) => t.products)
+      const otherProducts: Partial<Record<string, NavProduct[]>> = {}
+      for (const key of PIANO_CATEGORY_KEYS) {
+        const pillHandles = new Set(getCollectionsForCategory(allCollections, key).map((c) => c.handle))
+        const uncollected = allProducts.filter(
+          (p) => p.type === key && !p.collectionIds.some((h) => pillHandles.has(h)),
+        )
+        if (uncollected.length > 0) {
+          otherProducts[key] = sortCollectionProducts(uncollected, featuredMap, (p) => ({
+            featured: p.isFeatured,
+            model: p.model,
+            name: p.title,
+            shopifyCollections: p.collectionIds.map((handle) => ({ handle })),
+          }))
+        }
+      }
+
+      return { ...navData, types: sortedTypes, collections, allCollections, accessories, otherProducts }
     },
     ['products-navigation', site], // Cache key
     {
