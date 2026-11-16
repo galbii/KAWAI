@@ -1,13 +1,15 @@
 import Image from 'next/image'
 import { PromoHeroCarousel } from '@/components/fall-promo'
 import { PromoButton } from '../../fall-financing/_components/PromoUI'
-import { heroOffersFor, heroOpenerFor } from '../../fall-financing/_components/slides'
+import { BF_KEY_ART, bfHeroOffersFor } from './art'
 import { SALE_BODY, SALE_ENDING, SALE_TITLE, type SaleSite, type SaleVariant } from './sale'
 
 /**
- * The /fall-financing hero with Black Friday words: same key art, same offer
- * index (financing cell dropped on ca.kawaius.com by `heroOffersFor`), same
- * CTA. Only the headline, the opener line and the ending line change.
+ * The /fall-financing hero with Black Friday words and photographs: same offer
+ * index words (financing cell dropped on ca.kawaius.com by `heroOffersFor`),
+ * same CTA. The headline, the opener line and the ending line are the Black
+ * Friday ones from `sale.ts`; the frames are the Black Friday ones from
+ * `art.ts` (redesign v2).
  */
 function HeadlineMark() {
   return (
@@ -28,7 +30,6 @@ function HeadlineMark() {
 }
 
 export function SaleHero({ site, variant }: { site: SaleSite; variant: SaleVariant }) {
-  const opener = heroOpenerFor(site)
   const title = SALE_TITLE[variant]
   const words = title.endsWith(' Kawai') ? title.slice(0, -' Kawai'.length) : title
 
@@ -39,8 +40,8 @@ export function SaleHero({ site, variant }: { site: SaleSite; variant: SaleVaria
       body={SALE_BODY[variant][site]}
       ending={SALE_ENDING[variant].line}
       cta={<PromoButton />}
-      keyArt={{ image: opener.image, imageAlt: opener.imageAlt }}
-      offers={heroOffersFor(site)}
+      keyArt={BF_KEY_ART}
+      offers={bfHeroOffersFor(site)}
     />
   )
 }

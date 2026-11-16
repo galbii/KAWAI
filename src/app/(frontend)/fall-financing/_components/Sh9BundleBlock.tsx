@@ -26,7 +26,18 @@ import type { PromoGroup } from '@/lib/payload/promo-types'
  * behind a click, which also gives the models room to be shown at a usable
  * size instead of squeezed into half a column.
  */
-export function Sh9BundleBlock({ groups }: { groups: PromoGroup[] }) {
+/**
+ * Optional photography override. Omitted (as on /fall-financing), every image
+ * is the campaign's own from `bundle`; /black-friday passes its own frames.
+ */
+export interface Sh9BundleArt {
+  stage?: { image: string; imageAlt: string }
+  seriesArt?: Record<string, string | undefined>
+}
+
+export function Sh9BundleBlock({ groups, art }: { groups: PromoGroup[]; art?: Sh9BundleArt }) {
+  const stage = art?.stage ?? { image: bundle.stageImage, imageAlt: bundle.stageImageAlt }
+  const seriesArt = art?.seriesArt ?? bundle.seriesArt
   const [openHandle, setOpenHandle] = useState<string | null>(null)
   const open = groups.find((g) => g.handle === openHandle) ?? null
   const { open: openLead } = useLeadCampaign()
@@ -35,12 +46,12 @@ export function Sh9BundleBlock({ groups }: { groups: PromoGroup[] }) {
     <>
       <PromoStage
         id={SECTION.bundle}
-        image={bundle.stageImage}
-        imageAlt={bundle.stageImageAlt}
+        image={stage.image}
+        imageAlt={stage.imageAlt}
         eyebrow={`Through ${PROGRAM_END}`}
         heading={bundle.heading}
         subheading={bundle.standfirst}
-        aside={<SeriesTiles groups={groups} onOpen={setOpenHandle} />}
+        aside={<SeriesTiles groups={groups} seriesArt={seriesArt} onOpen={setOpenHandle} />}
         // No wash: the copy sits on its own card and the tiles are opaque, so
         // every piece of text here brings its own ground.
         scrim={0}
@@ -77,10 +88,10 @@ export function Sh9BundleBlock({ groups }: { groups: PromoGroup[] }) {
                 heading has no second treatment to fall back on and the modal
                 has to work whatever art a series is given. */}
             <div className="relative overflow-hidden">
-              {bundle.seriesArt[open.handle] ? (
+              {seriesArt[open.handle] ? (
                 <div className="relative h-40 w-full sm:h-56">
                   <Image
-                    src={bundle.seriesArt[open.handle]!}
+                    src={seriesArt[open.handle]!}
                     alt=""
                     fill
                     sizes="90vw"
@@ -155,9 +166,11 @@ export function Sh9BundleBlock({ groups }: { groups: PromoGroup[] }) {
  */
 function SeriesTiles({
   groups,
+  seriesArt,
   onOpen,
 }: {
   groups: PromoGroup[]
+  seriesArt: Record<string, string | undefined>
   onOpen: (handle: string) => void
 }) {
   if (groups.length === 0) {
@@ -187,7 +200,11 @@ function SeriesTiles({
             button's own hover transforms never share a property with it. */}
         {groups.map((group) => (
           <div key={group.handle} data-reveal="wipe">
-            <SeriesTile group={group} onOpen={() => onOpen(group.handle)} />
+            <SeriesTile
+              group={group}
+              art={seriesArt[group.handle]}
+              onOpen={() => onOpen(group.handle)}
+            />
           </div>
         ))}
       </div>
@@ -195,8 +212,15 @@ function SeriesTiles({
   )
 }
 
-function SeriesTile({ group, onOpen }: { group: PromoGroup; onOpen: () => void }) {
-  const art = bundle.seriesArt[group.handle]
+function SeriesTile({
+  group,
+  art,
+  onOpen,
+}: {
+  group: PromoGroup
+  art: string | undefined
+  onOpen: () => void
+}) {
   const fallback = group.products[0]?.imageUrl ?? null
   const src = art ?? fallback
   const count = group.products.length

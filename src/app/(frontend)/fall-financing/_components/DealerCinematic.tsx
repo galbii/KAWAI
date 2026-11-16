@@ -6,7 +6,7 @@ import { useReducedMotion, useScroll, useSpring } from 'framer-motion'
 import { PROMO_CONTAINER } from '@/components/fall-promo'
 import { PromoButton } from './PromoUI'
 import { dealer, trustStats, coda, SECTION } from './campaign'
-import PinnedCanvas, { sceneImages } from './cinematic/PinnedCanvas'
+import PinnedCanvas, { sceneImages, type SceneImages } from './cinematic/PinnedCanvas'
 import { SceneShowrooms, SceneStats, SceneCoda } from './cinematic/Scenes'
 import { SceneEyebrow } from './cinematic/primitives'
 
@@ -51,14 +51,14 @@ const DARK_TOKENS = {
  * Not a fallback that drops content: everything the cinematic says is here, in
  * the same order, over the first scene's photograph.
  */
-function StaticClose() {
+function StaticClose({ images }: { images: SceneImages }) {
   return (
     <section
       id={SECTION.dealers}
       className="relative isolate overflow-hidden scroll-mt-20 bg-[color:var(--ink)]"
       style={DARK_TOKENS}
     >
-      <Image src={sceneImages.warmPianist} alt="" fill sizes="100vw" className="object-cover" />
+      <Image src={images.warmPianist} alt="" fill sizes="100vw" className="object-cover" />
       <div aria-hidden className="absolute inset-0 bg-[color:var(--ink)]/65" />
       <div aria-hidden className="absolute inset-0 bg-[color:var(--walnut)]/25" />
 
@@ -102,7 +102,8 @@ function StaticClose() {
   )
 }
 
-export function DealerCinematic() {
+/** `images`: optional scene photographs; omitted (as on /fall-financing), `sceneImages`. */
+export function DealerCinematic({ images = sceneImages }: { images?: SceneImages } = {}) {
   const prefersReduced = useReducedMotion()
   const trackRef = useRef<HTMLDivElement>(null)
 
@@ -119,7 +120,7 @@ export function DealerCinematic() {
   const raw = useScroll({ target: trackRef, offset: ['start start', 'end end'] }).scrollYProgress
   const progress = useSpring(raw, SPRING)
 
-  if (reduce) return <StaticClose />
+  if (reduce) return <StaticClose images={images} />
 
   return (
     <section
@@ -129,7 +130,7 @@ export function DealerCinematic() {
       style={DARK_TOKENS}
     >
       <div className="sticky top-0 h-screen overflow-hidden">
-        <PinnedCanvas progress={progress} reduce={false} />
+        <PinnedCanvas progress={progress} reduce={false} images={images} />
         <div className="absolute inset-0 z-10">
           <SceneShowrooms progress={progress} reduce={false} />
           <SceneStats progress={progress} reduce={false} />

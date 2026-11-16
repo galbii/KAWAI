@@ -31,12 +31,19 @@ import type { RebateModelArt } from '@/lib/payload/queries'
  * American. A rebate in CAD is a fact; a Canadian price is not one this page
  * can state.
  */
-export function AcousticRebateBlock({ art }: { art: Record<string, RebateModelArt> }) {
+export function AcousticRebateBlock({
+  art,
+  stage,
+}: {
+  art: Record<string, RebateModelArt>
+  /** Optional photograph override; omitted, the stage runs `acousticRebate.stageImage`. */
+  stage?: { image: string; imageAlt: string }
+}) {
   return (
     <PromoStage
       id={SECTION.acoustic}
-      image={acousticRebate.stageImage}
-      imageAlt={acousticRebate.stageImageAlt}
+      image={stage?.image ?? acousticRebate.stageImage}
+      imageAlt={stage?.imageAlt ?? acousticRebate.stageImageAlt}
       eyebrow={`Through ${PROGRAM_END_SHORT}`}
       heading={acousticRebate.heading}
       subheading={acousticRebate.standfirst}

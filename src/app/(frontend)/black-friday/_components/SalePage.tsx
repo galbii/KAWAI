@@ -24,6 +24,8 @@ import {
   CTA_LEAD_IN,
 } from '../../fall-financing/_components/campaign'
 import { SaleHero } from './SaleHero'
+import { SaleStyles } from './SaleStyles'
+import { BF_ACOUSTIC_STAGE, BF_BUNDLE_ART, BF_REBATE_STAGE, BF_SCENES } from './art'
 import { SaleLeadProvider } from './SaleLeadProvider'
 import { SALE_ENDING, SALE_META, SALE_PATH, type SaleVariant } from './sale'
 
@@ -35,7 +37,9 @@ import { SALE_ENDING, SALE_META, SALE_PATH, type SaleVariant } from './sale'
  * cannot drift between the three pages. /fall-financing itself is untouched.
  *
  * What differs: the hero's words (`SaleHero`), the metadata, the dock's
- * deadline, and the lead attribution (`SaleLeadProvider`). Everything else,
+ * deadline, the lead attribution (`SaleLeadProvider`), and — redesign v2 — the
+ * look: the `promo-bf` theme (`SaleStyles`) and the photographs (`art.ts`),
+ * passed to the shared sections as optional props they default without. Everything else,
  * including which offers render on which site, is the fall-financing logic
  * verbatim: Synchrony financing on kawaius.com only, the acoustic rebate on
  * ca.kawaius.com only, CAD prices from `getPromoCollections(…, 'cad')`.
@@ -110,17 +114,22 @@ export async function SalePage({ variant }: { variant: SaleVariant }) {
   const ending = SALE_ENDING[variant]
 
   return (
-    <div className="promo promo-a">
+    <div className="promo promo-a promo-bf">
       <PromoStyles />
+      <SaleStyles />
 
       <SaleLeadProvider testMode={testMode}>
         <SaleHero site={site} variant={variant} />
-        <Sh9BundleBlock groups={bundleTabs} />
+        <Sh9BundleBlock groups={bundleTabs} art={BF_BUNDLE_ART} />
         {showFinancing && <FinancingBlock data={financingData} rangeArt={rangeArt} />}
-        {showAcoustic && <AcousticRebateBlock art={acousticArt} />}
-        <EsRebateBlock products={rebateGroups[0]?.products ?? []} site={site} />
+        {showAcoustic && <AcousticRebateBlock art={acousticArt} stage={BF_ACOUSTIC_STAGE} />}
+        <EsRebateBlock
+          products={rebateGroups[0]?.products ?? []}
+          site={site}
+          stage={BF_REBATE_STAGE}
+        />
         <LearningPartnersBlock />
-        <DealerCinematic />
+        <DealerCinematic images={BF_SCENES} />
 
         <PromoSideNav sections={navSectionsFor(site)} />
 

@@ -28,6 +28,9 @@ export const sceneImages = {
   luxeRoom: `${R2}/MS130_RGB_image_04.webp`,
 } as const
 
+/** The three frames, by scene. A page may pass its own; omitted, `sceneImages`. */
+export type SceneImages = { warmPianist: string; soundboard: string; luxeRoom: string }
+
 const MID = {
   showrooms: (SCENE_WINDOWS.showrooms[0] + SCENE_WINDOWS.showrooms[1]) / 2,
   stats: (SCENE_WINDOWS.stats[0] + SCENE_WINDOWS.stats[1]) / 2,
@@ -37,9 +40,11 @@ const MID = {
 export default function PinnedCanvas({
   progress,
   reduce,
+  images = sceneImages,
 }: {
   progress: MotionValue<number>
   reduce: boolean
+  images?: SceneImages
 }) {
   // — Camera: each frame gets a slow continuous push while it holds —
   const warmScale = useTransform(progress, [0, SCENE_WINDOWS.showrooms[1]], [1.05, 1.12])
@@ -69,7 +74,7 @@ export default function PinnedCanvas({
     return (
       <div className="absolute inset-0">
         <Image
-          src={sceneImages.warmPianist}
+          src={images.warmPianist}
           alt=""
           fill
           sizes="100vw"
@@ -89,7 +94,7 @@ export default function PinnedCanvas({
         style={{ opacity: warmOpacity, scale: warmScale, x: warmX, filter: sharedFilter }}
       >
         <Image
-          src={sceneImages.warmPianist}
+          src={images.warmPianist}
           alt=""
           fill
           quality={88}
@@ -110,7 +115,7 @@ export default function PinnedCanvas({
         }}
       >
         <Image
-          src={sceneImages.soundboard}
+          src={images.soundboard}
           alt=""
           fill
           quality={90}
@@ -125,7 +130,7 @@ export default function PinnedCanvas({
         style={{ opacity: luxeOpacity, scale: luxeScale, y: luxeY, filter: sharedFilter }}
       >
         <Image
-          src={sceneImages.luxeRoom}
+          src={images.luxeRoom}
           alt=""
           fill
           quality={88}

@@ -44,9 +44,12 @@ import type { RebateProduct } from '@/lib/payload/rebate-types'
 export function EsRebateBlock({
   products,
   site = 'us',
+  stage,
 }: {
   products: PromoProduct[]
   site?: 'us' | 'cad'
+  /** Optional photograph override; omitted, the stage runs `rebate.stageImage`. */
+  stage?: { image: string; imageAlt: string }
 }) {
   const [selected, setSelected] = useState<RebateProduct | null>(null)
   const { open: openLead } = useLeadCampaign()
@@ -86,8 +89,8 @@ export function EsRebateBlock({
           so nothing here is reading off bare photograph. */}
       <PromoStage
         id={SECTION.rebate}
-        image={rebate.stageImage}
-        imageAlt={rebate.stageImageAlt}
+        image={stage?.image ?? rebate.stageImage}
+        imageAlt={stage?.imageAlt ?? rebate.stageImageAlt}
         eyebrow={`Through ${PROGRAM_END_SHORT}`}
         heading={copy.heading}
         subheading={rebate.standfirst}
