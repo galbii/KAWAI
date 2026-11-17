@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getStorefrontBySlugDirect } from '@/lib/payload/queries'
 import { getSite, getSiteUrl } from '@/lib/site-context'
-import { SaleTemplate, toSaleStore } from '@/components/sale-template'
+import { SaleTemplate, lockupText, toSaleStore } from '@/components/sale-template'
 import { fallFinancingSale } from './_content'
 
 // getSite() reads headers() so the route can 404 on the CA host (US Synchrony
@@ -18,11 +18,20 @@ interface Params {
 }
 
 /**
- * /store/[storeslug]/fall-financing — the Fall Financing offers as one store's
- * sale page, on the reusable sale template.
+ * /store/[storeslug]/fall-financing — one store's holiday landing page for
+ * the Fall Financing offers, on the store sale template
+ * (kawai-holiday-financing-landing, Nov 17, 2026: white field, heavy display
+ * serif, Kawai red script, image-led spreads; see SaleTemplate.tsx).
  *
  * Sits beside the national /fall-financing (the banner-ad destination), which
- * is untouched. Standalone: nothing on a store homepage or nav links here yet.
+ * is untouched: the two routes share no UI components, only copy (this
+ * route's `_content.ts` imports the terms, rates and disclosures from the
+ * national campaign.ts). Standalone: nothing on a store homepage or nav links
+ * here yet.
+ *
+ * Store data stays dynamic: `getStorefrontBySlugDirect` + `toSaleStore` read
+ * the name, address, phone, hours, directions and booking link from the
+ * storefront record on every request.
  *
  * US only. The promo set includes Synchrony financing, which must never render
  * on ca.kawaius.com, so the route 404s there rather than filtering offers —
@@ -40,12 +49,13 @@ export async function generateMetadata({
   if (!storefront) return {}
 
   const store = toSaleStore(storefront, storeslug)
-  // The hero's own words (slides.ts opener), attributed to the store. No new
-  // copy, and no rate figure: §4.5 reaches titles and meta descriptions.
-  const title = `${fallFinancingSale.hero.titleLead} ${fallFinancingSale.hero.titleAccent} | ${store.name}`
-  const description = fallFinancingSale.hero.body
+  // The hero headline and the national opener's body (now the offer index's
+  // intro), attributed to the store. No rate figure: §4.5 reaches titles and
+  // meta descriptions.
+  const title = `${lockupText(fallFinancingSale.hero.lockup)} | ${store.name}`
+  const description = fallFinancingSale.intro
   const url = `${getSiteUrl(site)}/store/${storeslug}/fall-financing`
-  const image = fallFinancingSale.hero.image
+  const image = fallFinancingSale.hero.image.src
 
   return {
     title,
@@ -57,7 +67,7 @@ export async function generateMetadata({
       siteName: 'KAWAI',
       title,
       description,
-      images: [{ url: image, alt: fallFinancingSale.hero.imageAlt }],
+      images: [{ url: image, alt: fallFinancingSale.hero.image.alt }],
     },
     twitter: { card: 'summary_large_image', title, description, images: [image] },
   }

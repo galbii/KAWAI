@@ -86,6 +86,22 @@ const fraunces = Fraunces({
   preload: false,
 });
 
+/**
+ * Holiday display serif — the black heavy setup lines of the store sale
+ * template (/store/[storeslug]/fall-financing, kawai-holiday-financing-landing,
+ * Nov 17, 2026). Fraunces again, but its own loader at 700/900 under its own
+ * variable, so the Fall Promo `--font-fraunces` above stays 400-only and the
+ * national /fall-financing page renders exactly as before. `preload: false`:
+ * only a page that paints it downloads it. See docs/BRANDING.md.
+ */
+const holidayDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-holiday-display",
+  display: "swap",
+  weight: ["700", "900"],
+  preload: false,
+});
+
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-instrument",
@@ -139,7 +155,7 @@ export default function RootLayout({
     // var() can only resolve variables that are set on <html> itself.
     <html
       lang="en"
-      className={`scroll-smooth ${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} ${fraunces.variable} ${instrumentSans.variable}`}
+      className={`scroll-smooth ${inter.variable} ${crimsonText.variable} ${playfairDisplay.variable} ${cormorantGaramond.variable} ${notoSans.variable} ${oswald.variable} ${greatVibes.variable} ${fraunces.variable} ${holidayDisplay.variable} ${instrumentSans.variable}`}
     >
       <head>
         <link

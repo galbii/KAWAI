@@ -619,57 +619,14 @@ body.viewer-modal-open [data-hide-on-3d-viewer] {
 }
 
 /* ------------------------------------------------------------ */
-/* Store sale template (/store/[slug]/fall-financing).           */
-/* Transform/opacity only. Snow and shimmer are decorative and   */
-/* are removed outright under reduced motion by the components   */
-/* (motion-reduce:hidden), not just clamped by the rule at top.  */
+/* Store sale template (/store/[slug]/fall-financing): the hero  */
+/* photograph's slow settle. Transform only; the global reduced- */
+/* motion rule clamps it, and the component also gates it with   */
+/* motion-safe:.                                                 */
 /* ------------------------------------------------------------ */
-@keyframes sale-snow-fall {
-  0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-  10%  { opacity: var(--flake-opacity, 0.85); }
-  90%  { opacity: var(--flake-opacity, 0.85); }
-  100% { transform: translate3d(var(--flake-drift, 2rem), 105vh, 0) rotate(240deg); opacity: 0; }
-}
-
-@keyframes sale-twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.7); }
-  50%      { opacity: 1;    transform: scale(1); }
-}
-
-@keyframes sale-shimmer {
-  0%   { transform: translateX(-120%) skewX(-18deg); }
-  60%, 100% { transform: translateX(320%) skewX(-18deg); }
-}
-
 @keyframes sale-hero-zoom {
   from { transform: scale(1.08); }
   to   { transform: scale(1); }
-}
-
-@keyframes sale-ring {
-  0%   { transform: scale(1);    opacity: 0.55; }
-  100% { transform: scale(1.35); opacity: 0; }
-}
-
-/* Store sale template: the satin ribbon drawn across the hero, the bow tied at its knot. */
-@keyframes sale-band-x {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
-}
-
-@keyframes sale-band-y {
-  from { transform: scaleY(0); }
-  to   { transform: scaleY(1); }
-}
-
-@keyframes sale-bow-tie {
-  from { opacity: 0; transform: scale(0.4) rotate(-12deg); }
-  to   { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-
-@keyframes sale-bow-sway {
-  0%, 100% { transform: rotate(0deg); }
-  50%      { transform: rotate(-3deg); }
 }
 
 /* ============================================================ */

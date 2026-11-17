@@ -1,4 +1,4 @@
-import type { SaleContent, SalePromo } from '@/components/sale-template'
+import type { SaleContent, SaleLockup, SaleMoment, SalePromo } from '@/components/sale-template'
 import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
 import {
   bundle,
@@ -16,29 +16,89 @@ import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_comp
 import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
 
 /**
- * The Fall Financing campaign, mapped into the store sale template.
+ * The store holiday landing page (kawai-holiday-financing-landing, Chance,
+ * Nov 17, 2026), mapped into the store sale template.
  *
- * Every word is imported from the national page's copy files — `campaign.ts`
- * ("Every word on the Q4 page, in one file.") and `slides.ts` — and none is
- * retyped here. Only design and structure change (Chance, Nov 10, 2026). The
- * store pages run on kawaius.com only, so this is the US set: the copy differs
- * by site, never by store.
+ * Two kinds of words live here, kept apart on purpose:
  *
- * The financing promo keeps its regulated shape: the headline lockup, the terms
- * subhead directly under it, and the Supporting Disclosure (lender terms, the
- * `*` worked example, the `**` exclusions) as visible text in the same card.
+ * 1. Store-only marketing headlines — the five holiday lockups from Chance's
+ *    comps (`HEADLINES`). They are this page's own, so the national
+ *    /fall-financing page (which reads campaign.ts / slides.ts directly) does
+ *    not change. Spellings are the corrected ones: the source art read "Some
+ *    gift get unwrapped" and "Make your soundrack for the"; the page says
+ *    "Some gifts get unwrapped" and "Make your soundtrack for the".
+ * 2. Everything else — every offer heading, standfirst, rate, term, dealer
+ *    note and disclosure — is imported from the national copy files
+ *    (`campaign.ts`, `slides.ts`, `money.ts`) and never retyped, so legal copy
+ *    cannot drift. The store pages run on kawaius.com only, so this is the US
+ *    set: the copy differs by site, never by store.
+ *
+ * The financing promo keeps its regulated shape: the headline lockup, the
+ * terms subhead directly under it, and the Supporting Disclosure (lender
+ * terms, the `*` worked example, the `**` exclusions) as visible text in the
+ * same card. No holiday headline is ever put on it.
  */
+
+/** Chance's holiday headline set (comps, Nov 17, 2026), corrected spellings. */
+export const HEADLINES = {
+  hero: { lead: 'Make the first note a', script: 'Holiday', tail: 'memory', layout: 'stack' },
+  played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline' },
+  instrumental: { kicker: 'Instrumental to', script: 'Holiday', layout: 'stack' },
+  soundtrack: { lead: 'Make your soundtrack for the', script: 'Holidays', layout: 'stack' },
+  sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline' },
+} as const satisfies Record<string, SaleLockup>
+
+/** The hero sub-line under the primary lockup, one entry per line (comp). */
+export const HERO_SUBLINE = ['Factory-direct Kawai Pianos', 'ready for their first carol'] as const
+
+/** The brand line under the wordmark. */
+export const TAGLINE = 'Instrumental to Life'
+
+/**
+ * Store-page photography. Real Kawai photographs already served on
+ * kawaius.com under /images. The signature-series frames carry a burned-in
+ * "Cabinet finish and bench style vary based on market region." caption at
+ * the bottom right; the crops (object-position here, frame ratios in the
+ * template) keep it out of view rather than editing the photograph.
+ */
+const ART = {
+  heroRoom: {
+    src: '/images/signature/pianos/gl-10/gl-10-detail.webp',
+    alt: 'A black Kawai grand piano and bench in a bright white room with French doors',
+    position: '20% center',
+  },
+  heroHands: {
+    src: '/images/signature/pianos/gl-10/gl-10-hero.jpeg',
+    alt: "A pianist's hands on the keys of a black Kawai grand piano",
+  },
+  played: {
+    src: '/images/signature/pianos/gl-30/gl-30-secondary.webp',
+    alt: 'A young girl playing a black Kawai grand piano',
+    position: 'center 15%',
+  },
+  soundA: {
+    src: '/images/gallery/CA701R-43 copy.webp',
+    alt: 'A woman playing a Kawai CA Series digital piano at home',
+  },
+  soundB: {
+    src: '/images/cx/hero_cx102.jpg',
+    alt: 'A smiling woman playing a white Kawai digital piano in a bright living room',
+    position: '30% center',
+  },
+  soundC: {
+    src: '/images/gallery/KAWAI_CA401B-43 copy.webp',
+    alt: 'A young pianist playing a black Kawai CA401 digital piano',
+    position: '70% center',
+  },
+  soundtrack: {
+    src: '/images/signature/pianos/gx-3/gx-3-secondary.webp',
+    alt: 'A black Kawai grand piano by the windows of a white dining room set with flowers',
+    position: 'center 35%',
+  },
+} as const
 
 const opener = heroOpenerFor('us')
 const financingSlide = heroSlides.find((s) => s.id === 'financing')
-
-/** "Fall for a Kawai" → "Fall for a" + the red italic accent "Kawai". */
-function splitTitle(title: string): { lead: string; accent: string } {
-  const at = title.lastIndexOf(' ')
-  return at > 0 ? { lead: title.slice(0, at), accent: title.slice(at + 1) } : { lead: title, accent: '' }
-}
-
-const title = splitTitle(opener.title)
 const rebateCopy = rebateCopyFor('us')
 
 const SECTION_IDS = {
@@ -94,10 +154,33 @@ const promos: SalePromo[] = [
     eyebrow: lessons.eyebrow,
     heading: { kind: 'text', text: lessons.heading },
     body: lessons.standfirst,
-    image: { src: lessons.stageImage, alt: lessons.stageImageAlt },
+    // The partners' logo strip (~3.9:1): shown whole, never cropped.
+    image: { src: lessons.stageImage, alt: lessons.stageImageAlt, shape: 'banner' },
     note: lessons.redeemNote,
     link: { label: lessons.redeemLabel, href: lessons.redeemHref },
     fineprint: [lessons.disclaimer],
+  },
+]
+
+/**
+ * The holiday moments between spreads. None sits before the financing spread,
+ * so no marketing headline is ever read as part of the credit advertisement.
+ */
+const moments: SaleMoment[] = [
+  { id: 'played', before: SECTION_IDS.bundle, layout: 'feature', lockup: HEADLINES.played, images: [ART.played] },
+  {
+    id: 'sound',
+    before: SECTION_IDS.rebates,
+    layout: 'gallery',
+    lockup: HEADLINES.sound,
+    images: [ART.soundA, ART.soundB, ART.soundC],
+  },
+  {
+    id: 'soundtrack',
+    before: SECTION_IDS.lessons,
+    layout: 'band',
+    lockup: HEADLINES.soundtrack,
+    images: [ART.soundtrack],
   },
 ]
 
@@ -110,20 +193,23 @@ const HIGHLIGHT_TARGET: Record<string, string> = {
 
 export const fallFinancingSale: SaleContent = {
   hero: {
-    titleLead: title.lead,
-    titleAccent: title.accent,
-    body: opener.body ?? '',
+    lockup: HEADLINES.hero,
+    subline: HERO_SUBLINE,
     ending: `Offers end ${PROGRAM_END}.`,
-    image: opener.image,
-    imageAlt: opener.imageAlt,
+    image: ART.heroRoom,
+    inset: ART.heroHands,
   },
+  // The national opener's body, now introducing the offer index.
+  intro: opener.body ?? '',
   highlights: valuePropsFor('us').map((v) => ({
     label: OFFER_CHIPS[v.offer],
     detail: v.detail,
     href: `#${HIGHLIGHT_TARGET[v.offer] ?? v.sectionId}`,
   })),
   promos,
-  close: { eyebrow: coda.eyebrow, heading: coda.heading, body: coda.body },
+  moments,
+  close: { eyebrow: coda.eyebrow, heading: coda.heading, body: coda.body, lockup: HEADLINES.instrumental },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).
   callLabel: 'Call Now',
+  tagline: TAGLINE,
 }

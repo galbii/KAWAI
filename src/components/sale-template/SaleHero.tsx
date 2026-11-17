@@ -1,124 +1,125 @@
-import Image from "next/image";
-import { Bow, SatinBand } from "./RibbonBow";
-import { Snowfall } from "./Snowfall";
-import { SERIF } from "./tokens";
-import type { SaleHeroContent } from "./types";
+import Image from 'next/image'
+import { PhoneIcon } from '@heroicons/react/24/solid'
+import { Lockup } from './Lockup'
+import { Wordmark } from './Wordmark'
+import { SANS } from './tokens'
+import type { SaleHeroContent, SaleStore } from './types'
 
 /**
- * The hero as a wrapped gift: the photograph runs full-bleed, a red satin
- * ribbon crosses it (down the right, along the foot) and the bow sits where
- * the two bands meet. The headline is set in white over a deep scrim, its
- * accent line in gold italic.
+ * The hero, after the comp (hero.png): a centred typographic stack on a plain
+ * white field — heavy serif setup line, the red script word, the heavy serif
+ * close — then the sans sub-line and the red wordmark over "Instrumental to
+ * Life". Beside it (below it on phones) the photography: one tall frame under
+ * an arch, a smaller detail frame laid across its foot.
  *
  * Above the fold, so it enters on CSS keyframes rather than a scroll trigger.
  * `both` fill keeps the end state under reduced motion, where the global rule
- * clamps every duration to ~0 — the copy and ribbon are simply there.
+ * clamps every duration to ~0: the page is simply there.
  */
-const ENTER = "animate-[price-rise_0.9s_cubic-bezier(0.16,1,0.3,1)_both]";
+const ENTER = 'animate-[price-rise_0.9s_cubic-bezier(0.16,1,0.3,1)_both]'
 
 export function SaleHero({
   hero,
-  storeName,
+  store,
+  callLabel,
+  tagline,
 }: {
-  hero: SaleHeroContent;
-  storeName: string;
+  hero: SaleHeroContent
+  store: SaleStore
+  callLabel: string
+  tagline: string
 }) {
+  const tel = store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
+
   return (
-    <header className="relative isolate z-10 flex min-h-[40rem] items-end bg-kawai-black text-white sm:min-h-[44rem] lg:min-h-[min(54rem,92vh)]">
-      {/* Photograph layer: clips the slow zoom and the snow; the bow below hangs free. */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <Image
-          src={hero.image}
-          alt={hero.imageAlt}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover motion-safe:animate-[sale-hero-zoom_14s_ease-out_both]"
-        />
-        {/* Scrims: a deep foot for the type, a left wash on wide screens. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-t from-kawai-black/90 via-kawai-black/45 to-kawai-black/10"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 hidden bg-gradient-to-r from-kawai-red-900/55 via-kawai-black/15 to-transparent lg:block"
-        />
-        <Snowfall />
-      </div>
+    <header className="relative isolate overflow-hidden bg-white">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-14 sm:px-10 sm:pt-20 lg:min-h-[min(56rem,94vh)] lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-16">
+        {/* Type */}
+        <div className="flex flex-col items-center text-center lg:col-span-6">
+          <p
+            className={`${ENTER} flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-kawai-black/70`}
+            style={{ fontFamily: SANS, animationDelay: '0.05s' }}
+          >
+            <span aria-hidden className="h-px w-8 bg-kawai-red" />
+            {store.name}
+            <span aria-hidden className="h-px w-8 bg-kawai-red" />
+          </p>
 
-      {/* The ribbon: down the right, along the foot, bow at the knot. */}
-      <SatinBand
-        vertical
-        className="inset-y-0 right-14 w-2.5 origin-top animate-[sale-band-y_1.4s_cubic-bezier(0.16,1,0.3,1)_0.15s_both] sm:right-[12%] sm:w-4"
-      />
-      <SatinBand className="inset-x-0 bottom-0 h-2.5 origin-left animate-[sale-band-x_1.4s_cubic-bezier(0.16,1,0.3,1)_0.3s_both] sm:h-4" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute bottom-0 right-14 z-10 translate-x-1/2 translate-y-[46%] sm:right-[12%]"
-      >
-        <div className="origin-center animate-[sale-bow-tie_1s_cubic-bezier(0.34,1.56,0.64,1)_1s_both]">
-          <Bow
-            idSuffix="hero"
-            className="h-16 w-auto motion-safe:animate-[sale-bow-sway_6s_ease-in-out_2.2s_infinite] sm:h-28"
-          />
+          <div className={`${ENTER} mt-8 sm:mt-10`} style={{ animationDelay: '0.15s' }}>
+            <Lockup lockup={hero.lockup} as="h1" size="hero" />
+          </div>
+
+          <p
+            className={`${ENTER} mt-10 text-[1.15rem] leading-[1.45] tracking-[0.01em] text-kawai-black sm:mt-14 sm:text-[1.35rem]`}
+            style={{ fontFamily: SANS, animationDelay: '0.35s' }}
+          >
+            {hero.subline.map((line, i) => (
+              <span key={line} className="block">
+                {line}
+                {i < hero.subline.length - 1 ? ' ' : null}
+              </span>
+            ))}
+          </p>
+
+          <div
+            className={`${ENTER} mt-9 flex flex-col items-center gap-4 sm:flex-row`}
+            style={{ animationDelay: '0.5s' }}
+          >
+            {tel && (
+              <a
+                href={tel}
+                className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-full bg-kawai-red px-7 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-kawai-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
+                style={{ fontFamily: SANS }}
+              >
+                <PhoneIcon aria-hidden className="h-4 w-4" />
+                {callLabel}
+              </a>
+            )}
+            <p className="text-sm text-kawai-black/70" style={{ fontFamily: SANS }}>
+              {hero.ending}
+            </p>
+          </div>
+
+          <div className={`${ENTER} mt-12 sm:mt-14`} style={{ animationDelay: '0.65s' }}>
+            <Wordmark tagline={tagline} />
+          </div>
         </div>
-      </div>
 
-      {/* Headline panel */}
-      <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-32 sm:px-10 sm:pb-24 lg:pb-28">
-        <div className="max-w-2xl pr-16 sm:pr-0">
-          <p
-            className={`${ENTER} inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-white backdrop-blur-md sm:text-sm`}
-            style={{ animationDelay: "0.1s" }}
+        {/* Photography */}
+        <div className="relative mx-auto w-full max-w-md pb-10 sm:max-w-lg lg:col-span-6 lg:max-w-none lg:pb-0 lg:pl-6">
+          <div
+            className={`${ENTER} relative aspect-[4/5] overflow-hidden rounded-t-[999px] bg-kawai-pearl lg:ml-auto lg:w-[88%]`}
+            style={{ animationDelay: '0.2s' }}
           >
-            <span
-              aria-hidden
-              className="h-1.5 w-1.5 rounded-full bg-kawai-red-400 shadow-[0_0_10px_var(--color-kawai-red-400)]"
+            <Image
+              src={hero.image.src}
+              alt={hero.image.alt}
+              fill
+              priority
+              sizes="(max-width: 1024px) 90vw, 45vw"
+              className="object-cover motion-safe:animate-[sale-hero-zoom_14s_ease-out_both]"
+              style={hero.image.position ? { objectPosition: hero.image.position } : undefined}
             />
-            {storeName}
-          </p>
-
-          <h1
-            className="mt-6 text-[clamp(3rem,8.5vw,6.5rem)] leading-[0.95] tracking-[-0.01em] drop-shadow-[0_4px_24px_color-mix(in_srgb,black_45%,transparent)]"
-            style={{ fontFamily: SERIF }}
-          >
-            <span
-              className={`${ENTER} block`}
-              style={{ animationDelay: "0.2s" }}
+          </div>
+          {hero.inset && (
+            <div
+              className={`${ENTER} absolute bottom-0 left-0 w-[46%] overflow-hidden border-[6px] border-white bg-kawai-pearl shadow-[0_30px_60px_-30px_color-mix(in_srgb,var(--color-kawai-black)_55%,transparent)] sm:border-8 lg:-bottom-6 lg:w-[42%]`}
+              style={{ animationDelay: '0.45s' }}
             >
-              {hero.titleLead}
-            </span>
-            <span
-              className={`${ENTER} block font-medium italic text-kawai-gold`}
-              style={{ animationDelay: "0.35s" }}
-            >
-              {hero.titleAccent}
-            </span>
-          </h1>
-
-          <p
-            className={`${ENTER} mt-6 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg`}
-            style={{ animationDelay: "0.5s" }}
-          >
-            {hero.body}
-          </p>
-
-          <p
-            className={`${ENTER} mt-7 inline-flex items-center gap-2 rounded-full bg-kawai-gold px-4 py-1.5 text-sm font-semibold text-kawai-black shadow-[0_10px_30px_-10px_var(--color-kawai-gold)]`}
-            style={{ animationDelay: "0.62s" }}
-          >
-            <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5">
-              <path
-                fill="currentColor"
-                d="M12 0c.6 5.6 2.4 7.4 8 8-5.6.6-7.4 2.4-8 8-.6-5.6-2.4-7.4-8-8 5.6-.6 7.4-2.4 8-8z"
-                transform="translate(0 4)"
-              />
-            </svg>
-            {hero.ending}
-          </p>
+              <div className="relative aspect-square">
+                <Image
+                  src={hero.inset.src}
+                  alt={hero.inset.alt}
+                  fill
+                  sizes="(max-width: 1024px) 45vw, 22vw"
+                  className="object-cover"
+                  style={hero.inset.position ? { objectPosition: hero.inset.position } : undefined}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
-  );
+  )
 }

@@ -115,6 +115,21 @@ There are currently 3 different gold values in the codebase. Use only the brand 
 | `--font-family-cormorant` | Cormorant Garamond | Artist carousel, Japanese aesthetic sections |
 | `--font-family-noto` | Noto Sans | Supplementary/international text |
 | `--font-buena-park` | Playfair Display | Legacy/sparse — avoid for new work |
+| `--font-fraunces` / `--font-instrument` | Fraunces 400 / Instrument Sans | Fall Promo 2026 campaign pages only (national `/fall-financing`) |
+| `--font-holiday-display` | Fraunces 700/900 | Store holiday sale template only (`/store/[storeslug]/fall-financing`): heavy display serif for setup lines |
+| `--font-great-vibes` | Great Vibes | Script accents: Grand Spring Sale hero; the store holiday template's one Kawai red script word per headline |
+
+**Store holiday template (Nov 17, 2026, kawai-holiday-financing-landing).**
+`src/components/sale-template/` follows Chance's holiday comps: a white field,
+black heavy display serif (`--font-holiday-display`) for setup lines, one large
+Kawai red script word per headline (`--font-great-vibes`: Holiday, Played,
+Holidays, Sound), Inter for sub-lines, body and fine print, and the red wordmark
+(`/images/logos/kawai-logo-new-red.png`) over a thin black rule and
+"Instrumental to Life". Faces are applied inline from `sale-template/tokens.ts`,
+so no other route changes typography; `--font-holiday-display` is its own
+`preload: false` loader, so the Fall Promo `--font-fraunces` stays 400-only.
+This retires the template's Nov 10 Playfair (Buena Park) exception. Credit
+headlines (the Synchrony lockup) never take the script face.
 
 ### Applying Fonts
 
