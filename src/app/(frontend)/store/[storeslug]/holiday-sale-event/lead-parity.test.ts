@@ -21,6 +21,13 @@ mock.module('@/lib/actions/notify-rsm-of-lead', () => ({
     return { ok: true }
   },
 }))
+const holidayCalls: Array<{ data: unknown; storeSlug: string; source: string }> = []
+mock.module('./notify-store-lead', () => ({
+  notifyHolidayStoreLead: async (data: unknown, storeSlug: string, source: string) => {
+    holidayCalls.push({ data, storeSlug, source })
+    return { success: true }
+  },
+}))
 mock.module('@/lib/actions/signup-lead-shopify', () => ({
   upsertSignupLeadToShopify: async (data: unknown, tags: string[]) => {
     shopifyCalls.push({ data, tags })
@@ -54,11 +61,15 @@ describe('v6 lead parity: same HubSpot form, fields, source and Shopify tags as 
       expect(store.fields).toBe(leadCampaign.fields)
       expect(store.source).toBe('fall-financing')
       expect(store.source).toBe(leadCampaign.source)
-      expect([...store.shopifyTags]).toEqual(['fall-financing', 'q4-2026-financing'])
-      expect(store.shopifyTags).toBe(leadCampaign.shopifyTags)
+      // Nov 19, 2026: holiday leads carry the national tags plus holiday-2026-lead.
+      expect([...store.shopifyTags]).toEqual(['fall-financing', 'q4-2026-financing', 'holiday-2026-lead'])
+      expect([...leadCampaign.shopifyTags]).toEqual(['fall-financing', 'q4-2026-financing'])
       expect(store.formName.startsWith(`${leadCampaign.formName}_store_`)).toBe(true)
-      const { formName: _a, copy: storeCopy, ...storeRest } = store
-      const { formName: _b, copy: natCopy, ...natRest } = leadCampaign
+      // ...and route through the store's own notifier; the national config has none.
+      expect(typeof store.notifyLead).toBe('function')
+      expect(leadCampaign.notifyLead).toBeUndefined()
+      const { formName: _a, copy: storeCopy, shopifyTags: _t, notifyLead: _n, ...storeRest } = store
+      const { formName: _b, copy: natCopy, shopifyTags: _u, ...natRest } = leadCampaign
       expect(storeRest).toEqual(natRest)
       expect({ ...storeCopy, openLabel: '' }).toEqual({ ...natCopy, openLabel: '' })
     })
@@ -116,7 +127,7 @@ describe('v6 lead parity: the HubSpot Forms API v3 request (fetch mocked)', () =
   })
 })
 
-describe('v6 lead parity: RSM routing gets the national source (server action mocked)', () => {
+describe('lead routing: national RSM path vs the store holiday notifier (server actions mocked)', () => {
   const captureFor = (config: typeof leadCampaign) => {
     let ctx: ReturnType<typeof useLeadCampaign> | null = null
     const Probe = () => {
@@ -128,16 +139,24 @@ describe('v6 lead parity: RSM routing gets the national source (server action mo
     return ctx as ReturnType<typeof useLeadCampaign>
   }
 
-  it('captureLead → notifyRsmOfLead(data, "fall-financing") on the store page, as on the national page', async () => {
+  it('national page: captureLead → notifyRsmOfLead(data, "fall-financing"), unchanged', async () => {
     rsmCalls.length = 0
+    holidayCalls.length = 0
     captureFor(leadCampaign).captureLead(LEAD)
+    await Promise.resolve()
+    expect(rsmCalls).toEqual([{ data: LEAD, source: 'fall-financing' }])
+    expect(holidayCalls).toHaveLength(0)
+  })
+
+  it('store pages: captureLead → notifyHolidayStoreLead(data, <slug>, "fall-financing"), not the RSM', async () => {
+    // Nov 19, 2026: "it should just send to the correct inbox". The client
+    // passes the slug only; the server maps it to the inbox (store-lead.test.ts).
+    rsmCalls.length = 0
+    holidayCalls.length = 0
     for (const slug of STORES) captureFor(storeLeadCampaign(slug)).captureLead(LEAD)
     await Promise.resolve()
-    expect(rsmCalls).toHaveLength(1 + STORES.length)
-    for (const c of rsmCalls) {
-      expect(c.source).toBe('fall-financing')
-      expect(c.data).toEqual(LEAD)
-    }
+    expect(rsmCalls).toHaveLength(0)
+    expect(holidayCalls).toEqual(STORES.map((storeSlug) => ({ data: LEAD, storeSlug, source: 'fall-financing' })))
   })
 })
 

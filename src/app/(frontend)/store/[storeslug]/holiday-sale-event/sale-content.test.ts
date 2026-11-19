@@ -276,7 +276,8 @@ describe('store holiday-sale-event v2: the lead form is the national enquiry, re
 
   it('keeps the routing source, tags, fields and consent', () => {
     expect(dallas.source).toBe(leadCampaign.source)
-    expect(dallas.shopifyTags).toBe(leadCampaign.shopifyTags)
+    // Nov 19, 2026: the national tags plus holiday-2026-lead (see lead-parity / store-lead tests).
+    expect(dallas.shopifyTags).toEqual([...leadCampaign.shopifyTags, 'holiday-2026-lead'])
     expect(dallas.fields).toBe(leadCampaign.fields)
     expect(dallas.copy.consent).toBe(leadCampaign.copy.consent)
     expect(dallas.copy.headline).toBe(leadCampaign.copy.headline)
