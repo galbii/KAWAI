@@ -28,6 +28,13 @@ export interface LeadCampaignConfig {
   /** Identifies the form in analytics (`event_label`) and HubSpot's `pageName`. */
   formName: string
   copy: LeadCampaignCopy
+  /**
+   * Page-specific lead routing. Omit (every page but the store holiday pages)
+   * for the national ZIP routing, `notifyRsmOfLead(values, source)`. When set
+   * it is called instead, once per lead, fire-and-forget — it must be a server
+   * action that never throws and that decides recipients server-side.
+   */
+  notifyLead?: (values: Record<string, string>) => Promise<unknown>
 }
 
 export interface LeadCampaignCopy {

@@ -71,9 +71,13 @@ export function LeadCampaignProvider({
       // Deliberately NOT gated on `testMode` — routing is precisely what a
       // staging run needs to exercise, and the LEAD_NOTIFY_* environment
       // switches are what hold or redirect the mail.
-      void notifyRsmOfLead(data, config.source).catch(() => {})
+      //
+      // A page may route its own leads (`config.notifyLead`, the store holiday
+      // pages); every other page keeps the national ZIP → RSM routing.
+      const notify = config.notifyLead ?? ((values: PreFormValues) => notifyRsmOfLead(values, config.source))
+      void notify(data).catch(() => {})
     },
-    [config.source],
+    [config],
   )
 
   const confirmLead = useCallback(() => setConfirmed(true), [])
