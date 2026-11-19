@@ -60,21 +60,21 @@ export const HEADLINES = {
 } as const satisfies Record<string, SaleLockup>
 
 /**
- * The sale event (v3). Chance, #qa / card thread 1572326447140438136, 9:35 AM
- * PT Nov 19, 2026: "We should redo the creative to make it more apparent that
- * it's a sale event with exclusive offers until December 5th. Please do the
- * same on the page as well".
+ * The sale event. v3 added it (Chance, #qa / card thread 1572326447140438136,
+ * 9:35 AM PT Nov 19, 2026); v5 moves its end date (same thread, 12:19 PM PT
+ * Nov 19, 2026): "the dates should be to the 31st of december across site,
+ * creatives, and meta copy sheet."
  *
- * His words, with the year added so December 5 can never be read against the
- * financing end date. That date (PROGRAM_END, December 31, 2026) and every
- * offer's own term, range and disclosure stay exactly as campaign.ts has them;
- * nothing here changes or restates a financing term. The Dec 5 date belongs to
- * the sale event only: it is never put on the credit advertisement.
+ * The sale event now ends on the same day as the financing program, so both
+ * lines are built from PROGRAM_END ("December 31, 2026", campaign.ts) rather
+ * than retyped: the hero, the close and every offer spread can only ever show
+ * one end date. Nothing here changes or restates a financing term; each
+ * offer's own term, range and disclosure stay exactly as campaign.ts has them.
  */
 export const SALE_EVENT = {
   label: 'Sale Event',
-  offers: 'Exclusive offers until December 5th, 2026',
-  ends: 'Sale event ends December 5, 2026.',
+  offers: `Exclusive offers until ${PROGRAM_END}`,
+  ends: `Sale event ends ${PROGRAM_END}.`,
 } as const
 
 /**
@@ -251,10 +251,11 @@ export const fallFinancingSale: SaleContent = {
   })),
   promos,
   moments,
-  // The close leads with the sale event too. coda.heading ("Offers end
-  // December 31, 2026") is not shown here: next to the Dec 5 line it would
-  // read as a second, conflicting end date. The offers' own Dec 31 terms stay
-  // in their spreads; coda.body is the national line, unchanged.
+  // The close leads with the sale event too. v5: the sale event and the
+  // offers now end on the same day (PROGRAM_END), so the close's red band and
+  // the hero's support line carry the same date as every spread's own terms.
+  // coda.heading ("Offers end December 31, 2026") stays off the close so the
+  // band does not repeat itself; coda.body is the national line, unchanged.
   // v4: the close opens on a red band with the badge words and the sale's
   // end line, so it does not repeat the hero's line word for word.
   close: {

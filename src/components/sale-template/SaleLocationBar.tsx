@@ -7,7 +7,8 @@ import type { SaleCta, SaleStore } from './types'
 
 /**
  * This store's location, set like an editorial masthead on a Kawai pearl
- * band (v4 color division; black 16:1, muted 6.6:1 on pearl): the showroom
+ * band (v4 color division; black 16:1, muted 6.6:1 on pearl; v5: neutral
+ * hairline edges so the band reads as a block on white): the showroom
  * name large in the display serif, then address, phone and directions, and
  * the hours as a ruled two-column list, with one red rule as the accent.
  *
@@ -24,7 +25,7 @@ export function SaleLocationBar({ store, cta }: { store: SaleStore; cta: SaleCta
     <section
       id="visit"
       aria-labelledby="sale-location"
-      className="scroll-mt-24 bg-kawai-pearl px-5 sm:px-10"
+      className="scroll-mt-24 border-y border-kawai-neutral bg-kawai-pearl px-5 sm:px-10"
       style={{ fontFamily: SANS }}
     >
       <PromoReveal className="mx-auto max-w-7xl py-12 sm:py-16">

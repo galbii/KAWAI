@@ -282,39 +282,39 @@ describe('store fall-financing v2: the lead form is the national enquiry, reused
   })
 })
 
-describe('store fall-financing v3: the sale event ending December 5 leads', () => {
-  // Chance, #qa / card thread 1572326447140438136, 9:35 AM PT Nov 19, 2026:
-  // "a sale event with exclusive offers until December 5th", on the page too.
+describe('store fall-financing v5: the sale event ends December 31, 2026, with every offer', () => {
+  // v3 added the sale event (Chance, #qa / card thread 1572326447140438136,
+  // 9:35 AM PT Nov 19, 2026). v5, same thread, 12:19 PM PT Nov 19, 2026: "the
+  // dates should be to the 31st of december across site, creatives, and meta
+  // copy sheet."
   const fin = sale.promos.find((p) => p.id === 'financing')
+  // Every way the retired end date could be written.
+  const OLD_DATE = /Dec(ember)?\.?\s*5(th)?\b|\b5th\b|2026-12-05/i
 
-  it('uses Chance\'s words, with the year, in the hero and the close (v4: one line each)', () => {
+  it('the hero and the close carry the sale event, ending on PROGRAM_END', () => {
     expect(SALE_EVENT).toEqual({
       label: 'Sale Event',
-      offers: 'Exclusive offers until December 5th, 2026',
-      ends: 'Sale event ends December 5, 2026.',
+      offers: 'Exclusive offers until December 31, 2026',
+      ends: 'Sale event ends December 31, 2026.',
     })
-    expect(sale.hero.support).toBe('Exclusive offers until December 5th, 2026')
+    expect(sale.hero.support).toBe(`Exclusive offers until ${PROGRAM_END}`)
     expect(sale.close.eyebrow).toBe('Limited Time Offer')
-    expect(sale.close.heading).toBe('Sale event ends December 5, 2026.')
+    expect(sale.close.heading).toBe(`Sale event ends ${PROGRAM_END}.`)
   })
 
-  it('never puts December 31 in the hero or the close, so the two end dates cannot collide', () => {
-    const frames = [sale.hero.support, sale.close.eyebrow, sale.close.heading, sale.close.body]
-    for (const t of frames) {
-      expect(t).not.toContain('December 31')
-      expect(t).not.toContain('Dec 31')
-    }
-    expect(sale.close.heading).not.toBe(coda.heading)
+  it('has no retired sale-event date left anywhere on the page', () => {
+    expect(JSON.stringify(sale)).not.toMatch(OLD_DATE)
   })
 
-  it('every Dec 5 mention names the sale event and carries the year', () => {
+  it('shows one end date: every dated line on the page is December 31, 2026', () => {
     const all = JSON.stringify(sale)
-    const hits = all.match(/[^"]*December 5[^"]*/g) ?? []
-    expect(hits.length).toBeGreaterThan(0)
-    for (const h of hits) {
-      expect(h).toMatch(/December 5(th)?, 2026/)
-      expect(h.toLowerCase()).toMatch(/sale event|exclusive offers/)
-    }
+    const dates = all.match(/(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}(st|nd|rd|th)?,? \d{4}/g) ?? []
+    expect(dates.length).toBeGreaterThan(0)
+    for (const d of dates) expect(d).toBe('December 31, 2026')
+    // The hero and the close agree with each other and with the offers' terms.
+    expect(sale.hero.support).toContain(PROGRAM_END)
+    expect(sale.close.heading).toContain(PROGRAM_END)
+    expect(sale.close.heading).not.toBe(coda.heading)
   })
 
   it('keeps the financing legal and the other offer dates verbatim (December 31, 2026)', () => {
@@ -324,8 +324,9 @@ describe('store fall-financing v3: the sale event ending December 5 leads', () =
     expect(financing.subhead.startsWith(TERMS_SENTENCE)).toBe(true)
     expect(TERMS_SENTENCE).toContain(FINANCING_RANGE)
     expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
-    // The credit advertisement never carries the sale-event date.
-    expect(JSON.stringify(fin)).not.toContain('December 5')
+    // The credit advertisement carries no marketing line: no sale-event copy in it.
+    expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.offers)
+    expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.ends)
   })
 })
 
@@ -367,8 +368,8 @@ describe('store fall-financing v4: fewer words, color division, Instrumental to 
     expect(hero).not.toContain('<Wordmark')
   })
 
-  it('keeps the sale-event date in the hero', () => {
-    expect(sale.hero.support).toContain('December 5th, 2026')
+  it('keeps the sale-event date in the hero (v5: December 31, 2026)', () => {
+    expect(sale.hero.support).toContain('December 31, 2026')
   })
 
   it('blocks the page in the existing Kawai palette only', () => {
@@ -376,6 +377,11 @@ describe('store fall-financing v4: fewer words, color division, Instrumental to 
     expect(code('SaleClose.tsx')).toContain('bg-kawai-red')
     expect(code('SaleLocationBar.tsx')).toContain('bg-kawai-pearl')
     expect(code('SalePromos.tsx')).toContain('bg-kawai-pearl')
+    // v5 polish: the pearl bands get neutral hairline edges, so they read as
+    // blocks against the white field without darkening the pearl (a darker
+    // tint drops the red eyebrows under AA 4.5:1).
+    expect(code('SaleLocationBar.tsx')).toContain('border-y border-kawai-neutral')
+    expect(code('SalePromos.tsx')).toContain('border-y border-kawai-neutral')
     const all = readdirSync(templateDir)
       .filter((f) => f.endsWith('.tsx'))
       .map(code)

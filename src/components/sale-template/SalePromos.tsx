@@ -159,14 +159,16 @@ function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: numbe
   const flip = index % 2 === 1
   const banner = promo.image?.shape === 'banner'
   // Every other spread sits on a Kawai pearl band (v4 color division); the
-  // fine print keeps its kawai-muted color, 6.6:1 on pearl.
+  // fine print keeps its kawai-muted color, 6.6:1 on pearl. v5: neutral
+  // hairline edges, so the band reads as a block on the white field; the pearl
+  // itself stays (any darker tint drops the red eyebrows under AA 4.5:1).
   const banded = index % 2 === 0
 
   return (
     <section
       id={promo.id}
       aria-labelledby={headingId}
-      className={`scroll-mt-24 px-5 py-16 sm:px-10 sm:py-24 ${banded ? 'bg-kawai-pearl' : 'bg-white'}`}
+      className={`scroll-mt-24 px-5 py-16 sm:px-10 sm:py-24 ${banded ? 'border-y border-kawai-neutral bg-kawai-pearl' : 'bg-white'}`}
     >
       <PromoReveal className="mx-auto max-w-7xl">
         <article className="group">
