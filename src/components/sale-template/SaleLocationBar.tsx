@@ -14,10 +14,21 @@ import type { SaleCta, SaleStore } from './types'
  *
  * Everything here is store identity from the storefront collection, never
  * campaign copy, and nothing is invented when a field is empty. The one
+ * exception is the campaign's optional `eyebrow`, a small caps label over
+ * the name (the holiday page's "Factory-direct Kawai Pianos"). The one
  * campaign action, Request Inventory, leads the button row (v2); the phone
  * number above it is this band's Call Now.
  */
-export function SaleLocationBar({ store, cta }: { store: SaleStore; cta: SaleCta }) {
+export function SaleLocationBar({
+  store,
+  cta,
+  eyebrow,
+}: {
+  store: SaleStore
+  cta: SaleCta
+  /** The campaign's optional small caps label over the showroom name. */
+  eyebrow?: string | undefined
+}) {
   const tel = telHref(store)
   const hours = store.hours.filter((h) => h.day && h.time)
 
@@ -32,10 +43,18 @@ export function SaleLocationBar({ store, cta }: { store: SaleStore; cta: SaleCta
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
             <span aria-hidden data-reveal="strike" className="block h-[3px] w-14 origin-left bg-kawai-red" />
+            {eyebrow && (
+              <p
+                data-reveal="rise"
+                className="mt-6 text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-kawai-black/70"
+              >
+                {eyebrow}
+              </p>
+            )}
             <h2
               id="sale-location"
               data-reveal="rise"
-              className="mt-6 text-[clamp(2.2rem,4.6vw,3.6rem)] leading-[1] text-kawai-black"
+              className={`${eyebrow ? 'mt-3' : 'mt-6'} text-[clamp(2.2rem,4.6vw,3.6rem)] leading-[1] text-kawai-black`}
               style={{ fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '-0.015em' }}
             >
               {store.name}

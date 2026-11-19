@@ -20,7 +20,16 @@ import {
 } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-campaign'
 import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
-import { fallFinancingSale as sale, HEADLINES, HERO_BADGE, REQUEST_LABEL, SALE_EVENT, TAGLINE } from './_content'
+import {
+  fallFinancingSale as sale,
+  FACTORY_DIRECT,
+  HEADLINES,
+  HERO_BADGE,
+  REQUEST_LABEL,
+  SALE_EVENT,
+  TAGLINE,
+} from './_content'
+import { HOLIDAY_TERMS_SENTENCE, holidayDisclosures, holidayFinancing } from './financing'
 import { storeLeadCampaign } from './lead'
 import { RETIRED_STORE_SALE_PATH, STORE_SALE_PATH } from './sale-path'
 
@@ -86,22 +95,26 @@ describe('store holiday-sale-event: offer copy is the national copy, word for wo
 describe('store holiday-sale-event: the credit advertisement stays with its disclosure', () => {
   const fin = sale.promos.find((p) => p.id === 'financing')
 
-  it('renders the regulated lockup from campaign.ts', () => {
+  it('renders the regulated lockup with the holiday 36-month terms', () => {
     expect(fin?.heading).toEqual({
       kind: 'lockup',
-      lead: financing.heading.lead,
-      connector: financing.heading.connector,
-      apr: financing.heading.apr,
-      subhead: financing.subhead,
+      lead: holidayFinancing.heading.lead,
+      connector: holidayFinancing.heading.connector,
+      apr: holidayFinancing.heading.apr,
+      subhead: holidayFinancing.subhead,
     })
+    expect(fin?.note).toBe(financing.dealerNote)
   })
 
   it('resolves both footnote marks in the same card, as visible text', () => {
     expect(fin?.fineprint).toEqual([
-      ...disclosures.financingTerms,
-      disclosures.financingExample,
-      disclosures.exclusions,
+      ...holidayDisclosures.financingTerms,
+      holidayDisclosures.financingExample,
+      holidayDisclosures.exclusions,
     ])
+    // The figure-free lender lines and exclusions are the national ones.
+    expect(holidayDisclosures.financingTerms).toEqual(disclosures.financingTerms)
+    expect(holidayDisclosures.exclusions).toBe(disclosures.exclusions)
     expect(fin?.fineprint.some((l) => l.startsWith(FOOTNOTE_EXAMPLE) && !l.startsWith('**'))).toBe(true)
     expect(fin?.fineprint.some((l) => l.startsWith(FOOTNOTE_EXCLUSIONS))).toBe(true)
   })
@@ -324,6 +337,8 @@ describe('store holiday-sale-event v5: the sale event ends December 31, 2026, wi
     expect(coda.heading).toBe('Offers end December 31, 2026')
     expect(financing.subhead.startsWith(TERMS_SENTENCE)).toBe(true)
     expect(TERMS_SENTENCE).toContain(FINANCING_RANGE)
+    expect(holidayFinancing.subhead.startsWith(HOLIDAY_TERMS_SENTENCE)).toBe(true)
+    expect(HOLIDAY_TERMS_SENTENCE).toContain(FINANCING_RANGE)
     expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
     // The credit advertisement carries no marketing line: no sale-event copy in it.
     expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.offers)
@@ -431,5 +446,22 @@ describe('store holiday-sale-event v6: the page moved from /fall-financing', () 
   it('is listed in the sitemap for every active storefront', () => {
     expect(sitemap).toMatch(/add\(`\/store\/\$\{s\.slug\}\/\$\{STORE_SALE_PATH\}`/)
     expect(sitemap).not.toMatch(/\/store\/\$\{s\.slug\}\/fall-financing/)
+  })
+})
+
+describe('store holiday-sale-event: factory direct (Chance, Nov 19, 2026)', () => {
+  // "update the landing page to say factory direct somewhere for pianos (just subtle)"
+  const bar = readFileSync(new URL('../../../../../components/sale-template/SaleLocationBar.tsx', import.meta.url), 'utf8')
+
+  it('labels the location band, small caps, not a headline', () => {
+    expect(FACTORY_DIRECT).toBe('Factory-direct Kawai Pianos')
+    expect(sale.locationEyebrow).toBe(FACTORY_DIRECT)
+    expect(bar).toMatch(/<p[\s\S]*?uppercase tracking-\[0\.32em\][\s\S]*?\{eyebrow\}\s*<\/p>/)
+  })
+
+  it('says it once, and keeps it out of the hero and the credit advertisement', () => {
+    expect(JSON.stringify(sale).match(/factory-direct/gi)).toHaveLength(1)
+    expect(JSON.stringify(sale.hero)).not.toMatch(/factory/i)
+    expect(JSON.stringify(sale.promos)).not.toMatch(/factory/i)
   })
 })

@@ -171,6 +171,11 @@ export interface SaleContent {
   /** A plain paragraph introducing the offer index. */
   intro: string
   highlights: readonly SaleHighlight[]
+  /**
+   * An optional small caps label over the showroom name in the location band,
+   * e.g. "Factory-direct Kawai Pianos". A label, never a headline.
+   */
+  locationEyebrow?: string
   promos: readonly SalePromo[]
   moments: readonly SaleMoment[]
   close: SaleCloseContent

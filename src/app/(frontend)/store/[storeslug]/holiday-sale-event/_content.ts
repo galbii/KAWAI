@@ -3,9 +3,7 @@ import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
 import {
   bundle,
   coda,
-  disclosures,
   esRebatesFor,
-  financing,
   lessons,
   rebate,
   rebateCopyFor,
@@ -16,6 +14,7 @@ import {
 import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
 import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
 import { REQUEST_LABEL } from './labels'
+import { holidayDisclosures, holidayFinancing } from './financing'
 
 export { REQUEST_LABEL }
 
@@ -36,6 +35,10 @@ export { REQUEST_LABEL }
  *    (`campaign.ts`, `slides.ts`, `money.ts`) and never retyped, so legal copy
  *    cannot drift. The store pages run on kawaius.com only, so this is the US
  *    set: the copy differs by site, never by store.
+ *    One exception (Chance, Nov 19, 2026): the financing promo runs this
+ *    page's own 36-month terms from `./financing.ts`, which reuses the
+ *    national sentences and payment model with this page's windows, so
+ *    /fall-financing keeps its 24-month terms unchanged.
  *
  * The financing promo keeps its regulated shape: the headline lockup, the
  * terms subhead directly under it, and the Supporting Disclosure (lender
@@ -85,6 +88,14 @@ export const SALE_EVENT = {
  * are the spreads below.
  */
 export const HERO_BADGE = { lead: 'Limited Time', script: 'Offer' } as const satisfies SaleBadge
+
+/**
+ * The small eyebrow over the showroom name in the location band. Chance,
+ * Nov 19, 2026: "update the landing page to say factory direct somewhere for
+ * pianos (just subtle)". The v3 hero sub-line's wording, set as a label in
+ * the band under the hero rather than back in the hero (v4: "too many words").
+ */
+export const FACTORY_DIRECT = 'Factory-direct Kawai Pianos'
 
 /** The brand line under the wordmark. */
 export const TAGLINE = 'Instrumental to Life'
@@ -157,19 +168,25 @@ const promos: SalePromo[] = [
   {
     id: SECTION_IDS.financing,
     eyebrow: OFFER_CHIPS.financing,
+    // The holiday terms (36 months intro, see ./financing.ts): same lockup
+    // and disclosure shape as the national copy, this page's figures.
     heading: {
       kind: 'lockup',
-      lead: financing.heading.lead,
-      connector: financing.heading.connector,
-      apr: financing.heading.apr,
-      subhead: financing.subhead,
+      lead: holidayFinancing.heading.lead,
+      connector: holidayFinancing.heading.connector,
+      apr: holidayFinancing.heading.apr,
+      subhead: holidayFinancing.subhead,
     },
     ...(financingSlide
       ? { image: { src: financingSlide.image, alt: financingSlide.imageAlt } }
       : {}),
-    note: financing.dealerNote,
+    note: holidayFinancing.dealerNote,
     cta: true,
-    fineprint: [...disclosures.financingTerms, disclosures.financingExample, disclosures.exclusions],
+    fineprint: [
+      ...holidayDisclosures.financingTerms,
+      holidayDisclosures.financingExample,
+      holidayDisclosures.exclusions,
+    ],
     fineprintId: 'disclosures',
   },
   {
@@ -249,6 +266,7 @@ export const fallFinancingSale: SaleContent = {
     detail: v.detail,
     href: `#${HIGHLIGHT_TARGET[v.offer] ?? v.sectionId}`,
   })),
+  locationEyebrow: FACTORY_DIRECT,
   promos,
   moments,
   // The close leads with the sale event too. v5: the sale event and the
