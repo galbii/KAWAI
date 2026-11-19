@@ -1,6 +1,7 @@
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline'
 import { PromoReveal } from '@/components/fall-promo'
 import { SaleRequestButton } from './SaleCtas'
+import { SaleMap } from './SaleMap'
 import { telHref } from './store'
 import { DISPLAY, SANS } from './tokens'
 import type { SaleCta, SaleStore } from './types'
@@ -15,7 +16,8 @@ import type { SaleCta, SaleStore } from './types'
  * Everything here is store identity from the storefront collection, never
  * campaign copy, and nothing is invented when a field is empty. The one
  * exception is the campaign's optional `eyebrow`, a small caps label over
- * the name (the holiday page's "Factory-direct Kawai Pianos"). The one
+ * the name (the holiday page's "Factory-direct Kawai Pianos"). Under it all,
+ * the showroom on a map (SaleMap), when the store has an address. The one
  * campaign action, Request Inventory, leads the button row (v2); the phone
  * number above it is this band's Call Now.
  */
@@ -120,6 +122,9 @@ export function SaleLocationBar({
               ))}
             </dl>
           )}
+
+          {/* The showroom on a map, full width under the details (see SaleMap). */}
+          <SaleMap store={store} apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY} />
         </div>
       </PromoReveal>
     </section>

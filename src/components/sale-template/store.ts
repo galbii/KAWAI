@@ -76,3 +76,17 @@ export function toSaleStore(storefront: StorefrontLike, slug: string): SaleStore
       : null,
   }
 }
+
+/**
+ * The store's Google Maps embed URL: the same Embed API "place" query the
+ * store homepage's map uses (src/components/homepage/showroom-location.tsx),
+ * on the storefront's own address. Null when there is no address or no key,
+ * so the page drops the map rather than showing an empty or erroring frame.
+ */
+export function mapEmbedSrc(
+  store: Pick<SaleStore, 'address'>,
+  apiKey: string | null | undefined,
+): string | null {
+  if (!store.address || !apiKey) return null
+  return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(store.address)}&zoom=15`
+}
