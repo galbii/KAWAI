@@ -50,7 +50,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store: 
         callLabel={content.callLabel}
         ctaId={HERO_CTA_ID}
       />
-      <SaleLocationBar store={store} cta={content.cta} />
+      <SaleLocationBar store={store} cta={content.cta} eyebrow={content.locationEyebrow} />
       <SalePromos
         intro={content.intro}
         highlights={content.highlights}
