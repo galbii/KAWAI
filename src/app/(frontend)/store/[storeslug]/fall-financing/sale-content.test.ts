@@ -14,10 +14,13 @@ import {
   FOOTNOTE_EXCLUSIONS,
   CTA_LABEL,
   CTA_LEAD_IN,
+  FINANCING_RANGE,
+  PROGRAM_END,
+  TERMS_SENTENCE,
 } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-campaign'
 import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
-import { fallFinancingSale as sale, HEADLINES, HERO_SUBLINE, REQUEST_LABEL, TAGLINE } from './_content'
+import { fallFinancingSale as sale, HEADLINES, HERO_SUBLINE, REQUEST_LABEL, SALE_EVENT, TAGLINE } from './_content'
 import { storeLeadCampaign } from './lead'
 
 describe('store fall-financing: the holiday headlines are the approved set', () => {
@@ -73,8 +76,6 @@ describe('store fall-financing: offer copy is the national copy, word for word',
     expect(byId.lessons?.heading).toEqual({ kind: 'text', text: lessons.heading })
     expect(byId.lessons?.body).toBe(lessons.standfirst)
     expect(byId.lessons?.fineprint).toEqual([lessons.disclaimer])
-    expect(sale.close.eyebrow).toBe(coda.eyebrow)
-    expect(sale.close.heading).toBe(coda.heading)
     expect(sale.close.body).toBe(coda.body)
   })
 
@@ -111,6 +112,10 @@ describe('store fall-financing: the credit advertisement stays with its disclosu
       lockupText(sale.hero.lockup),
       ...sale.hero.subline,
       sale.hero.ending,
+      sale.hero.event?.label ?? '',
+      sale.hero.event?.line ?? '',
+      sale.close.eyebrow,
+      sale.close.heading,
       sale.intro,
       ...sale.highlights.map((h) => h.detail),
       ...sale.moments.map((m) => lockupText(m.lockup)),
@@ -278,5 +283,59 @@ describe('store fall-financing v2: the lead form is the national enquiry, reused
     expect(dallas.copy.openLabel).toBe('Request Inventory')
     expect(leadCampaign.copy.openLabel).toBe(CTA_LABEL)
     expect(leadCampaign.formName).toBe('fall_financing_enquiry')
+  })
+})
+
+describe('store fall-financing v3: the sale event ending December 5 leads', () => {
+  // Chance, #qa / card thread 1572326447140438136, 9:35 AM PT Nov 19, 2026:
+  // "a sale event with exclusive offers until December 5th", on the page too.
+  const fin = sale.promos.find((p) => p.id === 'financing')
+
+  it('uses Chance\'s words, with the year, as the hero lead and the close', () => {
+    expect(SALE_EVENT).toEqual({
+      label: 'Sale Event',
+      offers: 'Exclusive offers until December 5th, 2026',
+      ends: 'Sale event ends December 5, 2026.',
+    })
+    expect(sale.hero.event).toEqual({ label: 'Sale Event', line: 'Exclusive offers until December 5th, 2026' })
+    expect(sale.hero.ending).toBe('Sale event ends December 5, 2026.')
+    expect(sale.close.eyebrow).toBe('Sale Event')
+    expect(sale.close.heading).toBe('Exclusive offers until December 5th, 2026')
+  })
+
+  it('renders the event above the hero headline', () => {
+    const hero = readFileSync(new URL('../../../../../components/sale-template/SaleHero.tsx', import.meta.url), 'utf8')
+    expect(hero.indexOf('hero.event.line')).toBeGreaterThan(0)
+    expect(hero.indexOf('hero.event.line')).toBeLessThan(hero.indexOf('<Lockup lockup={hero.lockup}'))
+  })
+
+  it('never puts December 31 in the hero or the close, so the two end dates cannot collide', () => {
+    const frames = [sale.hero.ending, sale.hero.event?.line, sale.close.eyebrow, sale.close.heading, sale.close.body]
+    for (const t of frames) {
+      expect(t).not.toContain('December 31')
+      expect(t).not.toContain('Dec 31')
+    }
+    expect(sale.close.heading).not.toBe(coda.heading)
+  })
+
+  it('every Dec 5 mention names the sale event and carries the year', () => {
+    const all = JSON.stringify(sale)
+    const hits = all.match(/[^"]*December 5[^"]*/g) ?? []
+    expect(hits.length).toBeGreaterThan(0)
+    for (const h of hits) {
+      expect(h).toMatch(/December 5(th)?, 2026/)
+      expect(h.toLowerCase()).toMatch(/sale event|exclusive offers/)
+    }
+  })
+
+  it('keeps the financing legal and the other offer dates verbatim (December 31, 2026)', () => {
+    expect(PROGRAM_END).toBe('December 31, 2026')
+    expect(FINANCING_RANGE).toBe('October 1 – December 31, 2026')
+    expect(coda.heading).toBe('Offers end December 31, 2026')
+    expect(financing.subhead.startsWith(TERMS_SENTENCE)).toBe(true)
+    expect(TERMS_SENTENCE).toContain(FINANCING_RANGE)
+    expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
+    // The credit advertisement never carries the sale-event date.
+    expect(JSON.stringify(fin)).not.toContain('December 5')
   })
 })

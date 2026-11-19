@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { Lockup } from './Lockup'
 import { Wordmark } from './Wordmark'
 import { SaleCtaPair } from './SaleCtas'
-import { SANS } from './tokens'
+import { DISPLAY, SANS } from './tokens'
 import type { SaleCta, SaleHeroContent, SaleStore } from './types'
 
 /**
@@ -48,6 +48,28 @@ export function SaleHero({
             <span aria-hidden className="h-px w-8 bg-kawai-red" />
           </p>
 
+          {/* The sale event leads (v3): its label and dated line sit above the
+              headline, so the end date is the first thing read. */}
+          {hero.event && (
+            <div
+              className={`${ENTER} mt-7 flex flex-col items-center gap-3 sm:mt-9`}
+              style={{ animationDelay: '0.1s' }}
+            >
+              <p
+                className="rounded-full bg-kawai-red px-5 py-2 text-[0.8rem] font-bold uppercase tracking-[0.3em] text-white sm:text-[0.9rem]"
+                style={{ fontFamily: SANS }}
+              >
+                {hero.event.label}
+              </p>
+              <p
+                className="max-w-md text-balance text-[clamp(1.35rem,3.4vw,1.85rem)] leading-tight text-kawai-black"
+                style={{ fontFamily: DISPLAY, fontWeight: 900 }}
+              >
+                {hero.event.line}
+              </p>
+            </div>
+          )}
+
           <div className={`${ENTER} mt-8 sm:mt-10`} style={{ animationDelay: '0.15s' }}>
             <Lockup lockup={hero.lockup} as="h1" size="hero" />
           </div>
@@ -64,7 +86,7 @@ export function SaleHero({
             ))}
           </p>
 
-          {/* Request Inventory + Call Now, then the end date under them. On
+          {/* Request Inventory + Call Now, then the event end date under them. On
               phones the pair stacks full width so both are thumb-sized. */}
           <div
             id={ctaId}
@@ -72,7 +94,7 @@ export function SaleHero({
             style={{ animationDelay: '0.5s' }}
           >
             <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="hero" />
-            <p className="text-sm text-kawai-black/70" style={{ fontFamily: SANS }}>
+            <p className="text-sm font-semibold text-kawai-black/80" style={{ fontFamily: SANS }}>
               {hero.ending}
             </p>
           </div>

@@ -52,6 +52,24 @@ export const HEADLINES = {
   sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline' },
 } as const satisfies Record<string, SaleLockup>
 
+/**
+ * The sale event (v3). Chance, #qa / card thread 1572326447140438136, 9:35 AM
+ * PT Nov 19, 2026: "We should redo the creative to make it more apparent that
+ * it's a sale event with exclusive offers until December 5th. Please do the
+ * same on the page as well".
+ *
+ * His words, with the year added so December 5 can never be read against the
+ * financing end date. That date (PROGRAM_END, December 31, 2026) and every
+ * offer's own term, range and disclosure stay exactly as campaign.ts has them;
+ * nothing here changes or restates a financing term. The Dec 5 date belongs to
+ * the sale event only: it is never put on the credit advertisement.
+ */
+export const SALE_EVENT = {
+  label: 'Sale Event',
+  offers: 'Exclusive offers until December 5th, 2026',
+  ends: 'Sale event ends December 5, 2026.',
+} as const
+
 /** The hero sub-line under the primary lockup, one entry per line (comp). */
 export const HERO_SUBLINE = ['Factory-direct Kawai Pianos', 'ready for their first carol'] as const
 
@@ -202,7 +220,10 @@ export const fallFinancingSale: SaleContent = {
   hero: {
     lockup: HEADLINES.hero,
     subline: HERO_SUBLINE,
-    ending: `Offers end ${PROGRAM_END}.`,
+    // The sale event leads the hero; financing and the other offers keep
+    // their own dates in their spreads and fine print below.
+    event: { label: SALE_EVENT.label, line: SALE_EVENT.offers },
+    ending: SALE_EVENT.ends,
     image: ART.heroRoom,
     inset: ART.heroHands,
   },
@@ -215,7 +236,11 @@ export const fallFinancingSale: SaleContent = {
   })),
   promos,
   moments,
-  close: { eyebrow: coda.eyebrow, heading: coda.heading, body: coda.body, lockup: HEADLINES.instrumental },
+  // The close leads with the sale event too. coda.heading ("Offers end
+  // December 31, 2026") is not shown here: next to the Dec 5 line it would
+  // read as a second, conflicting end date. The offers' own Dec 31 terms stay
+  // in their spreads; coda.body is the national line, unchanged.
+  close: { eyebrow: SALE_EVENT.label, heading: SALE_EVENT.offers, body: coda.body, lockup: HEADLINES.instrumental },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).
   callLabel: 'Call Now',
   // The lead-in is the national line that already sits above every enquiry

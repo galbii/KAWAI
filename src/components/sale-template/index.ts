@@ -5,6 +5,7 @@ export { SaleCtaPair, SaleRequestButton, SaleCallButton, SaleStickyCtas } from '
 export type {
   SaleContent,
   SaleStore,
+  SaleEvent,
   SaleHeroContent,
   SaleHighlight,
   SaleImage,

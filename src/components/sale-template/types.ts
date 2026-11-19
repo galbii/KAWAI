@@ -62,11 +62,23 @@ export interface SaleLockup {
   layout: 'stack' | 'inline'
 }
 
+/** A dated sale event: the label ("Sale Event") and its one line. */
+export interface SaleEvent {
+  label: string
+  line: string
+}
+
 export interface SaleHeroContent {
   lockup: SaleLockup
   /** The sub-line, one entry per centred line. */
   subline: readonly string[]
-  /** A short closing line under the sub-line, e.g. the offer end date. */
+  /**
+   * The sale event, set above the headline as the hero's lead message (v3,
+   * Nov 19, 2026): a short label and the line with its end date. Optional, so
+   * a sale page without a dated event renders as before.
+   */
+  event?: SaleEvent
+  /** A short closing line under the CTA pair, e.g. the event end date. */
   ending: string
   /** The hero's main photograph, set in an arch beside the type. */
   image: SaleImage
