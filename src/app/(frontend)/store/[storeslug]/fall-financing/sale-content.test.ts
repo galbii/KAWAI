@@ -20,21 +20,19 @@ import {
 } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-campaign'
 import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
-import { fallFinancingSale as sale, HEADLINES, HERO_SUBLINE, REQUEST_LABEL, SALE_EVENT, TAGLINE } from './_content'
+import { fallFinancingSale as sale, HEADLINES, HERO_BADGE, REQUEST_LABEL, SALE_EVENT, TAGLINE } from './_content'
 import { storeLeadCampaign } from './lead'
 
 describe('store fall-financing: the holiday headlines are the approved set', () => {
   // Chance's comps, Nov 17, 2026, with the two source-art typos corrected.
-  it('sets the hero to the primary lockup and its sub-line', () => {
+  it('sets the hero to the primary lockup', () => {
     expect(lockupText(sale.hero.lockup)).toBe('Make the first note a Holiday memory')
     expect(sale.hero.lockup).toEqual(HEADLINES.hero)
-    expect(sale.hero.subline).toEqual(['Factory-direct Kawai Pianos', 'ready for their first carol'])
-    expect(sale.hero.subline).toEqual(HERO_SUBLINE)
   })
 
   it('carries the other four lockups word for word', () => {
     expect(lockupText(HEADLINES.played)).toBe('Some gifts get unwrapped This one gets Played')
-    expect(lockupText(HEADLINES.instrumental)).toBe('Instrumental to Holiday')
+    expect(lockupText(HEADLINES.instrumental)).toBe('Instrumental to the Holidays')
     expect(lockupText(HEADLINES.soundtrack)).toBe('Make your soundtrack for the Holidays')
     expect(lockupText(HEADLINES.sound)).toBe('Your holidays have photos Give them a Sound')
     const used = [...sale.moments.map((m) => m.lockup), sale.close.lockup]
@@ -45,7 +43,7 @@ describe('store fall-financing: the holiday headlines are the approved set', () 
 
   it('sets one red script word per headline', () => {
     const scripts = [sale.hero.lockup, ...sale.moments.map((m) => m.lockup), sale.close.lockup].map((l) => l.script)
-    expect(scripts.sort()).toEqual(['Holiday', 'Holiday', 'Holidays', 'Played', 'Sound'])
+    expect(scripts.sort()).toEqual(['Holiday', 'Holidays', 'Holidays', 'Played', 'Sound'])
   })
 
   it('never ships the source-art misspellings', () => {
@@ -110,10 +108,8 @@ describe('store fall-financing: the credit advertisement stays with its disclosu
   it('puts no rate figure in the hero, the intro, the highlights or the moments (metadata reuses hero + intro)', () => {
     const text = [
       lockupText(sale.hero.lockup),
-      ...sale.hero.subline,
-      sale.hero.ending,
-      sale.hero.event?.label ?? '',
-      sale.hero.event?.line ?? '',
+      `${sale.hero.badge?.lead ?? ''} ${sale.hero.badge?.script ?? ''}`,
+      sale.hero.support,
       sale.close.eyebrow,
       sale.close.heading,
       sale.intro,
@@ -291,26 +287,19 @@ describe('store fall-financing v3: the sale event ending December 5 leads', () =
   // "a sale event with exclusive offers until December 5th", on the page too.
   const fin = sale.promos.find((p) => p.id === 'financing')
 
-  it('uses Chance\'s words, with the year, as the hero lead and the close', () => {
+  it('uses Chance\'s words, with the year, in the hero and the close (v4: one line each)', () => {
     expect(SALE_EVENT).toEqual({
       label: 'Sale Event',
       offers: 'Exclusive offers until December 5th, 2026',
       ends: 'Sale event ends December 5, 2026.',
     })
-    expect(sale.hero.event).toEqual({ label: 'Sale Event', line: 'Exclusive offers until December 5th, 2026' })
-    expect(sale.hero.ending).toBe('Sale event ends December 5, 2026.')
-    expect(sale.close.eyebrow).toBe('Sale Event')
-    expect(sale.close.heading).toBe('Exclusive offers until December 5th, 2026')
-  })
-
-  it('renders the event above the hero headline', () => {
-    const hero = readFileSync(new URL('../../../../../components/sale-template/SaleHero.tsx', import.meta.url), 'utf8')
-    expect(hero.indexOf('hero.event.line')).toBeGreaterThan(0)
-    expect(hero.indexOf('hero.event.line')).toBeLessThan(hero.indexOf('<Lockup lockup={hero.lockup}'))
+    expect(sale.hero.support).toBe('Exclusive offers until December 5th, 2026')
+    expect(sale.close.eyebrow).toBe('Limited Time Offer')
+    expect(sale.close.heading).toBe('Sale event ends December 5, 2026.')
   })
 
   it('never puts December 31 in the hero or the close, so the two end dates cannot collide', () => {
-    const frames = [sale.hero.ending, sale.hero.event?.line, sale.close.eyebrow, sale.close.heading, sale.close.body]
+    const frames = [sale.hero.support, sale.close.eyebrow, sale.close.heading, sale.close.body]
     for (const t of frames) {
       expect(t).not.toContain('December 31')
       expect(t).not.toContain('Dec 31')
@@ -337,5 +326,69 @@ describe('store fall-financing v3: the sale event ending December 5 leads', () =
     expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
     // The credit advertisement never carries the sale-event date.
     expect(JSON.stringify(fin)).not.toContain('December 5')
+  })
+})
+
+describe('store fall-financing v4: fewer words, color division, Instrumental to the Holidays', () => {
+  // Chance, #qa / card thread 1572326447140438136, 10:28 AM PT Nov 19, 2026:
+  // "Can we redo the hero, too many words. Also I don't like instrumental to
+  // holiday do instrumental to the holidays. I want a little bit more color
+  // division. This of something cleaner for the graphics like Limited Time
+  // “offer”".
+  const templateDir = new URL('../../../../../components/sale-template/', import.meta.url)
+  const read = (f: string) => readFileSync(new URL(f, templateDir), 'utf8')
+  const code = (f: string) => read(f).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+
+  it('the hero is badge, headline, one support line and the CTA pair, nothing else', () => {
+    expect(Object.keys(sale.hero).sort()).toEqual(['badge', 'image', 'inset', 'lockup', 'support'])
+    expect(sale.hero.badge).toEqual(HERO_BADGE)
+    expect(`${HERO_BADGE.lead} ${HERO_BADGE.script}`).toBe('Limited Time Offer')
+    const words = [`${HERO_BADGE.lead} ${HERO_BADGE.script}`, lockupText(sale.hero.lockup), sale.hero.support]
+      .join(' ')
+      .split(/\s+/).length
+    // v3's stack was 29 words before the buttons (pill, event line, lockup,
+    // two-line sub-line, end line); v4 keeps it under 20.
+    expect(words).toBeLessThan(20)
+  })
+
+  it('renders badge above the headline, then the support line, then the actions', () => {
+    const hero = code('SaleHero.tsx')
+    const badge = hero.indexOf('hero.badge.lead')
+    const h1 = hero.indexOf('<Lockup lockup={hero.lockup}')
+    const support = hero.indexOf('{hero.support}')
+    const pair = hero.search(/<SaleCtaPair[^>]*placement="hero"/)
+    expect(badge).toBeGreaterThan(0)
+    expect(badge).toBeLessThan(h1)
+    expect(h1).toBeLessThan(support)
+    expect(support).toBeLessThan(pair)
+    // No second paragraph, no second date line, no wordmark in the hero.
+    expect(hero).not.toContain('subline')
+    expect(hero).not.toContain('ending')
+    expect(hero).not.toContain('<Wordmark')
+  })
+
+  it('keeps the sale-event date in the hero', () => {
+    expect(sale.hero.support).toContain('December 5th, 2026')
+  })
+
+  it('blocks the page in the existing Kawai palette only', () => {
+    expect(code('SaleHero.tsx')).toContain('bg-kawai-red')
+    expect(code('SaleClose.tsx')).toContain('bg-kawai-red')
+    expect(code('SaleLocationBar.tsx')).toContain('bg-kawai-pearl')
+    expect(code('SalePromos.tsx')).toContain('bg-kawai-pearl')
+    const all = readdirSync(templateDir)
+      .filter((f) => f.endsWith('.tsx'))
+      .map(code)
+      .join('\n')
+    // No hand-typed colors: every band is a palette token.
+    expect(all).not.toMatch(/#[0-9a-fA-F]{3,8}\b/)
+    expect(all).not.toMatch(/rgb\(/)
+  })
+
+  it('says "Instrumental to the Holidays" and never "Instrumental to Holiday"', () => {
+    const all = JSON.stringify(sale)
+    expect(lockupText(sale.close.lockup)).toBe('Instrumental to the Holidays')
+    expect(all.replace(/Instrumental to the Holidays/g, '')).not.toMatch(/Instrumental to (the )?Holiday/i)
+    expect(sale.tagline).toBe('Instrumental to Life')
   })
 })

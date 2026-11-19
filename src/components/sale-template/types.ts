@@ -62,24 +62,29 @@ export interface SaleLockup {
   layout: 'stack' | 'inline'
 }
 
-/** A dated sale event: the label ("Sale Event") and its one line. */
-export interface SaleEvent {
-  label: string
-  line: string
+/**
+ * A short badge lockup: sans caps setup words and one script word, e.g.
+ * "Limited Time" + "Offer". Read in order it is the plain label.
+ */
+export interface SaleBadge {
+  lead: string
+  script: string
 }
 
 export interface SaleHeroContent {
-  lockup: SaleLockup
-  /** The sub-line, one entry per centred line. */
-  subline: readonly string[]
   /**
-   * The sale event, set above the headline as the hero's lead message (v3,
-   * Nov 19, 2026): a short label and the line with its end date. Optional, so
-   * a sale page without a dated event renders as before.
+   * A short badge set above the headline, e.g. "Limited Time Offer" (v4,
+   * Nov 19, 2026). It sits on the hero's color band; it is a label, not a
+   * copy paragraph. Optional: a sale without one renders no band.
    */
-  event?: SaleEvent
-  /** A short closing line under the CTA pair, e.g. the event end date. */
-  ending: string
+  badge?: SaleBadge
+  lockup: SaleLockup
+  /**
+   * The hero's one support line under the headline (v4: the dated sale-event
+   * line). The hero is badge → headline → this line → the CTA pair, nothing
+   * else, so it reads in a glance.
+   */
+  support: string
   /** The hero's main photograph, set in an arch beside the type. */
   image: SaleImage
   /** A smaller detail frame overlapping the main one. */

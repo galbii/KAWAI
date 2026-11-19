@@ -22,7 +22,7 @@ export function SaleMoment({ moment }: { moment: Moment }) {
 
   if (moment.layout === 'gallery') {
     return (
-      <section aria-labelledby={headingId} className="px-5 sm:px-10">
+      <section aria-labelledby={headingId} className="bg-white px-5 py-16 sm:px-10 sm:py-24">
         <PromoReveal className="mx-auto max-w-6xl">
           <div data-reveal="rise">
             <Lockup lockup={moment.lockup} id={headingId} size="xl" />
@@ -54,7 +54,7 @@ export function SaleMoment({ moment }: { moment: Moment }) {
 
   if (moment.layout === 'band') {
     return (
-      <section aria-labelledby={headingId} className="px-5 sm:px-10">
+      <section aria-labelledby={headingId} className="bg-white px-5 py-16 sm:px-10 sm:py-24">
         <PromoReveal className="relative mx-auto max-w-7xl">
           {first && (
             <div data-reveal="wipe" className="relative aspect-[16/9] overflow-hidden bg-kawai-pearl sm:aspect-[21/9]">
@@ -81,7 +81,7 @@ export function SaleMoment({ moment }: { moment: Moment }) {
 
   // feature
   return (
-    <section aria-labelledby={headingId} className="px-5 sm:px-10">
+    <section aria-labelledby={headingId} className="bg-white px-5 py-16 sm:px-10 sm:py-24">
       <PromoReveal className="mx-auto max-w-7xl">
         <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-14">
           {first && (

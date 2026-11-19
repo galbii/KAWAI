@@ -158,11 +158,18 @@ function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: numbe
   const headingId = `${promo.id}-heading`
   const flip = index % 2 === 1
   const banner = promo.image?.shape === 'banner'
+  // Every other spread sits on a Kawai pearl band (v4 color division); the
+  // fine print keeps its kawai-muted color, 6.6:1 on pearl.
+  const banded = index % 2 === 0
 
   return (
-    <section id={promo.id} aria-labelledby={headingId} className="scroll-mt-24 px-5 sm:px-10">
+    <section
+      id={promo.id}
+      aria-labelledby={headingId}
+      className={`scroll-mt-24 px-5 py-16 sm:px-10 sm:py-24 ${banded ? 'bg-kawai-pearl' : 'bg-white'}`}
+    >
       <PromoReveal className="mx-auto max-w-7xl">
-        <article className="group border-t border-kawai-black/15 pt-8 sm:pt-10">
+        <article className="group">
           <p
             data-reveal="rise"
             className="flex items-baseline gap-4 text-xs font-semibold uppercase tracking-[0.26em] text-kawai-red"
@@ -297,7 +304,7 @@ export function SalePromos({
       <div className="px-5 sm:px-10">
         <OfferIndex intro={intro} items={highlights} promos={promos} actions={actions} />
       </div>
-      <div className="mt-24 space-y-24 sm:mt-32 sm:space-y-36">
+      <div className="mt-24 sm:mt-32">
         {promos.map((promo, i) => (
           <Fragment key={promo.id}>
             {moments

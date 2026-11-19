@@ -1,4 +1,4 @@
-import type { SaleContent, SaleLockup, SaleMoment, SalePromo } from '@/components/sale-template'
+import type { SaleBadge, SaleContent, SaleLockup, SaleMoment, SalePromo } from '@/components/sale-template'
 import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
 import {
   bundle,
@@ -43,11 +43,18 @@ export { REQUEST_LABEL }
  * same card. No holiday headline is ever put on it.
  */
 
-/** Chance's holiday headline set (comps, Nov 17, 2026), corrected spellings. */
+/**
+ * Chance's holiday headline set (comps, Nov 17, 2026), corrected spellings.
+ *
+ * v4 (Chance, #qa / card thread 1572326447140438136, 10:28 AM PT Nov 19,
+ * 2026): "I don't like instrumental to holiday do instrumental to the
+ * holidays". The close lockup now reads "Instrumental to the Holidays". The
+ * brand tagline "Instrumental to Life" (TAGLINE) is unchanged.
+ */
 export const HEADLINES = {
   hero: { lead: 'Make the first note a', script: 'Holiday', tail: 'memory', layout: 'stack' },
   played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline' },
-  instrumental: { kicker: 'Instrumental to', script: 'Holiday', layout: 'stack' },
+  instrumental: { kicker: 'Instrumental to the', script: 'Holidays', layout: 'stack' },
   soundtrack: { lead: 'Make your soundtrack for the', script: 'Holidays', layout: 'stack' },
   sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline' },
 } as const satisfies Record<string, SaleLockup>
@@ -70,8 +77,14 @@ export const SALE_EVENT = {
   ends: 'Sale event ends December 5, 2026.',
 } as const
 
-/** The hero sub-line under the primary lockup, one entry per line (comp). */
-export const HERO_SUBLINE = ['Factory-direct Kawai Pianos', 'ready for their first carol'] as const
+/**
+ * The hero badge (v4). Chance, same thread, 10:28 AM PT Nov 19, 2026: "Can we
+ * redo the hero, too many words ... something cleaner for the graphics like
+ * Limited Time “offer”". His words: "Limited Time" in sans caps, "Offer" as the
+ * script word. A label, not an offer claim: the offers and their own terms
+ * are the spreads below.
+ */
+export const HERO_BADGE = { lead: 'Limited Time', script: 'Offer' } as const satisfies SaleBadge
 
 /** The brand line under the wordmark. */
 export const TAGLINE = 'Instrumental to Life'
@@ -218,12 +231,14 @@ const HIGHLIGHT_TARGET: Record<string, string> = {
 
 export const fallFinancingSale: SaleContent = {
   hero: {
+    // v4, fewer words: badge → headline → one support line → the CTA pair.
+    // The v3 sub-line ("Factory-direct Kawai Pianos / ready for their first
+    // carol"), the separate "Sale Event" pill and the second date line under
+    // the buttons are gone. The sale-event date stays as the one support line;
+    // financing and the other offers keep their own dates in their spreads.
+    badge: HERO_BADGE,
     lockup: HEADLINES.hero,
-    subline: HERO_SUBLINE,
-    // The sale event leads the hero; financing and the other offers keep
-    // their own dates in their spreads and fine print below.
-    event: { label: SALE_EVENT.label, line: SALE_EVENT.offers },
-    ending: SALE_EVENT.ends,
+    support: SALE_EVENT.offers,
     image: ART.heroRoom,
     inset: ART.heroHands,
   },
@@ -240,7 +255,14 @@ export const fallFinancingSale: SaleContent = {
   // December 31, 2026") is not shown here: next to the Dec 5 line it would
   // read as a second, conflicting end date. The offers' own Dec 31 terms stay
   // in their spreads; coda.body is the national line, unchanged.
-  close: { eyebrow: SALE_EVENT.label, heading: SALE_EVENT.offers, body: coda.body, lockup: HEADLINES.instrumental },
+  // v4: the close opens on a red band with the badge words and the sale's
+  // end line, so it does not repeat the hero's line word for word.
+  close: {
+    eyebrow: `${HERO_BADGE.lead} ${HERO_BADGE.script}`,
+    heading: SALE_EVENT.ends,
+    body: coda.body,
+    lockup: HEADLINES.instrumental,
+  },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).
   callLabel: 'Call Now',
   // The lead-in is the national line that already sits above every enquiry

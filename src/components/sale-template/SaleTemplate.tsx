@@ -16,6 +16,11 @@ import type { SaleContent, SaleStore } from './types'
  * spreads. It replaces the Nov 10 gift-wrap treatment (dark scrim, satin
  * ribbon and bow, snowfall, gold italic accent) outright.
  *
+ * Color division (v4, Nov 19, 2026): the white field is broken into blocks
+ * from the existing Kawai palette only — a Kawai red band at the top of the
+ * hero and at the head of the close, Kawai pearl bands under the location
+ * and behind every other offer spread. No new colors; contrast is AA on each.
+ *
  * Isolation: this template is rendered only by
  * /store/[storeslug]/fall-financing. It imports no UI from the national
  * /fall-financing page and the national page imports nothing from here; the
@@ -43,7 +48,6 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store: 
         store={store}
         cta={content.cta}
         callLabel={content.callLabel}
-        tagline={content.tagline}
         ctaId={HERO_CTA_ID}
       />
       <SaleLocationBar store={store} cta={content.cta} />

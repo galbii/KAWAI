@@ -7,11 +7,16 @@ import { DISPLAY, SANS } from './tokens'
 import type { SaleCloseContent, SaleCta, SaleStore } from './types'
 
 /**
- * The close, on the same white field as the hero, so the page ends where it
- * began: the closing lockup ("Instrumental to / Holiday"), the campaign's end
- * date and line, Request Inventory (solid Kawai red) and Call Now (black
- * outline) as a pair, Schedule Visit as a quieter third under them (v2,
- * Nov 19, 2026), then the wordmark over "Instrumental to Life".
+ * The close, in two blocks (v4, Nov 19, 2026, "a little bit more color
+ * division"):
+ *
+ * 1. A Kawai red band with the campaign's eyebrow and dated line in white
+ *    (white on Kawai red: 4.8:1).
+ * 2. The white field the page began on: the closing lockup ("Instrumental to
+ *    the Holidays"), the campaign's one line, Request Inventory (solid Kawai
+ *    red) and Call Now (black outline) as a pair, Schedule Visit as a quieter
+ *    third under them (v2, Nov 19, 2026), then the wordmark over
+ *    "Instrumental to Life".
  *
  * Schedule Visit appears only when the store has a real booking target
  * (`toSaleStore`); nothing is invented.
@@ -33,26 +38,27 @@ export function SaleClose({
   ctaId: string
 }) {
   return (
-    <section
-      aria-labelledby="sale-close"
-      className="bg-white px-5 pb-20 pt-8 sm:px-10 sm:pb-28"
-      style={{ fontFamily: SANS }}
-    >
-      <PromoReveal className="mx-auto max-w-3xl border-t border-kawai-black/15 pt-20 text-center sm:pt-28">
-        <p data-reveal="rise" className="text-xs font-semibold uppercase tracking-[0.3em] text-kawai-red">
-          {close.eyebrow}
-        </p>
-        <div data-reveal="rise" className="mt-6">
+    <section aria-labelledby="sale-close" style={{ fontFamily: SANS }}>
+      <div className="bg-kawai-red px-5 py-12 text-center text-white sm:px-10 sm:py-16">
+        <PromoReveal className="mx-auto max-w-3xl">
+          <p data-reveal="rise" className="text-xs font-semibold uppercase tracking-[0.3em] text-white">
+            {close.eyebrow}
+          </p>
+          <p
+            data-reveal="rise"
+            className="mx-auto mt-4 max-w-xl text-balance text-[clamp(1.6rem,3.4vw,2.4rem)] leading-tight text-white"
+            style={{ fontFamily: DISPLAY, fontWeight: 900 }}
+          >
+            {close.heading}
+          </p>
+        </PromoReveal>
+      </div>
+
+      <PromoReveal className="mx-auto max-w-3xl bg-white px-5 pb-20 pt-16 text-center sm:px-10 sm:pb-28 sm:pt-20">
+        <div data-reveal="rise">
           <Lockup lockup={close.lockup} id="sale-close" size="xl" />
         </div>
-        <p
-          data-reveal="rise"
-          className="mt-10 text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight text-kawai-black"
-          style={{ fontFamily: DISPLAY, fontWeight: 900 }}
-        >
-          {close.heading}
-        </p>
-        <p data-reveal="rise" className="mx-auto mt-4 max-w-lg leading-relaxed text-kawai-black/75">
+        <p data-reveal="rise" className="mx-auto mt-10 max-w-lg leading-relaxed text-kawai-black/75">
           {close.body}
         </p>
 

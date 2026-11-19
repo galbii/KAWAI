@@ -6,10 +6,10 @@ import { DISPLAY, SANS } from './tokens'
 import type { SaleCta, SaleStore } from './types'
 
 /**
- * This store's location, set like an editorial masthead on the white field:
- * the showroom name large in the display serif, then address, phone and
- * directions, and the hours as a ruled two-column list. Hairline rules above
- * and below, one red rule as the accent.
+ * This store's location, set like an editorial masthead on a Kawai pearl
+ * band (v4 color division; black 16:1, muted 6.6:1 on pearl): the showroom
+ * name large in the display serif, then address, phone and directions, and
+ * the hours as a ruled two-column list, with one red rule as the accent.
  *
  * Everything here is store identity from the storefront collection, never
  * campaign copy, and nothing is invented when a field is empty. The one
@@ -24,10 +24,10 @@ export function SaleLocationBar({ store, cta }: { store: SaleStore; cta: SaleCta
     <section
       id="visit"
       aria-labelledby="sale-location"
-      className="scroll-mt-24 bg-white px-5 sm:px-10"
+      className="scroll-mt-24 bg-kawai-pearl px-5 sm:px-10"
       style={{ fontFamily: SANS }}
     >
-      <PromoReveal className="mx-auto max-w-7xl border-y border-kawai-black/15 py-12 sm:py-16">
+      <PromoReveal className="mx-auto max-w-7xl py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
             <span aria-hidden data-reveal="strike" className="block h-[3px] w-14 origin-left bg-kawai-red" />

@@ -1,15 +1,20 @@
 import Image from 'next/image'
 import { Lockup } from './Lockup'
-import { Wordmark } from './Wordmark'
 import { SaleCtaPair } from './SaleCtas'
-import { DISPLAY, SANS } from './tokens'
+import { DISPLAY, SANS, SCRIPT } from './tokens'
 import type { SaleCta, SaleHeroContent, SaleStore } from './types'
 
 /**
- * The hero, after the comp (hero.png): a centred typographic stack on a plain
- * white field — heavy serif setup line, the red script word, the heavy serif
- * close — then the sans sub-line and the red wordmark over "Instrumental to
- * Life". Beside it (below it on phones) the photography: one tall frame under
+ * The hero (v4, Nov 19, 2026: "too many words", "a little bit more color
+ * division", "something cleaner ... like Limited Time Offer"). Two blocks:
+ *
+ * 1. A Kawai red band across the top carrying the badge lockup (white sans
+ *    caps setup words + one white script word), when the campaign sets one.
+ * 2. The white field: the store name, the headline lockup, ONE support line,
+ *    then the Request Inventory / Call Now pair. Nothing else: no sub-line
+ *    paragraph, no second date line, no wordmark (the close signs off).
+ *
+ * Beside the type (below it on phones) the photography: one tall frame under
  * an arch, a smaller detail frame laid across its foot.
  *
  * Above the fold, so it enters on CSS keyframes rather than a scroll trigger.
@@ -23,84 +28,72 @@ export function SaleHero({
   store,
   cta,
   callLabel,
-  tagline,
   ctaId,
 }: {
   hero: SaleHeroContent
   store: SaleStore
   cta: SaleCta
   callLabel: string
-  tagline: string
   /** The pair's id: the phone bar shows once it has scrolled away. */
   ctaId: string
 }) {
   return (
     <header className="relative isolate overflow-hidden bg-white">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-14 sm:px-10 sm:pt-20 lg:min-h-[min(56rem,94vh)] lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-16">
-        {/* Type */}
+      {hero.badge && (
+        // White on Kawai red: 4.8:1, and the type is large and bold.
+        <div className="bg-kawai-red px-5 py-3 text-white sm:px-10 sm:py-4">
+          <p
+            className={`${ENTER} mx-auto flex max-w-7xl items-center justify-center gap-4 sm:gap-6`}
+            style={{ animationDelay: '0.05s' }}
+          >
+            <span aria-hidden className="hidden h-px w-12 bg-white/70 sm:block" />
+            <span
+              className="text-[0.9rem] font-bold uppercase tracking-[0.32em] sm:text-[1.05rem]"
+              style={{ fontFamily: SANS }}
+            >
+              {hero.badge.lead}
+            </span>{' '}
+            <span
+              className="-my-2 text-[2.4rem] leading-none sm:text-[2.9rem]"
+              style={{ fontFamily: SCRIPT, fontWeight: 400 }}
+            >
+              {hero.badge.script}
+            </span>
+            <span aria-hidden className="hidden h-px w-12 bg-white/70 sm:block" />
+          </p>
+        </div>
+      )}
+
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-10 sm:px-10 sm:pt-16 lg:min-h-[min(50rem,88vh)] lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-14">
+        {/* Type: store → headline → one support line → actions. */}
         <div className="flex flex-col items-center text-center lg:col-span-6">
           <p
             className={`${ENTER} flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-kawai-black/70`}
-            style={{ fontFamily: SANS, animationDelay: '0.05s' }}
+            style={{ fontFamily: SANS, animationDelay: '0.1s' }}
           >
             <span aria-hidden className="h-px w-8 bg-kawai-red" />
             {store.name}
             <span aria-hidden className="h-px w-8 bg-kawai-red" />
           </p>
 
-          {/* The sale event leads (v3): its label and dated line sit above the
-              headline, so the end date is the first thing read. */}
-          {hero.event && (
-            <div
-              className={`${ENTER} mt-7 flex flex-col items-center gap-3 sm:mt-9`}
-              style={{ animationDelay: '0.1s' }}
-            >
-              <p
-                className="rounded-full bg-kawai-red px-5 py-2 text-[0.8rem] font-bold uppercase tracking-[0.3em] text-white sm:text-[0.9rem]"
-                style={{ fontFamily: SANS }}
-              >
-                {hero.event.label}
-              </p>
-              <p
-                className="max-w-md text-balance text-[clamp(1.35rem,3.4vw,1.85rem)] leading-tight text-kawai-black"
-                style={{ fontFamily: DISPLAY, fontWeight: 900 }}
-              >
-                {hero.event.line}
-              </p>
-            </div>
-          )}
-
           <div className={`${ENTER} mt-8 sm:mt-10`} style={{ animationDelay: '0.15s' }}>
             <Lockup lockup={hero.lockup} as="h1" size="hero" />
           </div>
 
           <p
-            className={`${ENTER} mt-10 text-[1.15rem] leading-[1.45] tracking-[0.01em] text-kawai-black sm:mt-14 sm:text-[1.35rem]`}
-            style={{ fontFamily: SANS, animationDelay: '0.35s' }}
+            className={`${ENTER} mt-10 max-w-md text-balance text-[clamp(1.3rem,3.2vw,1.75rem)] leading-tight text-kawai-black sm:mt-12`}
+            style={{ fontFamily: DISPLAY, fontWeight: 900, animationDelay: '0.3s' }}
           >
-            {hero.subline.map((line, i) => (
-              <span key={line} className="block">
-                {line}
-                {i < hero.subline.length - 1 ? ' ' : null}
-              </span>
-            ))}
+            {hero.support}
           </p>
 
-          {/* Request Inventory + Call Now, then the event end date under them. On
-              phones the pair stacks full width so both are thumb-sized. */}
+          {/* On phones the pair stacks full width so both are thumb-sized. */}
           <div
             id={ctaId}
-            className={`${ENTER} mt-8 flex w-full flex-col items-center gap-4 sm:mt-9`}
-            style={{ animationDelay: '0.5s' }}
+            className={`${ENTER} mt-8 flex w-full flex-col items-center sm:mt-9`}
+            style={{ animationDelay: '0.45s' }}
           >
             <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="hero" />
-            <p className="text-sm font-semibold text-kawai-black/80" style={{ fontFamily: SANS }}>
-              {hero.ending}
-            </p>
-          </div>
-
-          <div className={`${ENTER} mt-12 sm:mt-14`} style={{ animationDelay: '0.65s' }}>
-            <Wordmark tagline={tagline} />
           </div>
         </div>
 
