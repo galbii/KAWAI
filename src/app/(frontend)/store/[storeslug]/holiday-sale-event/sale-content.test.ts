@@ -22,8 +22,9 @@ import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-c
 import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
 import { fallFinancingSale as sale, HEADLINES, HERO_BADGE, REQUEST_LABEL, SALE_EVENT, TAGLINE } from './_content'
 import { storeLeadCampaign } from './lead'
+import { RETIRED_STORE_SALE_PATH, STORE_SALE_PATH } from './sale-path'
 
-describe('store fall-financing: the holiday headlines are the approved set', () => {
+describe('store holiday-sale-event: the holiday headlines are the approved set', () => {
   // Chance's comps, Nov 17, 2026, with the two source-art typos corrected.
   it('sets the hero to the primary lockup', () => {
     expect(lockupText(sale.hero.lockup)).toBe('Make the first note a Holiday memory')
@@ -58,7 +59,7 @@ describe('store fall-financing: the holiday headlines are the approved set', () 
   })
 })
 
-describe('store fall-financing: offer copy is the national copy, word for word', () => {
+describe('store holiday-sale-event: offer copy is the national copy, word for word', () => {
   it('introduces the offers with the national opener body', () => {
     expect(sale.intro).toBe(heroOpenerFor('us').body ?? '')
   })
@@ -82,7 +83,7 @@ describe('store fall-financing: offer copy is the national copy, word for word',
   })
 })
 
-describe('store fall-financing: the credit advertisement stays with its disclosure', () => {
+describe('store holiday-sale-event: the credit advertisement stays with its disclosure', () => {
   const fin = sale.promos.find((p) => p.id === 'financing')
 
   it('renders the regulated lockup from campaign.ts', () => {
@@ -158,7 +159,7 @@ describe('toSaleStore', () => {
   })
 })
 
-describe('store fall-financing: route config', () => {
+describe('store holiday-sale-event: route config', () => {
   // getSite() uses headers(), so this page cannot be ISR. A source assertion
   // is enough: importing page.tsx pulls in server-only modules.
   const src = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
@@ -170,7 +171,7 @@ describe('store fall-financing: route config', () => {
   })
 })
 
-describe('store fall-financing: isolated from the national page', () => {
+describe('store holiday-sale-event: isolated from the national page', () => {
   const dir = new URL('../../../../../components/sale-template/', import.meta.url)
   const templateSrc = readdirSync(dir)
     .filter((f) => f.endsWith('.ts') || f.endsWith('.tsx'))
@@ -195,7 +196,7 @@ describe('store fall-financing: isolated from the national page', () => {
   })
 })
 
-describe('store fall-financing v2: Request Inventory + Call Now everywhere', () => {
+describe('store holiday-sale-event v2: Request Inventory + Call Now everywhere', () => {
   // Chance via Marcy, voice 8:17 AM PT Nov 19, 2026: primary "Request
   // Inventory", secondary "Call Now", easy to reach across the page.
   const templateDir = new URL('../../../../../components/sale-template/', import.meta.url)
@@ -251,7 +252,7 @@ describe('store fall-financing v2: Request Inventory + Call Now everywhere', () 
   })
 })
 
-describe('store fall-financing v2: the lead form is the national enquiry, reused', () => {
+describe('store holiday-sale-event v2: the lead form is the national enquiry, reused', () => {
   const dallas = storeLeadCampaign('dallas')
   const stl = storeLeadCampaign('st-louis')
 
@@ -282,7 +283,7 @@ describe('store fall-financing v2: the lead form is the national enquiry, reused
   })
 })
 
-describe('store fall-financing v5: the sale event ends December 31, 2026, with every offer', () => {
+describe('store holiday-sale-event v5: the sale event ends December 31, 2026, with every offer', () => {
   // v3 added the sale event (Chance, #qa / card thread 1572326447140438136,
   // 9:35 AM PT Nov 19, 2026). v5, same thread, 12:19 PM PT Nov 19, 2026: "the
   // dates should be to the 31st of december across site, creatives, and meta
@@ -330,7 +331,7 @@ describe('store fall-financing v5: the sale event ends December 31, 2026, with e
   })
 })
 
-describe('store fall-financing v4: fewer words, color division, Instrumental to the Holidays', () => {
+describe('store holiday-sale-event v4: fewer words, color division, Instrumental to the Holidays', () => {
   // Chance, #qa / card thread 1572326447140438136, 10:28 AM PT Nov 19, 2026:
   // "Can we redo the hero, too many words. Also I don't like instrumental to
   // holiday do instrumental to the holidays. I want a little bit more color
@@ -396,5 +397,39 @@ describe('store fall-financing v4: fewer words, color division, Instrumental to 
     expect(lockupText(sale.close.lockup)).toBe('Instrumental to the Holidays')
     expect(all.replace(/Instrumental to the Holidays/g, '')).not.toMatch(/Instrumental to (the )?Holiday/i)
     expect(sale.tagline).toBe('Instrumental to Life')
+  })
+})
+
+describe('store holiday-sale-event v6: the page moved from /fall-financing', () => {
+  // Chance, #qa / card thread 1572326447140438136, 1:05 PM PT Nov 19, 2026:
+  // "make sure this page's endpoint is at store/[slug]/holdiay-sale-event"
+  // (read as holiday-sale-event).
+  const root = new URL('../../../../../../', import.meta.url)
+  const page = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
+  const config = readFileSync(new URL('next.config.ts', root), 'utf8')
+  const sitemap = readFileSync(new URL('src/app/sitemap.ts', root), 'utf8')
+
+  it('lives at store/[storeslug]/holiday-sale-event, and the old store folder is gone', () => {
+    expect(STORE_SALE_PATH).toBe('holiday-sale-event')
+    expect(decodeURIComponent(new URL('.', import.meta.url).pathname)).toMatch(/\/store\/\[storeslug\]\/holiday-sale-event\/$/)
+    expect(readdirSync(new URL('..', import.meta.url))).not.toContain(RETIRED_STORE_SALE_PATH)
+  })
+
+  it('sets its canonical and og:url to the new path', () => {
+    expect(page).toMatch(/const url = `\$\{getSiteUrl\(site\)\}\/store\/\$\{storeslug\}\/\$\{STORE_SALE_PATH\}`/)
+    expect(page).toMatch(/alternates: \{ canonical: url \}/)
+    expect(page).not.toMatch(/\/fall-financing`/)
+  })
+
+  it('permanently redirects every store slug from the old path (national /fall-financing untouched)', () => {
+    const block = config.match(/\{\s*source: '\/store\/:storeslug\/fall-financing',[\s\S]*?\}/)?.[0] ?? ''
+    expect(block).toContain(`destination: '/store/:storeslug/${STORE_SALE_PATH}'`)
+    expect(block).toMatch(/permanent: true/)
+    expect(config).not.toMatch(/source: '\/fall-financing'/)
+  })
+
+  it('is listed in the sitemap for every active storefront', () => {
+    expect(sitemap).toMatch(/add\(`\/store\/\$\{s\.slug\}\/\$\{STORE_SALE_PATH\}`/)
+    expect(sitemap).not.toMatch(/\/store\/\$\{s\.slug\}\/fall-financing/)
   })
 })

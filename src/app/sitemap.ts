@@ -3,6 +3,7 @@ import { getPayloadClient } from '@/lib/payload/queries'
 import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-context'
 import { exclusiveSite, type SiteAvailability } from '@/lib/site-availability'
 import { SHIGERU_MODELS } from '@/app/(shigeru-website)/shigeru/_data/models'
+import { STORE_SALE_PATH } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/sale-path'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
@@ -382,6 +383,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         add(`/store/${s.slug}`, {
           changeFrequency: 'monthly',
           priority: 0.7,
+          lastModified: new Date(s.updatedAt),
+          usOnly: true,
+        })
+        // Holiday sale-event landing (kawai-holiday-financing-landing v6): renders
+        // for every active US storefront; the old /fall-financing path 308s here.
+        add(`/store/${s.slug}/${STORE_SALE_PATH}`, {
+          changeFrequency: 'weekly',
+          priority: 0.6,
           lastModified: new Date(s.updatedAt),
           usOnly: true,
         })

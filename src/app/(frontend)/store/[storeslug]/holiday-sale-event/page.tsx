@@ -5,6 +5,7 @@ import { getSite, getSiteUrl } from '@/lib/site-context'
 import { SaleTemplate, lockupText, toSaleStore } from '@/components/sale-template'
 import { fallFinancingSale } from './_content'
 import { StoreLeadProvider } from './StoreLeadProvider'
+import { STORE_SALE_PATH } from './sale-path'
 
 // getSite() reads headers() so the route can 404 on the CA host (US Synchrony
 // terms must not render on ca.kawaius.com). That is incompatible with
@@ -19,8 +20,8 @@ interface Params {
 }
 
 /**
- * /store/[storeslug]/fall-financing — one store's holiday landing page for
- * the Fall Financing offers, on the store sale template
+ * /store/[storeslug]/holiday-sale-event — one store's holiday sale-event
+ * landing page for the Fall Financing offers, on the store sale template
  * (kawai-holiday-financing-landing, Nov 17, 2026: white field, heavy display
  * serif, Kawai red script, image-led spreads; see SaleTemplate.tsx).
  *
@@ -33,6 +34,11 @@ interface Params {
  * Store data stays dynamic: `getStorefrontBySlugDirect` + `toSaleStore` read
  * the name, address, phone, hours, directions and booking link from the
  * storefront record on every request.
+ *
+ * Moved here from /store/[storeslug]/fall-financing in v6 (Nov 19, 2026;
+ * Chance asked for "store/[slug]/holdiay-sale-event", read as holiday). The
+ * old path is a permanent redirect in next.config.ts, so ads and links already
+ * out keep landing here.
  *
  * Request Inventory (v2, Nov 19, 2026) opens the national page's dealer
  * enquiry form — same HubSpot form, fields and routing — through
@@ -59,7 +65,7 @@ export async function generateMetadata({
   // meta descriptions.
   const title = `${lockupText(fallFinancingSale.hero.lockup)} | ${store.name}`
   const description = fallFinancingSale.intro
-  const url = `${getSiteUrl(site)}/store/${storeslug}/fall-financing`
+  const url = `${getSiteUrl(site)}/store/${storeslug}/${STORE_SALE_PATH}`
   const image = fallFinancingSale.hero.image.src
 
   return {
@@ -78,7 +84,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function StoreFallFinancingPage({
+export default async function StoreHolidaySaleEventPage({
   params,
 }: {
   params: Promise<Params>

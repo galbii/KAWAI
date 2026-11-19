@@ -22,7 +22,7 @@ import type { SaleContent, SaleStore } from './types'
  * and behind every other offer spread. No new colors; contrast is AA on each.
  *
  * Isolation: this template is rendered only by
- * /store/[storeslug]/fall-financing. It imports no UI from the national
+ * /store/[storeslug]/holiday-sale-event (was /fall-financing until v6). It imports no UI from the national
  * /fall-financing page and the national page imports nothing from here; the
  * two share copy only (the store route's `_content.ts` reads campaign.ts).
  * Fonts are applied inline inside this tree (tokens.ts), never globally.

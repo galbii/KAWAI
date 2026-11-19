@@ -100,6 +100,17 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Store sale landing moved (kawai-holiday-financing-landing v6, Nov 19,
+      // 2026): /store/<slug>/fall-financing → /store/<slug>/holiday-sale-event,
+      // every storefront slug. Permanent (308) so ads and links already out keep
+      // their landing; the national /fall-financing is a different path and is
+      // not matched. Next strips a trailing slash before matching (trailingSlash
+      // is off), so /fall-financing/ is covered too.
+      {
+        source: '/store/:storeslug/fall-financing',
+        destination: '/store/:storeslug/holiday-sale-event',
+        permanent: true,
+      },
       // Legacy top-level category URLs from the pre-migration platform.
       // /digital-pianos is handled via CMS-managed redirect seed data; the other
       // three were missed during migration and were soft-404ing, dropping years
