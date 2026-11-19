@@ -3,9 +3,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowDownIcon } from '@heroicons/react/24/outline'
 import { PromoReveal } from '@/components/fall-promo'
+import { SaleCtaPair } from './SaleCtas'
 import { SaleMoment } from './SaleMoment'
 import { DISPLAY, SANS } from './tokens'
-import type { SaleHighlight, SaleMoment as Moment, SalePromo, SalePromoHeading } from './types'
+import type {
+  SaleCta,
+  SaleHighlight,
+  SaleMoment as Moment,
+  SalePromo,
+  SalePromoHeading,
+  SaleStore,
+} from './types'
 
 /**
  * The offers, laid out as a magazine on the white field:
@@ -17,6 +25,11 @@ import type { SaleHighlight, SaleMoment as Moment, SalePromo, SalePromoHeading }
  * 3. Between spreads, the holiday moments (`SaleMoment`), each placed before
  *    the promo its `before` names.
  *
+ * Actions (v2): the lead-in and the Request Inventory / Call Now pair close
+ * the index, and every spread with `cta` carries the pair under its note, so
+ * the next step is always on screen beside the offer it is about. The pair
+ * sits above the spread's fine print, which stays in the same section.
+ *
  * Reveal (PromoReveal) sits on an outer wrapper and the hover motion on the
  * elements inside it, so the inline transform the reveal leaves behind can
  * never pin an element and swallow the hover.
@@ -24,14 +37,18 @@ import type { SaleHighlight, SaleMoment as Moment, SalePromo, SalePromoHeading }
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
+type Actions = { cta: SaleCta; callLabel: string; store: SaleStore }
+
 function OfferIndex({
   intro,
   items,
   promos,
+  actions,
 }: {
   intro: string
   items: readonly SaleHighlight[]
   promos: readonly SalePromo[]
+  actions: Actions
 }) {
   const imageFor = (href: string) => promos.find((p) => `#${p.id}` === href)?.image
   return (
@@ -88,6 +105,10 @@ function OfferIndex({
           )
         })}
       </ul>
+      <div data-reveal="rise" className="mt-12 flex flex-col items-center gap-5 text-center sm:mt-14">
+        <p className="max-w-xl text-[1.05rem] font-medium leading-relaxed text-kawai-black">{actions.cta.leadIn}</p>
+        <SaleCtaPair {...actions} placement="offers" />
+      </div>
     </PromoReveal>
   )
 }
@@ -133,7 +154,7 @@ function PromoHeading({ heading, id }: { heading: SalePromoHeading; id: string }
   )
 }
 
-function PromoSpread({ promo, index }: { promo: SalePromo; index: number }) {
+function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: number; actions: Actions }) {
   const headingId = `${promo.id}-heading`
   const flip = index % 2 === 1
   const banner = promo.image?.shape === 'banner'
@@ -225,6 +246,12 @@ function PromoSpread({ promo, index }: { promo: SalePromo; index: number }) {
                   </span>
                 </Link>
               )}
+
+              {promo.cta && (
+                <div data-reveal="rise" className="mt-8">
+                  <SaleCtaPair {...actions} placement={promo.id} align="start" />
+                </div>
+              )}
             </div>
           </div>
 
@@ -252,16 +279,23 @@ export function SalePromos({
   highlights,
   promos,
   moments,
+  cta,
+  callLabel,
+  store,
 }: {
   intro: string
   highlights: readonly SaleHighlight[]
   promos: readonly SalePromo[]
   moments: readonly Moment[]
+  cta: SaleCta
+  callLabel: string
+  store: SaleStore
 }) {
+  const actions: Actions = { cta, callLabel, store }
   return (
     <div id="offers" className="bg-white py-16 sm:py-24" style={{ fontFamily: SANS }}>
       <div className="px-5 sm:px-10">
-        <OfferIndex intro={intro} items={highlights} promos={promos} />
+        <OfferIndex intro={intro} items={highlights} promos={promos} actions={actions} />
       </div>
       <div className="mt-24 space-y-24 sm:mt-32 sm:space-y-36">
         {promos.map((promo, i) => (
@@ -271,7 +305,7 @@ export function SalePromos({
               .map((m) => (
                 <SaleMoment key={m.id} moment={m} />
               ))}
-            <PromoSpread promo={promo} index={i} />
+            <PromoSpread promo={promo} index={i} actions={actions} />
           </Fragment>
         ))}
       </div>

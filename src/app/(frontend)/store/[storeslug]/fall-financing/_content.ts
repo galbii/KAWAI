@@ -10,10 +10,14 @@ import {
   rebate,
   rebateCopyFor,
   valuePropsFor,
+  CTA_LEAD_IN,
   PROGRAM_END,
 } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
 import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
+import { REQUEST_LABEL } from './labels'
+
+export { REQUEST_LABEL }
 
 /**
  * The store holiday landing page (kawai-holiday-financing-landing, Chance,
@@ -116,6 +120,7 @@ const promos: SalePromo[] = [
     body: bundle.standfirst,
     image: { src: bundle.stageImage, alt: bundle.stageImageAlt, position: 'center 78%' },
     note: bundle.dealerNote,
+    cta: true,
     fineprint: [bundle.disclaimer],
   },
   {
@@ -132,6 +137,7 @@ const promos: SalePromo[] = [
       ? { image: { src: financingSlide.image, alt: financingSlide.imageAlt } }
       : {}),
     note: financing.dealerNote,
+    cta: true,
     fineprint: [...disclosures.financingTerms, disclosures.financingExample, disclosures.exclusions],
     fineprintId: 'disclosures',
   },
@@ -147,6 +153,7 @@ const promos: SalePromo[] = [
       note: r.finishes,
     })),
     note: rebate.dealerNote,
+    cta: true,
     fineprint: [rebateCopy.disclaimer],
   },
   {
@@ -211,5 +218,8 @@ export const fallFinancingSale: SaleContent = {
   close: { eyebrow: coda.eyebrow, heading: coda.heading, body: coda.body, lockup: HEADLINES.instrumental },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).
   callLabel: 'Call Now',
+  // The lead-in is the national line that already sits above every enquiry
+  // button on /fall-financing, imported, never retyped.
+  cta: { requestLabel: REQUEST_LABEL, leadIn: CTA_LEAD_IN },
   tagline: TAGLINE,
 }

@@ -108,6 +108,8 @@ export interface SalePromo {
   /** Visible fine print. Disclosures render here as page text, never in a dialog. */
   fineprint: readonly string[]
   fineprintId?: string
+  /** Show the Request Inventory / Call Now pair in this spread, under its note. */
+  cta?: boolean
 }
 
 /**
@@ -135,6 +137,18 @@ export interface SaleCloseContent {
   lockup: SaleLockup
 }
 
+/**
+ * The page's actions (v2, Nov 19, 2026). The primary button opens the lead
+ * dialog of the campaign-lead provider the route wraps the template in; the
+ * secondary is the store's tel: link labelled `SaleContent.callLabel`.
+ */
+export interface SaleCta {
+  /** Primary button label, e.g. "Request Inventory". */
+  requestLabel: string
+  /** One approved line set above the mid-page pair. */
+  leadIn: string
+}
+
 export interface SaleContent {
   hero: SaleHeroContent
   /** A plain paragraph introducing the offer index. */
@@ -145,6 +159,8 @@ export interface SaleContent {
   close: SaleCloseContent
   /** The tel: button's label. */
   callLabel: string
+  /** Primary action + its lead-in. */
+  cta: SaleCta
   /** The line set under the wordmark's rule. */
   tagline: string
 }

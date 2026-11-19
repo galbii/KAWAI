@@ -4,6 +4,7 @@ import { getStorefrontBySlugDirect } from '@/lib/payload/queries'
 import { getSite, getSiteUrl } from '@/lib/site-context'
 import { SaleTemplate, lockupText, toSaleStore } from '@/components/sale-template'
 import { fallFinancingSale } from './_content'
+import { StoreLeadProvider } from './StoreLeadProvider'
 
 // getSite() reads headers() so the route can 404 on the CA host (US Synchrony
 // terms must not render on ca.kawaius.com). That is incompatible with
@@ -32,6 +33,10 @@ interface Params {
  * Store data stays dynamic: `getStorefrontBySlugDirect` + `toSaleStore` read
  * the name, address, phone, hours, directions and booking link from the
  * storefront record on every request.
+ *
+ * Request Inventory (v2, Nov 19, 2026) opens the national page's dealer
+ * enquiry form — same HubSpot form, fields and routing — through
+ * `StoreLeadProvider`; see lead.ts. No new form and no new send path.
  *
  * US only. The promo set includes Synchrony financing, which must never render
  * on ca.kawaius.com, so the route 404s there rather than filtering offers —
@@ -85,5 +90,13 @@ export default async function StoreFallFinancingPage({
   const storefront = await getStorefrontBySlugDirect(storeslug)
   if (!storefront) notFound()
 
-  return <SaleTemplate content={fallFinancingSale} store={toSaleStore(storefront, storeslug)} />
+  // Server-side only — the browser cannot turn staging mode on or off. The
+  // national page's own switch, so one setting dry-runs every enquiry form.
+  const testMode = process.env.FALL_FINANCING_TEST_MODE === 'true'
+
+  return (
+    <StoreLeadProvider storeSlug={storeslug} testMode={testMode}>
+      <SaleTemplate content={fallFinancingSale} store={toSaleStore(storefront, storeslug)} />
+    </StoreLeadProvider>
+  )
 }

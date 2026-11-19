@@ -1,5 +1,9 @@
 import type { SaleHoursEntry, SaleStore } from './types'
 
+/** The store's tel: link (digits only), or null when it has no phone. */
+export const telHref = (store: Pick<SaleStore, 'phone'>) =>
+  store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
+
 /** Shape of the storefront fields the template reads. Everything is optional in the CMS. */
 export interface StorefrontLike {
   slug?: string | null

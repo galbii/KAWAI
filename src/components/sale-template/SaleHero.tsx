@@ -1,9 +1,9 @@
 import Image from 'next/image'
-import { PhoneIcon } from '@heroicons/react/24/solid'
 import { Lockup } from './Lockup'
 import { Wordmark } from './Wordmark'
+import { SaleCtaPair } from './SaleCtas'
 import { SANS } from './tokens'
-import type { SaleHeroContent, SaleStore } from './types'
+import type { SaleCta, SaleHeroContent, SaleStore } from './types'
 
 /**
  * The hero, after the comp (hero.png): a centred typographic stack on a plain
@@ -21,16 +21,19 @@ const ENTER = 'animate-[price-rise_0.9s_cubic-bezier(0.16,1,0.3,1)_both]'
 export function SaleHero({
   hero,
   store,
+  cta,
   callLabel,
   tagline,
+  ctaId,
 }: {
   hero: SaleHeroContent
   store: SaleStore
+  cta: SaleCta
   callLabel: string
   tagline: string
+  /** The pair's id: the phone bar shows once it has scrolled away. */
+  ctaId: string
 }) {
-  const tel = store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
-
   return (
     <header className="relative isolate overflow-hidden bg-white">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-14 sm:px-10 sm:pt-20 lg:min-h-[min(56rem,94vh)] lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-16">
@@ -61,20 +64,14 @@ export function SaleHero({
             ))}
           </p>
 
+          {/* Request Inventory + Call Now, then the end date under them. On
+              phones the pair stacks full width so both are thumb-sized. */}
           <div
-            className={`${ENTER} mt-9 flex flex-col items-center gap-4 sm:flex-row`}
+            id={ctaId}
+            className={`${ENTER} mt-8 flex w-full flex-col items-center gap-4 sm:mt-9`}
             style={{ animationDelay: '0.5s' }}
           >
-            {tel && (
-              <a
-                href={tel}
-                className="inline-flex min-w-[11rem] items-center justify-center gap-2 rounded-full bg-kawai-red px-7 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-kawai-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
-                style={{ fontFamily: SANS }}
-              >
-                <PhoneIcon aria-hidden className="h-4 w-4" />
-                {callLabel}
-              </a>
-            )}
+            <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="hero" />
             <p className="text-sm text-kawai-black/70" style={{ fontFamily: SANS }}>
               {hero.ending}
             </p>

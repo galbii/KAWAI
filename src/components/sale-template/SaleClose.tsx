@@ -1,15 +1,17 @@
-import { PhoneIcon, CalendarDaysIcon } from '@heroicons/react/24/solid'
+import { CalendarDaysIcon } from '@heroicons/react/24/solid'
 import { PromoReveal } from '@/components/fall-promo'
 import { Lockup } from './Lockup'
 import { Wordmark } from './Wordmark'
+import { SaleCtaPair } from './SaleCtas'
 import { DISPLAY, SANS } from './tokens'
-import type { SaleCloseContent, SaleStore } from './types'
+import type { SaleCloseContent, SaleCta, SaleStore } from './types'
 
 /**
  * The close, on the same white field as the hero, so the page ends where it
  * began: the closing lockup ("Instrumental to / Holiday"), the campaign's end
- * date and line, Call Now (solid Kawai red) and Schedule Visit (black
- * outline), then the wordmark over "Instrumental to Life".
+ * date and line, Request Inventory (solid Kawai red) and Call Now (black
+ * outline) as a pair, Schedule Visit as a quieter third under them (v2,
+ * Nov 19, 2026), then the wordmark over "Instrumental to Life".
  *
  * Schedule Visit appears only when the store has a real booking target
  * (`toSaleStore`); nothing is invented.
@@ -17,16 +19,19 @@ import type { SaleCloseContent, SaleStore } from './types'
 export function SaleClose({
   close,
   store,
+  cta,
   callLabel,
   tagline,
+  ctaId,
 }: {
   close: SaleCloseContent
   store: SaleStore
+  cta: SaleCta
   callLabel: string
   tagline: string
+  /** The pair's id: the phone bar hides once it is on screen. */
+  ctaId: string
 }) {
-  const tel = store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
-
   return (
     <section
       aria-labelledby="sale-close"
@@ -51,21 +56,15 @@ export function SaleClose({
           {close.body}
         </p>
 
-        <div data-reveal="pop" className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          {tel && (
-            <a
-              href={tel}
-              className="group inline-flex min-w-[13rem] items-center justify-center gap-2.5 rounded-full bg-kawai-red px-8 py-4 text-base font-semibold text-white shadow-[0_14px_30px_-14px_var(--color-kawai-red)] transition duration-300 hover:-translate-y-0.5 hover:bg-kawai-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
-            >
-              <PhoneIcon aria-hidden className="h-5 w-5 transition-transform group-hover:-rotate-12" />
-              {callLabel}
-            </a>
-          )}
+        <div id={ctaId} data-reveal="pop" className="mt-10 flex flex-col items-center gap-5">
+          <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="close" size="lg" />
           {store.schedule && (
             <a
               href={store.schedule.href}
               {...(store.schedule.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              className="inline-flex min-w-[13rem] items-center justify-center gap-2.5 rounded-full border-2 border-kawai-black px-8 py-4 text-base font-semibold text-kawai-black transition duration-300 hover:-translate-y-0.5 hover:bg-kawai-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-black"
+              data-cta="schedule-visit"
+              data-cta-placement="close"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-kawai-black underline decoration-kawai-black/25 underline-offset-[6px] transition hover:text-kawai-red hover:decoration-kawai-red focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-black"
             >
               <CalendarDaysIcon aria-hidden className="h-5 w-5" />
               {store.schedule.label}

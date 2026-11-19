@@ -1,7 +1,9 @@
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline'
 import { PromoReveal } from '@/components/fall-promo'
+import { SaleRequestButton } from './SaleCtas'
+import { telHref } from './store'
 import { DISPLAY, SANS } from './tokens'
-import type { SaleStore } from './types'
+import type { SaleCta, SaleStore } from './types'
 
 /**
  * This store's location, set like an editorial masthead on the white field:
@@ -10,10 +12,12 @@ import type { SaleStore } from './types'
  * and below, one red rule as the accent.
  *
  * Everything here is store identity from the storefront collection, never
- * campaign copy, and nothing is invented when a field is empty.
+ * campaign copy, and nothing is invented when a field is empty. The one
+ * campaign action, Request Inventory, leads the button row (v2); the phone
+ * number above it is this band's Call Now.
  */
-export function SaleLocationBar({ store }: { store: SaleStore }) {
-  const tel = store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
+export function SaleLocationBar({ store, cta }: { store: SaleStore; cta: SaleCta }) {
+  const tel = telHref(store)
   const hours = store.hours.filter((h) => h.day && h.time)
 
   return (
@@ -60,21 +64,27 @@ export function SaleLocationBar({ store }: { store: SaleStore }) {
               )}
             </div>
 
-            {store.directions && (
-              <a
-                data-reveal="rise"
-                href={store.directions.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group mt-8 inline-flex items-center gap-2 rounded-full border border-kawai-black px-5 py-2.5 text-sm font-semibold text-kawai-black transition hover:-translate-y-0.5 hover:border-kawai-red hover:bg-kawai-red hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
-              >
-                {store.directions.label}
-                <ArrowUpRightIcon
-                  aria-hidden
-                  className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </a>
-            )}
+            <div
+              data-reveal="rise"
+              data-sale-cta="location"
+              className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
+            >
+              <SaleRequestButton label={cta.requestLabel} placement="location" />
+              {store.directions && (
+                <a
+                  href={store.directions.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-kawai-black px-6 py-2.5 text-sm font-semibold text-kawai-black transition hover:-translate-y-0.5 hover:border-kawai-red hover:bg-kawai-red hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kawai-red"
+                >
+                  {store.directions.label}
+                  <ArrowUpRightIcon
+                    aria-hidden
+                    className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </a>
+              )}
+            </div>
           </div>
 
           {hours.length > 0 && (

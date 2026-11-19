@@ -2,6 +2,7 @@ import { SaleHero } from './SaleHero'
 import { SaleLocationBar } from './SaleLocationBar'
 import { SalePromos } from './SalePromos'
 import { SaleClose } from './SaleClose'
+import { SaleStickyCtas } from './SaleCtas'
 import type { SaleContent, SaleStore } from './types'
 
 /**
@@ -23,19 +24,53 @@ import type { SaleContent, SaleStore } from './types'
  *
  * The template holds no campaign words: everything comes in through `content`
  * and `store`.
+ *
+ * Actions (v2, Nov 19, 2026): Request Inventory (primary) and Call Now
+ * (secondary) sit in the hero, the location band, under the offer index, in
+ * each offer spread that asks for them and in the close, plus a bar pinned to
+ * the bottom of the screen on phones between the hero's pair and the close's.
+ * Request Inventory opens the lead dialog of the campaign-lead provider, so
+ * the route MUST wrap this template in a `LeadCampaignProvider`.
  */
+export const HERO_CTA_ID = 'sale-cta-hero'
+export const CLOSE_CTA_ID = 'sale-cta-close'
+
 export function SaleTemplate({ content, store }: { content: SaleContent; store: SaleStore }) {
   return (
     <div data-sale-template className="bg-white text-kawai-black">
-      <SaleHero hero={content.hero} store={store} callLabel={content.callLabel} tagline={content.tagline} />
-      <SaleLocationBar store={store} />
+      <SaleHero
+        hero={content.hero}
+        store={store}
+        cta={content.cta}
+        callLabel={content.callLabel}
+        tagline={content.tagline}
+        ctaId={HERO_CTA_ID}
+      />
+      <SaleLocationBar store={store} cta={content.cta} />
       <SalePromos
         intro={content.intro}
         highlights={content.highlights}
         promos={content.promos}
         moments={content.moments}
+        cta={content.cta}
+        callLabel={content.callLabel}
+        store={store}
       />
-      <SaleClose close={content.close} store={store} callLabel={content.callLabel} tagline={content.tagline} />
+      <SaleClose
+        close={content.close}
+        store={store}
+        cta={content.cta}
+        callLabel={content.callLabel}
+        tagline={content.tagline}
+        ctaId={CLOSE_CTA_ID}
+      />
+      <SaleStickyCtas
+        cta={content.cta}
+        callLabel={content.callLabel}
+        store={store}
+        startId={HERO_CTA_ID}
+        endId={CLOSE_CTA_ID}
+      />
     </div>
   )
 }
