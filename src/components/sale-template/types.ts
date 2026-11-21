@@ -18,6 +18,13 @@ export interface SaleHoursEntry {
 export interface SaleStore {
   slug: string
   name: string
+  /**
+   * The showroom's place name for running copy ("Dallas", "St. Louis"): what
+   * a campaign line's `{location}` placeholder becomes (see `fillLocation`).
+   * The storefront's location name, else `name`; a route may set it from its
+   * own fixed store map.
+   */
+  location: string
   address: string | null
   phone: string | null
   hours: SaleHoursEntry[]
@@ -149,6 +156,11 @@ export interface SaleMoment {
 export interface SaleCloseContent {
   eyebrow: string
   heading: string
+  /**
+   * The campaign's one line under the lockup. May carry the `{location}`
+   * placeholder (`LOCATION_TOKEN`), filled with `SaleStore.location` at
+   * render, so one content object serves every store.
+   */
   body: string
   /** The close's display lockup, set above the heading. */
   lockup: SaleLockup

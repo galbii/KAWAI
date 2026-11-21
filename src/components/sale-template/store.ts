@@ -34,6 +34,13 @@ const SCHEDULE_LABEL = 'Schedule Visit'
 
 const isHttp = (v: string) => /^https?:\/\//i.test(v)
 
+/** The placeholder a campaign line uses for the store's place name. */
+export const LOCATION_TOKEN = '{location}'
+
+/** A campaign line with every `{location}` set to this store's place name. */
+export const fillLocation = (text: string, store: Pick<SaleStore, 'location'>) =>
+  text.replaceAll(LOCATION_TOKEN, store.location)
+
 /**
  * Map a storefront record to the template's store identity.
  *
@@ -61,6 +68,7 @@ export function toSaleStore(storefront: StorefrontLike, slug: string): SaleStore
   return {
     slug,
     name,
+    location: storefront.locationName?.trim() || name,
     address,
     phone,
     hours: storefront.hours ?? [],

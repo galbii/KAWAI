@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { getStorefrontBySlugDirect } from '@/lib/payload/queries'
 import { getSite, getSiteUrl } from '@/lib/site-context'
 import { SaleTemplate, lockupText, toSaleStore } from '@/components/sale-template'
-import { fallFinancingSale } from './_content'
+import { fallFinancingSale, saleStoreFor } from './_content'
 import { StoreLeadProvider } from './StoreLeadProvider'
 import { STORE_SALE_PATH } from './sale-path'
 
@@ -102,7 +102,7 @@ export default async function StoreHolidaySaleEventPage({
 
   return (
     <StoreLeadProvider storeSlug={storeslug} testMode={testMode}>
-      <SaleTemplate content={fallFinancingSale} store={toSaleStore(storefront, storeslug)} />
+      <SaleTemplate content={fallFinancingSale} store={saleStoreFor(toSaleStore(storefront, storeslug))} />
     </StoreLeadProvider>
   )
 }

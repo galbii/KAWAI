@@ -3,6 +3,7 @@ import { PromoReveal } from '@/components/fall-promo'
 import { Lockup } from './Lockup'
 import { Wordmark } from './Wordmark'
 import { SaleCtaPair } from './SaleCtas'
+import { fillLocation } from './store'
 import { DISPLAY, SANS } from './tokens'
 import type { SaleCloseContent, SaleCta, SaleStore } from './types'
 
@@ -59,7 +60,7 @@ export function SaleClose({
           <Lockup lockup={close.lockup} id="sale-close" size="xl" />
         </div>
         <p data-reveal="rise" className="mx-auto mt-10 max-w-lg leading-relaxed text-kawai-black/75">
-          {close.body}
+          {fillLocation(close.body, store)}
         </p>
 
         <div id={ctaId} data-reveal="pop" className="mt-10 flex flex-col items-center gap-5">

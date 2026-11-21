@@ -1,4 +1,5 @@
-import type { SaleBadge, SaleContent, SaleLockup, SaleMoment, SalePromo } from '@/components/sale-template'
+import type { SaleBadge, SaleContent, SaleLockup, SaleMoment, SalePromo, SaleStore } from '@/components/sale-template'
+import { LOCATION_TOKEN } from '@/components/sale-template/store'
 import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
 import {
   bundle,
@@ -14,7 +15,8 @@ import {
 import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
 import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
 import { REQUEST_LABEL } from './labels'
-import { holidayDisclosures, holidayFinancing } from './financing'
+import { holidayFinancing } from './financing'
+import { holidayStoreFor } from './store-inbox'
 
 export { REQUEST_LABEL }
 
@@ -35,15 +37,17 @@ export { REQUEST_LABEL }
  *    (`campaign.ts`, `slides.ts`, `money.ts`) and never retyped, so legal copy
  *    cannot drift. The store pages run on kawaius.com only, so this is the US
  *    set: the copy differs by site, never by store.
- *    One exception (Chance, Nov 19, 2026): the financing promo runs this
- *    page's own 36-month terms from `./financing.ts`, which reuses the
- *    national sentences and payment model with this page's windows, so
- *    /fall-financing keeps its 24-month terms unchanged.
+ *    Two exceptions, both this page's own and both leaving /fall-financing
+ *    unchanged:
+ *    - The financing promo (v2 edits, Chance, Nov 20, 2026) is the one line
+ *      "0% financing on every model" from `./financing.ts`, with no lender,
+ *      term or example fine print. It replaced this page's 36-month terms
+ *      (Nov 19) on Chance's call.
+ *    - The close's line (same edits) names the showroom: "Contact our
+ *      showroom at <Location> for pricing and inventory." in place of the
+ *      national CTA_LEAD_IN, then the rest of the national coda line.
  *
- * The financing promo keeps its regulated shape: the headline lockup, the
- * terms subhead directly under it, and the Supporting Disclosure (lender
- * terms, the `*` worked example, the `**` exclusions) as visible text in the
- * same card. No holiday headline is ever put on it.
+ * No holiday headline is ever put on the financing promo.
  */
 
 /**
@@ -55,7 +59,10 @@ export { REQUEST_LABEL }
  * brand tagline "Instrumental to Life" (TAGLINE) is unchanged.
  */
 export const HEADLINES = {
-  hero: { lead: 'Make the first note a', script: 'Holiday', tail: 'memory', layout: 'stack' },
+  // v2 edits (Chance, voice 4:44–4:46 PM PT Nov 20, 2026, from Alexis's
+  // email): the hero reads "Factory direct, Factory fresh." The second
+  // "Factory" is the red script word; read in order it is the header as written.
+  hero: { lead: 'Factory direct,', script: 'Factory', tail: 'fresh.', layout: 'stack' },
   played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline' },
   instrumental: { kicker: 'Instrumental to the', script: 'Holidays', layout: 'stack' },
   soundtrack: { lead: 'Make your soundtrack for the', script: 'Holidays', layout: 'stack' },
@@ -168,26 +175,14 @@ const promos: SalePromo[] = [
   {
     id: SECTION_IDS.financing,
     eyebrow: OFFER_CHIPS.financing,
-    // The holiday terms (36 months intro, see ./financing.ts): same lockup
-    // and disclosure shape as the national copy, this page's figures.
-    heading: {
-      kind: 'lockup',
-      lead: holidayFinancing.heading.lead,
-      connector: holidayFinancing.heading.connector,
-      apr: holidayFinancing.heading.apr,
-      subhead: holidayFinancing.subhead,
-    },
+    // v2 edits (Chance, Nov 20, 2026): one line, no lender/term fine print.
+    heading: { kind: 'text', text: holidayFinancing.heading },
     ...(financingSlide
       ? { image: { src: financingSlide.image, alt: financingSlide.imageAlt } }
       : {}),
     note: holidayFinancing.dealerNote,
     cta: true,
-    fineprint: [
-      ...holidayDisclosures.financingTerms,
-      holidayDisclosures.financingExample,
-      holidayDisclosures.exclusions,
-    ],
-    fineprintId: 'disclosures',
+    fineprint: [],
   },
   {
     id: SECTION_IDS.rebates,
@@ -239,6 +234,27 @@ const moments: SaleMoment[] = [
   },
 ]
 
+/**
+ * The close's line (v2 edits, Chance, Nov 20, 2026): "Contact our showroom at
+ * <Location> for pricing and inventory." in place of the national lead-in
+ * ("Contact a dealer near you for pricing and inventory."), then the rest of
+ * the national coda line, unchanged. `{location}` is filled per store by the
+ * template (see `saleStoreFor`). CTA_LEAD_IN itself is not edited.
+ */
+const CODA_REST = coda.body.startsWith(CTA_LEAD_IN) ? coda.body.slice(CTA_LEAD_IN.length).trim() : ''
+export const SHOWROOM_LEAD_IN = `Contact our showroom at ${LOCATION_TOKEN} for pricing and inventory.`
+export const CLOSE_BODY = [SHOWROOM_LEAD_IN, CODA_REST].filter(Boolean).join(' ')
+
+/**
+ * The store for the template, with its place name pinned to this route's
+ * fixed store map ("Dallas", "Houston", "Denver", "St. Louis", the same names
+ * as the store inboxes). Any other slug keeps the storefront's location name.
+ */
+export function saleStoreFor(store: SaleStore): SaleStore {
+  const fixed = holidayStoreFor(store.slug)
+  return fixed ? { ...store, location: fixed.name } : store
+}
+
 /** The national value props' section ids → this page's section ids. */
 const HIGHLIGHT_TARGET: Record<string, string> = {
   bundle: SECTION_IDS.bundle,
@@ -273,13 +289,13 @@ export const fallFinancingSale: SaleContent = {
   // offers now end on the same day (PROGRAM_END), so the close's red band and
   // the hero's support line carry the same date as every spread's own terms.
   // coda.heading ("Offers end December 31, 2026") stays off the close so the
-  // band does not repeat itself; coda.body is the national line, unchanged.
+  // band does not repeat itself. The body is the per-store showroom line.
   // v4: the close opens on a red band with the badge words and the sale's
   // end line, so it does not repeat the hero's line word for word.
   close: {
     eyebrow: `${HERO_BADGE.lead} ${HERO_BADGE.script}`,
     heading: SALE_EVENT.ends,
-    body: coda.body,
+    body: CLOSE_BODY,
     lockup: HEADLINES.instrumental,
   },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).

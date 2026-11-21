@@ -1,17 +1,14 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'bun:test'
-import { telHref, toSaleStore } from '@/components/sale-template/store'
+import { fillLocation, telHref, toSaleStore, LOCATION_TOKEN } from '@/components/sale-template/store'
 import { lockupText } from '@/components/sale-template/Lockup'
 import {
   bundle,
   coda,
-  disclosures,
   financing,
   lessons,
   rebate,
   rebateCopyFor,
-  FOOTNOTE_EXAMPLE,
-  FOOTNOTE_EXCLUSIONS,
   CTA_LABEL,
   CTA_LEAD_IN,
   FINANCING_RANGE,
@@ -22,6 +19,8 @@ import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-c
 import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
 import {
   fallFinancingSale as sale,
+  saleStoreFor,
+  CLOSE_BODY,
   FACTORY_DIRECT,
   HEADLINES,
   HERO_BADGE,
@@ -29,14 +28,16 @@ import {
   SALE_EVENT,
   TAGLINE,
 } from './_content'
-import { HOLIDAY_TERMS_SENTENCE, holidayDisclosures, holidayFinancing } from './financing'
+import { holidayFinancing } from './financing'
+import { HOLIDAY_STORES } from './store-inbox'
 import { storeLeadCampaign } from './lead'
 import { RETIRED_STORE_SALE_PATH, STORE_SALE_PATH } from './sale-path'
 
 describe('store holiday-sale-event: the holiday headlines are the approved set', () => {
   // Chance's comps, Nov 17, 2026, with the two source-art typos corrected.
-  it('sets the hero to the primary lockup', () => {
-    expect(lockupText(sale.hero.lockup)).toBe('Make the first note a Holiday memory')
+  it('sets the hero to "Factory direct, Factory fresh." (v2 edits, Chance, Nov 20, 2026)', () => {
+    expect(lockupText(sale.hero.lockup)).toBe('Factory direct, Factory fresh.')
+    expect(JSON.stringify(sale)).not.toContain('Make the first note')
     expect(sale.hero.lockup).toEqual(HEADLINES.hero)
   })
 
@@ -53,7 +54,7 @@ describe('store holiday-sale-event: the holiday headlines are the approved set',
 
   it('sets one red script word per headline', () => {
     const scripts = [sale.hero.lockup, ...sale.moments.map((m) => m.lockup), sale.close.lockup].map((l) => l.script)
-    expect(scripts.sort()).toEqual(['Holiday', 'Holidays', 'Holidays', 'Played', 'Sound'])
+    expect(scripts.sort()).toEqual(['Factory', 'Holidays', 'Holidays', 'Played', 'Sound'])
   })
 
   it('never ships the source-art misspellings', () => {
@@ -84,7 +85,6 @@ describe('store holiday-sale-event: offer copy is the national copy, word for wo
     expect(byId.lessons?.heading).toEqual({ kind: 'text', text: lessons.heading })
     expect(byId.lessons?.body).toBe(lessons.standfirst)
     expect(byId.lessons?.fineprint).toEqual([lessons.disclaimer])
-    expect(sale.close.body).toBe(coda.body)
   })
 
   it('keeps the promos in the national order', () => {
@@ -95,28 +95,12 @@ describe('store holiday-sale-event: offer copy is the national copy, word for wo
 describe('store holiday-sale-event: the credit advertisement stays with its disclosure', () => {
   const fin = sale.promos.find((p) => p.id === 'financing')
 
-  it('renders the regulated lockup with the holiday 36-month terms', () => {
-    expect(fin?.heading).toEqual({
-      kind: 'lockup',
-      lead: holidayFinancing.heading.lead,
-      connector: holidayFinancing.heading.connector,
-      apr: holidayFinancing.heading.apr,
-      subhead: holidayFinancing.subhead,
-    })
+  it('heads the financing spread "0% financing on every model", with no Synchrony or term fine print (v2 edits)', () => {
+    expect(fin?.heading).toEqual({ kind: 'text', text: '0% financing on every model' })
+    expect(fin?.heading).toEqual({ kind: 'text', text: holidayFinancing.heading })
     expect(fin?.note).toBe(financing.dealerNote)
-  })
-
-  it('resolves both footnote marks in the same card, as visible text', () => {
-    expect(fin?.fineprint).toEqual([
-      ...holidayDisclosures.financingTerms,
-      holidayDisclosures.financingExample,
-      holidayDisclosures.exclusions,
-    ])
-    // The figure-free lender lines and exclusions are the national ones.
-    expect(holidayDisclosures.financingTerms).toEqual(disclosures.financingTerms)
-    expect(holidayDisclosures.exclusions).toBe(disclosures.exclusions)
-    expect(fin?.fineprint.some((l) => l.startsWith(FOOTNOTE_EXAMPLE) && !l.startsWith('**'))).toBe(true)
-    expect(fin?.fineprint.some((l) => l.startsWith(FOOTNOTE_EXCLUSIONS))).toBe(true)
+    expect(fin?.fineprint).toEqual([])
+    expect(JSON.stringify(fin)).not.toMatch(/synchrony|24[- ]month|24 months|36[- ]month|36 months/i)
   })
 
   it('puts no rate figure in the hero, the intro, the highlights or the moments (metadata reuses hero + intro)', () => {
@@ -338,8 +322,6 @@ describe('store holiday-sale-event v5: the sale event ends December 31, 2026, wi
     expect(coda.heading).toBe('Offers end December 31, 2026')
     expect(financing.subhead.startsWith(TERMS_SENTENCE)).toBe(true)
     expect(TERMS_SENTENCE).toContain(FINANCING_RANGE)
-    expect(holidayFinancing.subhead.startsWith(HOLIDAY_TERMS_SENTENCE)).toBe(true)
-    expect(HOLIDAY_TERMS_SENTENCE).toContain(FINANCING_RANGE)
     expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
     // The credit advertisement carries no marketing line: no sale-event copy in it.
     expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.offers)
@@ -460,9 +442,61 @@ describe('store holiday-sale-event: factory direct (Chance, Nov 19, 2026)', () =
     expect(bar).toMatch(/<p[\s\S]*?uppercase tracking-\[0\.32em\][\s\S]*?\{eyebrow\}\s*<\/p>/)
   })
 
-  it('says it once, and keeps it out of the hero and the credit advertisement', () => {
+  it('keeps the band label once, and out of the credit advertisement', () => {
     expect(JSON.stringify(sale).match(/factory-direct/gi)).toHaveLength(1)
-    expect(JSON.stringify(sale.hero)).not.toMatch(/factory/i)
     expect(JSON.stringify(sale.promos)).not.toMatch(/factory/i)
+  })
+
+  it('the v2 hero also says factory direct (band left in place pending Chance; flagged in result.md)', () => {
+    expect(JSON.stringify(sale.hero)).toMatch(/Factory direct,/)
+  })
+})
+
+describe('store holiday-sale-event v2 edits: the close names the store\'s showroom', () => {
+  // Chance, voice 4:44–4:46 PM PT Nov 20, 2026: "Contact our showroom at
+  // <Location> for pricing and inventory…", e.g. "Contact our showroom at St. Louis…".
+  const storeFor = (slug: string, locationName = 'CMS Name') =>
+    saleStoreFor(toSaleStore({ locationName, showroomInfo: { name: `Kawai ${locationName}` } }, slug))
+
+  it('swaps the dealer lead-in for the showroom line, keeping the rest of the national coda', () => {
+    expect(CLOSE_BODY).toBe(
+      `Contact our showroom at ${LOCATION_TOKEN} for pricing and inventory. They will confirm which offers apply to the piano you want.`,
+    )
+    expect(sale.close.body).toBe(CLOSE_BODY)
+    expect(coda.body).toBe(`${CTA_LEAD_IN} They will confirm which offers apply to the piano you want.`)
+    expect(sale.close.body).not.toContain('Contact a dealer near you')
+  })
+
+  it('fills each of the four stores with its own place name', () => {
+    const want = { dallas: 'Dallas', houston: 'Houston', denver: 'Denver', 'st-louis': 'St. Louis' } as const
+    expect(Object.keys(HOLIDAY_STORES).sort()).toEqual(Object.keys(want).sort())
+    for (const [slug, name] of Object.entries(want)) {
+      const line = fillLocation(sale.close.body, storeFor(slug))
+      expect(line.startsWith(`Contact our showroom at ${name} for pricing and inventory.`)).toBe(true)
+      expect(line).not.toContain(LOCATION_TOKEN)
+    }
+  })
+
+  it('falls back to the storefront location name for any other slug', () => {
+    expect(fillLocation(sale.close.body, storeFor('austin', 'Austin'))).toContain('showroom at Austin for')
+    expect(toSaleStore({ showroomInfo: { name: 'Kawai X' } }, 'x').location).toBe('Kawai X')
+  })
+
+  it('leaves the national lead-in and the mid-page lead-in alone', () => {
+    expect(CTA_LEAD_IN).toBe('Contact a dealer near you for pricing and inventory.')
+    expect(sale.cta.leadIn).toBe(CTA_LEAD_IN)
+  })
+
+  it('the template fills the placeholder in the close', () => {
+    const close = readFileSync(new URL('../../../../../components/sale-template/SaleClose.tsx', import.meta.url), 'utf8')
+    expect(close).toContain('{fillLocation(close.body, store)}')
+  })
+})
+
+describe('store holiday-sale-event v2 edits: the exclusive-offers line is unchanged', () => {
+  // The email's "Then the exclusive offer until…" was cut off; the line stays
+  // as it is until Chance gives the wording.
+  it('keeps "Exclusive offers until December 31, 2026" as the hero support line', () => {
+    expect(sale.hero.support).toBe('Exclusive offers until December 31, 2026')
   })
 })

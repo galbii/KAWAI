@@ -1,5 +1,5 @@
 export { SaleTemplate } from './SaleTemplate'
-export { toSaleStore } from './store'
+export { toSaleStore, fillLocation, LOCATION_TOKEN } from './store'
 export { lockupText } from './Lockup'
 export { SaleCtaPair, SaleRequestButton, SaleCallButton, SaleStickyCtas } from './SaleCtas'
 export type {
