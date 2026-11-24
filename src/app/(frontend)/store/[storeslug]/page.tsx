@@ -11,6 +11,7 @@ import { FacilityRentalsSection } from '@/components/storefronts/facility-rental
 import { TuningRepairSection } from '@/components/storefronts/tuning-repair-section'
 import { SimpleCustomerSignup } from "@/components/forms/SimpleCustomerSignup";
 import { DeadlineDock, BackToSchoolPromo } from "@/components/back-to-school";
+import { HolidaySaleBanner } from "@/components/holiday-sale";
 import { getStorefrontBySlugDirect, getHomePageDataDirect } from "@/lib/payload/queries";
 import { LocalBusinessSchema } from "@/components/seo/LocalBusinessSchema";
 import { AdminBarDoc } from '@/components/layout/AdminBarDoc';
@@ -303,6 +304,15 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
           storeslug={storeslug}
           locationName={rawStorefrontData?.showroomInfo?.name ?? rawStorefrontData?.locationName ?? null}
           hours={rawStorefrontData?.hours ?? null}
+        />
+
+        {/* Holiday sale banner — under the hero; 0% financing on every model
+            plus contacting the store, links to this store's /holiday-sale-event;
+            renders nothing after Dec 31, 2026 23:59:59 */}
+        <HolidaySaleBanner
+          storeslug={storeslug}
+          locationName={rawStorefrontData?.showroomInfo?.name ?? rawStorefrontData?.locationName ?? null}
+          phone={rawStorefrontData?.showroomInfo?.phone ?? null}
         />
 
         {/* Showroom Location Section */}
