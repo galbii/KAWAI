@@ -306,13 +306,14 @@ async function StorefrontContent({ storeslug }: { storeslug: string }) {
           hours={rawStorefrontData?.hours ?? null}
         />
 
-        {/* Holiday sale banner — under the hero; 0% financing on every model
-            plus contacting the store, links to this store's /holiday-sale-event;
-            renders nothing after Dec 31, 2026 23:59:59 */}
+        {/* Holiday sale banner — under the hero, styled like the
+            /holiday-sale-event hero; 0% financing on every model, Request
+            Inventory (the holiday page's lead form) and Call Now (this store's
+            phone); renders nothing after Dec 31, 2026 23:59:59 */}
         <HolidaySaleBanner
           storeslug={storeslug}
-          locationName={rawStorefrontData?.showroomInfo?.name ?? rawStorefrontData?.locationName ?? null}
-          phone={rawStorefrontData?.showroomInfo?.phone ?? null}
+          storefront={rawStorefrontData ?? null}
+          testMode={process.env.FALL_FINANCING_TEST_MODE === 'true'}
         />
 
         {/* Showroom Location Section */}

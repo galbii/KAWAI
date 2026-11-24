@@ -5,6 +5,7 @@ import { ArrowDownIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { PromoReveal } from '@/components/fall-promo'
 import { SaleCtaPair } from './SaleCtas'
 import { SaleMoment } from './SaleMoment'
+import { StoreContact } from './StoreContact'
 import { DISPLAY, SANS } from './tokens'
 import type {
   SaleChecklist,
@@ -279,6 +280,8 @@ function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: numbe
                   {promo.note}
                 </p>
               )}
+
+              {promo.storeContact && <StoreContact lead={promo.storeContact.lead} store={actions.store} />}
 
               {promo.link && (
                 <Link

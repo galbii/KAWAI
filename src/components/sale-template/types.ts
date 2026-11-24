@@ -128,6 +128,12 @@ export interface SalePromo {
   image?: SaleImage
   rows?: readonly SalePromoRow[]
   note?: string
+  /**
+   * A store contact block in place of a note: this lead line (campaign
+   * words), then the store's own name, address and phone from the storefront
+   * record. A missing address or phone is left out, never invented.
+   */
+  storeContact?: { lead: string }
   link?: { label: string; href: string }
   /** Visible fine print. Disclosures render here as page text, never in a dialog. */
   fineprint: readonly string[]

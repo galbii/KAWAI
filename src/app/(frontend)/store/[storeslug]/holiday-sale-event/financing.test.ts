@@ -27,17 +27,21 @@ describe('holiday financing: "0% financing on every model", no fine print', () =
     }
   })
 
-  it('keeps a figure-free dealer line above the buttons', () => {
-    expect(fin?.note).toBe(holidayFinancing.dealerNote)
-    expect(fin?.note).not.toMatch(/\d+(\.\d+)?%/)
+  it('keeps a figure-free store contact block above the buttons, and no shared note', () => {
+    expect(fin?.storeContact).toEqual({ lead: holidayFinancing.contactLead })
+    expect(fin?.note).toBeUndefined()
+    expect(holidayFinancing.contactLead).not.toMatch(/\d+(\.\d+)?%/)
   })
 
-  // kawai-holiday-sale-rep-edits v1 (the store reps via Chance, relayed by
-  // Marcy, Nov 23, 2026): the reps' exact line, shared by all four stores as
-  // given. The national dealer note and CTA_LEAD_IN stay as they are.
-  it('reads "Contact our St. Louis showroom for pricing and inventory." (v1 rep edits)', () => {
-    expect(holidayFinancing.dealerNote).toBe('Contact our St. Louis showroom for pricing and inventory.')
-    expect(fin?.note).toBe('Contact our St. Louis showroom for pricing and inventory.')
+  // kawai-store-contact-banner v1 (Chance, relayed by Marcy, Nov 24, 2026):
+  // "Contact the store", then the store's own details from its record. The
+  // reps' shared St. Louis line (v1 rep edits) is gone. The national dealer
+  // note and CTA_LEAD_IN stay as they are.
+  it('reads "Contact the store", with no store name typed into the copy', () => {
+    expect(holidayFinancing.contactLead).toBe('Contact the store')
+    expect('dealerNote' in holidayFinancing).toBe(false)
+    expect(JSON.stringify(holidayFinancing)).not.toMatch(/st\.? louis|dallas|houston|denver/i)
+    expect(JSON.stringify(sale)).not.toContain('St. Louis')
     expect(financing.dealerNote).toBe(CTA_LEAD_IN)
     expect(CTA_LEAD_IN).toBe('Contact a dealer near you for pricing and inventory.')
   })

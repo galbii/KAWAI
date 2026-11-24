@@ -4,6 +4,20 @@ import type { SaleHoursEntry, SaleStore } from './types'
 export const telHref = (store: Pick<SaleStore, 'phone'>) =>
   store.phone ? `tel:${store.phone.replace(/\D/g, '')}` : null
 
+/**
+ * The store's contact details for a contact block, all from the storefront
+ * record: its name, then the address and phone only when the record has them.
+ * A missing field is dropped, never filled in.
+ */
+export function storeContactLines(store: Pick<SaleStore, 'name' | 'address' | 'phone'>) {
+  return {
+    name: store.name,
+    address: store.address,
+    phone: store.phone,
+    tel: telHref(store),
+  }
+}
+
 /** Shape of the storefront fields the template reads. Everything is optional in the CMS. */
 export interface StorefrontLike {
   slug?: string | null

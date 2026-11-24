@@ -12,7 +12,6 @@ import { coda, CTA_LEAD_IN, PROGRAM_END } from '@/app/(frontend)/fall-financing/
 import { heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
 import { REQUEST_LABEL } from './labels'
 import { holidayFinancing } from './financing'
-import { holidayStoreFor } from './store-inbox'
 
 export { REQUEST_LABEL }
 
@@ -55,7 +54,9 @@ export { REQUEST_LABEL }
  *   your soundtrack for the Holidays" banner.
  * - Added: the factory-boxed checklist (`FACTORY_BOXED`), the reps' words
  *   exactly, after the location band and before the financing spread.
- * - The financing spread's note is the reps' St. Louis line (financing.ts).
+ * - The financing spread's note was the reps' shared showroom line; since
+ *   kawai-store-contact-banner v1 (Nov 24, 2026) it is "Contact the store"
+ *   plus that store's own name, address and phone from its storefront record.
  * - Kept: hero, location band, exclusive-offers line, close, CTAs.
  */
 
@@ -166,7 +167,9 @@ const promos: SalePromo[] = [
     ...(financingSlide
       ? { image: { src: financingSlide.image, alt: financingSlide.imageAlt } }
       : {}),
-    note: holidayFinancing.dealerNote,
+    // kawai-store-contact-banner v1 (Nov 24, 2026): "Contact the store", then
+    // the store's own name, address and phone from its storefront record.
+    storeContact: { lead: holidayFinancing.contactLead },
     cta: true,
     fineprint: [],
   },
@@ -184,13 +187,13 @@ export const SHOWROOM_LEAD_IN = `Contact our showroom at ${LOCATION_TOKEN} for p
 export const CLOSE_BODY = [SHOWROOM_LEAD_IN, CODA_REST].filter(Boolean).join(' ')
 
 /**
- * The store for the template, with its place name pinned to this route's
- * fixed store map ("Dallas", "Houston", "Denver", "St. Louis", the same names
- * as the store inboxes). Any other slug keeps the storefront's location name.
+ * The store for the template. kawai-store-contact-banner v1 (Chance, Nov 24,
+ * 2026): the place name comes from the storefront record (toSaleStore:
+ * locationName, else the showroom name), no longer pinned from the store-inbox
+ * map. The inbox map still routes leads; it names nothing on the page.
  */
 export function saleStoreFor(store: SaleStore): SaleStore {
-  const fixed = holidayStoreFor(store.slug)
-  return fixed ? { ...store, location: fixed.name } : store
+  return store
 }
 
 /**

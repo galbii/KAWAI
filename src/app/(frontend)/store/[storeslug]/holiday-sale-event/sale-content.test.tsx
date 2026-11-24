@@ -1,4 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { StoreContact } from '@/components/sale-template/StoreContact'
+import { storeContactLines } from '@/components/sale-template/store'
 import { describe, expect, it } from 'bun:test'
 import { fillLocation, telHref, toSaleStore, LOCATION_TOKEN } from '@/components/sale-template/store'
 import { lockupText } from '@/components/sale-template/Lockup'
@@ -27,6 +30,7 @@ import {
 } from './_content'
 import { holidayFinancing } from './financing'
 import { HOLIDAY_STORES } from './store-inbox'
+import { HOLIDAY_STOREFRONT_FIXTURES } from './holiday-emails.fixtures'
 import { storeLeadCampaign } from './lead'
 import { RETIRED_STORE_SALE_PATH, STORE_SALE_PATH } from './sale-path'
 
@@ -138,7 +142,8 @@ describe('store holiday-sale-event: the credit advertisement stays with its disc
   it('heads the financing spread "0% financing on every model", with no Synchrony or term fine print (v2 edits)', () => {
     expect(fin?.heading).toEqual({ kind: 'text', text: '0% financing on every model' })
     expect(fin?.heading).toEqual({ kind: 'text', text: holidayFinancing.heading })
-    expect(fin?.note).toBe('Contact our St. Louis showroom for pricing and inventory.')
+    expect(fin?.storeContact).toEqual({ lead: 'Contact the store' })
+    expect(fin?.note).toBeUndefined()
     expect(fin?.fineprint).toEqual([])
     expect(JSON.stringify(fin)).not.toMatch(/synchrony|24[- ]month|24 months|36[- ]month|36 months/i)
   })
@@ -505,14 +510,25 @@ describe('store holiday-sale-event v2 edits: the close names the store\'s showro
     expect(sale.close.body).not.toContain('Contact a dealer near you')
   })
 
-  it('fills each of the four stores with its own place name', () => {
-    const want = { dallas: 'Dallas', houston: 'Houston', denver: 'Denver', 'st-louis': 'St. Louis' } as const
-    expect(Object.keys(HOLIDAY_STORES).sort()).toEqual(Object.keys(want).sort())
-    for (const [slug, name] of Object.entries(want)) {
-      const line = fillLocation(sale.close.body, storeFor(slug))
+  // kawai-store-contact-banner v1 (Nov 24, 2026): the place name comes from
+  // the storefront record, not the store-inbox map.
+  it('fills each of the four stores with its own place name from the storefront record', () => {
+    expect(Object.keys(HOLIDAY_STORES).sort()).toEqual(Object.keys(HOLIDAY_STOREFRONT_FIXTURES).sort())
+    for (const [slug, record] of Object.entries(HOLIDAY_STOREFRONT_FIXTURES)) {
+      const name = (record as { locationName: string }).locationName
+      const line = fillLocation(sale.close.body, saleStoreFor(toSaleStore(record as never, slug)))
       expect(line.startsWith(`Contact our showroom at ${name} for pricing and inventory.`)).toBe(true)
       expect(line).not.toContain(LOCATION_TOKEN)
     }
+  })
+
+  it('no longer pins the place name from the store-inbox map', () => {
+    // A record that names itself differently keeps its own name.
+    expect(fillLocation(sale.close.body, storeFor('st-louis', 'Chesterfield'))).toContain('showroom at Chesterfield for')
+    expect(fillLocation(sale.close.body, storeFor('dallas', 'Plano'))).toContain('showroom at Plano for')
+    const content = readFileSync(new URL('./_content.ts', import.meta.url), 'utf8')
+    expect(content).not.toContain('holidayStoreFor')
+    expect(content).not.toContain('St. Louis')
   })
 
   it('falls back to the storefront location name for any other slug', () => {
@@ -536,5 +552,53 @@ describe('store holiday-sale-event v2 edits: the exclusive-offers line is unchan
   // as it is until Chance gives the wording.
   it('keeps "Exclusive offers until December 31, 2026" as the hero support line', () => {
     expect(sale.hero.support).toBe('Exclusive offers until December 31, 2026')
+  })
+})
+
+describe('kawai-store-contact-banner v1: "Contact the store" with each store\'s own address and phone', () => {
+  const fin = sale.promos.find((p) => p.id === 'financing')
+  // Live showroomInfo, https://kawaius.com/api/storefronts/by-slug/<slug> (Nov 24, 2026),
+  // matching the fixtures copied from Payload Nov 23.
+  const want = {
+    dallas: { name: 'Dallas', address: '601 W Plano Pkwy, Ste 153, Plano, TX 75075', phone: '(972) 379-2200', tel: 'tel:9723792200' },
+    houston: { name: 'Houston', address: '5800 Richmond Ave, Houston, TX 77057, USA', phone: '(713) 904-0001', tel: 'tel:7139040001' },
+    denver: { name: 'Denver', address: '3191 South Broadway, Englewood, CO 80113', phone: '(720) 762-4938', tel: 'tel:7207624938' },
+    'st-louis': {
+      name: 'St. Louis',
+      address: '18521 Outlet Boulevard, Suite 527, Chesterfield, Missouri 63005',
+      phone: '(636) 778-0477',
+      tel: 'tel:6367780477',
+    },
+  } as const
+
+  for (const [slug, w] of Object.entries(want)) {
+    it(`${slug}: renders "Contact the store", then ${w.name}, its address and its phone`, () => {
+      const record = HOLIDAY_STOREFRONT_FIXTURES[slug as keyof typeof want]
+      const store = saleStoreFor(toSaleStore(record as never, slug))
+      expect(storeContactLines(store)).toEqual(w)
+      const html = renderToStaticMarkup(<StoreContact lead={fin!.storeContact!.lead} store={store} />)
+      const text = html.replace(/<[^>]+>/g, '|')
+      expect(text).toContain('|Contact the store|')
+      expect(text).toContain(`|${w.name}|`)
+      expect(text).toContain(`|${w.address}|`)
+      expect(html).toContain(`href="${w.tel}"`)
+      expect(text).toContain(`|${w.phone}|`)
+      if (slug !== 'st-louis') expect(html).not.toContain('St. Louis')
+      expect(html).not.toContain('Meadows Circle')
+      expect(html).not.toContain('265-2866')
+    })
+  }
+
+  it('leaves out a missing address or phone rather than inventing one', () => {
+    const store = toSaleStore({ showroomInfo: { name: 'Denver' } }, 'denver')
+    const html = renderToStaticMarkup(<StoreContact lead="Contact the store" store={store} />)
+    expect(html).toContain('Denver')
+    expect(html).not.toContain('tel:')
+    expect(html.match(/<p/g)?.length).toBe(2)
+  })
+
+  it('the financing spread renders the block from the page store', () => {
+    const promos = readFileSync(new URL('../../../../../components/sale-template/SalePromos.tsx', import.meta.url), 'utf8')
+    expect(promos).toContain('<StoreContact lead={promo.storeContact.lead} store={actions.store} />')
   })
 })
