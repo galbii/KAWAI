@@ -26,6 +26,7 @@ import {
   HERO_BADGE,
   REQUEST_LABEL,
   SALE_EVENT,
+  STORE_CTA_LEAD_IN,
   TAGLINE,
 } from './_content'
 import { holidayFinancing } from './financing'
@@ -250,8 +251,11 @@ describe('store holiday-sale-event v2: Request Inventory + Call Now everywhere',
     expect(sale.callLabel).toBe('Call Now')
   })
 
-  it('leads into the mid-page pair with the national lead-in, imported', () => {
-    expect(sale.cta.leadIn).toBe(CTA_LEAD_IN)
+  it('leads into the mid-page pair with "Contact the store" (v2), not the national line', () => {
+    expect(sale.cta.leadIn).toBe('Contact the store for pricing and inventory.')
+    expect(sale.cta.leadIn).toBe(STORE_CTA_LEAD_IN)
+    expect(sale.cta.leadIn).not.toBe(CTA_LEAD_IN)
+    expect(sale.cta.leadIn).not.toMatch(/dealer/i)
     expect(sale.cta.leadIn).not.toMatch(/\d+(\.\d+)?%/)
   })
 
@@ -536,9 +540,10 @@ describe('store holiday-sale-event v2 edits: the close names the store\'s showro
     expect(toSaleStore({ showroomInfo: { name: 'Kawai X' } }, 'x').location).toBe('Kawai X')
   })
 
-  it('leaves the national lead-in and the mid-page lead-in alone', () => {
+  it('leaves the national lead-in alone; the mid-page lead-in says "Contact the store" (v2)', () => {
     expect(CTA_LEAD_IN).toBe('Contact a dealer near you for pricing and inventory.')
-    expect(sale.cta.leadIn).toBe(CTA_LEAD_IN)
+    expect(sale.cta.leadIn).toBe('Contact the store for pricing and inventory.')
+    expect(sale.cta.leadIn).not.toBe(CTA_LEAD_IN)
   })
 
   it('the template fills the placeholder in the close', () => {

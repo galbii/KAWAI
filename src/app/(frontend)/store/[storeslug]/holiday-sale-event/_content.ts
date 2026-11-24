@@ -187,6 +187,13 @@ export const SHOWROOM_LEAD_IN = `Contact our showroom at ${LOCATION_TOKEN} for p
 export const CLOSE_BODY = [SHOWROOM_LEAD_IN, CODA_REST].filter(Boolean).join(' ')
 
 /**
+ * The line above Request Inventory / Call Now on every store's holiday page
+ * (kawai-store-contact-banner v2, Chance, Nov 24, 2026), in place of the
+ * national "Contact a dealer near you for pricing and inventory.".
+ */
+export const STORE_CTA_LEAD_IN = 'Contact the store for pricing and inventory.'
+
+/**
  * The store for the template. kawai-store-contact-banner v1 (Chance, Nov 24,
  * 2026): the place name comes from the storefront record (toSaleStore:
  * locationName, else the showroom name), no longer pinned from the store-inbox
@@ -240,8 +247,8 @@ export const fallFinancingSale: SaleContent = {
   },
   // The exact label already used by the showroom CTAs (src/components/ui/showroom-cta.tsx).
   callLabel: 'Call Now',
-  // The lead-in is the national line that already sits above every enquiry
-  // button on /fall-financing, imported, never retyped.
-  cta: { requestLabel: REQUEST_LABEL, leadIn: CTA_LEAD_IN },
+  // kawai-store-contact-banner v2 (Chance, Nov 24, 2026): "contact the store",
+  // not "a dealer". The national CTA_LEAD_IN (/fall-financing) is not edited.
+  cta: { requestLabel: REQUEST_LABEL, leadIn: STORE_CTA_LEAD_IN },
   tagline: TAGLINE,
 }
