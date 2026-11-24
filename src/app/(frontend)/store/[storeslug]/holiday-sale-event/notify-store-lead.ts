@@ -2,10 +2,12 @@
 
 import { createHash } from 'node:crypto'
 import { Resend } from 'resend'
-import { buildDealerEmailHtml, buildDealerEmailSubject, leadEmailSchema } from '@/lib/rsm/lead-email'
+import { leadEmailSchema } from '@/lib/rsm/lead-email'
+import { storeContactFromStorefront } from '@/lib/email/branded-email'
 import { describeEnvelope } from '@/lib/rsm/lead-envelopes'
 import { holidayConfirmationCopy, planHolidayLeadEmails } from './store-inbox'
 import { STORE_SALE_PATH } from './sale-path'
+import { buildHolidayConfirmationEmail, buildHolidayStoreNotificationEmail } from './holiday-emails'
 
 /**
  * A holiday-sale-event lead → that page's store inbox, plus a confirmation to
@@ -23,6 +25,12 @@ import { STORE_SALE_PATH } from './sale-path'
  * page's FALL_FINANCING_TEST_MODE dry run without a test inbox holds both
  * emails and logs the envelope. Idempotency keys stop a double-fired submit
  * from emailing twice.
+ *
+ * Both emails use the shared Kawai branded template (./holiday-emails →
+ * src/lib/email/branded-email.ts): logo, brand colours and type, HTML plus a
+ * plain-text part, and a footer signed with the store's name and contact
+ * details from its storefront record (looked up once, by slug). A failed
+ * lookup still sends both, signed with the store's name only.
  *
  * Heavy, server-only modules (Payload, the signup mailer, the national
  * action) are imported inside the function so the page's client config can
@@ -52,10 +60,36 @@ export async function notifyHolidayStoreLead(
     const leadKey = createHash('sha256').update(`${storeSlug}|${lead.email}|${lead.zip}`).digest('hex')
     const tag = (v: string) => v.replace(/[^A-Za-z0-9_-]/g, '_')
 
-    // — The store's notification: the "someone chose your showroom" template,
+    // — The store's record, once, for both emails' footer and the
+    //   confirmation's location. A failure never stops a send. —
+    let storefront: unknown = null
+    let storePageUrl = ''
+    try {
+      const { getStorefrontBySlugDirect } = await import('@/lib/payload/queries')
+      const { getSiteUrl } = await import('@/lib/site-context')
+      storePageUrl = `${getSiteUrl('us')}/store/${storeSlug}/${STORE_SALE_PATH}`
+      storefront = await getStorefrontBySlugDirect(storeSlug).catch((err: unknown) => {
+        console.error('[holiday-lead] Storefront lookup failed — sending without the store contact card:', err)
+        return null
+      })
+    } catch (err) {
+      console.error('[holiday-lead] Storefront lookup failed — sending without the store contact card:', err)
+    }
+    const contact = storeContactFromStorefront(storefront, {
+      displayName: plan.store.name,
+      ...(storePageUrl ? { pageUrl: storePageUrl } : {}),
+    })
+
+    // — The store's notification: the "someone chose your showroom" email,
     //   Reply-To the customer, corporate CC'd (dropped under the test inbox). —
     let storeSent = false
-    const subject = buildDealerEmailSubject({ lead, ...(testInbox ? { test: {} } : {}) })
+    const storeEmail = buildHolidayStoreNotificationEmail({
+      lead,
+      contact,
+      source,
+      ...(testInbox ? { test: { label: 'Holiday store notification', envelope: plan.storeEnvelope } } : {}),
+    })
+    const subject = storeEmail.subject
     if (!plan.live) {
       console.log(
         `[holiday-lead] HELD (test mode, no LEAD_NOTIFY_TEST_INBOX) — store email would have gone ` +
@@ -72,14 +106,8 @@ export async function notifyHolidayStoreLead(
             ...(plan.storeSend.cc.length > 0 ? { cc: plan.storeSend.cc } : {}),
             replyTo: lead.email,
             subject,
-            html: buildDealerEmailHtml({
-              lead,
-              dealer: { name: `Kawai ${plan.store.name}` },
-              source,
-              ...(testInbox
-                ? { test: { label: 'Holiday store notification', envelope: plan.storeEnvelope } }
-                : {}),
-            }),
+            html: storeEmail.html,
+            text: storeEmail.text,
             tags: [
               { name: 'source', value: tag(source) },
               { name: 'store', value: tag(storeSlug) },
@@ -102,21 +130,21 @@ export async function notifyHolidayStoreLead(
       }
     }
 
-    // — The confirmation to the person who submitted: the signup pages'
-    //   confirmation email, with the store's name, address, phone and hours. —
+    // — The confirmation to the person who submitted: the branded holiday
+    //   confirmation, signed with the store's name, address, phone and hours. —
     let confirmed = false
     try {
       const { sendLeadConfirmation } = await import('@/lib/signup/notify')
       const { extractConfirmationLocation } = await import('@/lib/signup/confirmation-content')
-      const { getStorefrontBySlugDirect } = await import('@/lib/payload/queries')
-      const { getSiteUrl } = await import('@/lib/site-context')
 
-      const storefront = await getStorefrontBySlugDirect(storeSlug).catch((err: unknown) => {
-        console.error('[holiday-lead] Storefront lookup failed — confirming without the location card:', err)
-        return null
-      })
       const location = extractConfirmationLocation(storefront, null)
       const copy = holidayConfirmationCopy(plan.store)
+      const confirmation = buildHolidayConfirmationEmail({
+        firstName: lead.firstname || 'there',
+        store: plan.store,
+        contact,
+        test: Boolean(testInbox),
+      })
 
       const result = await sendLeadConfirmation({
         submissionId: `holiday-${leadKey}`,
@@ -124,10 +152,11 @@ export async function notifyHolidayStoreLead(
         firstName: lead.firstname || 'there',
         campaignTitle: copy.campaignTitle,
         storeName: copy.storeName,
-        subject: testInbox ? `[TEST] ${copy.subject}` : copy.subject,
+        subject: confirmation.subject,
         body: copy.body,
         location: location ? { ...location, storeName: plan.store.name } : null,
-        storefrontUrl: `${getSiteUrl('us')}/store/${storeSlug}/${STORE_SALE_PATH}`,
+        ...(storePageUrl ? { storefrontUrl: storePageUrl } : {}),
+        rendered: { html: confirmation.html, text: confirmation.text },
         replyTo: plan.confirmationReplyTo,
         liveSendEnabled: plan.live,
       })

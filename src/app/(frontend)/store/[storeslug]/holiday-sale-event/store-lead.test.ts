@@ -105,6 +105,20 @@ describe('holiday store inbox: slug → address, server-side only', () => {
     expect(String(opts.idempotencyKey)).toMatch(/^holiday-store-lead\/[0-9a-f]{64}$/)
   })
 
+  it('sends the branded store email: logo, store footer from the storefront record, plain-text part', async () => {
+    await notifyHolidayStoreLead(LEAD, 'dallas', 'fall-financing')
+    const { msg } = resendSends[0]!
+    expect(msg.subject).toBe('New Kawai lead — Ada Lead')
+    expect(String(msg.html)).toContain('https://kawaius.com/images/logos/kawai-logo-red-3x.png')
+    expect(String(msg.html)).toContain('Someone chose your showroom')
+    for (const part of [String(msg.html), String(msg.text)]) {
+      expect(part).toContain('Kawai Dallas')
+      expect(part).toContain('601 W Plano Pkwy Ste 153, Plano, TX 75075')
+      expect(part).toContain('(972) 379-2200')
+    }
+    expect(String(msg.text)).not.toMatch(/<[a-z/][^>]*>/i)
+  })
+
   it('falls back to the national ZIP routing for an unknown slug', async () => {
     await notifyHolidayStoreLead(LEAD, 'austin', 'fall-financing')
     expect(rsmCalls).toEqual([{ values: LEAD, source: 'fall-financing' }])
@@ -132,6 +146,18 @@ describe('holiday confirmation to the person who submitted', () => {
     })
     expect(c.storefrontUrl).toBe('https://kawaius.com/store/dallas/holiday-sale-event')
     expect(String(c.submissionId)).toMatch(/^holiday-[0-9a-f]{64}$/)
+  })
+
+  it('passes the branded confirmation (HTML + plain text) signed by the store', async () => {
+    await notifyHolidayStoreLead(LEAD, 'dallas', 'fall-financing')
+    const rendered = confirmations[0]!.rendered as { html: string; text: string }
+    expect(rendered.html).toContain('https://kawaius.com/images/logos/kawai-logo-red-3x.png')
+    for (const part of [rendered.html, rendered.text]) {
+      expect(part).toContain('Hi Ada,')
+      expect(part).toContain('Kawai Dallas')
+      expect(part).toContain('601 W Plano Pkwy Ste 153, Plano, TX 75075')
+      expect(part).toContain('Mon–Sat')
+    }
   })
 
   it('states no financing terms', () => {

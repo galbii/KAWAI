@@ -117,6 +117,12 @@ export async function sendLeadConfirmation(input: {
   replyTo?: string | undefined
   /** Header eyebrow override — defaults to the store name. */
   eyebrow?: string | undefined
+  /**
+   * A prebuilt email (HTML + plain text) to send instead of the signup
+   * confirmation layout. The holiday-sale-event pages pass their branded
+   * email here; every other caller leaves it out and gets today's HTML.
+   */
+  rendered?: { html: string; text: string } | undefined
   liveSendEnabled: boolean
 }): Promise<{ status: 'sent' | 'failed' | 'skipped'; emailId?: string }> {
   if (!input.liveSendEnabled) {
@@ -135,17 +141,21 @@ export async function sendLeadConfirmation(input: {
         to: [input.to],
         ...(input.replyTo ? { replyTo: input.replyTo } : {}),
         subject: input.subject,
-        html: buildConfirmationHtml({
-          firstName: input.firstName,
-          campaignTitle: input.campaignTitle,
-          storeName: input.storeName,
-          body: input.body,
-          appointment: input.appointment,
-          details: input.details,
-          location: input.location,
-          storefrontUrl: input.storefrontUrl,
-          eyebrow: input.eyebrow,
-        }),
+        ...(input.rendered
+          ? { html: input.rendered.html, text: input.rendered.text }
+          : {
+              html: buildConfirmationHtml({
+                firstName: input.firstName,
+                campaignTitle: input.campaignTitle,
+                storeName: input.storeName,
+                body: input.body,
+                appointment: input.appointment,
+                details: input.details,
+                location: input.location,
+                storefrontUrl: input.storefrontUrl,
+                eyebrow: input.eyebrow,
+              }),
+            }),
       },
       { idempotencyKey: `signup-confirm/${input.submissionId}` },
     )

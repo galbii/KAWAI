@@ -130,7 +130,7 @@ function envelopeRow(label: string, value: string): string {
  * is rendered even when empty: "Bcc: none" is itself the confirmation that
  * nobody was copied invisibly.
  */
-function testBanner({ label, envelope }: LeadEmailTestOptions): string {
+export function testBanner({ label, envelope }: LeadEmailTestOptions): string {
   const which = label ? ` — ${escapeHtml(label)}` : ''
 
   const recipients = envelope
