@@ -332,7 +332,7 @@ export function SalePromos({
 }: {
   intro: string
   highlights: readonly SaleHighlight[]
-  checklist?: SaleChecklist
+  checklist?: SaleChecklist | undefined
   promos: readonly SalePromo[]
   moments: readonly Moment[]
   cta: SaleCta
