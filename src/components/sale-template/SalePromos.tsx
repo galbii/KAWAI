@@ -39,7 +39,7 @@ import type {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-type Actions = { cta: SaleCta; callLabel: string; store: SaleStore }
+type Actions = { cta: SaleCta; callLabel: string; store?: SaleStore | undefined }
 
 function OfferIndex({
   intro,
@@ -61,7 +61,13 @@ function OfferIndex({
         </p>
       )}
       {items.length > 0 && (
-        <ul className="mt-12 grid gap-6 sm:grid-cols-3 sm:gap-6 lg:gap-8">
+        <ul
+          className={
+            items.length === 2
+              ? 'mx-auto mt-12 grid max-w-4xl gap-6 sm:grid-cols-2 sm:gap-6 lg:gap-8'
+              : 'mt-12 grid gap-6 sm:grid-cols-3 sm:gap-6 lg:gap-8'
+          }
+        >
           {items.map((item, i) => {
             const img = imageFor(item.href)
             return (
@@ -76,7 +82,7 @@ function OfferIndex({
                         src={img.src}
                         alt=""
                         fill
-                        sizes="(max-width: 640px) 100vw, 30vw"
+                        sizes={items.length === 2 ? '(max-width: 640px) 100vw, 45vw' : '(max-width: 640px) 100vw, 30vw'}
                         className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04]"
                         style={img.position ? { objectPosition: img.position } : undefined}
                       />
@@ -281,7 +287,9 @@ function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: numbe
                 </p>
               )}
 
-              {promo.storeContact && <StoreContact lead={promo.storeContact.lead} store={actions.store} />}
+              {promo.storeContact && actions.store && (
+                <StoreContact lead={promo.storeContact.lead} store={actions.store} />
+              )}
 
               {promo.link && (
                 <Link
@@ -340,7 +348,7 @@ export function SalePromos({
   moments: readonly Moment[]
   cta: SaleCta
   callLabel: string
-  store: SaleStore
+  store?: SaleStore | undefined
 }) {
   const actions: Actions = { cta, callLabel, store }
   return (

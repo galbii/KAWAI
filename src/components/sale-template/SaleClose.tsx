@@ -31,7 +31,8 @@ export function SaleClose({
   ctaId,
 }: {
   close: SaleCloseContent
-  store: SaleStore
+  /** Optional: without a store there is no Schedule Visit and no store phone line. */
+  store?: SaleStore | undefined
   cta: SaleCta
   callLabel: string
   tagline: string
@@ -65,7 +66,7 @@ export function SaleClose({
 
         <div id={ctaId} data-reveal="pop" className="mt-10 flex flex-col items-center gap-5">
           <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="close" size="lg" />
-          {store.schedule && (
+          {store?.schedule && (
             <a
               href={store.schedule.href}
               {...(store.schedule.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
@@ -79,7 +80,7 @@ export function SaleClose({
           )}
         </div>
 
-        {store.phone && (
+        {store?.phone && (
           <p data-reveal="fade" className="mt-6 text-sm text-kawai-muted">
             {store.name} · {store.phone}
           </p>

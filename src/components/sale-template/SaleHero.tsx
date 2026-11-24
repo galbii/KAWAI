@@ -31,7 +31,8 @@ export function SaleHero({
   ctaId,
 }: {
   hero: SaleHeroContent
-  store: SaleStore
+  /** Optional: without a store (the national page) the store name line is left out. */
+  store?: SaleStore | undefined
   cta: SaleCta
   callLabel: string
   /** The pair's id: the phone bar shows once it has scrolled away. */
@@ -67,16 +68,18 @@ export function SaleHero({
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-10 sm:px-10 sm:pt-16 lg:min-h-[min(50rem,88vh)] lg:grid-cols-12 lg:gap-10 lg:pb-20 lg:pt-14">
         {/* Type: store → headline → one support line → actions. */}
         <div className="flex flex-col items-center text-center lg:col-span-6">
-          <p
-            className={`${ENTER} flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-kawai-black/70`}
-            style={{ fontFamily: SANS, animationDelay: '0.1s' }}
-          >
-            <span aria-hidden className="h-px w-8 bg-kawai-red" />
-            {store.name}
-            <span aria-hidden className="h-px w-8 bg-kawai-red" />
-          </p>
+          {store && (
+            <p
+              className={`${ENTER} flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-kawai-black/70`}
+              style={{ fontFamily: SANS, animationDelay: '0.1s' }}
+            >
+              <span aria-hidden className="h-px w-8 bg-kawai-red" />
+              {store.name}
+              <span aria-hidden className="h-px w-8 bg-kawai-red" />
+            </p>
+          )}
 
-          <div className={`${ENTER} mt-8 sm:mt-10`} style={{ animationDelay: '0.15s' }}>
+          <div className={`${ENTER} ${store ? 'mt-8 sm:mt-10' : ''}`} style={{ animationDelay: '0.15s' }}>
             <Lockup lockup={hero.lockup} as="h1" size="hero" />
           </div>
 

@@ -104,13 +104,14 @@ export function SaleCtaPair({
 }: {
   cta: SaleCta
   callLabel: string
-  store: SaleStore
+  /** Optional: without a store there is no tel: link, so Request Inventory stands alone. */
+  store?: SaleStore | undefined
   placement: string
   size?: Size
   align?: 'center' | 'start'
   className?: string
 }) {
-  const tel = telHref(store)
+  const tel = store ? telHref(store) : null
   const justify = align === 'center' ? 'items-stretch sm:items-center sm:justify-center' : 'items-stretch sm:items-center sm:justify-start'
   return (
     <div
@@ -149,14 +150,14 @@ export function SaleStickyCtas({
 }: {
   cta: SaleCta
   callLabel: string
-  store: SaleStore
+  store?: SaleStore | undefined
   /** The hero's CTA row: the bar shows once this has scrolled off the top. */
   startId: string
   /** The close's CTA row: the bar hides once this reaches the screen. */
   endId: string
 }) {
   const [shown, setShown] = useState(false)
-  const tel = telHref(store)
+  const tel = store ? telHref(store) : null
 
   useEffect(() => {
     let frame = 0

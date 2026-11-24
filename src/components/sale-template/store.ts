@@ -51,9 +51,13 @@ const isHttp = (v: string) => /^https?:\/\//i.test(v)
 /** The placeholder a campaign line uses for the store's place name. */
 export const LOCATION_TOKEN = '{location}'
 
-/** A campaign line with every `{location}` set to this store's place name. */
-export const fillLocation = (text: string, store: Pick<SaleStore, 'location'>) =>
-  text.replaceAll(LOCATION_TOKEN, store.location)
+/**
+ * A campaign line with every `{location}` set to this store's place name.
+ * Without a store (the national page) the line is returned as written, so
+ * national copy must not carry the placeholder.
+ */
+export const fillLocation = (text: string, store?: Pick<SaleStore, 'location'> | undefined) =>
+  store ? text.replaceAll(LOCATION_TOKEN, store.location) : text
 
 /**
  * Map a storefront record to the template's store identity.
