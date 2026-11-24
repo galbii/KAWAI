@@ -15,7 +15,8 @@ import { HOLIDAY_LEAD_TAG, REQUEST_LABEL } from '@/app/(frontend)/store/[storesl
  *   analytics. It keeps the national prefix, so anything filtering on
  *   `fall_financing_enquiry` still matches.
  * - `copy.openLabel` is the holiday button label, "Request Inventory".
- * - The Shopify customer gets `holiday-2026-lead` beside the national tags.
+ * - Shopify tags: the national tags minus `fall-financing` (user, Nov 24, 2026:
+ *   "remove fall financing"), plus `holiday-2026-lead`.
  *
  * There is deliberately NO `notifyLead`: LeadCampaignContext then falls back
  * to `notifyRsmOfLead(values, source)`, the ZIP → nearest dealer's RSM routing
@@ -26,5 +27,5 @@ export const holidayLeadCampaign: LeadCampaignConfig = {
   ...leadCampaign,
   formName: 'fall_financing_enquiry_holiday_national',
   copy: { ...leadCampaign.copy, openLabel: REQUEST_LABEL },
-  shopifyTags: [...leadCampaign.shopifyTags, HOLIDAY_LEAD_TAG],
+  shopifyTags: [...leadCampaign.shopifyTags.filter((t) => t !== 'fall-financing'), HOLIDAY_LEAD_TAG],
 }
