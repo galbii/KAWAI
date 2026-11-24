@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { FALL_2026 } from '@/lib/financing/terms'
-import { disclosures, financing } from '@/app/(frontend)/fall-financing/_components/campaign'
+import { disclosures, financing, CTA_LEAD_IN } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { fallFinancingSale as sale } from './_content'
 import { holidayFinancing } from './financing'
 
@@ -27,9 +27,19 @@ describe('holiday financing: "0% financing on every model", no fine print', () =
     }
   })
 
-  it('keeps the figure-free dealer line above the buttons', () => {
-    expect(fin?.note).toBe(financing.dealerNote)
+  it('keeps a figure-free dealer line above the buttons', () => {
+    expect(fin?.note).toBe(holidayFinancing.dealerNote)
     expect(fin?.note).not.toMatch(/\d+(\.\d+)?%/)
+  })
+
+  // kawai-holiday-sale-rep-edits v1 (the store reps via Chance, relayed by
+  // Marcy, Nov 23, 2026): the reps' exact line, shared by all four stores as
+  // given. The national dealer note and CTA_LEAD_IN stay as they are.
+  it('reads "Contact our St. Louis showroom for pricing and inventory." (v1 rep edits)', () => {
+    expect(holidayFinancing.dealerNote).toBe('Contact our St. Louis showroom for pricing and inventory.')
+    expect(fin?.note).toBe('Contact our St. Louis showroom for pricing and inventory.')
+    expect(financing.dealerNote).toBe(CTA_LEAD_IN)
+    expect(CTA_LEAD_IN).toBe('Contact a dealer near you for pricing and inventory.')
   })
 
   it('prints no Synchrony or term fine print anywhere on the page', () => {

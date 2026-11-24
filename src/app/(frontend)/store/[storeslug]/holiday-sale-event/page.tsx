@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { getStorefrontBySlugDirect } from '@/lib/payload/queries'
 import { getSite, getSiteUrl } from '@/lib/site-context'
 import { SaleTemplate, lockupText, toSaleStore } from '@/components/sale-template'
-import { fallFinancingSale, saleStoreFor } from './_content'
+import { fallFinancingSale, saleStoreFor, META_DESCRIPTION } from './_content'
 import { StoreLeadProvider } from './StoreLeadProvider'
 import { STORE_SALE_PATH } from './sale-path'
 
@@ -60,11 +60,11 @@ export async function generateMetadata({
   if (!storefront) return {}
 
   const store = toSaleStore(storefront, storeslug)
-  // The hero headline and the national opener's body (now the offer index's
-  // intro), attributed to the store. No rate figure: §4.5 reaches titles and
-  // meta descriptions.
+  // The hero headline, attributed to the store, and (v1 rep edits, Nov 23,
+  // 2026) the reps' factory-boxed headline as the description. No rate
+  // figure: §4.5 reaches titles and meta descriptions.
   const title = `${lockupText(fallFinancingSale.hero.lockup)} | ${store.name}`
-  const description = fallFinancingSale.intro
+  const description = META_DESCRIPTION
   const url = `${getSiteUrl(site)}/store/${storeslug}/${STORE_SALE_PATH}`
   const image = fallFinancingSale.hero.image.src
 

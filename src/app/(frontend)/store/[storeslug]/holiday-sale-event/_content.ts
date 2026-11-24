@@ -1,19 +1,15 @@
-import type { SaleBadge, SaleContent, SaleLockup, SaleMoment, SalePromo, SaleStore } from '@/components/sale-template'
+import type {
+  SaleBadge,
+  SaleChecklist,
+  SaleContent,
+  SaleLockup,
+  SalePromo,
+  SaleStore,
+} from '@/components/sale-template'
 import { LOCATION_TOKEN } from '@/components/sale-template/store'
 import { OFFER_CHIPS } from '@/lib/fall-promo/tokens'
-import {
-  bundle,
-  coda,
-  esRebatesFor,
-  lessons,
-  rebate,
-  rebateCopyFor,
-  valuePropsFor,
-  CTA_LEAD_IN,
-  PROGRAM_END,
-} from '@/app/(frontend)/fall-financing/_components/campaign'
-import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
-import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
+import { coda, CTA_LEAD_IN, PROGRAM_END } from '@/app/(frontend)/fall-financing/_components/campaign'
+import { heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
 import { REQUEST_LABEL } from './labels'
 import { holidayFinancing } from './financing'
 import { holidayStoreFor } from './store-inbox'
@@ -48,6 +44,19 @@ export { REQUEST_LABEL }
  *      national CTA_LEAD_IN, then the rest of the national coda line.
  *
  * No holiday headline is ever put on the financing promo.
+ *
+ * kawai-holiday-sale-rep-edits v1 (the store reps via Chance, relayed by
+ * Marcy, Nov 23, 2026). The pre-edit page is kept as a backup at
+ * /store/<slug>/holiday-sale-eventv1 (../holiday-sale-eventv1). On this page:
+ * - Removed: the three-card offer strip (SH-9 Bundle / Financing Options /
+ *   Instant Rebates) and its intro, the "This one gets Played" banner, the
+ *   SH-9 Bundle spread, the ES Series rebate spread, the Skoove / Piano
+ *   Marvel lessons spread, the "Give them a Sound" photo strip and the "Make
+ *   your soundtrack for the Holidays" banner.
+ * - Added: the factory-boxed checklist (`FACTORY_BOXED`), the reps' words
+ *   exactly, after the location band and before the financing spread.
+ * - The financing spread's note is the reps' St. Louis line (financing.ts).
+ * - Kept: hero, location band, exclusive-offers line, close, CTAs.
  */
 
 /**
@@ -63,10 +72,9 @@ export const HEADLINES = {
   // email): the hero reads "Factory direct, Factory fresh." The second
   // "Factory" is the red script word; read in order it is the header as written.
   hero: { lead: 'Factory direct,', script: 'Factory', tail: 'fresh.', layout: 'stack' },
-  played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline' },
+  // v1 rep edits (Nov 23, 2026): the Played, Soundtrack and Sound lockups
+  // left this page with their banners; they live on in the backup.
   instrumental: { kicker: 'Instrumental to the', script: 'Holidays', layout: 'stack' },
-  soundtrack: { lead: 'Make your soundtrack for the', script: 'Holidays', layout: 'stack' },
-  sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline' },
 } as const satisfies Record<string, SaleLockup>
 
 /**
@@ -124,54 +132,32 @@ const ART = {
     src: '/images/signature/pianos/gl-10/gl-10-hero.jpeg',
     alt: "A pianist's hands on the keys of a black Kawai grand piano",
   },
-  played: {
-    src: '/images/signature/pianos/gl-30/gl-30-secondary.webp',
-    alt: 'A young girl playing a black Kawai grand piano',
-    position: 'center 15%',
-  },
-  soundA: {
-    src: '/images/gallery/CA701R-43 copy.webp',
-    alt: 'A woman playing a Kawai CA Series digital piano at home',
-  },
-  soundB: {
-    src: '/images/cx/hero_cx102.jpg',
-    alt: 'A smiling woman playing a white Kawai digital piano in a bright living room',
-    position: '30% center',
-  },
-  soundC: {
-    src: '/images/gallery/KAWAI_CA401B-43 copy.webp',
-    alt: 'A young pianist playing a black Kawai CA401 digital piano',
-    position: '70% center',
-  },
-  soundtrack: {
-    src: '/images/signature/pianos/gx-3/gx-3-secondary.webp',
-    alt: 'A black Kawai grand piano by the windows of a white dining room set with flowers',
-    position: 'center 35%',
-  },
 } as const
 
-const opener = heroOpenerFor('us')
 const financingSlide = heroSlides.find((s) => s.id === 'financing')
-const rebateCopy = rebateCopyFor('us')
 
 const SECTION_IDS = {
-  bundle: 'headphones',
+  factoryBoxed: 'factory-boxed',
   financing: 'financing',
-  rebates: 'rebates',
-  lessons: 'lessons',
 } as const
 
+/**
+ * The reps' new section (v1 rep edits, Nov 23, 2026), word for word,
+ * punctuation included: the headline and three check bullets. It sits after
+ * the location band and before the financing spread.
+ */
+export const FACTORY_BOXED: SaleChecklist = {
+  id: SECTION_IDS.factoryBoxed,
+  heading: 'Brand-new, factory-boxed Kawai grand, upright and digital pianos, with exceptional year-end opportunities',
+  items: ['Brand-new, factory-boxed instruments', 'Grand, upright, and digital pianos.', 'Kawai Factory Warranty.'],
+}
+
+/**
+ * v1 rep edits (Nov 23, 2026): the financing spread is the one offer spread
+ * left. The SH-9 bundle, ES rebate and lessons spreads, and the holiday
+ * moments between them, were removed at the reps' request.
+ */
 const promos: SalePromo[] = [
-  {
-    id: SECTION_IDS.bundle,
-    eyebrow: `Through ${PROGRAM_END}`,
-    heading: { kind: 'text', text: bundle.heading },
-    body: bundle.standfirst,
-    image: { src: bundle.stageImage, alt: bundle.stageImageAlt, position: 'center 78%' },
-    note: bundle.dealerNote,
-    cta: true,
-    fineprint: [bundle.disclaimer],
-  },
   {
     id: SECTION_IDS.financing,
     eyebrow: OFFER_CHIPS.financing,
@@ -183,54 +169,6 @@ const promos: SalePromo[] = [
     note: holidayFinancing.dealerNote,
     cta: true,
     fineprint: [],
-  },
-  {
-    id: SECTION_IDS.rebates,
-    eyebrow: OFFER_CHIPS.rebates,
-    heading: { kind: 'text', text: rebateCopy.heading },
-    body: rebate.standfirst,
-    image: { src: rebate.stageImage, alt: rebate.stageImageAlt },
-    rows: esRebatesFor('us').map((r) => ({
-      label: r.model,
-      value: `Save ${formatOfferPrice(r.rebate, r.currency)}`,
-      note: r.finishes,
-    })),
-    note: rebate.dealerNote,
-    cta: true,
-    fineprint: [rebateCopy.disclaimer],
-  },
-  {
-    id: SECTION_IDS.lessons,
-    eyebrow: lessons.eyebrow,
-    heading: { kind: 'text', text: lessons.heading },
-    body: lessons.standfirst,
-    // The partners' logo strip (~3.9:1): shown whole, never cropped.
-    image: { src: lessons.stageImage, alt: lessons.stageImageAlt, shape: 'banner' },
-    note: lessons.redeemNote,
-    link: { label: lessons.redeemLabel, href: lessons.redeemHref },
-    fineprint: [lessons.disclaimer],
-  },
-]
-
-/**
- * The holiday moments between spreads. None sits before the financing spread,
- * so no marketing headline is ever read as part of the credit advertisement.
- */
-const moments: SaleMoment[] = [
-  { id: 'played', before: SECTION_IDS.bundle, layout: 'feature', lockup: HEADLINES.played, images: [ART.played] },
-  {
-    id: 'sound',
-    before: SECTION_IDS.rebates,
-    layout: 'gallery',
-    lockup: HEADLINES.sound,
-    images: [ART.soundA, ART.soundB, ART.soundC],
-  },
-  {
-    id: 'soundtrack',
-    before: SECTION_IDS.lessons,
-    layout: 'band',
-    lockup: HEADLINES.soundtrack,
-    images: [ART.soundtrack],
   },
 ]
 
@@ -255,12 +193,12 @@ export function saleStoreFor(store: SaleStore): SaleStore {
   return fixed ? { ...store, location: fixed.name } : store
 }
 
-/** The national value props' section ids → this page's section ids. */
-const HIGHLIGHT_TARGET: Record<string, string> = {
-  bundle: SECTION_IDS.bundle,
-  financing: SECTION_IDS.financing,
-  rebates: SECTION_IDS.rebates,
-}
+/**
+ * The page's meta description. v1 rep edits: the national opener (which named
+ * the removed rebates and headphones) is gone with the offer index, so the
+ * description is the reps' new headline, not new copy.
+ */
+export const META_DESCRIPTION = FACTORY_BOXED.heading
 
 export const fallFinancingSale: SaleContent = {
   hero: {
@@ -275,16 +213,15 @@ export const fallFinancingSale: SaleContent = {
     image: ART.heroRoom,
     inset: ART.heroHands,
   },
-  // The national opener's body, now introducing the offer index.
-  intro: opener.body ?? '',
-  highlights: valuePropsFor('us').map((v) => ({
-    label: OFFER_CHIPS[v.offer],
-    detail: v.detail,
-    href: `#${HIGHLIGHT_TARGET[v.offer] ?? v.sectionId}`,
-  })),
+  // v1 rep edits: the three-card offer strip is removed, and its intro with
+  // it (a wayfinding line with nothing left to point at). The index's lead-in
+  // and Request Inventory / Call Now pair stay, under the new checklist.
+  intro: '',
+  highlights: [],
+  checklist: FACTORY_BOXED,
   locationEyebrow: FACTORY_DIRECT,
   promos,
-  moments,
+  moments: [],
   // The close leads with the sale event too. v5: the sale event and the
   // offers now end on the same day (PROGRAM_END), so the close's red band and
   // the hero's support line carry the same date as every spread's own terms.

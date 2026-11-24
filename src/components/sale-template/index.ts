@@ -6,6 +6,7 @@ export type {
   SaleContent,
   SaleStore,
   SaleBadge,
+  SaleChecklist,
   SaleHeroContent,
   SaleHighlight,
   SaleImage,

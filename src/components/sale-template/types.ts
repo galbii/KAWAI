@@ -178,11 +178,28 @@ export interface SaleCta {
   leadIn: string
 }
 
+/**
+ * A headline with a short list of check bullets, set at the head of the
+ * offers (kawai-holiday-sale-rep-edits v1, Nov 23, 2026). Plain words only:
+ * never a credit headline and never a disclosure.
+ */
+export interface SaleChecklist {
+  id: string
+  heading: string
+  items: readonly string[]
+}
+
 export interface SaleContent {
   hero: SaleHeroContent
-  /** A plain paragraph introducing the offer index. */
+  /**
+   * A plain paragraph introducing the offer index. Empty renders no
+   * paragraph.
+   */
   intro: string
+  /** The offer index's cards. Empty renders no strip. */
   highlights: readonly SaleHighlight[]
+  /** Optional checklist section, rendered after the location band and before the offer spreads. */
+  checklist?: SaleChecklist
   /**
    * An optional small caps label over the showroom name in the location band,
    * e.g. "Factory-direct Kawai Pianos". A label, never a headline.

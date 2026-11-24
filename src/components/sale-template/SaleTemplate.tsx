@@ -54,6 +54,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store: 
       <SalePromos
         intro={content.intro}
         highlights={content.highlights}
+        checklist={content.checklist}
         promos={content.promos}
         moments={content.moments}
         cta={content.cta}

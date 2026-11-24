@@ -1,12 +1,13 @@
 import { Fragment } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowDownIcon } from '@heroicons/react/24/outline'
+import { ArrowDownIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { PromoReveal } from '@/components/fall-promo'
 import { SaleCtaPair } from './SaleCtas'
 import { SaleMoment } from './SaleMoment'
 import { DISPLAY, SANS } from './tokens'
 import type {
+  SaleChecklist,
   SaleCta,
   SaleHighlight,
   SaleMoment as Moment,
@@ -58,58 +59,94 @@ function OfferIndex({
           {intro}
         </p>
       )}
-      <ul className="mt-12 grid gap-6 sm:grid-cols-3 sm:gap-6 lg:gap-8">
-        {items.map((item, i) => {
-          const img = imageFor(item.href)
-          return (
-            <li key={item.href} data-reveal="rise">
-              <a
-                href={item.href}
-                className="group block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-kawai-pearl sm:aspect-[4/5]">
-                  {img && (
-                    <Image
-                      src={img.src}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 100vw, 30vw"
-                      className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04]"
-                      style={img.position ? { objectPosition: img.position } : undefined}
-                    />
-                  )}
-                </div>
-                <div className="flex items-start gap-4 border-b border-kawai-black/15 py-5 transition-colors group-hover:border-kawai-red">
-                  <span
-                    aria-hidden
-                    className="pt-1 text-sm font-semibold tabular-nums text-kawai-red"
-                  >
-                    {pad(i + 1)}
-                  </span>
-                  <span className="flex-1">
+      {items.length > 0 && (
+        <ul className="mt-12 grid gap-6 sm:grid-cols-3 sm:gap-6 lg:gap-8">
+          {items.map((item, i) => {
+            const img = imageFor(item.href)
+            return (
+              <li key={item.href} data-reveal="rise">
+                <a
+                  href={item.href}
+                  className="group block h-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kawai-red"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-kawai-pearl sm:aspect-[4/5]">
+                    {img && (
+                      <Image
+                        src={img.src}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 100vw, 30vw"
+                        className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04]"
+                        style={img.position ? { objectPosition: img.position } : undefined}
+                      />
+                    )}
+                  </div>
+                  <div className="flex items-start gap-4 border-b border-kawai-black/15 py-5 transition-colors group-hover:border-kawai-red">
                     <span
-                      className="block text-[1.5rem] leading-[1.1] text-kawai-black"
-                      style={{ fontFamily: DISPLAY, fontWeight: 900 }}
+                      aria-hidden
+                      className="pt-1 text-sm font-semibold tabular-nums text-kawai-red"
                     >
-                      {item.label}
+                      {pad(i + 1)}
                     </span>
-                    <span className="mt-2 block text-[0.95rem] leading-snug text-kawai-muted">{item.detail}</span>
-                  </span>
-                  <ArrowDownIcon
-                    aria-hidden
-                    className="mt-1.5 h-4 w-4 shrink-0 text-kawai-black/40 transition duration-300 group-hover:translate-y-0.5 group-hover:text-kawai-red"
-                  />
-                </div>
-              </a>
-            </li>
-          )
-        })}
-      </ul>
+                    <span className="flex-1">
+                      <span
+                        className="block text-[1.5rem] leading-[1.1] text-kawai-black"
+                        style={{ fontFamily: DISPLAY, fontWeight: 900 }}
+                      >
+                        {item.label}
+                      </span>
+                      <span className="mt-2 block text-[0.95rem] leading-snug text-kawai-muted">{item.detail}</span>
+                    </span>
+                    <ArrowDownIcon
+                      aria-hidden
+                      className="mt-1.5 h-4 w-4 shrink-0 text-kawai-black/40 transition duration-300 group-hover:translate-y-0.5 group-hover:text-kawai-red"
+                    />
+                  </div>
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      )}
       <div data-reveal="rise" className="mt-12 flex flex-col items-center gap-5 text-center sm:mt-14">
         <p className="max-w-xl text-[1.05rem] font-medium leading-relaxed text-kawai-black">{actions.cta.leadIn}</p>
         <SaleCtaPair {...actions} placement="offers" />
       </div>
     </PromoReveal>
+  )
+}
+
+/**
+ * A headline and its check bullets, at the head of the offers (v1 rep edits,
+ * Nov 23, 2026). Words come from the route's content; the template adds only
+ * the check marks.
+ */
+function Checklist({ checklist }: { checklist: SaleChecklist }) {
+  const headingId = `${checklist.id}-heading`
+  return (
+    <section id={checklist.id} aria-labelledby={headingId} className="scroll-mt-24">
+      <PromoReveal className="mx-auto max-w-4xl text-center">
+        <h2
+          id={headingId}
+          data-reveal="rise"
+          className="text-[clamp(1.75rem,3.4vw,2.6rem)] leading-[1.1] text-kawai-black"
+          style={{ fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '-0.012em' }}
+        >
+          {checklist.heading}
+        </h2>
+        <ul
+          data-reveal="rise"
+          className="mx-auto mt-8 flex max-w-3xl flex-col items-start gap-4 text-left sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10"
+        >
+          {checklist.items.map((item) => (
+            <li key={item} className="flex items-start gap-3 text-[1.05rem] font-medium leading-snug text-kawai-black">
+              <CheckIcon aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-kawai-red" strokeWidth={2.5} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </PromoReveal>
+    </section>
   )
 }
 
@@ -286,6 +323,7 @@ function PromoSpread({ promo, index, actions }: { promo: SalePromo; index: numbe
 export function SalePromos({
   intro,
   highlights,
+  checklist,
   promos,
   moments,
   cta,
@@ -294,6 +332,7 @@ export function SalePromos({
 }: {
   intro: string
   highlights: readonly SaleHighlight[]
+  checklist?: SaleChecklist
   promos: readonly SalePromo[]
   moments: readonly Moment[]
   cta: SaleCta
@@ -304,6 +343,7 @@ export function SalePromos({
   return (
     <div id="offers" className="bg-white py-16 sm:py-24" style={{ fontFamily: SANS }}>
       <div className="px-5 sm:px-10">
+        {checklist && checklist.items.length > 0 && <Checklist checklist={checklist} />}
         <OfferIndex intro={intro} items={highlights} promos={promos} actions={actions} />
       </div>
       <div className="mt-24 sm:mt-32">

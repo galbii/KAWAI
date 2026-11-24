@@ -3,12 +3,8 @@ import { describe, expect, it } from 'bun:test'
 import { fillLocation, telHref, toSaleStore, LOCATION_TOKEN } from '@/components/sale-template/store'
 import { lockupText } from '@/components/sale-template/Lockup'
 import {
-  bundle,
   coda,
   financing,
-  lessons,
-  rebate,
-  rebateCopyFor,
   CTA_LABEL,
   CTA_LEAD_IN,
   FINANCING_RANGE,
@@ -16,12 +12,13 @@ import {
   TERMS_SENTENCE,
 } from '@/app/(frontend)/fall-financing/_components/campaign'
 import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-campaign'
-import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
 import {
   fallFinancingSale as sale,
   saleStoreFor,
   CLOSE_BODY,
+  FACTORY_BOXED,
   FACTORY_DIRECT,
+  META_DESCRIPTION,
   HEADLINES,
   HERO_BADGE,
   REQUEST_LABEL,
@@ -41,20 +38,15 @@ describe('store holiday-sale-event: the holiday headlines are the approved set',
     expect(sale.hero.lockup).toEqual(HEADLINES.hero)
   })
 
-  it('carries the other four lockups word for word', () => {
-    expect(lockupText(HEADLINES.played)).toBe('Some gifts get unwrapped This one gets Played')
+  it('keeps the close lockup word for word (v1 rep edits: the three banner lockups are gone)', () => {
     expect(lockupText(HEADLINES.instrumental)).toBe('Instrumental to the Holidays')
-    expect(lockupText(HEADLINES.soundtrack)).toBe('Make your soundtrack for the Holidays')
-    expect(lockupText(HEADLINES.sound)).toBe('Your holidays have photos Give them a Sound')
-    const used = [...sale.moments.map((m) => m.lockup), sale.close.lockup]
-    for (const h of [HEADLINES.played, HEADLINES.instrumental, HEADLINES.soundtrack, HEADLINES.sound]) {
-      expect(used).toContainEqual(h)
-    }
+    expect(sale.close.lockup).toEqual(HEADLINES.instrumental)
+    expect(Object.keys(HEADLINES).sort()).toEqual(['hero', 'instrumental'])
   })
 
   it('sets one red script word per headline', () => {
     const scripts = [sale.hero.lockup, ...sale.moments.map((m) => m.lockup), sale.close.lockup].map((l) => l.script)
-    expect(scripts.sort()).toEqual(['Factory', 'Holidays', 'Holidays', 'Played', 'Sound'])
+    expect(scripts.sort()).toEqual(['Factory', 'Holidays'])
   })
 
   it('never ships the source-art misspellings', () => {
@@ -69,26 +61,74 @@ describe('store holiday-sale-event: the holiday headlines are the approved set',
   })
 })
 
-describe('store holiday-sale-event: offer copy is the national copy, word for word', () => {
-  it('introduces the offers with the national opener body', () => {
-    expect(sale.intro).toBe(heroOpenerFor('us').body ?? '')
+describe('store holiday-sale-event v1 rep edits: the named sections are removed', () => {
+  // The store reps via Chance, relayed by Marcy, Nov 23, 2026.
+  const all = JSON.stringify(sale)
+
+  it('drops the three-card offer strip and its intro', () => {
+    expect(sale.highlights).toEqual([])
+    expect(sale.intro).toBe('')
+    for (const label of ['SH-9 Bundle', 'Instant Rebates']) expect(all).not.toContain(label)
   })
 
-  it('carries each promo heading, standfirst and fine print unchanged', () => {
-    const byId = Object.fromEntries(sale.promos.map((p) => [p.id, p]))
-    expect(byId.headphones?.heading).toEqual({ kind: 'text', text: bundle.heading })
-    expect(byId.headphones?.body).toBe(bundle.standfirst)
-    expect(byId.headphones?.fineprint).toEqual([bundle.disclaimer])
-    expect(byId.rebates?.heading).toEqual({ kind: 'text', text: rebateCopyFor('us').heading })
-    expect(byId.rebates?.body).toBe(rebate.standfirst)
-    expect(byId.rebates?.fineprint).toEqual([rebate.disclaimer])
-    expect(byId.lessons?.heading).toEqual({ kind: 'text', text: lessons.heading })
-    expect(byId.lessons?.body).toBe(lessons.standfirst)
-    expect(byId.lessons?.fineprint).toEqual([lessons.disclaimer])
+  it('drops the SH-9, rebate and lessons spreads; financing is the one spread left', () => {
+    expect(sale.promos.map((p) => p.id)).toEqual(['financing'])
+    expect(all).not.toMatch(/SH-9|headphone/i)
+    expect(all).not.toMatch(/Up to \$150|ES Series|rebate/i)
+    expect(all).not.toMatch(/Skoove|Piano Marvel|Three months of lessons/i)
   })
 
-  it('keeps the promos in the national order', () => {
-    expect(sale.promos.map((p) => p.id)).toEqual(['headphones', 'financing', 'rebates', 'lessons'])
+  it('drops the Played, Sound and Soundtrack banners', () => {
+    expect(sale.moments).toEqual([])
+    for (const w of ['Some gifts get unwrapped', 'This one gets', 'Played', 'Give them a', 'Your holidays have photos', 'Make your soundtrack']) {
+      expect(all).not.toContain(w)
+    }
+  })
+
+  it('keeps the hero, location band, exclusive-offers line, close and CTAs', () => {
+    expect(lockupText(sale.hero.lockup)).toBe('Factory direct, Factory fresh.')
+    expect(sale.locationEyebrow).toBe('Factory-direct Kawai Pianos')
+    expect(sale.hero.support).toBe('Exclusive offers until December 31, 2026')
+    expect(lockupText(sale.close.lockup)).toBe('Instrumental to the Holidays')
+    expect(sale.close.body).toBe(CLOSE_BODY)
+    expect(sale.cta.requestLabel).toBe('Request Inventory')
+    expect(sale.callLabel).toBe('Call Now')
+  })
+
+  it('uses the reps\' new headline as the meta description, not the removed opener', () => {
+    expect(META_DESCRIPTION).toBe(FACTORY_BOXED.heading)
+    expect(META_DESCRIPTION).not.toMatch(/rebate|headphone|%/i)
+    const page = readFileSync(new URL('./page.tsx', import.meta.url), 'utf8')
+    expect(page).toMatch(/const description = META_DESCRIPTION/)
+  })
+})
+
+describe('store holiday-sale-event v1 rep edits: the factory-boxed section', () => {
+  it('carries the reps\' headline and check bullets word for word, punctuation included', () => {
+    expect(sale.checklist).toEqual(FACTORY_BOXED)
+    expect(FACTORY_BOXED.heading).toBe(
+      'Brand-new, factory-boxed Kawai grand, upright and digital pianos, with exceptional year-end opportunities',
+    )
+    expect(FACTORY_BOXED.items).toEqual([
+      'Brand-new, factory-boxed instruments',
+      'Grand, upright, and digital pianos.',
+      'Kawai Factory Warranty.',
+    ])
+  })
+
+  it('renders after the location band and before the financing spread', () => {
+    const dir = new URL('../../../../../components/sale-template/', import.meta.url)
+    const tpl = readFileSync(new URL('SaleTemplate.tsx', dir), 'utf8')
+    const promos = readFileSync(new URL('SalePromos.tsx', dir), 'utf8')
+    expect(tpl.indexOf('<SaleLocationBar')).toBeLessThan(tpl.indexOf('<SalePromos'))
+    expect(tpl).toMatch(/checklist=\{content\.checklist\}/)
+    const body = promos.slice(promos.indexOf('export function SalePromos'))
+    expect(body.indexOf('<Checklist checklist={checklist} />')).toBeGreaterThan(0)
+    expect(body.indexOf('<Checklist checklist={checklist} />')).toBeLessThan(body.indexOf('<PromoSpread'))
+  })
+
+  it('stays out of the credit advertisement', () => {
+    expect(JSON.stringify(sale.promos)).not.toMatch(/factory/i)
   })
 })
 
@@ -98,7 +138,7 @@ describe('store holiday-sale-event: the credit advertisement stays with its disc
   it('heads the financing spread "0% financing on every model", with no Synchrony or term fine print (v2 edits)', () => {
     expect(fin?.heading).toEqual({ kind: 'text', text: '0% financing on every model' })
     expect(fin?.heading).toEqual({ kind: 'text', text: holidayFinancing.heading })
-    expect(fin?.note).toBe(financing.dealerNote)
+    expect(fin?.note).toBe('Contact our St. Louis showroom for pricing and inventory.')
     expect(fin?.fineprint).toEqual([])
     expect(JSON.stringify(fin)).not.toMatch(/synchrony|24[- ]month|24 months|36[- ]month|36 months/i)
   })
@@ -210,9 +250,8 @@ describe('store holiday-sale-event v2: Request Inventory + Call Now everywhere',
     expect(sale.cta.leadIn).not.toMatch(/\d+(\.\d+)?%/)
   })
 
-  it('puts the pair in each offer spread except lessons, which keeps its own link', () => {
-    expect(sale.promos.filter((p) => p.cta).map((p) => p.id)).toEqual(['headphones', 'financing', 'rebates'])
-    expect(sale.promos.find((p) => p.id === 'lessons')?.cta).toBeUndefined()
+  it('puts the pair in the financing spread, the one offer spread left (v1 rep edits)', () => {
+    expect(sale.promos.filter((p) => p.cta).map((p) => p.id)).toEqual(['financing'])
   })
 
   it('renders the actions in the hero, location band, offer index, spreads, close and the phone bar', () => {
@@ -322,7 +361,6 @@ describe('store holiday-sale-event v5: the sale event ends December 31, 2026, wi
     expect(coda.heading).toBe('Offers end December 31, 2026')
     expect(financing.subhead.startsWith(TERMS_SENTENCE)).toBe(true)
     expect(TERMS_SENTENCE).toContain(FINANCING_RANGE)
-    expect(sale.promos.find((p) => p.id === 'headphones')?.eyebrow).toBe('Through December 31, 2026')
     // The credit advertisement carries no marketing line: no sale-event copy in it.
     expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.offers)
     expect(JSON.stringify(fin)).not.toContain(SALE_EVENT.ends)

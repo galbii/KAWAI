@@ -1,5 +1,3 @@
-import { financing } from '@/app/(frontend)/fall-financing/_components/campaign'
-
 /**
  * The holiday page's financing spread (kawai-holiday-sale-page-edits v2,
  * Chance, voice 4:44–4:46 PM PT Nov 20, 2026, relayed from Alexis's email
@@ -17,6 +15,11 @@ import { financing } from '@/app/(frontend)/fall-financing/_components/campaign'
  */
 export const holidayFinancing = {
   heading: '0% financing on every model',
-  // The figure-free line above the button pair, as before (campaign.ts).
-  dealerNote: financing.dealerNote,
+  // The figure-free line above the button pair. kawai-holiday-sale-rep-edits
+  // v1 (the store reps via Chance, relayed by Marcy, Nov 23, 2026): the reps'
+  // exact words, in place of the national dealer note
+  // (campaign.ts financing.dealerNote = CTA_LEAD_IN, which stays unedited).
+  // Shared by all four stores as given, so Dallas, Houston and Denver read
+  // "St. Louis" too; flagged in result.md, no per-store notes invented.
+  dealerNote: 'Contact our St. Louis showroom for pricing and inventory.',
 } as const
