@@ -1,10 +1,10 @@
 import type { LeadCampaignConfig } from '@/components/campaign-lead'
 import { leadCampaign } from '@/app/(frontend)/fall-financing/_components/lead-campaign'
-import { REQUEST_LABEL } from './labels'
+import { HOLIDAY_LEAD_TAG, REQUEST_LABEL } from './labels'
 import { notifyHolidayStoreLead } from './notify-store-lead'
 
-/** Added to every holiday-sale-event lead in Shopify, on top of the national tags. */
-export const HOLIDAY_LEAD_TAG = 'holiday-2026-lead'
+/** Added to every holiday-sale-event lead in Shopify, on top of the national tags. Defined in labels.ts. */
+export { HOLIDAY_LEAD_TAG }
 
 /**
  * The store landing's lead form: the national /fall-financing enquiry,

@@ -4,6 +4,7 @@ import { getSite, getSiteUrl, getSiteAlternates, type Site } from '@/lib/site-co
 import { exclusiveSite, type SiteAvailability } from '@/lib/site-availability'
 import { SHIGERU_MODELS } from '@/app/(shigeru-website)/shigeru/_data/models'
 import { STORE_SALE_PATH } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/sale-path'
+import { HOLIDAY_SALE_PATH } from '@/app/(frontend)/holiday-sale-event/sale-path'
 
 // Regenerate every hour so CMS changes (new blog posts, artists, dealers) appear quickly
 export const revalidate = 3600
@@ -149,6 +150,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     add('/guides', { changeFrequency: 'weekly', priority: 0.7 })
     add('/glossary', { changeFrequency: 'monthly', priority: 0.55 })
     add('/news', { changeFrequency: 'daily', priority: 0.7 })
+
+    // National holiday sale page (kawai-holiday-sale-national v1), both sites.
+    // The campaign ends Dec 31, 2026: drop this entry when the page comes down.
+    add(HOLIDAY_SALE_PATH, { changeFrequency: 'weekly', priority: 0.6 })
 
     // ==========================================
     // STATIC ROUTES — Technology Sub-Pages

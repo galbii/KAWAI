@@ -36,11 +36,17 @@ import type { SaleContent, SaleStore } from './types'
  * the bottom of the screen on phones between the hero's pair and the close's.
  * Request Inventory opens the lead dialog of the campaign-lead provider, so
  * the route MUST wrap this template in a `LeadCampaignProvider`.
+ *
+ * No-store mode (kawai-holiday-sale-national v1, Nov 24, 2026): `store` is
+ * optional. Without one (the national /holiday-sale-event page) there is no
+ * store name in the hero, no location band or map, no Call Now / tel: link,
+ * no Schedule Visit and no store contact block: Request Inventory is the only
+ * action. With a store the output is unchanged.
  */
 export const HERO_CTA_ID = 'sale-cta-hero'
 export const CLOSE_CTA_ID = 'sale-cta-close'
 
-export function SaleTemplate({ content, store }: { content: SaleContent; store: SaleStore }) {
+export function SaleTemplate({ content, store }: { content: SaleContent; store?: SaleStore | undefined }) {
   return (
     <div data-sale-template className="bg-white text-kawai-black">
       <SaleHero
@@ -50,7 +56,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store: 
         callLabel={content.callLabel}
         ctaId={HERO_CTA_ID}
       />
-      <SaleLocationBar store={store} cta={content.cta} eyebrow={content.locationEyebrow} />
+      {store && <SaleLocationBar store={store} cta={content.cta} eyebrow={content.locationEyebrow} />}
       <SalePromos
         intro={content.intro}
         highlights={content.highlights}
