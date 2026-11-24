@@ -223,7 +223,7 @@ describe('metadata', () => {
 describe('the lead form works like /fall-financing (ZIP → nearest RSM)', () => {
   it('equals the national config except formName, tags and the open label', () => {
     expect(holidayLeadCampaign.formName).toBe('fall_financing_enquiry_holiday_national')
-    expect([...holidayLeadCampaign.shopifyTags]).toEqual(['fall-financing', 'q4-2026-financing', 'holiday-2026-lead'])
+    expect([...holidayLeadCampaign.shopifyTags]).toEqual(['q4-2026-financing', 'holiday-2026-lead'])
     expect(holidayLeadCampaign.copy.openLabel).toBe('Request Inventory')
     expect(holidayLeadCampaign.source).toBe('fall-financing')
     expect(holidayLeadCampaign.hubspotForm).toEqual(leadCampaign.hubspotForm)
