@@ -38,6 +38,13 @@ export interface LeadCampaignConfig {
    * action that never throws and that decides recipients server-side.
    */
   notifyLead?: (values: Record<string, string>) => Promise<unknown>
+  /**
+   * The store holiday pages' store slug. Their leads go to that store's inbox,
+   * so the lead's owner — HubSpot's hidden `rsm` field and the Shopify `rsm-*`
+   * tag — is the store ("Kawai Dallas") rather than the ZIP's RSM. Omit on
+   * every ZIP-routed page. Only the slug crosses the wire; the server maps it.
+   */
+  storeSlug?: string
 }
 
 export interface LeadCampaignCopy {

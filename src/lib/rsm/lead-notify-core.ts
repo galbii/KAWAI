@@ -22,15 +22,8 @@ import { createHash } from 'node:crypto'
 import { unstable_cache } from 'next/cache'
 import { Resend } from 'resend'
 import { getPayloadClient } from '@/lib/payload/queries'
-import { geocodeZipCode } from '@/lib/utils/dealer-search'
-import {
-  classifyLeadCountry,
-  getDealersForRsmRouting,
-  rankRsmCandidates,
-  findNearestRsm,
-  matchStorefrontForLead,
-  type RsmMatch,
-} from '@/lib/rsm/routing'
+import type { RsmMatch } from '@/lib/rsm/routing'
+import { leadFallbackInbox, routeLead } from '@/lib/rsm/resolve-lead-owner'
 import type { NearbyStorefrontOption } from '@/lib/rsm/nearby-storefront'
 import {
   leadEmailSchema,
@@ -54,8 +47,6 @@ import {
   describeEnvelope,
   isDealerEmailEnabled,
   isRsmEmailEnabled,
-  isStorefrontEmailEnabled,
-  resolveLeadRecipient,
   type LeadEnvelope,
 } from '@/lib/rsm/lead-envelopes'
 
@@ -213,25 +204,23 @@ export async function runLeadNotification(
     }
     const lead = parsed.data
 
-    // Match: geocode → nearest same-country RSM-managed dealer with an rsmEmail.
+    // Match: geocode → nearest same-country RSM-managed dealer with an rsmEmail
+    // → who owns the lead (src/lib/rsm/resolve-lead-owner.ts, the same routing
+    // the HubSpot `rsm` field and the Shopify `rsm-*` tag are attributed from).
     // The same ranked list feeds the 5-nearest table, so what the RSM reads is
     // exactly what the visitor was offered in the picker.
-    let match: RsmMatch | null = null
-    let nearby: NearbyDealerOption[] = []
+    //
+    // `||`, not `??` (inside leadFallbackInbox): an env var that is present but
+    // blank (LEAD_NOTIFY_FALLBACK_EMAIL=) is an empty string, which `??` happily
+    // passes through — that would put a literal '' in To/Bcc and make Resend
+    // reject the whole send.
+    const route = await routeLead(lead.zip, { fallback: leadFallbackInbox(fromAddress) })
+    const match: RsmMatch | null = route.match
+    const nearby: NearbyDealerOption[] = toNearbyDealerOptions(route.ranked)
     // The official Kawai showroom in the lead's area, if any — marketed to in
     // addition to the dealer/RSM routing, never instead of it.
-    let storefront: NearbyStorefrontOption | null = null
-    const coords = await geocodeZipCode(lead.zip)
-    if (coords) {
-      const [dealers, sf] = await Promise.all([
-        getDealersForRsmRouting(),
-        matchStorefrontForLead(coords, lead.zip),
-      ])
-      const ranked = rankRsmCandidates(dealers, coords, classifyLeadCountry(lead.zip))
-      match = findNearestRsm(ranked)
-      nearby = toNearbyDealerOptions(ranked)
-      storefront = sf
-    } else {
+    const storefront: NearbyStorefrontOption | null = route.storefront
+    if (!route.coords) {
       console.warn(`${logTag} Could not geocode "${lead.zip}" — using fallback inbox`)
     }
 
@@ -240,11 +229,6 @@ export async function runLeadNotification(
     const dealerChoice: LeadDealerChoice | undefined = choice
       ? resolveDealerChoice(nearby, choice.dealerId)
       : undefined
-
-    // `||`, not `??`: an env var that is present but blank (LEAD_NOTIFY_FALLBACK_EMAIL=)
-    // is an empty string, which `??` happily passes through — that would put a
-    // literal '' in To/Bcc and make Resend reject the whole send.
-    const fallback = process.env.LEAD_NOTIFY_FALLBACK_EMAIL?.trim() || fromAddress
     const redirect = testInbox()
     const leadKey = `${lead.email}|${lead.zip}|${choice ? (choice.dealerId ?? 'unsure') : 'none'}`
     const keyPrefix = idempotencyNamespace ? `${idempotencyNamespace}-` : ''
@@ -322,18 +306,11 @@ export async function runLeadNotification(
     // would tell the RSM to stand down on a lead nobody has picked up.
     const dealerTo = dealerNotifyAddress(dealerChoice)
 
-    // — Who owns the lead. A storefront-area lead goes to the storefront's
-    //   contact email instead of the RSM (while storefront routing is on);
-    //   everything else takes the RSM path: matched RSM, Canada west/east
-    //   inbox, fallback.
-    const storefrontRouting = isStorefrontEmailEnabled()
-    const recipient = resolveLeadRecipient({
-      zip: lead.zip,
-      storefrontEmail: storefront?.email,
-      storefrontRouting,
-      matchedRsmEmail: match?.rsmEmail,
-      fallback,
-    })
+    // — Who owns the lead (resolved in routeLead above). A storefront-area
+    //   lead goes to the storefront's contact email instead of the RSM (while
+    //   storefront routing is on, LEAD_NOTIFY_STOREFRONT_EMAIL); everything
+    //   else takes the RSM path: matched RSM, Canada west/east inbox, fallback.
+    const recipient = route.recipient
 
     if (storefront && recipient.kind === 'rsm') {
       console.log(

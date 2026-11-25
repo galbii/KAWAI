@@ -3,19 +3,13 @@
 import { z } from 'zod'
 import { upsertCustomer } from '@/lib/shopify/customers'
 import { siteTags } from '@/lib/shopify/site-tags'
-import { geocodeZipCode } from '@/lib/utils/dealer-search'
-import {
-  classifyLeadCountry,
-  getDealersForRsmRouting,
-  matchStorefrontForLead,
-  rankRsmCandidates,
-} from '@/lib/rsm/routing'
-
-/** Applied to every lead that lands in an official showroom's area. */
-const STOREFRONT_LEAD_TAG = 'storefront-lead'
+import { routeLead } from '@/lib/rsm/resolve-lead-owner'
+import { leadAttributionTags } from '@/lib/rsm/lead-owner'
 
 /**
- * Tags that attribute a lead to a location, from one geocode of its ZIP:
+ * Tags that attribute a lead to a location and an owner, from one routing of
+ * its ZIP (src/lib/rsm/resolve-lead-owner.ts — the same routing the lead
+ * notification email and the HubSpot `rsm` field use):
  *
  *   - Showroom: the storefront slug (the same tag the storefront contact form
  *     writes, e.g. "st-louis") plus a generic `storefront-lead`, when an
@@ -24,23 +18,25 @@ const STOREFRONT_LEAD_TAG = 'storefront-lead'
  *     same dealer pool the RSM notification routes on, and the same tag format
  *     the lead funnel's dealer picker writes, so per-dealer lead counts can be
  *     read straight off Shopify customer tags.
+ *   - Owner (kawai-lead-rsm-holiday v2): `rsm-{owner}` for whoever the lead is
+ *     routed to — the RSM's name (or address when no name is on file), the
+ *     Canada region, the showroom, the fallback inbox, or on a store holiday
+ *     page that store ("rsm-kawai-dallas").
  *
  * Never throws — a failed lookup just means fewer tags.
  */
-async function locationTags(zip: string | undefined): Promise<string[]> {
+async function leadRoutingTags(
+  zip: string | undefined,
+  storeSlug?: string | undefined,
+): Promise<string[]> {
   if (!zip) return []
   try {
-    const coords = await geocodeZipCode(zip)
-    if (!coords) return []
-    const [storefront, dealers] = await Promise.all([
-      matchStorefrontForLead(coords, zip),
-      getDealersForRsmRouting(),
-    ])
-    const nearestDealer = rankRsmCandidates(dealers, coords, classifyLeadCountry(zip))[0]?.dealer
-    return [
-      ...(storefront ? [storefront.slug, STOREFRONT_LEAD_TAG] : []),
-      ...(nearestDealer?.slug ? [`dealer-${nearestDealer.slug}`] : []),
-    ]
+    const route = await routeLead(zip, { storeSlug })
+    return leadAttributionTags({
+      storefrontSlug: route.storefront?.slug,
+      nearestDealerSlug: route.ranked[0]?.dealer.slug,
+      owner: route.owner,
+    })
   } catch (err) {
     console.error('[signup-lead-shopify] Location lookup failed:', err)
     return []
@@ -81,11 +77,14 @@ function isShopifyConfigured(): boolean {
  *
  * @param values - Raw HubSpot form values (firstname/lastname/email/phone/zip).
  * @param tags   - Source/campaign tags to attach (e.g. ['summer-savings-event']).
+ * @param options.storeSlug - A store holiday page's slug: the lead is
+ *                 attributed (`rsm-*` tag) to that store, whose inbox it goes to.
  * @returns `{ success }` — never rejects; failures are logged and swallowed.
  */
 export async function upsertSignupLeadToShopify(
   values: Record<string, string>,
   tags: string[] = [],
+  options: { storeSlug?: string } | null = {},
 ): Promise<{ success: boolean }> {
   try {
     if (!isShopifyConfigured()) {
@@ -101,7 +100,10 @@ export async function upsertSignupLeadToShopify(
 
     const { firstname, lastname, email, phone, zip } = parsed.data
     // siteTags() adds 'canada' when submitted on ca.kawaius.com (same US-store CRM)
-    const [site, location] = await Promise.all([siteTags(), locationTags(zip)])
+    const [site, location] = await Promise.all([
+      siteTags(),
+      leadRoutingTags(zip, typeof options?.storeSlug === 'string' ? options.storeSlug.slice(0, 100) : undefined),
+    ])
     const mergedTags = [
       ...new Set([...tags.map((t) => t.trim()).filter(Boolean), ...site, ...location]),
     ]

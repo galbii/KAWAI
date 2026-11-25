@@ -14,7 +14,12 @@ import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { FormField } from '@/components/ui/form-field'
-import { submitHubSpotForm, type HubSpotFormConfig } from '@/lib/hubspot/forms'
+import {
+  submitHubSpotForm,
+  type HubSpotField,
+  type HubSpotFormConfig,
+  type HubSpotSubmitOptions,
+} from '@/lib/hubspot/forms'
 import { cn } from '@/lib/utils'
 
 /**
@@ -129,6 +134,14 @@ type Props = {
   skipSubmit?: boolean
   /** GDPR consent text — only pass when the HubSpot form has consent enabled. */
   consentText?: string
+  /**
+   * How the collected fields reach HubSpot. Defaults to `submitHubSpotForm`,
+   * the browser POST to the public Forms API — every existing caller keeps it.
+   * The campaign LeadForm passes `routedHubSpotSubmit` (src/lib/hubspot/
+   * routed-submit.ts), which submits via the server to add the lead's RSM.
+   * Same contract: resolve on success, throw the message to show on failure.
+   */
+  submit?: (form: HubSpotFormConfig, fields: HubSpotField[], options: HubSpotSubmitOptions) => Promise<void>
   /** Confirmation copy shown after a successful submission. */
   /**
    * Rendered under the confirmation copy once the form has submitted.
@@ -403,6 +416,7 @@ export function TwoStepHubSpotForm({
   formName = 'dealer_discount_signup',
   skipSubmit = false,
   consentText,
+  submit = submitHubSpotForm,
   successActions,
   successTitle = 'You’re all set',
   successBody = 'Thanks for signing up. Your local Authorized Kawai dealer will be in touch shortly.',
@@ -462,7 +476,7 @@ export function TwoStepHubSpotForm({
         .filter((f) => f.value !== '')
 
       if (!skipSubmit) {
-        await submitHubSpotForm(form, hsFields, {
+        await submit(form, hsFields, {
           pageName: formName,
           ...(consentText ? { consent: { consentToProcess: true, text: consentText } } : {}),
         })
