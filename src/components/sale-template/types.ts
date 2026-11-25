@@ -102,6 +102,19 @@ export interface SaleHeroContent {
   image: SaleImage
   /** A smaller detail frame overlapping the main one. */
   inset?: SaleImage
+  /**
+   * Optional secondary hero button, an in-page link (e.g. "View Offers" →
+   * `#offers`) set beside Request Inventory. Hero only. Omitted, the hero
+   * renders exactly as before (the store pages).
+   * kawai-holiday-close-redesign v3, Nov 25, 2026.
+   */
+  secondary?: SaleLink | undefined
+}
+
+/** An in-page link styled as the secondary (outline) button. */
+export interface SaleLink {
+  label: string
+  href: string
 }
 
 /** One entry in the offer index under the location band. */

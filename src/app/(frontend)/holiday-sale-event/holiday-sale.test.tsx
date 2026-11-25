@@ -124,7 +124,8 @@ describe('hero (user decision): the sale-event line leads, no "Factory direct"',
     for (const c of [us, ca]) {
       expect(lockupText(c.hero.lockup)).toBe('Holiday Sale Event')
       expect(c.hero.support).toBe('Exclusive offers until December 31, 2026')
-      expect(c.hero.badge).toEqual({ lead: 'Limited Time', script: 'Offer' })
+      expect(c.hero.badge).toEqual({ lead: 'Limited Time', script: 'Offers' })
+      expect(c.hero.secondary).toEqual({ label: 'View Offers', href: '#offers' })
     }
     expect(SALE_EVENT.name).toBe('Holiday Sale Event')
   })
