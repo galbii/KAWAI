@@ -6,6 +6,9 @@
  * Writes, for each holiday store (dallas, houston, denver, st-louis):
  *   <slug>-confirmation.html / .txt   the customer's confirmation
  *   <slug>-store-notification.html / .txt   the store inbox's lead email
+ * plus, for the national /holiday-sale-event page (kawai-lead-rsm-holiday v1):
+ *   national-rsm-notification / national-rsm-unmatched / national-storefront-notification
+ *   / national-confirmation (.html / .txt)
  * plus index.html linking them all.
  *
  * Uses the same pure builders the server action sends with, fed by the
@@ -23,6 +26,12 @@ import {
 import { HOLIDAY_STOREFRONT_FIXTURES } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/holiday-emails.fixtures'
 import { HOLIDAY_STORES } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/store-inbox'
 import { STORE_SALE_PATH } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/sale-path'
+import {
+  buildNationalConfirmationEmail,
+  buildNationalRsmEmail,
+  buildNationalStorefrontEmail,
+  kawaiAmericaContact,
+} from '@/app/(frontend)/holiday-sale-event/national-emails'
 
 const outDir = resolve(process.argv[2] ?? 'holiday-email-previews')
 mkdirSync(outDir, { recursive: true })
@@ -54,6 +63,43 @@ for (const slug of Object.keys(HOLIDAY_STORES) as Array<keyof typeof HOLIDAY_STO
     writeFileSync(join(outDir, `${base}.txt`), `Subject: ${email.subject}\n\n${email.text}`)
     rows.push(
       `<tr><td>${slug}</td><td>${kind}</td><td>${email.subject.replace(/</g, '&lt;')}</td><td><a href="${base}.html">HTML</a> · <a href="${base}.txt">text</a></td></tr>`,
+    )
+    console.log(`wrote ${base}.html / .txt — "${email.subject}"`)
+  }
+}
+
+// — The national page: same builders the server action sends with. A sample
+//   match and showroom (no real RSM address — the email never shows one). —
+{
+  const contact = kawaiAmericaContact('contact@kawaius.com')
+  const match = {
+    rsmEmail: 'rsm@example.invalid',
+    distance: 4.3,
+    dealer: { dealerName: 'Sample Piano Gallery', address: { city: 'Dallas', state: 'TX' }, region: 'South' },
+  } as unknown as Parameters<typeof buildNationalRsmEmail>[0]['match']
+  const storefront = {
+    id: 'sample',
+    slug: 'dallas',
+    name: 'Dallas',
+    location: 'Plano, TX',
+    phone: '(972) 379-2200',
+    email: null,
+    distance: 12.3,
+    coveredZip: false,
+    href: '/store/dallas',
+  }
+  const emails = {
+    'rsm-notification': buildNationalRsmEmail({ lead: SAMPLE_LEAD, match, source: 'fall-financing', dealerNotified: false, storefront, contact }),
+    'rsm-unmatched': buildNationalRsmEmail({ lead: SAMPLE_LEAD, match: null, source: 'fall-financing', dealerNotified: false, storefront: null, contact }),
+    'storefront-notification': buildNationalStorefrontEmail({ lead: SAMPLE_LEAD, storefrontName: 'Kawai Dallas', source: 'fall-financing', contact }),
+    confirmation: buildNationalConfirmationEmail({ firstName: SAMPLE_LEAD.firstname, contact }),
+  }
+  for (const [kind, email] of Object.entries(emails)) {
+    const base = `national-${kind}`
+    writeFileSync(join(outDir, `${base}.html`), email.html)
+    writeFileSync(join(outDir, `${base}.txt`), `Subject: ${email.subject}\n\n${email.text}`)
+    rows.push(
+      `<tr><td>national</td><td>${kind}</td><td>${email.subject.replace(/</g, '&lt;')}</td><td><a href="${base}.html">HTML</a> · <a href="${base}.txt">text</a></td></tr>`,
     )
     console.log(`wrote ${base}.html / .txt — "${email.subject}"`)
   }

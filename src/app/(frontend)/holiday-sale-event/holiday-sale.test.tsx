@@ -17,6 +17,13 @@ mock.module('@/lib/actions/notify-rsm-of-lead', () => ({
     return { ok: true }
   },
 }))
+const nationalCalls: Array<{ data: unknown; source: string }> = []
+mock.module('./notify-national-lead', () => ({
+  notifyHolidayNationalLead: async (data: unknown, source: string) => {
+    nationalCalls.push({ data, source })
+    return { success: true }
+  },
+}))
 mock.module('@/lib/actions/signup-lead-shopify', () => ({
   upsertSignupLeadToShopify: async () => ({ ok: true }),
 }))
@@ -222,21 +229,23 @@ describe('metadata', () => {
 })
 
 describe('the lead form works like /fall-financing (ZIP → nearest RSM)', () => {
-  it('equals the national config except formName, tags and the open label', () => {
+  it('equals the national config except formName, tags, the open label and its holiday notifier', () => {
     expect(holidayLeadCampaign.formName).toBe('fall_financing_enquiry_holiday_national')
     expect([...holidayLeadCampaign.shopifyTags]).toEqual(['q4-2026-financing', 'holiday-2026-lead'])
     expect(holidayLeadCampaign.copy.openLabel).toBe('Request Inventory')
     expect(holidayLeadCampaign.source).toBe('fall-financing')
     expect(holidayLeadCampaign.hubspotForm).toEqual(leadCampaign.hubspotForm)
     expect(holidayLeadCampaign.fields).toBe(leadCampaign.fields)
-    expect(holidayLeadCampaign.notifyLead).toBeUndefined()
-    const { formName: _a, copy: hc, shopifyTags: _t, ...hRest } = holidayLeadCampaign
+    // kawai-lead-rsm-holiday v1: its own notifier (holiday-branded RSM email + visitor confirmation).
+    expect(typeof holidayLeadCampaign.notifyLead).toBe('function')
+    expect(leadCampaign.notifyLead).toBeUndefined()
+    const { formName: _a, copy: hc, shopifyTags: _t, notifyLead: _n, ...hRest } = holidayLeadCampaign
     const { formName: _b, copy: nc, shopifyTags: _u, ...nRest } = leadCampaign
     expect(hRest).toEqual(nRest)
     expect({ ...hc, openLabel: '' }).toEqual({ ...nc, openLabel: '' })
   })
 
-  it('captureLead → notifyRsmOfLead(lead, "fall-financing")', async () => {
+  it('captureLead → notifyHolidayNationalLead(lead, "fall-financing"), not the plain RSM email', async () => {
     let ctx: ReturnType<typeof useLeadCampaign> | null = null
     const Probe = () => {
       ctx = useLeadCampaign()
@@ -244,9 +253,11 @@ describe('the lead form works like /fall-financing (ZIP → nearest RSM)', () =>
     }
     renderToString(createElement(LeadCampaignProvider, { config: holidayLeadCampaign, children: createElement(Probe) }))
     rsmCalls.length = 0
+    nationalCalls.length = 0
     ;(ctx as unknown as ReturnType<typeof useLeadCampaign>).captureLead(LEAD)
     await Promise.resolve()
-    expect(rsmCalls).toEqual([{ data: LEAD, source: 'fall-financing' }])
+    expect(nationalCalls).toEqual([{ data: LEAD, source: 'fall-financing' }])
+    expect(rsmCalls).toHaveLength(0)
   })
 })
 
@@ -368,7 +379,7 @@ describe('route source guards', () => {
   it('the provider is the shared LeadCampaignProvider, fed holidayLeadCampaign, client side', () => {
     expect(provider.startsWith("'use client'")).toBe(true)
     expect(provider).toMatch(/<LeadCampaignProvider config=\{holidayLeadCampaign\} testMode=\{testMode\}>/)
-    expect(lead).not.toMatch(/notifyLead\s*:/)
+    expect(lead).toMatch(/notifyLead: \(values\) => notifyHolidayNationalLead\(values, leadCampaign\.source\)/)
   })
 
   it('is in the sitemap on both sites', () => {
