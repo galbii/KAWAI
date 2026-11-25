@@ -472,7 +472,12 @@ export function SalePromos({
 }) {
   const actions: Actions = { cta, callLabel, store }
   return (
-    <div id="offers" className="bg-white py-16 sm:py-24" style={{ fontFamily: SANS }}>
+    <div
+      id="offers"
+      // v3 (national only): the hero's "View Offers" lands below the sticky header.
+      className={`bg-white py-16 sm:py-24${polish ? ' scroll-mt-16' : ''}`}
+      style={{ fontFamily: SANS }}
+    >
       <div className="px-5 sm:px-10">
         {checklist && checklist.items.length > 0 && <Checklist checklist={checklist} />}
         <OfferIndex
