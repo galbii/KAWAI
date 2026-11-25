@@ -99,7 +99,7 @@ export function SaleHero({
             className={`${ENTER} mt-8 flex w-full flex-col items-center sm:mt-9`}
             style={{ animationDelay: '0.45s' }}
           >
-            <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="hero" />
+            <SaleCtaPair cta={cta} callLabel={callLabel} store={store} placement="hero" secondary={hero.secondary} />
           </div>
         </div>
 

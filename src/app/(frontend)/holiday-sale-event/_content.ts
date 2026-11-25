@@ -84,8 +84,8 @@ export const SALE_EVENT = {
   ends: `Sale event ends ${PROGRAM_END}.`,
 } as const
 
-/** The hero badge, as on the store pages: a label, not an offer claim. */
-export const HERO_BADGE = { lead: 'Limited Time', script: 'Offer' } as const satisfies SaleBadge
+/** The hero badge: a label, not an offer claim. National reads "Offers" (the user, Nov 25, 2026); the store pages keep "Offer". */
+export const HERO_BADGE = { lead: 'Limited Time', script: 'Offers' } as const satisfies SaleBadge
 
 /** The brand line under the wordmark. */
 export const TAGLINE = 'Instrumental to Life'
@@ -305,6 +305,9 @@ export function holidaySaleFor(site: Site): SaleContent {
       support: SALE_EVENT.offers,
       image: ART.heroRoom,
       inset: ART.heroHands,
+      // v3 (the user, Nov 25, 2026): "a secondary cta for view offers in the
+      // hero? which will just scroll down". National only.
+      secondary: { label: 'View Offers', href: '#offers' },
     },
     // The national opener's body for this site, introducing the offer index.
     intro: opener.body ?? '',

@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRightIcon, PhoneIcon } from '@heroicons/react/24/solid'
+import { ArrowDownIcon, ArrowRightIcon, PhoneIcon } from '@heroicons/react/24/solid'
 import { useLeadCampaign } from '@/components/campaign-lead'
 import { telHref } from './store'
 import { SANS } from './tokens'
-import type { SaleCta, SaleStore } from './types'
+import type { SaleCta, SaleLink, SaleStore } from './types'
 
 /**
  * The page's two actions, everywhere a visitor might want them
@@ -90,6 +90,37 @@ export function SaleCallButton({
 }
 
 /**
+ * A secondary in-page link (e.g. "View Offers" → #offers) in the same black
+ * outline as Call Now. The site's global smooth scroll carries the jump.
+ */
+export function SaleLinkButton({
+  label,
+  href,
+  placement,
+  size = 'md',
+  className = '',
+}: {
+  label: string
+  href: string
+  placement: string
+  size?: Size
+  className?: string
+}) {
+  return (
+    <a
+      href={href}
+      data-cta="view-offers"
+      data-cta-placement={placement}
+      className={`group ${BASE} ${SIZE[size]} border-2 border-kawai-black bg-white text-kawai-black hover:bg-kawai-black hover:text-white focus-visible:outline-kawai-black ${className}`}
+      style={{ fontFamily: SANS }}
+    >
+      {label}
+      <ArrowDownIcon aria-hidden className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
+    </a>
+  )
+}
+
+/**
  * Request Inventory + Call Now, side by side from `sm`, stacked full width
  * (to a readable cap) on phones so both are thumb-sized. When the content
  * sets `cta.note`, that line sits directly under the buttons.
@@ -102,6 +133,7 @@ export function SaleCtaPair({
   size = 'md',
   align = 'center',
   tone = 'light',
+  secondary,
   className = '',
 }: {
   cta: SaleCta
@@ -116,6 +148,8 @@ export function SaleCtaPair({
    * close). `light` (default) is unchanged.
    */
   tone?: 'light' | 'dark'
+  /** Optional in-page link after the buttons (the national hero's "View Offers"). */
+  secondary?: SaleLink | undefined
   className?: string
 }) {
   const tel = store ? telHref(store) : null
@@ -128,6 +162,7 @@ export function SaleCtaPair({
     >
       <SaleRequestButton label={cta.requestLabel} placement={placement} size={size} />
       {tel && <SaleCallButton label={callLabel} tel={tel} placement={placement} size={size} />}
+      {secondary && <SaleLinkButton label={secondary.label} href={secondary.href} placement={placement} size={size} />}
     </div>
   )
   // No note (the store pages): the pair alone, markup unchanged.
