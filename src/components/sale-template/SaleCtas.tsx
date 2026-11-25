@@ -91,7 +91,8 @@ export function SaleCallButton({
 
 /**
  * Request Inventory + Call Now, side by side from `sm`, stacked full width
- * (to a readable cap) on phones so both are thumb-sized.
+ * (to a readable cap) on phones so both are thumb-sized. When the content
+ * sets `cta.note`, that line sits directly under the buttons.
  */
 export function SaleCtaPair({
   cta,
@@ -112,14 +113,35 @@ export function SaleCtaPair({
   className?: string
 }) {
   const tel = store ? telHref(store) : null
+  const note = cta.note
   const justify = align === 'center' ? 'items-stretch sm:items-center sm:justify-center' : 'items-stretch sm:items-center sm:justify-start'
-  return (
+  const pair = (
     <div
       data-sale-cta={placement}
-      className={`flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:flex-wrap sm:gap-4 ${justify} ${className}`}
+      className={`flex w-full max-w-sm flex-col gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:flex-wrap sm:gap-4 ${justify} ${note ? '' : className}`}
     >
       <SaleRequestButton label={cta.requestLabel} placement={placement} size={size} />
       {tel && <SaleCallButton label={callLabel} tel={tel} placement={placement} size={size} />}
+    </div>
+  )
+  // No note (the store pages): the pair alone, markup unchanged.
+  if (!note) return pair
+  // Every pair sits on white or pearl (the hero's type column is white beside
+  // the photo, never over it), so one style serves all: kawai-muted #595959
+  // is ~7:1 on white and ~6.7:1 on pearl, clearing AA 4.5:1. A plain <p>,
+  // never a heading.
+  return (
+    <div
+      className={`flex w-full flex-col ${align === 'center' ? 'items-center text-center' : 'items-start text-left'} ${className}`}
+    >
+      {pair}
+      <p
+        data-sale-cta-note={placement}
+        className="mt-3 max-w-sm text-sm font-medium leading-snug text-kawai-muted sm:max-w-none"
+        style={{ fontFamily: SANS }}
+      >
+        {note}
+      </p>
     </div>
   )
 }
