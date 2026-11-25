@@ -68,7 +68,10 @@ describe('v6 lead parity: same HubSpot form, fields, source and Shopify tags as 
       // ...and route through the store's own notifier; the national config has none.
       expect(typeof store.notifyLead).toBe('function')
       expect(leadCampaign.notifyLead).toBeUndefined()
-      const { formName: _a, copy: storeCopy, shopifyTags: _t, notifyLead: _n, ...storeRest } = store
+      // kawai-lead-rsm-holiday v2: the slug attributes the lead (HubSpot rsm / Shopify rsm-*) to the store.
+      expect(store.storeSlug).toBe(slug)
+      expect(leadCampaign.storeSlug).toBeUndefined()
+      const { formName: _a, copy: storeCopy, shopifyTags: _t, notifyLead: _n, storeSlug: _s, ...storeRest } = store
       const { formName: _b, copy: natCopy, shopifyTags: _u, ...natRest } = leadCampaign
       expect(storeRest).toEqual(natRest)
       expect({ ...storeCopy, openLabel: '' }).toEqual({ ...natCopy, openLabel: '' })
@@ -194,8 +197,14 @@ describe('v6 lead parity: dataLayer conversion + Shopify mirror run through the 
   })
 
   it('LeadForm mirrors to Shopify with config.shopifyTags and hands the lead to captureLead', () => {
-    expect(leadForm).toMatch(/upsertSignupLeadToShopify\(data, \[\.\.\.config\.shopifyTags\]\)/)
+    // kawai-lead-rsm-holiday v2: plus the store slug (owner tag), after the HubSpot submit settles.
+    expect(leadForm).toMatch(
+      /upsertSignupLeadToShopify\(data, \[\.\.\.config\.shopifyTags\], storeSlug \? \{ storeSlug \} : \{\}\)/,
+    )
     expect(leadForm).toMatch(/captureLead\(data\)/)
+    expect(leadForm).toMatch(/submit=\{async \(form, fields, options\) => \{/)
+    expect(leadForm).toMatch(/routedHubSpotSubmit\(storeSlug \? \{ storeSlug \} : \{\}\)/)
+    expect(twoStep).toMatch(/submit = submitHubSpotForm,/)
     expect(leadForm).toMatch(/<NearestShowroomCard zip=\{submittedZip\} source=\{config\.source\}/)
   })
 

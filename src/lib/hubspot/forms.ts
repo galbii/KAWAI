@@ -24,14 +24,14 @@ export type HubSpotField = { name: string; value: string }
 /** GDPR consent block — only send when the HubSpot form has consent enabled. */
 export type HubSpotConsent = { consentToProcess: boolean; text: string }
 
-type SubmitOptions = {
+export type HubSpotSubmitOptions = {
   /** Passed through as HubSpot `context.pageName`. */
   pageName?: string
   consent?: HubSpotConsent
 }
 
 /** Read HubSpot's visitor-tracking cookie so the lead ties to the tracked session. */
-function getHubspotUtk(): string | undefined {
+export function getHubspotUtk(): string | undefined {
   if (typeof document === 'undefined') return undefined
   const match = document.cookie.match(/(?:^|;\s*)hubspotutk=([^;]+)/)
   return match?.[1]
@@ -45,7 +45,7 @@ function getHubspotUtk(): string | undefined {
 export async function submitHubSpotForm(
   { portalId, formGuid }: HubSpotFormConfig,
   fields: HubSpotField[],
-  options: SubmitOptions = {},
+  options: HubSpotSubmitOptions = {},
 ): Promise<void> {
   if (!formGuid) {
     throw new Error('HubSpot form GUID is not configured.')

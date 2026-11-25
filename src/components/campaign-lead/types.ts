@@ -29,12 +29,22 @@ export interface LeadCampaignConfig {
   formName: string
   copy: LeadCampaignCopy
   /**
-   * Page-specific lead routing. Omit (every page but the store holiday pages)
-   * for the national ZIP routing, `notifyRsmOfLead(values, source)`. When set
+   * Page-specific lead notification. Omit (/fall-financing, /black-friday)
+   * for the national ZIP routing, `notifyRsmOfLead(values, source)`. The store
+   * holiday pages set it to their store inbox; the national holiday page to
+   * the same ZIP routing in holiday-branded emails plus a visitor
+   * confirmation (`notifyHolidayNationalLead`). When set
    * it is called instead, once per lead, fire-and-forget — it must be a server
    * action that never throws and that decides recipients server-side.
    */
   notifyLead?: (values: Record<string, string>) => Promise<unknown>
+  /**
+   * The store holiday pages' store slug. Their leads go to that store's inbox,
+   * so the lead's owner — HubSpot's hidden `rsm` field and the Shopify `rsm-*`
+   * tag — is the store ("Kawai Dallas") rather than the ZIP's RSM. Omit on
+   * every ZIP-routed page. Only the slug crosses the wire; the server maps it.
+   */
+  storeSlug?: string
 }
 
 export interface LeadCampaignCopy {

@@ -32,5 +32,7 @@ export function storeLeadCampaign(storeSlug: string): LeadCampaignConfig {
     copy: { ...leadCampaign.copy, openLabel: REQUEST_LABEL },
     shopifyTags: [...leadCampaign.shopifyTags, HOLIDAY_LEAD_TAG],
     notifyLead: (values) => notifyHolidayStoreLead(values, storeSlug, leadCampaign.source),
+    // kawai-lead-rsm-holiday v2: HubSpot `rsm` / Shopify `rsm-*` = this store ("Kawai Dallas").
+    storeSlug,
   }
 }

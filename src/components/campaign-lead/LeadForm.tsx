@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { TwoStepHubSpotForm } from '@/components/forms/TwoStepHubSpotForm'
+import { useMemo, useRef, useState } from 'react'
+import { TwoStepHubSpotForm, type PreFormValues } from '@/components/forms/TwoStepHubSpotForm'
 import { upsertSignupLeadToShopify } from '@/lib/actions/signup-lead-shopify'
+import { routedHubSpotSubmit } from '@/lib/hubspot/routed-submit'
 import { useLeadCampaign } from './LeadCampaignContext'
 import { NearestShowroomCard } from './NearestShowroomCard'
 
@@ -14,17 +15,27 @@ import { NearestShowroomCard } from './NearestShowroomCard'
  * inline in a section card, and the two need different padding. That is what
  * keeps one form definition serving every placement on a page.
  *
- * HubSpot is the primary CRM; the Shopify mirror is fire-and-forget on
- * `onComplete` so a Shopify hiccup can never block or fail the submission the
- * visitor is waiting on. Routing to the dealer's RSM is handed UP to the
- * provider rather than fired here — see the note in LeadCampaignContext for why
- * this component must not own anything the lead depends on.
+ * HubSpot is the primary CRM. It is submitted through the server
+ * (`routedHubSpotSubmit`, kawai-lead-rsm-holiday v2) so the lead's owner — the
+ * RSM the ZIP routes to, or the store on a store page — lands in HubSpot's
+ * hidden `rsm` field without ever reaching the browser; if the server path
+ * fails, the browser submits as before. Once that submit settles (success or
+ * not), the Shopify mirror (which adds the same owner as an `rsm-*` tag) and
+ * the RSM notification fire, fire-and-forget, so neither can block or fail
+ * the submission the visitor is waiting on — and the routing lookups they
+ * share are already warm. Routing to the dealer's RSM is handed UP to the
+ * provider rather than fired here — see the note in LeadCampaignContext for
+ * why this component must not own anything the lead depends on.
  */
 export function LeadForm() {
   const { config, testMode, captureLead, confirmLead, close } = useLeadCampaign()
   const { copy } = config
   // The ZIP just submitted, for the nearest-showroom card on the confirmation.
   const [submittedZip, setSubmittedZip] = useState<string | null>(null)
+  // The values the visitor just completed, for the follow-ups once HubSpot settles.
+  const pendingRef = useRef<PreFormValues | null>(null)
+  const storeSlug = config.storeSlug
+  const routedSubmit = useMemo(() => routedHubSpotSubmit(storeSlug ? { storeSlug } : {}), [storeSlug])
 
   return (
     <div>
@@ -65,13 +76,28 @@ export function LeadForm() {
         successTitle={copy.successTitle}
         successBody={copy.successBody}
         skipSubmit={testMode}
-        onComplete={(data) => {
-          if (!testMode) {
-            void upsertSignupLeadToShopify(data, [...config.shopifyTags]).catch(() => {})
+        submit={async (form, fields, options) => {
+          try {
+            await routedSubmit(form, fields, options)
+          } finally {
+            // After the HubSpot submit settles, not on the confirmation: this
+            // runs even if the visitor closes the modal mid-submit, and on a
+            // HubSpot error too (as before, when these fired on onComplete).
+            const data = pendingRef.current
+            if (data) {
+              void upsertSignupLeadToShopify(data, [...config.shopifyTags], storeSlug ? { storeSlug } : {}).catch(
+                () => {},
+              )
+              captureLead(data)
+            }
           }
-          // Handed up on `onComplete` rather than `onSubmitted` so routing starts
-          // while HubSpot is still submitting instead of after the confirmation.
-          captureLead(data)
+        }}
+        onComplete={(data) => {
+          pendingRef.current = data
+          // Test mode submits nothing (no `submit` call), so routing starts
+          // here: it is what a staging run must exercise, and the
+          // LEAD_NOTIFY_* switches hold or redirect the mail. No Shopify write.
+          if (testMode) captureLead(data)
         }}
         onSubmitted={(data) => {
           setSubmittedZip(data.zip ?? null)
