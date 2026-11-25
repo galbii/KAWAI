@@ -182,6 +182,13 @@ export interface SaleCta {
   requestLabel: string
   /** One approved line set above the mid-page pair. */
   leadIn: string
+  /**
+   * Optional small line set directly under every Request Inventory pair
+   * (hero, offer index, each offer spread, close), never on the phone bar.
+   * Omitted, the pairs render exactly as before (the store pages).
+   * kawai-holiday-cta-availability-note v1, Nov 24, 2026.
+   */
+  note?: string | undefined
 }
 
 /**

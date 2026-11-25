@@ -300,6 +300,50 @@ describe('the template without a store', () => {
   })
 })
 
+describe('availability note under every CTA pair (kawai-holiday-cta-availability-note v1)', () => {
+  const NOTE = 'Submit a form to find out about availability!'
+  const store = toSaleStore({ showroomInfo: { name: 'Kawai Dallas', phone: '(972) 379-2200' } }, 'dallas')
+
+  it('national content sets the exact line on both sites', () => {
+    expect(us.cta.note).toBe(NOTE)
+    expect(ca.cta.note).toBe(NOTE)
+  })
+
+  for (const [site, content] of [
+    ['us', us],
+    ['cad', ca],
+  ] as const) {
+    it(`${site}: renders once under each pair (hero, index, each CTA spread, close), never on the phone bar`, () => {
+      const html = render(content)
+      const pairs = [...html.matchAll(/data-sale-cta="([^"]+)"/g)].map((m) => m[1])
+      const notes = [...html.matchAll(/data-sale-cta-note="([^"]+)"/g)].map((m) => m[1])
+      expect(pairs).toContain('hero')
+      expect(pairs).toContain('offers')
+      expect(pairs).toContain('close')
+      expect(pairs.length).toBeGreaterThan(3)
+      expect(notes).toEqual(pairs)
+      expect(html.split(NOTE).length - 1).toBe(pairs.length)
+      // Directly after its own pair's buttons, as a plain paragraph.
+      for (const p of pairs) {
+        expect(html).toMatch(new RegExp(`data-sale-cta="${p}"[\\s\\S]*?</div><p data-sale-cta-note="${p}"[^>]*>${NOTE}</p>`))
+      }
+      const sticky = html.slice(html.indexOf('data-sale-sticky'))
+      expect(sticky).not.toContain(NOTE)
+    })
+  }
+
+  it('the store pages set no note and render none', async () => {
+    const live = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-event/_content')
+    const v1 = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-eventv1/_content')
+    for (const content of [live.fallFinancingSale, v1.fallFinancingSale]) {
+      expect(content.cta.note).toBeUndefined()
+      const html = render(content, store)
+      expect(html).not.toContain(NOTE)
+      expect(html).not.toContain('data-sale-cta-note')
+    }
+  })
+})
+
 describe('route source guards', () => {
   const page = src('./page.tsx')
   const provider = src('./HolidayLeadProvider.tsx')

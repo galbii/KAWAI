@@ -22,6 +22,9 @@ import { REQUEST_LABEL } from '@/app/(frontend)/store/[storeslug]/holiday-sale-e
 
 export { REQUEST_LABEL }
 
+/** The line under every Request Inventory pair on this page (not the phone bar). */
+export const CTA_NOTE = 'Submit a form to find out about availability!'
+
 type Site = 'us' | 'cad'
 
 /**
@@ -296,7 +299,10 @@ export function holidaySaleFor(site: Site): SaleContent {
     // Required by the content contract; with no store there is no tel: link,
     // so the template never renders it on this page.
     callLabel: 'Call Now',
-    cta: { requestLabel: REQUEST_LABEL, leadIn: CTA_LEAD_IN },
+    // kawai-holiday-cta-availability-note v1 (Nov 24, 2026), the user: "under
+    // each of the cta's get a submit a form to find out about availability!"
+    // National page only; the store pages set no note.
+    cta: { requestLabel: REQUEST_LABEL, leadIn: CTA_LEAD_IN, note: CTA_NOTE },
     tagline: TAGLINE,
   }
 }
