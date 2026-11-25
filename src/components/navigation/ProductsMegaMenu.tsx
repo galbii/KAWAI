@@ -12,6 +12,8 @@ import type { ProductTypeNav, NavProduct, NavCollection, NavAccessory } from '@/
 import { getProductsByCollection } from '@/lib/actions/collection-products'
 import { CATEGORY_COLLECTION_TERMS, OTHER_PILL_HANDLE, getCollectionsForCategory } from '@/lib/navigation/collection-categories'
 import { extractYouTubeId } from '@/lib/utils/youtube'
+import { sortNavProducts } from '@/lib/navigation/nav-product-sort'
+import { buildFeaturedMap } from '@/lib/piano/featured-sort'
 import { BackgroundYouTube } from '@/components/ui/background-youtube'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -1138,24 +1140,11 @@ export function ProductsMegaMenu({
     const cat = SIDEBAR_CATEGORIES.find((c) => c.key === selectedKey)
     if (!cat) return []
     const products = getProductsForSidebarKey(productTypes, cat.terms)
-    // Build a set of handles for this category's featured collections (featured: true)
-    // so we can float products that belong to them to the top.
-    const pool = allCollections ?? collections
-    const featuredHandles = new Set(
-      getCollectionsForCategory(pool, selectedKey)
-        .filter((c) => c.featured)
-        .map((c) => c.handle)
-    )
-    return [...products].sort((a, b) => {
-      // Product-flagged featured leads (mirrors the nav action ordering)
-      if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1
-      // Then products belonging to a featured collection
-      const aInFeatured = a.collectionIds.some((h) => featuredHandles.has(h))
-      const bInFeatured = b.collectionIds.some((h) => featuredHandles.has(h))
-      if (aInFeatured !== bInFeatured) return aInFeatured ? -1 : 1
-      return 0
-    })
-  }, [selectedKey, productTypes, collections, allCollections])
+    // The server already ordered each type with the shared collection sort (same as
+    // the pills). Re-applying the same comparator is a no-op for one type and keeps a
+    // tab whose terms match several types in that one order — never a different one.
+    return sortNavProducts(products, buildFeaturedMap(collections))
+  }, [selectedKey, productTypes, collections])
 
   const selectedCollections = useMemo(() => {
     if (!selectedKey) return []
