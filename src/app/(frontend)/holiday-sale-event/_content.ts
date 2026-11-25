@@ -16,7 +16,7 @@ import {
   PROGRAM_END,
   SECTION,
 } from '@/app/(frontend)/fall-financing/_components/campaign'
-import { heroOpenerFor, heroSlides } from '@/app/(frontend)/fall-financing/_components/slides'
+import { heroOpenerFor } from '@/app/(frontend)/fall-financing/_components/slides'
 import { formatOfferPrice } from '@/app/(frontend)/fall-financing/_components/money'
 import { REQUEST_LABEL } from '@/app/(frontend)/store/[storeslug]/holiday-sale-event/labels'
 
@@ -69,10 +69,12 @@ type Site = 'us' | 'cad'
  */
 export const HEADLINES = {
   hero: { script: 'Holiday', tail: 'Sale Event', layout: 'stack' },
-  played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline' },
+  // stackOnMobile (v2 polish): on phones the script drops under the serif
+  // words instead of colliding with them.
+  played: { kicker: 'Some gifts get unwrapped', lead: 'This one gets', script: 'Played', layout: 'inline', stackOnMobile: true },
   instrumental: { kicker: 'Instrumental to the', script: 'Holidays', layout: 'stack' },
   soundtrack: { lead: 'Make your soundtrack for the', script: 'Holidays', layout: 'stack' },
-  sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline' },
+  sound: { kicker: 'Your holidays have photos', lead: 'Give them a', script: 'Sound', layout: 'inline', stackOnMobile: true },
 } as const satisfies Record<string, SaleLockup>
 
 /** The sale event's lines, built from PROGRAM_END so every date on the page is one date. */
@@ -118,10 +120,17 @@ const ART = {
     alt: 'A young pianist playing a black Kawai CA401 digital piano',
     position: '70% center',
   },
-  soundtrack: {
-    src: '/images/signature/pianos/gx-3/gx-3-secondary.webp',
-    alt: 'A black Kawai grand piano by the windows of a white dining room set with flowers',
-    position: 'center 35%',
+  /**
+   * v2 polish: the financing (US) and acoustic rebate (CA) spreads, both
+   * acoustic-only offers, in place of /fall-financing's autumn-leaves digital
+   * upright. The strings and plate inside a Kawai GX-1 grand: holiday-neutral,
+   * unmistakably acoustic, and not another white French-door room (the hero
+   * has one). Override here only; /fall-financing keeps its own photo.
+   */
+  acoustic: {
+    src: '/images/signature/pianos/gx-1/gx-1-secondary.webp',
+    alt: 'The strings and golden plate inside a Kawai GX-1 grand piano',
+    position: 'center 45%',
   },
   /**
    * The cinematic close (kawai-holiday-close-redesign v1): a concert
@@ -145,8 +154,6 @@ const SECTION_IDS = {
   lessons: SECTION.lessons,
 } as const
 
-const financingSlide = heroSlides.find((s) => s.id === 'financing')
-
 const bundlePromo: SalePromo = {
   id: SECTION_IDS.bundle,
   eyebrow: `Through ${PROGRAM_END}`,
@@ -156,6 +163,13 @@ const bundlePromo: SalePromo = {
   note: bundle.dealerNote,
   cta: true,
   fineprint: [bundle.disclaimer],
+  // v2 polish: the Headphones spread goes dark (kawai-black), a mid-page dark
+  // beat that sets up the cinematic close; its near-black photo no longer
+  // reads as a hole on pearl.
+  tone: 'dark',
+  // v2 (the user: "for the sh-9 bundle, can we make the headphone image full
+  // bleed?"): the photo runs edge to edge, the offer's type beside it.
+  layout: 'fullBleed',
 }
 
 /**
@@ -177,7 +191,9 @@ const financingPromo: SalePromo = {
     apr: financing.heading.apr,
     subhead: financing.subhead,
   },
-  ...(financingSlide ? { image: { src: financingSlide.image, alt: financingSlide.imageAlt } } : {}),
+  // v2 polish: an acoustic photo (ART.acoustic) in place of the national
+  // slide's autumn digital upright; the offer covers acoustic pianos only.
+  image: ART.acoustic,
   note: financing.dealerNote,
   cta: true,
   fineprint: [...disclosures.financingTerms, disclosures.financingExample, disclosures.exclusions],
@@ -190,7 +206,9 @@ const acousticPromo: SalePromo = {
   eyebrow: acousticRebate.eyebrow,
   heading: { kind: 'text', text: acousticRebate.heading },
   body: acousticRebate.standfirst,
-  image: { src: acousticRebate.stageImage, alt: acousticRebate.stageImageAlt },
+  // v2 polish: the same acoustic photo as the US financing spread, in place of
+  // the autumn digital upright.
+  image: ART.acoustic,
   rows: acousticRebates.map((r) => ({
     label: r.label,
     value: `Save ${formatOfferPrice(r.cad, 'CAD')}`,
@@ -240,7 +258,9 @@ function promosFor(site: Site): SalePromo[] {
 /**
  * The holiday moments between spreads. None sits before the financing (or the
  * acoustic) spread, so no marketing headline is ever read as part of the
- * credit advertisement.
+ * credit advertisement. v2 polish (user decision, Nov 25, 2026): the
+ * "Make your soundtrack for the Holidays" band is cut on this page (same
+ * white French-door room as the hero, and "Holidays" is the close's word).
  */
 const moments: SaleMoment[] = [
   { id: 'played', before: SECTION_IDS.bundle, layout: 'feature', lockup: HEADLINES.played, images: [ART.played] },
@@ -250,13 +270,6 @@ const moments: SaleMoment[] = [
     layout: 'gallery',
     lockup: HEADLINES.sound,
     images: [ART.soundA, ART.soundB, ART.soundC],
-  },
-  {
-    id: 'soundtrack',
-    before: SECTION_IDS.lessons,
-    layout: 'band',
-    lockup: HEADLINES.soundtrack,
-    images: [ART.soundtrack],
   },
 ]
 
@@ -318,6 +331,14 @@ export function holidaySaleFor(site: Site): SaleContent {
     // National page only; the store pages set no note.
     cta: { requestLabel: REQUEST_LABEL, leadIn: CTA_LEAD_IN, note: CTA_NOTE },
     tagline: TAGLINE,
+    // v2 polish (user decision, Nov 25, 2026), national only.
+    polish: {
+      loudOffers: true,
+      compactIndex: true,
+      largeGallery: true,
+      largeHeroMobile: true,
+      stickyAvoidsPairs: true,
+    },
   }
 }
 

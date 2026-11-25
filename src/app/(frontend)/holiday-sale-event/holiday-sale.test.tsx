@@ -456,3 +456,141 @@ describe('cinematic full-bleed photo close (kawai-holiday-close-redesign v1)', (
     }
   })
 })
+
+describe('v2 page polish (kawai-holiday-close-redesign v2), national only', () => {
+  const sectionOf = (html: string, id: string) => {
+    const start = html.indexOf(`<section id="${id}"`)
+    expect(start).toBeGreaterThan(-1)
+    return html.slice(start, html.indexOf('</section>', start) + '</section>'.length)
+  }
+  const GX1 = '/images/signature/pianos/gx-1/gx-1-secondary.webp'
+  const enc = encodeURIComponent(GX1)
+
+  it('(a1) cuts the "Make your soundtrack for the Holidays" moment on both sites', () => {
+    for (const content of [us, ca]) {
+      expect(content.moments.map((m) => m.id)).toEqual(['played', 'sound'])
+      const html = render(content)
+      expect(html).not.toContain('soundtrack-heading')
+      expect(text(html)).not.toContain('Make your soundtrack')
+    }
+  })
+
+  it('(a2) the financing (US) and acoustic rebate (CA) spreads use an acoustic GX-1 photo; /fall-financing keeps its own', () => {
+    const fin = us.promos.find((p) => p.id === 'financing')
+    const ac = ca.promos.find((p) => p.id === 'acoustic-rebates')
+    expect(fin?.image?.src).toBe(GX1)
+    expect(ac?.image?.src).toBe(GX1)
+    expect(fin?.image?.alt).toMatch(/grand piano/)
+    // The national copy files are untouched: their autumn photo is still theirs.
+    expect(campaign.acousticRebate.stageImage).not.toBe(GX1)
+    expect(campaign.acousticRebate.stageImage).toContain('KAWAI_CA401B-1')
+    // The offer index card reuses the spread's photo: once in the card, once in the spread.
+    for (const content of [us, ca]) {
+      const html = render(content)
+      const offers = html.slice(html.indexOf('id="offers"'))
+      expect(offers.split(`url=${enc}`).length - 1).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('(a3) louder offers: headings and the financing lockup at clamp(2.2rem, 4.2vw, 3.6rem), Synchrony ratios exact', async () => {
+    const promos = await import('@/components/sale-template/SalePromos')
+    expect(promos.CONNECTOR_RATIO).toBe(0.72)
+    expect(promos.SUBHEAD_RATIO).toBe(0.42)
+    expect(promos.LOCKUP_SIZE).toBe('clamp(1.9rem, 3.6vw, 2.9rem)')
+    expect(promos.LOCKUP_SIZE_LOUD).toBe('clamp(2.2rem, 4.2vw, 3.6rem)')
+    const fin = sectionOf(render(us), 'financing')
+    // One wrapper sets the size; the h2 is 1em, connector 0.72em, subhead 0.42em of it.
+    expect(fin).toMatch(/<div style="font-size:clamp\(2\.2rem, 4\.2vw, 3\.6rem\)"><h2 id="financing-heading"[^>]*font-size:1em/)
+    expect(fin).toContain('<span style="font-size:0.72em">')
+    expect(fin).toMatch(/<p[^>]*style="font-size:0\.42em"/)
+    // Regulated words verbatim, disclosure still visible in the same section, measure capped.
+    expect(text(fin)).toContain(campaign.financing.subhead)
+    expect(fin).toMatch(/id="disclosures" class="[^"]*max-w-4xl/)
+    for (const line of [...campaign.disclosures.financingTerms, campaign.disclosures.financingExample]) {
+      expect(text(fin)).toContain(line.replace(/\s+/g, ' ').trim().slice(0, 40))
+    }
+    // Text headings and rebate values.
+    const reb = sectionOf(render(us), 'rebates')
+    expect(reb).toContain('font-size:clamp(2.2rem, 4.2vw, 3.6rem)')
+    expect(reb).toContain('text-[1.6rem]')
+    expect(reb).not.toContain('text-[1.15rem]')
+  })
+
+  for (const [site, content] of [
+    ['us', us],
+    ['cad', ca],
+  ] as const) {
+    it(`${site} (b) the SH-9 Headphones spread is dark and full bleed, still numbered with its fine print`, () => {
+      const bundle = content.promos.find((p) => p.id === 'headphones')
+      expect(bundle?.tone).toBe('dark')
+      expect(bundle?.layout).toBe('fullBleed')
+      const hp = sectionOf(render(content), 'headphones')
+      expect(hp).toContain('data-sale-tone="dark"')
+      expect(hp).toContain('data-sale-layout="full-bleed"')
+      expect(hp).toContain('bg-kawai-black')
+      expect(hp).toContain('sizes="100vw"')
+      expect(hp).toMatch(/<h2 id="headphones-heading"[^>]*text-white/)
+      expect(hp).toContain('text-kawai-red-400')
+      expect(text(hp)).toContain('01')
+      expect(hp).toMatch(/data-cta="request-inventory"[^>]*data-cta-placement="headphones"/)
+      expect(hp).toMatch(/data-sale-cta-note="headphones" class="[^"]*text-white\/90/)
+      expect(text(hp)).toContain(campaign.bundle.disclaimer.slice(0, 40))
+      expect(hp).not.toContain('bg-kawai-pearl')
+    })
+  }
+
+  it('(c) mobile: compact index rows, larger gallery prints, larger hero minimum, script clear of the serif', () => {
+    const html = render(us)
+    expect(html).toContain('relative size-24 shrink-0 overflow-hidden')
+    const sound = html.slice(html.indexOf('aria-labelledby="sound-heading"'))
+    expect(sound).toContain('grid grid-cols-2 items-start gap-4 sm:mt-16 sm:grid-cols-3')
+    expect(sound).toContain('col-span-2 mx-auto w-[74%]')
+    expect(html).toContain('font-size:clamp(3.9rem, 7.4vw, 6.6rem)')
+    for (const id of ['played-heading', 'sound-heading']) {
+      const h = html.slice(html.indexOf(`id="${id}"`), html.indexOf('</h2>', html.indexOf(`id="${id}"`)))
+      expect(h).toContain('w-full translate-y-[0.06em]')
+      expect(h).toContain('sm:-ml-[0.18em]')
+    }
+  })
+
+  it('(c) sticky bar: hidden while a pair or disclosure is on screen (pure rule), and the national page opts in', async () => {
+    const { stickyShown } = await import('@/components/sale-template')
+    expect(stickyShown({ startBottom: -10, endTop: 2000, viewport: 800 })).toBe(true)
+    expect(stickyShown({ startBottom: -10, endTop: 2000, viewport: 800, blocked: true })).toBe(false)
+    expect(stickyShown({ startBottom: 10, endTop: 2000, viewport: 800 })).toBe(false)
+    expect(stickyShown({ startBottom: -10, endTop: 700, viewport: 800 })).toBe(false)
+    expect(us.polish?.stickyAvoidsPairs).toBe(true)
+    expect(ca.polish?.stickyAvoidsPairs).toBe(true)
+    const ctas = src('../../../components/sale-template/SaleCtas.tsx')
+    expect(ctas).toContain("document.querySelectorAll('[data-sale-cta]')")
+    expect(ctas).toContain('new IntersectionObserver')
+    const tpl = src('../../../components/sale-template/SaleTemplate.tsx')
+    expect(tpl).toMatch(/polish\?\.stickyAvoidsPairs[\s\S]*fineprintId/)
+  })
+
+  it('store pages opt into none of it and render none of the v2 markers', async () => {
+    const live = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-event/_content')
+    const v1 = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-eventv1/_content')
+    const store = toSaleStore({ showroomInfo: { name: 'Kawai Dallas', phone: '(972) 379-2200' } }, 'dallas')
+    for (const content of [live.fallFinancingSale, v1.fallFinancingSale]) {
+      expect(content.polish).toBeUndefined()
+      expect(content.promos.every((p) => p.tone === undefined && p.layout === undefined)).toBe(true)
+      for (const html of [render(content, store), render(content)]) {
+        for (const marker of [
+          'data-sale-tone',
+          'data-sale-layout',
+          'size-24',
+          'text-[1.6rem]',
+          'clamp(2.2rem, 4.2vw, 3.6rem)',
+          'clamp(3.9rem',
+          'sm:-ml-[0.18em]',
+          'w-[74%]',
+          'max-w-4xl space-y',
+          'sm:mt-12 max-w-4xl',
+        ]) {
+          expect(html).not.toContain(marker)
+        }
+      }
+    }
+  })
+})

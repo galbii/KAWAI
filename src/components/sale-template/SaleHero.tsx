@@ -29,6 +29,7 @@ export function SaleHero({
   cta,
   callLabel,
   ctaId,
+  largeMobile = false,
 }: {
   hero: SaleHeroContent
   /** Optional: without a store (the national page) the store name line is left out. */
@@ -37,6 +38,8 @@ export function SaleHero({
   callLabel: string
   /** The pair's id: the phone bar shows once it has scrolled away. */
   ctaId: string
+  /** v2 polish (national only): a larger lockup minimum on phones. */
+  largeMobile?: boolean
 }) {
   return (
     <header className="relative isolate overflow-hidden bg-white">
@@ -80,7 +83,7 @@ export function SaleHero({
           )}
 
           <div className={`${ENTER} ${store ? 'mt-8 sm:mt-10' : ''}`} style={{ animationDelay: '0.15s' }}>
-            <Lockup lockup={hero.lockup} as="h1" size="hero" />
+            <Lockup lockup={hero.lockup} as="h1" size={largeMobile ? 'heroLarge' : 'hero'} />
           </div>
 
           <p

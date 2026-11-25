@@ -16,13 +16,16 @@ import type { SaleLockup } from './types'
  * comp, where "memory" is laid over the Holiday flourishes.
  */
 
-type Size = 'display' | 'hero' | 'xl' | 'lg' | 'md'
+type Size = 'display' | 'hero' | 'heroLarge' | 'xl' | 'lg' | 'md'
 
 /** Base size per use. Lines are fractions of it. */
 const BASE: Record<Size, string> = {
   // The cinematic close (kawai-holiday-close-redesign v1): the page's largest type.
   display: 'clamp(3.6rem, 11vw, 7.6rem)',
   hero: 'clamp(3.1rem, 7.4vw, 6.6rem)',
+  // The hero with a larger phone minimum (v2 polish, national only), so the
+  // script word fills a 390px column. Same size as `hero` from ~800px up.
+  heroLarge: 'clamp(3.9rem, 7.4vw, 6.6rem)',
   xl: 'clamp(2.6rem, 5.6vw, 5rem)',
   lg: 'clamp(2.3rem, 4.6vw, 4.1rem)',
   md: 'clamp(2rem, 3.6vw, 3.2rem)',
@@ -61,7 +64,7 @@ export function Lockup({
   const ink = INK[tone]
   const red = RED[tone]
   const centred = align === 'center'
-  const { kicker, lead, script: word, tail, layout } = lockup
+  const { kicker, lead, script: word, tail, layout, stackOnMobile } = lockup
 
   const kickerEl = kicker ? (
     <span
@@ -90,7 +93,13 @@ export function Lockup({
             </>
           ) : null}
           <span
-            className={`relative z-0 -ml-[0.18em] inline-block translate-y-[0.16em] whitespace-nowrap pr-[0.12em] ${red}`}
+            className={
+              stackOnMobile
+                ? // Phones: the script on its own line under the serif words,
+                  // clear of them; from sm the usual crossing overlap.
+                  `relative z-0 mt-[0.22em] inline-block w-full translate-y-[0.06em] whitespace-nowrap pr-[0.12em] sm:-ml-[0.18em] sm:mt-0 sm:w-auto sm:translate-y-[0.16em] ${red}`
+                : `relative z-0 -ml-[0.18em] inline-block translate-y-[0.16em] whitespace-nowrap pr-[0.12em] ${red}`
+            }
             style={{ ...script, fontSize: '1.32em', lineHeight: 0.8 }}
           >
             {word}

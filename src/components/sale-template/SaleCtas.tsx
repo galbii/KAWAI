@@ -169,12 +169,32 @@ const SITE_SEARCH_PILL = '5.75rem'
  * where every section already has its own pair within reach. It sits above
  * the site's search pill and below every dialog and overlay (z-40).
  */
+/**
+ * Whether the phone bar shows: once the hero's pair has scrolled off the top,
+ * until the close's pair reaches the screen, and (v2 polish, opt-in) never
+ * while another pair or a disclosure is on screen.
+ */
+export function stickyShown({
+  startBottom,
+  endTop,
+  viewport,
+  blocked = false,
+}: {
+  startBottom: number
+  endTop: number
+  viewport: number
+  blocked?: boolean
+}): boolean {
+  return startBottom < 0 && endTop > viewport && !blocked
+}
+
 export function SaleStickyCtas({
   cta,
   callLabel,
   store,
   startId,
   endId,
+  avoidIds,
 }: {
   cta: SaleCta
   callLabel: string
@@ -183,19 +203,55 @@ export function SaleStickyCtas({
   startId: string
   /** The close's CTA row: the bar hides once this reaches the screen. */
   endId: string
+  /**
+   * Opt-in (v2 polish, national only): the bar also hides while any in-page
+   * pair (`[data-sale-cta]`) or an element with one of these ids (the
+   * disclosures) is on screen, so it never doubles a pair or covers fine
+   * print. Omitted, the bar behaves exactly as before.
+   */
+  avoidIds?: readonly string[] | undefined
 }) {
   const [shown, setShown] = useState(false)
   const tel = store ? telHref(store) : null
+  const avoidKey = avoidIds ? avoidIds.join(' ') : null
 
   useEffect(() => {
     let frame = 0
+    // Elements currently on screen that block the bar (opt-in only).
+    const visible = new Set<Element>()
     const update = () => {
       frame = 0
       const start = document.getElementById(startId)
       const end = document.getElementById(endId)
       if (!start || !end) return setShown(false)
       const vh = window.innerHeight
-      setShown(start.getBoundingClientRect().bottom < 0 && end.getBoundingClientRect().top > vh)
+      setShown(
+        stickyShown({
+          startBottom: start.getBoundingClientRect().bottom,
+          endTop: end.getBoundingClientRect().top,
+          viewport: vh,
+          blocked: visible.size > 0,
+        }),
+      )
+    }
+    let observer: IntersectionObserver | null = null
+    if (avoidKey !== null && typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target)
+          else visible.delete(e.target)
+        }
+        if (!frame) frame = window.requestAnimationFrame(update)
+      })
+      const targets = [
+        ...document.querySelectorAll('[data-sale-cta]'),
+        ...avoidKey
+          .split(' ')
+          .filter(Boolean)
+          .map((id) => document.getElementById(id))
+          .filter((el): el is HTMLElement => el !== null),
+      ]
+      for (const t of targets) observer.observe(t)
     }
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update)
@@ -207,8 +263,9 @@ export function SaleStickyCtas({
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       if (frame) window.cancelAnimationFrame(frame)
+      observer?.disconnect()
     }
-  }, [startId, endId])
+  }, [startId, endId, avoidKey])
 
   return (
     <div

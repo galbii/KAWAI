@@ -67,6 +67,12 @@ export interface SaleLockup {
   script: string
   tail?: string
   layout: 'stack' | 'inline'
+  /**
+   * `inline` only: below `sm` the script word drops to its own line instead of
+   * crossing into the last serif word, which collides on phones
+   * (kawai-holiday-close-redesign v2). Omitted, the lockup is unchanged.
+   */
+  stackOnMobile?: boolean
 }
 
 /**
@@ -140,6 +146,22 @@ export interface SalePromo {
   fineprintId?: string
   /** Show the Request Inventory / Call Now pair in this spread, under its note. */
   cta?: boolean
+  /**
+   * `dark`: the spread sits on kawai-black with white type, red-400 eyebrow and
+   * light fine print, in place of the pearl/white alternation
+   * (kawai-holiday-close-redesign v2, national Headphones spread). Omitted,
+   * the spread keeps its pearl/white band, unchanged.
+   */
+  tone?: 'dark' | undefined
+  /**
+   * `fullBleed` (with `tone: 'dark'` and an image): the photograph runs edge to
+   * edge across the viewport with the offer's type over a scrim beside it on
+   * desktop, and bleeds to both edges above the type on phones
+   * (kawai-holiday-close-redesign v2, the user: "for the sh-9 bundle, can we
+   * make the headphone image full bleed?"). Still a numbered offer spread with
+   * its fine print in the same section. Omitted, the usual spread.
+   */
+  layout?: 'fullBleed' | undefined
 }
 
 /**
@@ -211,6 +233,32 @@ export interface SaleChecklist {
   items: readonly string[]
 }
 
+/**
+ * Opt-in page polish (kawai-holiday-close-redesign v2, Nov 25, 2026), set by
+ * the national /holiday-sale-event only. Every flag defaults off, and off the
+ * template renders exactly as before (the store pages).
+ */
+export interface SalePolish {
+  /**
+   * Offers louder than the moments: spread headings and the regulated
+   * financing lockup to clamp(2.2rem, 4.2vw, 3.6rem) (the lockup's connector
+   * and subhead ratios are unchanged), rebate values to 1.6rem, fine print
+   * capped at max-w-4xl (same size, color and visibility).
+   */
+  loudOffers?: boolean
+  /** Phones: the offer index cards become compact rows with a square thumbnail. */
+  compactIndex?: boolean
+  /** Phones: larger gallery prints (two up, the third centred and larger), less dead space. */
+  largeGallery?: boolean
+  /** Phones: a larger hero lockup minimum, so the script word fills the column. */
+  largeHeroMobile?: boolean
+  /**
+   * The phone bar also hides whenever any in-page CTA pair (`[data-sale-cta]`)
+   * or a spread's disclosure (its `fineprintId`) is on screen.
+   */
+  stickyAvoidsPairs?: boolean
+}
+
 export interface SaleContent {
   hero: SaleHeroContent
   /**
@@ -236,4 +284,6 @@ export interface SaleContent {
   cta: SaleCta
   /** The line set under the wordmark's rule. */
   tagline: string
+  /** Opt-in polish; omitted on the store pages. */
+  polish?: SalePolish | undefined
 }
