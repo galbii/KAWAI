@@ -16,30 +16,50 @@ import type { SaleMoment as Moment } from './types'
 
 const TILT = ['-rotate-[3deg]', 'rotate-[2deg] sm:-translate-y-6', '-rotate-[1.5deg]']
 
-export function SaleMoment({ moment }: { moment: Moment }) {
+/**
+ * v2 polish (national only), phones: two prints side by side, the third
+ * centred under them and larger, and less dead space under the prints. From
+ * sm up the gallery is the usual row of three.
+ */
+const LARGE_PRINT = [
+  '-rotate-[3deg]',
+  'rotate-[2deg] sm:-translate-y-6',
+  '-mt-2 col-span-2 mx-auto w-[74%] -rotate-[1.5deg] sm:col-span-1 sm:mx-0 sm:mt-0 sm:w-auto',
+]
+
+export function SaleMoment({ moment, largeGallery = false }: { moment: Moment; largeGallery?: boolean }) {
   const headingId = `${moment.id}-heading`
   const [first, ...rest] = moment.images
 
   if (moment.layout === 'gallery') {
     return (
-      <section aria-labelledby={headingId} className="bg-white px-5 py-16 sm:px-10 sm:py-24">
+      <section
+        aria-labelledby={headingId}
+        className={largeGallery ? 'bg-white px-5 pb-12 pt-16 sm:px-10 sm:py-24' : 'bg-white px-5 py-16 sm:px-10 sm:py-24'}
+      >
         <PromoReveal className="mx-auto max-w-6xl">
           <div data-reveal="rise">
             <Lockup lockup={moment.lockup} id={headingId} size="xl" />
           </div>
-          <div className="mt-12 grid grid-cols-3 items-start gap-3 sm:mt-16 sm:gap-8">
+          <div
+            className={
+              largeGallery
+                ? 'mt-10 grid grid-cols-2 items-start gap-4 sm:mt-16 sm:grid-cols-3 sm:gap-8'
+                : 'mt-12 grid grid-cols-3 items-start gap-3 sm:mt-16 sm:gap-8'
+            }
+          >
             {moment.images.slice(0, 3).map((img, i) => (
               <figure
                 key={img.src}
                 data-reveal="pop"
-                className={`bg-white p-1.5 shadow-[0_24px_50px_-24px_color-mix(in_srgb,var(--color-kawai-black)_45%,transparent)] ring-1 ring-kawai-black/5 sm:p-3 sm:pb-10 ${TILT[i] ?? ''}`}
+                className={`bg-white ${largeGallery ? 'p-2 pb-6' : 'p-1.5'} shadow-[0_24px_50px_-24px_color-mix(in_srgb,var(--color-kawai-black)_45%,transparent)] ring-1 ring-kawai-black/5 sm:p-3 sm:pb-10 ${(largeGallery ? LARGE_PRINT : TILT)[i] ?? ''}`}
               >
                 <div className="relative aspect-[4/5] overflow-hidden bg-kawai-pearl">
                   <Image
                     src={img.src}
                     alt={img.alt}
                     fill
-                    sizes="(max-width: 640px) 32vw, 30vw"
+                    sizes={largeGallery ? (i === 2 ? '(max-width: 640px) 70vw, 30vw' : '(max-width: 640px) 45vw, 30vw') : '(max-width: 640px) 32vw, 30vw'}
                     className="object-cover"
                     style={img.position ? { objectPosition: img.position } : undefined}
                   />

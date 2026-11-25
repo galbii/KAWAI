@@ -47,6 +47,13 @@ export const HERO_CTA_ID = 'sale-cta-hero'
 export const CLOSE_CTA_ID = 'sale-cta-close'
 
 export function SaleTemplate({ content, store }: { content: SaleContent; store?: SaleStore | undefined }) {
+  // v2 polish (kawai-holiday-close-redesign, Nov 25, 2026): opt-in flags the
+  // national page sets. Each is passed only when on, so without them (the
+  // store pages) every component renders exactly as before.
+  const polish = content.polish
+  const avoidIds = polish?.stickyAvoidsPairs
+    ? content.promos.flatMap((p) => (p.fineprintId ? [p.fineprintId] : []))
+    : undefined
   return (
     <div data-sale-template className="bg-white text-kawai-black">
       <SaleHero
@@ -55,6 +62,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store?:
         cta={content.cta}
         callLabel={content.callLabel}
         ctaId={HERO_CTA_ID}
+        {...(polish?.largeHeroMobile ? { largeMobile: true } : {})}
       />
       {store && <SaleLocationBar store={store} cta={content.cta} eyebrow={content.locationEyebrow} />}
       <SalePromos
@@ -66,6 +74,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store?:
         cta={content.cta}
         callLabel={content.callLabel}
         store={store}
+        polish={polish}
       />
       <SaleClose
         close={content.close}
@@ -81,6 +90,7 @@ export function SaleTemplate({ content, store }: { content: SaleContent; store?:
         store={store}
         startId={HERO_CTA_ID}
         endId={CLOSE_CTA_ID}
+        avoidIds={avoidIds}
       />
     </div>
   )

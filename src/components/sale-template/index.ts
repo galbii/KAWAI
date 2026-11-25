@@ -1,7 +1,7 @@
 export { SaleTemplate } from './SaleTemplate'
 export { toSaleStore, fillLocation, LOCATION_TOKEN, storeContactLines } from './store'
 export { lockupText } from './Lockup'
-export { SaleCtaPair, SaleRequestButton, SaleCallButton, SaleStickyCtas } from './SaleCtas'
+export { SaleCtaPair, SaleRequestButton, SaleCallButton, SaleStickyCtas, stickyShown } from './SaleCtas'
 export type {
   SaleContent,
   SaleStore,
@@ -17,4 +17,5 @@ export type {
   SalePromoRow,
   SaleCloseContent,
   SaleCta,
+  SalePolish,
 } from './types'

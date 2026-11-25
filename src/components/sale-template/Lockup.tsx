@@ -16,11 +16,16 @@ import type { SaleLockup } from './types'
  * comp, where "memory" is laid over the Holiday flourishes.
  */
 
-type Size = 'hero' | 'xl' | 'lg' | 'md'
+type Size = 'display' | 'hero' | 'heroLarge' | 'xl' | 'lg' | 'md'
 
 /** Base size per use. Lines are fractions of it. */
 const BASE: Record<Size, string> = {
+  // The cinematic close (kawai-holiday-close-redesign v1): the page's largest type.
+  display: 'clamp(3.6rem, 11vw, 7.6rem)',
   hero: 'clamp(3.1rem, 7.4vw, 6.6rem)',
+  // The hero with a larger phone minimum (v2 polish, national only), so the
+  // script word fills a 390px column. Same size as `hero` from ~800px up.
+  heroLarge: 'clamp(3.9rem, 7.4vw, 6.6rem)',
   xl: 'clamp(2.6rem, 5.6vw, 5rem)',
   lg: 'clamp(2.3rem, 4.6vw, 4.1rem)',
   md: 'clamp(2rem, 3.6vw, 3.2rem)',
@@ -29,12 +34,23 @@ const BASE: Record<Size, string> = {
 const serif: CSSProperties = { fontFamily: DISPLAY, fontWeight: 900, letterSpacing: '-0.012em' }
 const script: CSSProperties = { fontFamily: SCRIPT, fontWeight: 400 }
 
+/**
+ * `light` (default): black serif + Kawai red script, for the white field.
+ * `dark`: white serif + `kawai-red-400` script, for type set over a scrimmed
+ * photograph (brand red is only ~3.6:1 on kawai-black; red-400 clears 3:1
+ * for large text on the scrim). The default output is unchanged.
+ */
+type Tone = 'light' | 'dark'
+const INK: Record<Tone, string> = { light: 'text-kawai-black', dark: 'text-white' }
+const RED: Record<Tone, string> = { light: 'text-kawai-red', dark: 'text-kawai-red-400' }
+
 export function Lockup({
   lockup,
   as: Tag = 'h2',
   id,
   size = 'md',
   align = 'center',
+  tone = 'light',
   className = '',
 }: {
   lockup: SaleLockup
@@ -42,14 +58,17 @@ export function Lockup({
   id?: string
   size?: Size
   align?: 'center' | 'start'
+  tone?: Tone
   className?: string
 }) {
+  const ink = INK[tone]
+  const red = RED[tone]
   const centred = align === 'center'
-  const { kicker, lead, script: word, tail, layout } = lockup
+  const { kicker, lead, script: word, tail, layout, stackOnMobile } = lockup
 
   const kickerEl = kicker ? (
     <span
-      className="relative z-10 block text-kawai-black"
+      className={`relative z-10 block ${ink}`}
       style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: '0.3em', lineHeight: 1.2, letterSpacing: '-0.005em' }}
     >
       {kicker}
@@ -60,7 +79,7 @@ export function Lockup({
     return (
       <Tag
         id={id}
-        className={`text-kawai-black ${centred ? 'text-center' : 'text-left'} ${className}`}
+        className={`${ink} ${centred ? 'text-center' : 'text-left'} ${className}`}
         style={{ fontSize: BASE[size], lineHeight: 1 }}
       >
         {kickerEl}
@@ -74,7 +93,13 @@ export function Lockup({
             </>
           ) : null}
           <span
-            className="relative z-0 -ml-[0.18em] inline-block translate-y-[0.16em] whitespace-nowrap pr-[0.12em] text-kawai-red"
+            className={
+              stackOnMobile
+                ? // Phones: the script on its own line under the serif words,
+                  // clear of them; from sm the usual crossing overlap.
+                  `relative z-0 mt-[0.22em] inline-block w-full translate-y-[0.06em] whitespace-nowrap pr-[0.12em] sm:-ml-[0.18em] sm:mt-0 sm:w-auto sm:translate-y-[0.16em] ${red}`
+                : `relative z-0 -ml-[0.18em] inline-block translate-y-[0.16em] whitespace-nowrap pr-[0.12em] ${red}`
+            }
             style={{ ...script, fontSize: '1.32em', lineHeight: 0.8 }}
           >
             {word}
@@ -88,7 +113,7 @@ export function Lockup({
   return (
     <Tag
       id={id}
-      className={`flex flex-col text-kawai-black ${centred ? 'items-center text-center' : 'items-start text-left'} ${className}`}
+      className={`flex flex-col ${ink} ${centred ? 'items-center text-center' : 'items-start text-left'} ${className}`}
       style={{ fontSize: BASE[size], lineHeight: 1 }}
     >
       {kickerEl}
@@ -101,7 +126,7 @@ export function Lockup({
         </>
       ) : null}
       <span
-        className="relative z-0 block whitespace-nowrap px-[0.12em] text-kawai-red"
+        className={`relative z-0 block whitespace-nowrap px-[0.12em] ${red}`}
         style={{
           ...script,
           fontSize: '1.42em',
