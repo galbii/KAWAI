@@ -170,6 +170,15 @@ export interface SaleCloseContent {
   body: string
   /** The close's display lockup, set above the heading. */
   lockup: SaleLockup
+  /**
+   * Opt-in cinematic close (kawai-holiday-close-redesign v1, Nov 25, 2026):
+   * a full-bleed dark photograph under a scrim, the lockup scaled up in white
+   * and red, then `eyebrow` + `heading` as one bold dated line, `body`, the
+   * request pair with its note and a reversed wordmark in the corner. Set on
+   * the national /holiday-sale-event only. Omitted, the close renders exactly
+   * as before (red band + white field), which is what the store pages keep.
+   */
+  image?: SaleImage | undefined
 }
 
 /**

@@ -123,6 +123,18 @@ const ART = {
     alt: 'A black Kawai grand piano by the windows of a white dining room set with flowers',
     position: 'center 35%',
   },
+  /**
+   * The cinematic close (kawai-holiday-close-redesign v1): a concert
+   * grand alone on the stage of a warm, wood-lined concert hall, shot on the
+   * hall's axis. Already in the repo (NAMM hero, Black Friday art). Anchored low so
+   * the piano and stage stay in frame at every width; the ceiling corridor
+   * sits behind the type.
+   */
+  close: {
+    src: '/images/namm/general/_MG_7325.jpg',
+    alt: 'A black concert grand piano and bench alone on the stage of a wood-panelled concert hall',
+    position: 'center 72%',
+  },
 } as const
 
 const SECTION_IDS = {
@@ -295,6 +307,8 @@ export function holidaySaleFor(site: Site): SaleContent {
       heading: SALE_EVENT.ends,
       body: CLOSE_BODY,
       lockup: HEADLINES.instrumental,
+      // The full-bleed photo close (user decision, Nov 25, 2026): national only.
+      image: ART.close,
     },
     // Required by the content contract; with no store there is no tel: link,
     // so the template never renders it on this page.

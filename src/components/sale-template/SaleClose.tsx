@@ -2,6 +2,7 @@ import { CalendarDaysIcon } from '@heroicons/react/24/solid'
 import { PromoReveal } from '@/components/fall-promo'
 import { Lockup } from './Lockup'
 import { Wordmark } from './Wordmark'
+import { SaleCloseCinematic } from './SaleCloseCinematic'
 import { SaleCtaPair } from './SaleCtas'
 import { fillLocation } from './store'
 import { DISPLAY, SANS } from './tokens'
@@ -21,6 +22,10 @@ import type { SaleCloseContent, SaleCta, SaleStore } from './types'
  *
  * Schedule Visit appears only when the store has a real booking target
  * (`toSaleStore`); nothing is invented.
+ *
+ * With `close.image` set (the national page only), the close is the cinematic
+ * full-bleed photo close instead (`SaleCloseCinematic`). Without it, the
+ * output below is unchanged.
  */
 export function SaleClose({
   close,
@@ -39,6 +44,19 @@ export function SaleClose({
   /** The pair's id: the phone bar hides once it is on screen. */
   ctaId: string
 }) {
+  if (close.image) {
+    return (
+      <SaleCloseCinematic
+        close={close}
+        image={close.image}
+        store={store}
+        cta={cta}
+        callLabel={callLabel}
+        tagline={tagline}
+        ctaId={ctaId}
+      />
+    )
+  }
   return (
     <section aria-labelledby="sale-close" style={{ fontFamily: SANS }}>
       <div className="bg-kawai-red px-5 py-12 text-center text-white sm:px-10 sm:py-16">

@@ -101,6 +101,7 @@ export function SaleCtaPair({
   placement,
   size = 'md',
   align = 'center',
+  tone = 'light',
   className = '',
 }: {
   cta: SaleCta
@@ -110,6 +111,11 @@ export function SaleCtaPair({
   placement: string
   size?: Size
   align?: 'center' | 'start'
+  /**
+   * `dark`: the note is set in white for a scrimmed photograph (the cinematic
+   * close). `light` (default) is unchanged.
+   */
+  tone?: 'light' | 'dark'
   className?: string
 }) {
   const tel = store ? telHref(store) : null
@@ -137,7 +143,7 @@ export function SaleCtaPair({
       {pair}
       <p
         data-sale-cta-note={placement}
-        className="mt-3 max-w-sm text-sm font-medium leading-snug text-kawai-muted sm:max-w-none"
+        className={`mt-3 max-w-sm text-sm font-medium leading-snug ${tone === 'dark' ? 'text-white/90' : 'text-kawai-muted'} sm:max-w-none`}
         style={{ fontFamily: SANS }}
       >
         {note}

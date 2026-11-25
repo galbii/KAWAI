@@ -374,3 +374,85 @@ describe('route source guards', () => {
     expect(sitemap).toMatch(/add\(HOLIDAY_SALE_PATH, \{ changeFrequency: 'weekly', priority: 0\.6 \}\)/)
   })
 })
+
+describe('cinematic full-bleed photo close (kawai-holiday-close-redesign v1)', () => {
+  const NOTE = 'Submit a form to find out about availability!'
+  const closeOf = (html: string) => {
+    const start = html.indexOf('<section aria-labelledby="sale-close"')
+    expect(start).toBeGreaterThan(-1)
+    const end = html.indexOf('</section>', start)
+    return html.slice(start, end + '</section>'.length)
+  }
+  const store = toSaleStore(
+    {
+      showroomInfo: { name: 'Kawai Dallas', address: '601 W Plano Pkwy Ste 153, Plano, TX 75075', phone: '(972) 379-2200' },
+      calendlyUrl: 'https://calendly.com/example',
+    },
+    'dallas',
+  )
+
+  it('national content sets the cinematic close image on both sites', () => {
+    for (const content of [us, ca]) {
+      expect(content.close.image?.src).toBe('/images/namm/general/_MG_7325.jpg')
+      expect(content.close.image?.alt.length).toBeGreaterThan(20)
+      expect(content.close.image?.position).toBeTruthy()
+    }
+  })
+
+  for (const [site, content] of [
+    ['us', us],
+    ['cad', ca],
+  ] as const) {
+    it(`${site}: renders the photo close with image, h2#sale-close, CTA wrapper, request CTA and note — no red band`, () => {
+      const html = render(content)
+      expect(html.match(/<h1[\s>]/g)).toHaveLength(1)
+      const close = closeOf(html)
+      expect(close).toContain('data-sale-close="cinematic"')
+      expect(close).toMatch(/<img[^>]*alt="A black concert grand piano[^"]*"/)
+      expect(close).toMatch(/<img[^>]*_MG_7325/)
+      expect(close).not.toMatch(/<img[^>]*fetchPriority="high"/i)
+      expect(close).toMatch(/<h2[^>]*id="sale-close"/)
+      expect(text(close)).toContain('Instrumental to the Holidays')
+      expect(close).toContain('text-kawai-red-400')
+      expect(close).toContain('id="sale-cta-close"')
+      expect(close).toMatch(/id="sale-cta-close"[\s\S]*data-cta="request-inventory"[^>]*data-cta-placement="close"/)
+      expect(close).toContain(`<p data-sale-cta-note="close"`)
+      expect(close).toContain(NOTE)
+      expect(text(close)).toContain(content.close.eyebrow)
+      expect(text(close)).toContain(content.close.heading)
+      expect(text(close)).toContain(CLOSE_BODY)
+      // The old two-block close is gone on this page.
+      expect(close).not.toContain('bg-kawai-red px-5 py-12')
+      expect(close).not.toContain('bg-white px-5 pb-20')
+      expect(close).not.toContain('data-cta="schedule-visit"')
+      // The reversed wordmark sits in the corner.
+      expect(close).toContain('brightness-0 invert')
+    })
+  }
+
+  it('store content has no cinematic option', async () => {
+    const live = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-event/_content')
+    const v1 = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-eventv1/_content')
+    for (const content of [live.fallFinancingSale, v1.fallFinancingSale]) {
+      expect(content.close.image).toBeUndefined()
+    }
+  })
+
+  it('store content still renders the old close: red band, white field, Schedule Visit and phone', async () => {
+    const live = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-event/_content')
+    const v1 = await import('@/app/(frontend)/store/[storeslug]/holiday-sale-eventv1/_content')
+    for (const content of [live.fallFinancingSale, v1.fallFinancingSale]) {
+      const close = closeOf(render(content, store))
+      expect(close).not.toContain('data-sale-close')
+      expect(close).toContain('bg-kawai-red px-5 py-12')
+      expect(close).toContain('bg-white px-5 pb-20')
+      expect(close).toMatch(/<h2[^>]*id="sale-close"/)
+      expect(close).toContain('id="sale-cta-close"')
+      expect(close).toContain('data-cta="schedule-visit"')
+      expect(close).toContain('href="tel:9723792200"')
+      expect(text(close)).toContain('Kawai Dallas · (972) 379-2200')
+      expect(close).toContain('kawai-logo-new-red.png')
+      expect(close).not.toContain('brightness-0 invert')
+    }
+  })
+})
