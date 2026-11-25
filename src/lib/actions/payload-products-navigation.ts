@@ -5,7 +5,7 @@ import { getProductTypesWithProducts, getNavCollections, getAccessoriesForNav } 
 import type { ProductsNavigation, NavProduct } from '@/lib/payload/products-navigation'
 import { getSite, type Site } from '@/lib/site-context'
 import { buildFeaturedMap } from '@/lib/piano/featured-sort'
-import { sortCollectionProducts } from '@/lib/piano/collection-sort'
+import { buildAllTabProducts, sortNavProducts } from '@/lib/navigation/nav-product-sort'
 import { getCollectionsForCategory, PIANO_CATEGORY_KEYS } from '@/lib/navigation/collection-categories'
 
 /**
@@ -30,49 +30,28 @@ const DISPLAY_SAMPLES = 12
 const getCachedProductsNavigation = (site: Site): Promise<ProductsNavigation> =>
   unstable_cache(
     async (): Promise<ProductsNavigation> => {
-      // Fetch more samples than we'll display so we can sort by featured-collection
-      // priority before slicing. The final nav still shows DISPLAY_SAMPLES per category.
+      // Each type keeps its whole candidate pool (samplesPerType: Infinity) so the
+      // shared sort runs over every model before the DISPLAY_SAMPLES slice. A DB-order
+      // cap here could drop models the shared order would put in the top 12.
       const [navData, collections, allCollections, accessories] = await Promise.all([
-        getProductTypesWithProducts({ limit: 250, samplesPerType: 50, site }),
+        getProductTypesWithProducts({ limit: 250, samplesPerType: Number.POSITIVE_INFINITY, site }),
         getNavCollections(20),       // featured only
         getNavCollections(50, false), // all
         getAccessoriesForNav(8, site),
       ])
 
-      // Build a map of collection handle → collectionPriority for featured collections only.
-      // Products belonging to higher-priority featured collections should render first.
-      const featuredHandleScore = new Map<string, number>()
-      for (const col of collections) {
-        featuredHandleScore.set(col.handle, col.collectionPriority ?? 0)
-      }
+      // handle → collectionPriority for featured collections; shared by "All" and "Other".
+      const featuredMap = buildFeaturedMap(collections)
 
-      // For each category, sort products so flagged-featured models lead, then
-      // featured-collection members (ranked by collectionPriority), then slice to DISPLAY_SAMPLES.
-      const sortedTypes = navData.types.map((typeNav) => {
-        // Score = highest collectionPriority among featured collections this product belongs to.
-        // Products not in any featured collection score -Infinity and sink to the bottom.
-        const score = (product: NavProduct) =>
-          product.collectionIds.reduce<number>((max, h) => {
-            const s = featuredHandleScore.get(h)
-            return s !== undefined && s > max ? s : max
-          }, -Infinity)
-
-        const sorted = [...typeNav.products].sort((a, b) => {
-          // 1. Product-flagged featured (product.featured) leads
-          if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1
-          // 2. Then by featured-collection priority (highest first)
-          const diff = score(b) - score(a)
-          if (diff !== 0) return diff
-          // 3. Preserve the DB sort order (featured flag → sortOrder → date → name) among ties
-          return 0
-        })
-
-        return { ...typeNav, products: sorted.slice(0, DISPLAY_SAMPLES) }
-      })
+      // "All" view per tab: the same order as a collection pill (featured → derivatives
+      // last → featured-collection priority → natural model name), then slice.
+      const sortedTypes = navData.types.map((typeNav) => ({
+        ...typeNav,
+        products: buildAllTabProducts(typeNav.products, featuredMap, DISPLAY_SAMPLES),
+      }))
 
       // "Other" pill per piano tab: products in none of the tab's collection pills,
       // in the same order as a collection pill. Taken before the DISPLAY_SAMPLES slice.
-      const featuredMap = buildFeaturedMap(collections)
       const allProducts = navData.types.flatMap((t) => t.products)
       const otherProducts: Partial<Record<string, NavProduct[]>> = {}
       for (const key of PIANO_CATEGORY_KEYS) {
@@ -81,12 +60,7 @@ const getCachedProductsNavigation = (site: Site): Promise<ProductsNavigation> =>
           (p) => p.type === key && !p.collectionIds.some((h) => pillHandles.has(h)),
         )
         if (uncollected.length > 0) {
-          otherProducts[key] = sortCollectionProducts(uncollected, featuredMap, (p) => ({
-            featured: p.isFeatured,
-            model: p.model,
-            name: p.title,
-            shopifyCollections: p.collectionIds.map((handle) => ({ handle })),
-          }))
+          otherProducts[key] = sortNavProducts(uncollected, featuredMap)
         }
       }
 
